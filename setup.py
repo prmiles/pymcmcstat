@@ -9,4 +9,16 @@ setup(
     license='MIT',
     packages=['pymcmcstat'],
     zip_safe=False,
+    install_requires=[
+          'sys',
+          'time',
+          'numpy',
+          'math',
+          'matplotlib',
+          'pylab',
+          'uuid',
+          'HTML',
+          'Javascript',
+          'display',
+      ],
 )
