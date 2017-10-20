@@ -6,7 +6,7 @@ setup(
     url='https://github.com/prmiles/pymcmcstat',
     author='prmiles',
     author_email='prmiles@ncsu.edu',
-    license='NCSU',
+    license='MIT',
     packages=['pymcmcstat'],
     zip_safe=False,
 )
