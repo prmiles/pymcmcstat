@@ -14,7 +14,6 @@ Original files written in Matlab:
 from __future__ import division
 import sys
 import time
-#import math
 import numpy as np
 #from inspect import signature
 import classes as mcclass
