@@ -4,7 +4,7 @@ setup(
     version='0.1',
     description='A library to perform mcmc simulations',
     url='https://github.com/prmiles/pymcmcstat',
-    author='prmiles',
+    author='Paul Miles',
     author_email='prmiles@ncsu.edu',
     license='MIT',
     packages=['pymcmcstat'],
