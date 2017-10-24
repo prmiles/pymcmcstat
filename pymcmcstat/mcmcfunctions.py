@@ -405,7 +405,7 @@ def check_dependent_parameters(N, data, nbatch, N0, S20, sigma2, savesize, nsimu
         else:
             N0 = np.ones(1)
     else:
-        # if N0 give, then also check updatesigma
+        # if N0 given, then also turn on updatesigma
         updatesigma = 1    
         
     # save options
