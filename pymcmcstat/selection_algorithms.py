@@ -82,6 +82,7 @@ def delayed_rejection(oldset, newset, RDR, ntry, npar, low, upp,
     trypath = [oldset, newset]
     itry = 1; # dr step index
     accept = 0 # initialize acceptance criteria
+#    outset = oldset
     while accept == 0 and itry < ntry:
         itry = itry + 1 # update dr step index
         # initialize next step parameter set
@@ -97,6 +98,7 @@ def delayed_rejection(oldset, newset, RDR, ntry, npar, low, upp,
             nextset.ss = np.inf
             trypath.append(nextset)
             outbound = 1
+            outset = oldset
             continue
                 
         # Evaluate new proposals
