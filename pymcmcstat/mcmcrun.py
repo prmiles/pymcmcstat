@@ -7,7 +7,82 @@ Original files written in Matlab:
 % Marko.Laine@helsinki.fi, 2003
 % $Revision: 1.54 $  $Date: 2011/06/23 06:21:20 $
 ---------------
-@author: prmiles
+Python author: prmiles
+
+%MCMCRUN Metropolis-Hastings MCMC simulation for nonlinear Gaussian models
+% properties:
+%  multiple y-columns, sigma2-sampling, adaptation,
+%  Gaussian prior, parameter limits, delayed rejection, dram
+%
+% [RESULTS,CHAIN,S2CHAIN,SSCHAIN] = MCMCRUN(MODEL,DATA,PARAMS,OPTIONS)
+% MODEL   model options structure
+%    model.ssfun    -2*log(likelihood) function
+%    model.priorfun -2*log(pior) prior function
+%    model.sigma2   initial error variance
+%    model.N        total number of observations
+%    model.S20      prior for sigma2
+%    model.N0       prior accuracy for S20
+%    model.nbatch   number of datasets
+%
+%     sum-of-squares function 'model.ssfun' is called as
+%     ss = ssfun(par,data) or
+%     ss = ssfun(par,data,local)
+%     instead of ssfun, you can use model.modelfun as
+%     ymodel = modelfun(data{ibatch},theta_local)
+%
+%     prior function is called as priorfun(par,pri_mu,pri_sig) it
+%     defaults to Gaussian prior with infinite variance
+%
+%     The parameter sigma2 gives the variances of measured components,
+%     one for each. If the default options.updatesigma = 0 (see below) is
+%     used, sigma2 is fixed, as typically estimated from the fitted residuals.
+%     If opions.updatesigma = 1, the variances are sampled as conjugate priors
+%     specified by the parameters S20 and N0 of the inverse gamma
+%     distribution, with the 'noninformative' defaults
+%          S20 = sigma2   (as given by the user)
+%          N0  = 1
+%     Larger values of N0 limit the samples closer to S20
+%     (see,e.g., A.Gelman et all:
+%     Bayesian Data Analysis, http://www.stat.columbia.edu/~gelman/book/)
+%
+% DATA the data, passed directly to ssfun. The structure of DATA is given
+%      by the user. Typically, it contains the measurements
+%
+%      data.xdata
+%      data.ydata,
+%
+%      A possible 'time' variable must be given in the first column of
+%      xdata. Note that only data.xdata is needed for model simulations.
+%      In addition, DATA may include any user defined structure needed by
+%      |modelfun| or |ssfun|
+%
+% PARAMS  theta structure
+%   {  {'par1',initial, min, max, pri_mu, pri_sig, targetflag, localflag}
+%      {'par2',initial, min, max, pri_mu, pri_sig, targetflag, localflag}
+%      ... }
+%
+%   'name' and initial are compulsary, other values default to
+%   {'name', initial,  -Inf, Inf,  NaN, Inf,  1,  0}
+%
+% OPTIONS mcmc run options
+%    options.nsimu            number of simulations
+%    options.qcov             proposal covariance
+%    options.method           'dram','am','dr' or 'mh'
+%    options.adaptint         interval for adaptation, if 'dram' or 'am' used
+%                             DEFAULT adaptint = 100
+%    options.drscale          scaling for proposal stages of dr
+%                             DEFAULT 3 stages, drscale = [5 4 3]
+%    options.updatesigma      update error variance. Sigma2 sampled with updatesigma=1
+%                             DEFAULT updatesigma=0
+%    options.verbosity        level of information printed
+%    options.waitbar          use graphical waitbar?
+%    options.burnintime       burn in before adaptation starts
+%
+% Output:
+%  RESULTS   structure that contains results and information about
+%            the simulations
+%  CHAIN, S2CHAIN, SSCHAIN
+%           parameter, sigma2 and sum-of-squares chains
 """
 
 # import required packages
@@ -151,8 +226,6 @@ def mcmcrun(model, data, params, options, results = None):
     
     # calculate sos with initial parameter set
     ss = sosobj.evaluate_sos(oldpar)
-            
-#    print('ss = {}'.format(ss))
     
     # ---------------------
     # define prior object
@@ -211,6 +284,7 @@ def mcmcrun(model, data, params, options, results = None):
     if progbar:
         pbarstatus = pbar(int(nsimu))
         
+    print('S20 = {}'.format(S20))
     # ----------------------------------------
     # start clocks
     mtime = []
@@ -332,7 +406,7 @@ def mcmcrun(model, data, params, options, results = None):
     # --------------------------------------------                
     # CREATE OPTIONS OBJECT FOR DEBUG
     actual_options = mcclass.Options(nsimu=nsimu, adaptint=adaptint, ntry=ntry, 
-                         method=method, printint=printint, adaptend = adaptend,
+                         method=method, printint=printint,
                          lastadapt = lastadapt, burnintime = burnintime,
                          progressbar = progbar, debug = debug, qcov = qcov,
                          updatesigma = updatesigma, noadaptind = noadaptind, 
