@@ -55,6 +55,11 @@ def display_parameter_settings(parind, names, value, low, upp, thetamu,
             else:
                 h2 = '^2'
                 
-            print('{:10}: {:6.2f} [{:6.2f}, {:6.2f}] N({:4.2f},{:4.2f}{:s}){:s}'.format(names[parind[ii]], 
+            if parind[ii] > 1e4:
+                print('{:10}: {:6.2e} [{:6.2e}, {:6.2e}] N({:4.2f},{:4.2f}{:s}){:s}'.format(names[parind[ii]], 
+                  value[parind[ii]], low[parind[ii]], upp[parind[ii]],
+                  thetamu[parind[ii]], thetasig[parind[ii]], h2, st))
+            else:
+                print('{:10}: {:6.2f} [{:6.2f}, {:6.2f}] N({:4.2f},{:4.2f}{:s}){:s}'.format(names[parind[ii]], 
                   value[parind[ii]], low[parind[ii]], upp[parind[ii]],
                   thetamu[parind[ii]], thetasig[parind[ii]], h2, st))
