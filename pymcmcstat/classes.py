@@ -97,11 +97,10 @@ class Options:
         self.stats = stats  # convergence statistics
         self.drscale = drscale
 
-str('{}_radiation_am.pickle'.format(datetime.now().strftime("%Y%m%d_%H%M%S")))
-
         self.skip = skip
+        
         if not label:
-            self.label = str('MCMC run at {}'.format(datetime.datetime.now().strftime("%Y%m%d_%H%M%S")))
+            self.label = str('MCMC run at {}'.format(datetime.now().strftime("%Y%m%d_%H%M%S")))
         else:
             self.label = label
             
