@@ -10,6 +10,7 @@ Common classes for pymcmc
 
 # import required packages
 import numpy as np
+from datetime import datetime
 
 class DataStructure:
     """Simple data structure"""        
@@ -96,8 +97,14 @@ class Options:
         self.stats = stats  # convergence statistics
         self.drscale = drscale
 
+str('{}_radiation_am.pickle'.format(datetime.now().strftime("%Y%m%d_%H%M%S")))
+
         self.skip = skip
-        self.label = label
+        if not label:
+            self.label = str('MCMC run at {}'.format(datetime.datetime.now().strftime("%Y%m%d_%H%M%S")))
+        else:
+            self.label = label
+            
         self.RDR = RDR
         self.verbosity = verbosity # amount of information to print
         self.maxiter = maxiter
