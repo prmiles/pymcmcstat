@@ -25,54 +25,63 @@ from progressbar import progress_bar as pbar
 
 def mcmcrun(model, data, params, options, results = None):
     
-    # unpack options structure
-    nsimu = options.nsimu
-    adaptint = options.adaptint
-    ntry = options.ntry
-    method = options.method
+    # unpack model and options structures
+    # general settings
+    nsimu = options.nsimu # number of chain interates
+    method = options.method # sampling method ('mh', 'am', 'dr', 'dram')
+    progbar = options.progressbar # flag to display progress bar
+    debug = options.debug # display certain features to assist in code debugging
+    noadaptind = options.noadaptind # do not adapt these indices
+    stats = options.stats # convergence statistics
+    verbosity = options.verbosity
     printint = options.printint
-    adaptend = options.adaptend
-    lastadapt = options.lastadapt
+    nbatch = model.nbatch # number of batches
+        
+    # settings for adaptation
+    adaptint = options.adaptint # number of iterates between adaptation
+    qcov = options.qcov # proposal covariance
+    qcov_adjust = options.qcov_adjust
+    initqcovn = options.initqcovn # proposal covariance weight in update
+    adascale = options.adascale # user defined covariance scale
+    lastadapt = options.lastadapt # last adapt (i.e., no more adaptation beyond this iteration)
     burnintime = options.burnintime
-    progbar = options.progressbar
-    debug = options.debug
-    qcov = options.qcov
-    updatesigma = options.updatesigma
-    noadaptind = options.noadaptind
-    stats = options.stats
-    drscale = options.drscale
-    adascale = options.adascale
-    savesize = options.savesize
-    maxmem = options.maxmem
-    chainfile = options.chainfile
-    s2chainfile = options.s2chainfile
-    sschainfile = options.sschainfile
-    savedir = options.savedir
+    burnin_scale = options.burnin_scale # scale in burn-in down/up
+    
+    # settings for updating error variance estimator
+    updatesigma = options.updatesigma # flag saying whether or not to update the measurement variance estimate
+    sigma2 = model.sigma2 # initial value for error variance
+    N = model.N # number of observations
+    S20 = model.S20 # error variance prior
+    N0 = model.N0
+    
+    # settings associated with saving to bin files
+    savesize = options.savesize # rows of the chain in memory
+    maxmem = options.maxmem # memory available in mega bytes
+    chainfile = options.chainfile # chain file name
+    s2chainfile = options.s2chainfile # s2chain file name
+    sschainfile = options.sschainfile # sschain file name
+    savedir = options.savedir # directory files saved to
     skip = options.skip
     label = options.label
-    RDR = options.RDR
-    verbosity = options.verbosity
-    maxiter = options.maxiter
-    priorupdatestart = options.priorupdatestart
-    qcov_adjust = options.qcov_adjust
-    burnin_scale = options.burnin_scale
-    alphatarget = options.alphatarget
+    
+    # settings for delayed rejection
+    ntry = options.ntry # number of stages in delayed rejection algorithm
+    RDR = options.RDR # R matrix for delayed rejection
+    drscale = options.drscale # scale sampling distribution for delayed rejection
+    alphatarget = options.alphatarget # acceptance ratio target
     etaparam = options.etaparam
-    initqcovn = options.initqcovn
     doram = options.doram
     
-    # unpack model structure
-    sigma2 = model.sigma2
-    N = model.N
-    S20 = model.S20
-    N0 = model.N0
-    nbatch = model.nbatch
+    # settings for sum-of-squares function
     ssfun = model.ssfun
+    modelfun = model.modelfun
+    
+    # settings for prior function
     priorfun = model.priorfun
     priortype = model.priortype
     priorupdatefun = model.priorupdatefun
     priorpars = model.priorpars
-    modelfun = model.modelfun
+    priorupdatestart = options.priorupdatestart
 
     # ---------------------------------
     # check dependent parameters
@@ -84,6 +93,11 @@ def mcmcrun(model, data, params, options, results = None):
     names, value, parind, local, upp, low, thetamu, thetasig, npar = parfun.openparameterstructure(
             params, nbatch)
     
+    # check initial parameter values are inside range
+    if (value < low[parind[:]]).any() or (value > upp[parind[:]]).any():
+        # proposed value outside parameter limits
+        sys.exit('Proposed value outside parameter limits - select new initial parameter values')
+        
     # add check that thetasig > 0
     genfun.message(verbosity, 2, 'If prior variance <= 0, setting to Inf\n')
     thetasig = genfun.replace_list_elements(thetasig, genfun.less_than_or_equal_to_zero, float('Inf'))
@@ -230,6 +244,7 @@ def mcmcrun(model, data, params, options, results = None):
         mtime.append(mtend-mtst)
         # --------------------------------------------------------
         # DELAYED REJECTION
+#        print('isimu = {}, theta = {}, accept = {}'.format(isimu, newset.theta, accept))
         if dodram == 1 and accept == 0:
             drtst = time.clock()
             # perform a new try according to delayed rejection            
@@ -325,7 +340,7 @@ def mcmcrun(model, data, params, options, results = None):
                          savesize = savesize, maxmem = maxmem, chainfile = chainfile,
                          s2chainfile = s2chainfile, sschainfile = sschainfile,
                          savedir = savedir, skip = skip, label = label, RDR = RDR,
-                         verbosity = verbosity, maxiter = maxiter,
+                         verbosity = verbosity,
                          priorupdatestart = priorupdatestart, qcov_adjust = qcov_adjust,
                          burnin_scale = burnin_scale, alphatarget = alphatarget, 
                          etaparam = etaparam, initqcovn = initqcovn, doram = doram)
