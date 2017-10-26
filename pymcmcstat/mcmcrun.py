@@ -99,7 +99,7 @@ import mcmcfunctions as mcfun
 import selection_algorithms as selalg
 from progressbar import progress_bar as pbar
 
-def mcmcrun(model, data, params, options, results = None):
+def mcmcrun(model, data, params, options, previous_results = None):
     
     # unpack model and options structures
     # general settings
@@ -164,7 +164,13 @@ def mcmcrun(model, data, params, options, results = None):
     N, nbatch, N0, updatesigma, savesize, dodram, sigma2, S20, lastadapt, printint, ny = mcfun.check_dependent_parameters(
             N, data, nbatch, N0, S20, sigma2, savesize, nsimu, updatesigma, 
             ntry, lastadapt, printint, adaptint)
-            
+        
+    # use values from previous run (if inputted)
+    if previous_results != None:
+        genfun.message(verbosity, 0, '\nUsing values from the previous run')
+        params = parfun.results2params(previous_results, params, 1) # 1 = do local parameters
+        qcov = previous_results['qcov'] # previous_results should match the output format for the results class structure
+
     # open and parse the parameter structure
     names, value, parind, local, upp, low, thetamu, thetasig, npar = parfun.openparameterstructure(
             params, nbatch)
@@ -294,8 +300,7 @@ def mcmcrun(model, data, params, options, results = None):
     # setup progress bar
     if progbar:
         pbarstatus = pbar(int(nsimu))
-        
-    print('S20 = {}'.format(S20))
+
     # ----------------------------------------
     # start clocks
     mtime = []
@@ -408,8 +413,6 @@ def mcmcrun(model, data, params, options, results = None):
     if chainind > 0 and saveit == 1:
         # save stuff
         print('add stuff here')
-        
-    # close waitbar
     
     # define last set of values
     thetalast = oldpar
@@ -437,7 +440,7 @@ def mcmcrun(model, data, params, options, results = None):
     tmp.add_basic(label = label, rej = rej, rejl = rejl, R = R, method = method,
                               covchain = covchain, meanchain = meanchain, 
                               names = names, lowerlims = low, upperlims = upp,
-                              thetalast = thetalast, parind = parind, 
+                              theta = thetalast, parind = parind, 
                               local = local, nbatch = nbatch, N = N, 
                               modelfun = modelfun, ssfun = ssfun, nsimu = nsimu,
                               adaptint = adaptint, lastadapt = lastadapt,

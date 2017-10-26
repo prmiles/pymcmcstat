@@ -329,8 +329,8 @@ def setup_no_adapt_index(noadaptind, parind):
 
 def setup_covariance_matrix(qcov, thetasig, value):
     # check qcov
-    if not qcov: # i.e., qcov is an empty list
-        qcov = thetasig**2
+    if qcov is None: # i.e., qcov is None (not defined)
+        qcov = thetasig**2 # variance
         ii1 = np.isinf(qcov)
         ii2 = np.isnan(qcov)
         ii = ii1 + ii2

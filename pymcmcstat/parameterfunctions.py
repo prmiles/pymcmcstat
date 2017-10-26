@@ -28,7 +28,7 @@ def openparameterstructure(params, nbatch):
     
     for ii in range(npar):
         names.append(parameters[ii][0])
-        values[ii] = (parameters[ii][1])
+        values[ii] = parameters[ii][1]
         parind.append(ii)
         local[ii] = parameters[ii][7]
         upp[ii] = parameters[ii][3]
@@ -63,3 +63,29 @@ def display_parameter_settings(parind, names, value, low, upp, thetamu,
                 print('{:10}: {:6.2f} [{:6.2f}, {:6.2f}] N({:4.2f},{:4.2f}{:s}){:s}'.format(names[parind[ii]], 
                   value[parind[ii]], low[parind[ii]], upp[parind[ii]],
                   thetamu[parind[ii]], thetasig[parind[ii]], h2, st))
+                
+def results2params(results, params, use_local = 1):
+    
+    # unpack results dictionary
+    parind = results['parind']
+    names = results['names']
+    local = results['local']
+    theta = results['theta']
+    
+    for ii in range(len(parind)):
+        if use_local == 1 and local[parind[ii]] == 1:
+            name = names[ii] # unclear usage
+        else:
+            name = names[ii]
+
+        for kk in range(len(params.parameters)):
+            if name == params.parameters[kk][0]:
+                # change NaN prior mu (=use initial) to the original initial value
+                if np.isnan(params.parameters[kk][4]):
+                    params.parameters[kk][4] = params[kk][1]
+                    
+                # only change if parind = 1 in params (1 is the default)
+                if params.parameters[kk][6] == 1 or params.parameters[kk][6] is None:
+                    params.parameters[kk][1] = theta[parind[ii]]
+        
+    return params

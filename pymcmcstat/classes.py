@@ -37,7 +37,7 @@ class Options:
     """Simulator Options"""
     def __init__(self, nsimu=10000, adaptint=[], ntry=[], method='dram',
                  printint=float('nan'), adaptend = 0, lastadapt = 0, burnintime = 0,
-                 progressbar = 1, debug = 0, qcov = [], updatesigma = 0, 
+                 progressbar = 1, debug = 0, qcov = None, updatesigma = 0, 
                  noadaptind = [], stats = 0, drscale = np.array([5, 4, 3]),
                  adascale = [], savesize = 0, maxmem = 0, chainfile = [],
                  s2chainfile = [], sschainfile = [], savedir = [], skip = 1,
@@ -135,16 +135,20 @@ class Model:
         
 class Parameters:
     def __init__(self):
+#        self.parameters = [] # initialize list
         self.parameters = [] # initialize list
+        self.label = 'MCMC model parameters'
         
     def add_parameter(self, name, theta0, minimum = float('-Inf'),
                       maximum = float('Inf'), mu = 0, sig = float('Inf'),
-                      sample = [], local = 0):
+                      sample = None, local = 0):
         
-        parameter = (name, theta0, minimum, maximum, mu, sig, 
-                          sample, local)
+        self.parameters.append([name, theta0, minimum, maximum, mu, sig, 
+                          sample, local])
+#        parameter = [name, theta0, minimum, maximum, mu, sig, 
+#                          sample, local]
         
-        self.parameters.append(parameter)
+#        self.parameters.append(parameter)
         
 class Parset:
     def __init__(self, theta = [], ss= [], prior = [], sigma2 = [], alpha = []):
@@ -221,11 +225,11 @@ class Results:
         self.results = {} # initialize empty dictionary
         
     def add_basic(self, label, rej, rejl, R, method, covchain, meanchain, names, 
-                  lowerlims, upperlims, thetalast, parind, local, nbatch, N,
+                  lowerlims, upperlims, theta, parind, local, nbatch, N,
                   modelfun, ssfun, nsimu, adaptint, lastadapt, adascale, 
                   skip, simutime, ntry, qcovorig):
     
-        self.results['thetalast'] = thetalast
+        self.results['theta'] = theta
         
         self.results['parind'] = parind
         self.results['local'] = local
