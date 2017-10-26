@@ -343,7 +343,7 @@ def setup_covariance_matrix(qcov, thetasig, value):
 def check_adascale(adascale, npar):
     # check adascale
     if not adascale or adascale <= 0:
-        qcov_scale = 2.4*(math.sqrt(npar))**(-1) # scale factor in R
+        qcov_scale = 2.4*(math.sqrt(npar)**(-1)) # scale factor in R
     else:
         qcov_scale = adascale
     
