@@ -260,6 +260,7 @@ class Results:
         self.results['qcovorig'] = qcovorig
     
     def add_updatesigma(self, updatesigma, sigma2, S20, N0):
+        self.results['updatesigma'] = updatesigma
         if updatesigma:
             self.results['sigma2'] = np.nan
             self.results['S20'] = S20
@@ -287,4 +288,16 @@ class Results:
         
     def add_options(self, options = []):
         self.results['options'] = options
+        
+    def add_chain(self, chain = []):
+        self.results['chain'] = chain
+        
+    def add_s2chain(self, s2chain = []):
+        self.results['s2chain'] = s2chain
+        
+    def add_sschain(self, sschain = []):
+        self.results['sschain'] = sschain
+        
+    def add_time_stats(self, mtime, drtime, adtime):
+        self.results['time [mh, dr, am]'] = [mtime, drtime, adtime]
     

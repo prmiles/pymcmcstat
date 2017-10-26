@@ -460,6 +460,14 @@ def mcmcrun(model, data, params, options, previous_results = None):
     
     tmp.add_options(options = actual_options)
     
+    # add chain, s2chain, and sschain
+    tmp.add_chain(chain = chain)
+    tmp.add_s2chain(s2chain = s2chain)
+    tmp.add_sschain(sschain = sschain)
+    
+    # add time statistics
+    tmp.add_time_stats(mtime, drtime, adtime)
+    
     results = tmp.results # assign dictionary
     
-    return results, chain, sschain, s2chain, mtime, drtime, adtime 
+    return results
