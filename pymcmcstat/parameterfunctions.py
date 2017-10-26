@@ -41,7 +41,7 @@ def openparameterstructure(params, nbatch):
 def display_parameter_settings(parind, names, value, low, upp, thetamu, 
                                thetasig, noadaptind):
         
-        print('Sampling these parameters:\n')
+        print('Sampling these parameters:')
         print('{:10s} {:>7s} [{:>6s}, {:>6s}] N({:>4s}, {:>4s})'.format('name',
               'start', 'min', 'max', 'mu', 'sigma^2'))
         nprint = len(parind)
