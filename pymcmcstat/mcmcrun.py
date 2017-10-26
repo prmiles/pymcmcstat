@@ -88,6 +88,7 @@ Python author: prmiles
 # import required packages
 from __future__ import division
 import sys
+import os
 import time
 import numpy as np
 #from inspect import signature
@@ -234,19 +235,7 @@ def mcmcrun(model, data, params, options, results = None):
     
     # evaluate prior with initial parameter set
     oldprior = priorobj.evaluate_prior(oldpar)
-    # ---------------------
-    
-    # Memory calculations????
-    memneeded = savesize*(npar + 2*ny)*8*1e-6
-    if (maxmem > 0) and (memneeded > maxmem):
-        savesize = max(1000, np.floor(1e6*maxmem*((npar + 2*ny)*8)**(-1)))
-        genfun.message(verbosity, 0, str('savesize decreased to {}\n'.format(savesize)))
-    
-    # check this part - matlab version: if (savesize < nsimu) || (nargout < 2) 
-    saveit = 0
-    if (savesize < nsimu):
-        saveit = 1
-
+  
     # ---------------------
     # Initialize chain, error variance, and SS
     chain = np.zeros([savesize,npar])
@@ -262,7 +251,29 @@ def mcmcrun(model, data, params, options, results = None):
     sschain[chainind,:] = ss
     if updatesigma:
         s2chain[chainind,:] = sigma2
+  
+    # ---------------------
+    # Memory calculations
+    memneeded = savesize*(npar + 2*ny)*8*1e-6
+    if (maxmem > 0) and (memneeded > maxmem):
+        savesize = max(1000, np.floor(1e6*maxmem*((npar + 2*ny)*8)**(-1)))
+        genfun.message(verbosity, 0, str('savesize decreased to {}\n'.format(savesize)))
     
+    saveit = 0
+    if (savesize < nsimu):
+        saveit = 1
+        
+#    savedir = 'results' # default directory
+#    try:
+#        os.mkdir(savedir)
+#    except Exception:
+#        pass
+#
+#    # save chain
+#    if saveit == 1:
+##        savebin(chainfile, [], 'chain')
+#        with open(os.path.join(savedir, chainfile), "a") as myfile:
+#            myfile.write(chain)
     # ---------------------
     # initialize reject test variables
     rej = np.zeros(1)
