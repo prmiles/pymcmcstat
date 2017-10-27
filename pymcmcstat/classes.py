@@ -171,6 +171,7 @@ class PriorObject:
         self.priorfun = priorfun # function handle
             
     def default_priorfun(self, theta, mu, sigma):
+        # consider converting everything to numpy array - should allow for optimized performance
         n = len(theta)
         pf = np.zeros(1)
         for ii in range(n):

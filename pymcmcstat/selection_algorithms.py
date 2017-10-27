@@ -113,7 +113,7 @@ def delayed_rejection(oldset, newset, RDR, ntry, npar, low, upp,
         if alpha >= 1 or np.random.rand(1) < alpha: # accept
             accept = 1
             outset = nextset
-            iacce[itry-1] = iacce[itry-1] + 1 # number accepted from DR
+            iacce[itry-1] += 1 # number accepted from DR
         else:
             outset = oldset
             
@@ -173,11 +173,11 @@ def adaptation(isimu, burnintime, rej, rejl, reju, iiadapt, verbosity, R, burnin
             if pos_def_adjust == 1: # not singular!
                 Ra = np.linalg.cholesky(tmp)
                 Ra = Ra.transpose()
-                genfun.message(verbosity, 1, '[adjusted covariance matrix]')
+                genfun.message(verbosity, 1, 'adjusted covariance matrix')
                 # scale R
                 R = Ra*qcov_scale
             else: # still singular...
-                errstr = str('(convariance matrix singular, no adaptation)')
+                errstr = str('convariance matrix singular, no adaptation')
                 genfun.message(verbosity, 0, '{} {}'.format(errstr, reju*(iiadapt**(-1))*100))
                 
         # update dram covariance matrix
