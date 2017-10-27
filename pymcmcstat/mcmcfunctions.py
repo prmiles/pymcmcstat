@@ -292,7 +292,10 @@ def chainstats(chain, results = []):
     print('\n---------------------')
     print('{:10s}: {:>10s} {:>10s}'.format('name','mean','std'))
     for ii in range(n):
-        print('{:10s}: {:10.4f} {:10.4f}'.format(names[ii],meanii[ii],stdii[ii]))
+        if meanii[ii] > 1e4:
+            print('{:10s}: {:10.4g} {:10.4g}'.format(names[ii],meanii[ii],stdii[ii]))
+        else:
+            print('{:10s}: {:10.4f} {:10.4f}'.format(names[ii],meanii[ii],stdii[ii]))
     
 def batch_mean_standard_deviation(x, b = []):
     m, n = x.shape
