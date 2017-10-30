@@ -139,12 +139,17 @@ class Parameters:
         self.parameters = [] # initialize list
         self.label = 'MCMC model parameters'
         
-    def add_parameter(self, name, theta0, minimum = float('-Inf'),
-                      maximum = float('Inf'), mu = 0, sig = float('Inf'),
+    def add_parameter(self, name, theta0, minimum = -np.inf,
+                      maximum = np.inf, mu = np.zeros([1]), sig = np.inf,
                       sample = None, local = 0):
         
-        self.parameters.append([name, theta0, minimum, maximum, mu, sig, 
-                          sample, local])
+        # append dictionary element
+        self.parameters.append({'name': name, 'theta0': theta0, 'minimum': minimum,
+                                'maximum': maximum, 'mu': mu, 'sig': sig,
+                                'sample': sample, 'local': local})
+#        self.parameters.append([name, theta0, minimum, maximum, mu, sig, 
+#                          sample, local])
+        
 #        parameter = [name, theta0, minimum, maximum, mu, sig, 
 #                          sample, local]
         

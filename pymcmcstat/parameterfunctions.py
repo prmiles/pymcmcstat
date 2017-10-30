@@ -18,25 +18,69 @@ def openparameterstructure(params, nbatch):
     
     # initialize arrays - as lists and numpy arrays (improved functionality)
     names = []
-    values = np.zeros(npar)
-    parind = []
+    value = np.zeros(npar)
+    parind = np.ones(npar, dtype = int)
     local = np.zeros(npar)
-    upp = np.zeros(npar)
-    low = np.zeros(npar)
+    upp = np.ones(npar)*np.inf
+    low = -np.ones(npar)*np.inf
     thetamu = np.zeros(npar)
-    thetasig = np.zeros(npar)
+    thetasig = np.ones(npar)*np.inf
     
-    for ii in range(npar):
-        names.append(parameters[ii][0])
-        values[ii] = parameters[ii][1]
-        parind.append(ii)
-        local[ii] = parameters[ii][7]
-        upp[ii] = parameters[ii][3]
-        low[ii] = parameters[ii][2]
-        thetamu[ii] = parameters[ii][4]
-        thetasig[ii] = parameters[ii][5]
+    nhpar = 0 # number of hyper parameters
+    
+    # scan for local variables
+    ii = 0
+    for kk in range(npar):
+        if parameters[kk]['sample'] is not None:
+            if parameters[kk]['local'] != 0:
+                if parameters[kk]['local'] == 2:
+                    nhpar += 1 # add hyper parameter
+                    
+                local[ii:(ii+nbatch-1)] = range(0,nbatch)
+                npar = npar + nbatch - 1
+                ii = ii + nbatch - 1
+                
+                # add functionality for hyper parameters
+#                            for k=2:7
+#                if parstruct{i}{8}==2 & (k==5|k==6)
+#                    if not(length(parstruct{i}{k})==1|length(parstruct{i}{k})==2)
+#                        error(sprintf('Error in hyper parameters for %s',parstruct{i}{1}))
+#                    end
+#                else
+#                    if length(parstruct{i}{k})~=nbatch
+#                        if length(parstruct{i}{k})==1
+#                            parstruct{i}{k} = parstruct{i}{k}*ones(1,nbatch);
+#                        else
+#                            error(sprintf('Not enough values for %s',parstruct{i}{1}))
+        ii += 1 # update counter
         
-    return names, values, parind, local, upp, low, thetamu, thetasig, npar
+     
+    ii = 0
+    for kk in range(npar):
+        if local[ii] == 0:
+            names.append(parameters[kk]['name'])
+            value[ii] = parameters[kk]['theta0']
+            
+            # default values defined in "Parameters" class in classes.py
+            # define lower limits
+            low[ii] = parameters[kk]['minimum']
+            # define upper limits
+            upp[ii] = parameters[kk]['maximum']
+            # define prior mean
+            thetamu[ii] = parameters[kk]['mu']
+            if np.isnan(thetamu[ii]):
+                thetamu[ii] = value[ii]
+            # define prior standard deviation
+            thetasig[ii] = parameters[kk]['sig']
+            if thetasig[ii] == 0:
+                thetasig[ii] = np.inf
+                
+        ii += 1 # update counter
+        
+    # make parind list of nonzero elements
+    parind = np.flatnonzero(parind)
+            
+    return names, value, parind, local, upp, low, thetamu, thetasig, npar
 
 def display_parameter_settings(parind, names, value, low, upp, thetamu, 
                                thetasig, noadaptind):
@@ -56,7 +100,7 @@ def display_parameter_settings(parind, names, value, low, upp, thetamu,
                 h2 = '^2'
                 
             if value[parind[ii]] > 1e4:
-                print('{:10}: {:6.2g} [{:6.2g}, {:6.2g}] N({:4.2f},{:4.2f}{:s}){:s}'.format(names[parind[ii]], 
+                print('{:10}: {:6.2g} [{:6.2g}, {:6.2g}] N({:4.2g},{:4.2f}{:s}){:s}'.format(names[parind[ii]], 
                   value[parind[ii]], low[parind[ii]], upp[parind[ii]],
                   thetamu[parind[ii]], thetasig[parind[ii]], h2, st))
             else:
