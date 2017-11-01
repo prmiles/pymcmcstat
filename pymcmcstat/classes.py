@@ -35,16 +35,16 @@ class DataStructure:
         
 class Options:
     """Simulator Options"""
-    def __init__(self, nsimu=10000, adaptint=[], ntry=[], method='dram',
-                 printint=float('nan'), adaptend = 0, lastadapt = 0, burnintime = 0,
-                 progressbar = 1, debug = 0, qcov = None, updatesigma = 0, 
+    def __init__(self, nsimu=10000, adaptint = None, ntry = None, method='dram',
+                 printint=np.nan, adaptend = 0, lastadapt = 0, burnintime = 0,
+                 waitbar = 1, debug = 0, qcov = None, updatesigma = 0, 
                  noadaptind = [], stats = 0, drscale = np.array([5, 4, 3]),
-                 adascale = [], savesize = 0, maxmem = 0, chainfile = [],
-                 s2chainfile = [], sschainfile = [], savedir = [], skip = 1,
-                 label = [], RDR = [], verbosity = 1, maxiter = [], 
+                 adascale = None, savesize = 0, maxmem = 0, chainfile = None,
+                 s2chainfile = None, sschainfile = None, savedir = None, skip = 1,
+                 label = None, RDR = None, verbosity = 1, maxiter = None, 
                  priorupdatestart = 0, qcov_adjust = 1e-8, burnin_scale = 10, 
-                 alphatarget = 0.234, etaparam = 0.7, initqcovn = [],
-                 doram = []):
+                 alphatarget = 0.234, etaparam = 0.7, initqcovn = None,
+                 doram = None):
         
         method_dictionary = {
             'mh': {'adaptint': 0, 'ntry': 1, 'doram': 0, 'adascale': adascale}, 
@@ -55,22 +55,22 @@ class Options:
             }
         
         # define items from dictionary
-        if not adaptint:
+        if adaptint is None:
             self.adaptint = method_dictionary[method]['adaptint']  # update interval for adaptation
         else:
             self.adaptint = adaptint
         
-        if not ntry:
+        if ntry is None:
             self.ntry = method_dictionary[method]['ntry']
         else:
             self.ntry = ntry
             
-        if not adascale:
+        if adascale is None:
             self.adascale = method_dictionary[method]['adascale']  # qcov_scale
         else:
             self.adascale = adascale
             
-        if not doram:
+        if doram is None:
             self.doram = method_dictionary[method]['doram']
         else:
             self.doram = doram
@@ -83,7 +83,7 @@ class Options:
         self.adaptend = adaptend  # last adapt
         self.lastadapt = lastadapt # last adapt
         self.burnintime = burnintime
-        self.progressbar = progressbar # use waitbar
+        self.waitbar = waitbar # use waitbar
         self.debug = debug  # show some debug information
         self.qcov = qcov  # proposal covariance
         self.initqcovn = initqcovn  # proposal covariance weight in update
@@ -99,7 +99,7 @@ class Options:
 
         self.skip = skip
         
-        if not label:
+        if label is None:
             self.label = str('MCMC run at {}'.format(datetime.now().strftime("%Y%m%d_%H%M%S")))
         else:
             self.label = label
@@ -115,10 +115,10 @@ class Options:
         self.savedir = savedir
         
 class Model:
-    def __init__(self, ssfun = [], priorfun = [], priortype = 1, 
-                 priorupdatefun = [], priorpars = [], modelfun = [], 
-                 sigma2 = [], N = [], 
-                 S20 = np.nan, N0 = [], nbatch = 1):
+    def __init__(self, ssfun = None, priorfun = None, priortype = 1, 
+                 priorupdatefun = None, priorpars = None, modelfun = None, 
+                 sigma2 = None, N = None, 
+                 S20 = np.nan, N0 = None, nbatch = None):
     
         self.ssfun = ssfun
         self.priorfun = priorfun
@@ -126,11 +126,29 @@ class Model:
         self.priorupdatefun = priorupdatefun
         self.priorpars = priorpars
         self.modelfun = modelfun
-        self.sigma2 = sigma2
-        self.N = N
-        self.S20 = S20
-        self.N0 = N0
-        self.nbatch = nbatch
+        
+        if sigma2 is None:
+            self.sigma2 = sigma2
+        else:
+            self.sigma2 = np.array([sigma2])
+        
+        if N is None:
+            self.N = N
+        else:
+            self.N = np.array([N])
+            
+        if N0 is None:
+            self.N0 = N0
+        else:
+            self.N0 = np.array([N0])
+        
+        
+        if nbatch is None:
+            self.nbatch = N0
+        else:
+            self.nbatch = np.array([nbatch])
+            
+        self.S20 = np.array([S20])
         
         
 class Parameters:
@@ -156,7 +174,7 @@ class Parameters:
 #        self.parameters.append(parameter)
         
 class Parset:
-    def __init__(self, theta = [], ss= [], prior = [], sigma2 = [], alpha = []):
+    def __init__(self, theta = None, ss= None, prior = None, sigma2 = None, alpha = None):
         self.theta = theta
         self.ss = ss
         self.prior = prior
@@ -164,13 +182,13 @@ class Parset:
         self.alpha = alpha
         
 class PriorObject:
-    def __init__(self, priorfun = [], mu = [], sigma = []):
+    def __init__(self, priorfun = None, mu = None, sigma = None):
 
         self.mu = mu
         self.sigma = sigma
         
         # Setup prior function and evaluate
-        if not priorfun:
+        if priorfun is None:
             priorfun = self.default_priorfun
         
         self.priorfun = priorfun # function handle
@@ -181,14 +199,18 @@ class PriorObject:
         pf = np.zeros(1)
         for ii in range(n):
             pf = pf + ((theta[ii]-mu[ii])*(sigma[ii]**(-1)))**2
+        
+#        pf = np.sum(((theta - mu)*(sigma**(-1)))**(2))
+#        print('pf = {}, pftest = {}'.format(pf, pftest))
+#        sys.exit()
         return pf
         
     def evaluate_prior(self, theta):
         return self.priorfun(theta, self.mu, self.sigma)
     
 class SSObject:
-    def __init__(self, ssfun = [], ssstyle = [], modelfun = [], 
-                 parind = [], local = [], data = []):
+    def __init__(self, ssfun = None, ssstyle = None, modelfun = None, 
+                 parind = None, local = None, data = None):
         self.ssfun = ssfun
         self.ssstyle = ssstyle
         self.modelfun = modelfun
@@ -294,6 +316,9 @@ class Results:
         
     def add_options(self, options = []):
         self.results['options'] = options
+        
+    def add_model(self, model = []):
+        self.results['model'] = model
         
     def add_chain(self, chain = []):
         self.results['chain'] = chain

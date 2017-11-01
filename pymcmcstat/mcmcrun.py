@@ -88,7 +88,7 @@ Python author: prmiles
 # import required packages
 from __future__ import division
 import sys
-import os
+#import os
 import time
 import numpy as np
 #from inspect import signature
@@ -105,7 +105,7 @@ def mcmcrun(model, data, params, options, previous_results = None):
     # general settings
     nsimu = options.nsimu # number of chain interates
     method = options.method # sampling method ('mh', 'am', 'dr', 'dram')
-    progbar = options.progressbar # flag to display progress bar
+    waitbar = options.waitbar # flag to display progress bar
     debug = options.debug # display certain features to assist in code debugging
     noadaptind = options.noadaptind # do not adapt these indices
     stats = options.stats # convergence statistics
@@ -221,8 +221,8 @@ def mcmcrun(model, data, params, options, previous_results = None):
     # ---------------------
     # check sum-of-squares function (this may not be necessary)
     ssstyle = 1
-    if not ssfun: #isempty(ssfun)
-        if not modelfun: #isempty(modelfun)
+    if ssfun is None: #isempty(ssfun)
+        if modelfun is None: #isempty(modelfun)
             sys.exit('No ssfun of modelfun specified!')
         ssstyle = 4
         
@@ -288,19 +288,27 @@ def mcmcrun(model, data, params, options, previous_results = None):
 
     # ---------------------
     # initialize variables for covariance updates
-    covchain = []
-    meanchain = []
+    covchain = None
+    meanchain = None
     wsum = initqcovn
     lasti = 0
-    if wsum != []:
+    if wsum is not None:
         covchain = qcov
         meanchain = oldpar
 
     # ---------------------
     # setup progress bar
-    if progbar:
-        pbarstatus = pbar(int(nsimu))
+    if waitbar:
+        wbarstatus = pbar(int(nsimu))
 
+
+    # display settings going into simulation    
+#    print('N = {}, nbatch = {}, N0 = {}, updsig = {}'.format(N, nbatch, N0, updatesigma))
+#    print('savesize = {}, dodram = {}, sigma2 = {}'.format(savesize, dodram, sigma2))
+#    print('covchain = {}'.format(covchain))
+#    print('qcov = {}'.format(qcov))
+#    print('adaptint = {}'.format(adaptint))
+    
     # ----------------------------------------
     # start clocks
     mtime = []
@@ -310,19 +318,21 @@ def mcmcrun(model, data, params, options, previous_results = None):
     Start main chain simulator
     """
     iiadapt = 0
+    iiprint = 0
     for isimu in range(1,nsimu): # simulation loop
         # update indexing
-        iiadapt = iiadapt + 1 # local adaptation index
-        chainind = chainind + 1
+        iiadapt += 1 # local adaptation index
+        iiprint += 1 # local print index
+        chainind += 1
         # progress bar
-        if progbar:
-            pbarstatus.update(isimu)
+        if waitbar:
+            wbarstatus.update(isimu)
             
         genfun.message(verbosity, 100, str('i:%d/%d\n'.format(isimu,nsimu)));
         
         # ---------------------------------------------------------
         # METROPOLIS ALGORITHM
-        mtst = time.clock()
+#        mtst = time.clock()
         oldset = mcclass.Parset(theta = oldpar, ss = ss, prior = oldprior,
                                 sigma2 = sigma2)
         
@@ -330,21 +340,21 @@ def mcmcrun(model, data, params, options, previous_results = None):
                 oldset = oldset, low = low, upp = upp, parind = parind, 
                 npar = npar, R = R, priorobj = priorobj, sosobj = sosobj)
 
-        mtend = time.clock()
-        mtime.append(mtend-mtst)
+#        mtend = time.clock()
+#        mtime.append(mtend-mtst)
         # --------------------------------------------------------
         # DELAYED REJECTION
 #        print('isimu = {}, theta = {}, accept = {}'.format(isimu, newset.theta, accept))
         if dodram == 1 and accept == 0:
-            drtst = time.clock()
+#            drtst = time.clock()
             # perform a new try according to delayed rejection            
             accept, newset, iacce, outbound, A_count = selalg.delayed_rejection(
                     oldset = oldset, newset = newset, RDR = RDR, ntry = ntry,
                     npar = npar, low = low, upp = upp, parind = parind, 
                     iacce = iacce, A_count = A_count, invR = invR, 
                     sosobj = sosobj, priorobj = priorobj)
-            drtend = time.clock()
-            drtime.append(drtend-drtst)
+#            drtend = time.clock()
+#            drtime.append(drtend-drtst)
 
         # ----------------dof----------------------------------------
         # SAVE CHAIN
@@ -373,16 +383,22 @@ def mcmcrun(model, data, params, options, previous_results = None):
                       2*((N0[jj]*S20[jj]+ss[jj])**(-1))))**(-1)
             s2chain[chainind,:] = sigma2
         
-        if printint and np.fix(isimu/printint) == isimu/printint:
+        if printint and iiprint + 1 == printint:
             genfun.message(verbosity, 2, 
                            str('i:{} ({},{},{})\n'.format(isimu,
                                rej*isimu**(-1)*100, reju*iiadapt**(-1)*100, 
                                rejl*isimu**(-1)*100)))
+            iiprint = 0 # reset print counter
         
         # --------------------------------------------------------
         # ADAPTATION
-        if adaptint > 0 and isimu <= lastadapt and np.fix(isimu/adaptint) == isimu/adaptint:
-            adtst = time.clock()
+        if adaptint > 0 and iiadapt + 1 == adaptint:
+#        if adaptint > 0 and isimu <= lastadapt - 1 and np.fix(
+#                (isimu+1)*(adaptint**(-1))) == (isimu + 1)*(adaptint**(-1)):
+#            print('Adapting on step {} of {}'.format(isimu + 1, nsimu))
+#            print('lastadapt = {}, adaptint = {}'.format(lastadapt, adaptint))
+#            print('R = {}'.format(R))
+#            adtst = time.clock()
             R, covchain, meanchain, wsum, lasti, RDR, invR, iiadapt, reju = selalg.adaptation(
                     isimu = isimu, burnintime = burnintime, rej = rej, rejl = rejl,
                     reju = reju, iiadapt = iiadapt, verbosity = verbosity, R = R,
@@ -394,8 +410,8 @@ def mcmcrun(model, data, params, options, previous_results = None):
                     qcov_scale = qcov_scale, qcov_adjust = qcov_adjust, ntry = ntry,
                     drscale = drscale)
             
-            adtend = time.clock()
-            adtime.append(adtend-adtst)
+#            adtend = time.clock()
+#            adtime.append(adtend-adtst)
             
         # --------------------------------------------------------
         # SAVE CHAIN
@@ -422,7 +438,7 @@ def mcmcrun(model, data, params, options, previous_results = None):
     actual_options = mcclass.Options(nsimu=nsimu, adaptint=adaptint, ntry=ntry, 
                          method=method, printint=printint,
                          lastadapt = lastadapt, burnintime = burnintime,
-                         progressbar = progbar, debug = debug, qcov = qcov,
+                         waitbar = waitbar, debug = debug, qcov = qcov,
                          updatesigma = updatesigma, noadaptind = noadaptind, 
                          stats = stats, drscale = drscale, adascale = adascale,
                          savesize = savesize, maxmem = maxmem, chainfile = chainfile,
@@ -433,6 +449,11 @@ def mcmcrun(model, data, params, options, previous_results = None):
                          burnin_scale = burnin_scale, alphatarget = alphatarget, 
                          etaparam = etaparam, initqcovn = initqcovn, doram = doram)
     
+    actual_model_settings = mcclass.Model(
+            ssfun = ssfun, priorfun = priorfun, priortype = priortype, 
+            priorupdatefun = priorupdatefun, priorpars = priorpars, 
+            modelfun = modelfun, sigma2 = sigma2, N = N, S20 = S20, N0 = N0, 
+            nbatch = nbatch)
     # --------------------------------------------
     # BUILD RESULTS OBJECT
     tmp = mcclass.Results() # inititialize
@@ -459,6 +480,7 @@ def mcmcrun(model, data, params, options, previous_results = None):
                      alpha_count = A_count, RDR = RDR, nsimu = nsimu, rej = rej)
     
     tmp.add_options(options = actual_options)
+    tmp.add_model(model = actual_model_settings)
     
     # add chain, s2chain, and sschain
     tmp.add_chain(chain = chain)

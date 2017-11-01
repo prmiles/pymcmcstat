@@ -90,7 +90,7 @@ def display_parameter_settings(parind, names, value, low, upp, thetamu,
               'start', 'min', 'max', 'mu', 'sigma^2'))
         nprint = len(parind)
         for ii in range(nprint):
-            if ii in noadaptind: # THIS NEEDS TO BE FIXED!
+            if ii in noadaptind: # THIS PARAMETER IS FIXED
                 st = ' (*)'
             else:
                 st = ''

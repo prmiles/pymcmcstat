@@ -25,7 +25,17 @@ def metropolis_algorithm(oldset, low, upp, parind, npar, R, priorobj, sosobj):
     # Sample new candidate from Gaussian proposal
     u = np.random.randn(1,npar)
     newpar = oldpar + np.dot(u,R)
+    
+#    print('u = {}'.format(u))
+#    print('R = {}'.format(R))
+#    print('oldpar = {}'.format(oldpar))
+#    print('newpar = {}'.format(newpar))
+#   
     newpar = newpar.reshape(npar)
+
+#    print('newpar = {}'.format(newpar))
+        
+#    sys.exit()
         
     # Reject points outside boundaries
     if (newpar < low[parind[:]]).any() or (newpar > upp[parind[:]]).any():
@@ -55,8 +65,8 @@ def metropolis_algorithm(oldset, low, upp, parind, npar, R, priorobj, sosobj):
         
         if alpha <= 0:
             accept = 0 # print('alpha_test = {:10s} <= 0, accept = {:1d}'.format(alpha_test, accept))
-        elif alpha >= 1:
-            accept = 1 # print('alpha_test = {:10s} >= 1, accept = {:1d}'.format(alpha_test, accept))
+#        elif alpha >= 1:
+#            accept = 1 # print('alpha_test = {:10s} >= 1, accept = {:1d}'.format(alpha_test, accept))
         elif alpha > np.random.rand(1,1):
             accept = 1 # print('alpha_test = {:10s} > U(0,1), accept = {:1d}'.format(alpha_test, accept))
         else:
@@ -132,39 +142,61 @@ def adaptation(isimu, burnintime, rej, rejl, reju, iiadapt, verbosity, R, burnin
     if isimu < burnintime:
         # during burnin no adaptation, just scaling down
         if reju*(iiadapt**(-1)) > 0.95:
-            genfun.message(verbosity, 2, str(' (burnin/down) {3.2f}'.format(reju/iiadapt*100)))
+            genfun.message(verbosity, 2, str(' (burnin/down) {3.2f}'.format(
+                    reju*(iiadapt**(-1))*100)))
             R = R*(burnin_scale**(-1))
         elif reju*(iiadapt**(-1)) < 0.05:
-            genfun.message(verbosity, 2, str(' (burnin/up) {3.2f}'.format(reju/iiadapt*100)))
+            genfun.message(verbosity, 2, str(' (burnin/up) {3.2f}'.format(
+                    reju*(iiadapt**(-1))*100)))
             R = R*burnin_scale
                 
     else:
-        genfun.message(verbosity, 2, str('i:{} adapting ({}, {}, {})'.format(isimu,
-                                                 rej/isimu*100, reju/iiadapt*100, rejl/isimu*100)))
+        genfun.message(verbosity, 2, str('i:{} adapting ({}, {}, {})'.format(
+                isimu, rej*(isimu**(-1))*100, reju*(iiadapt**(-1))*100, 
+                rejl*(isimu**(-1))*100)))
 
-        # update covariance matrix - cholesky
+
+#        print('lasti = {}, chainind = {}'.format(lasti, chainind))
+#        print('covchain = {}'.format(oldcovchain))
+#        print('meanchain = {}'.format(oldmeanchain))
+#        print('wsum = {}'.format(oldwsum))
+#         update covariance matrix - cholesky
+        # VERIFIED NOVEMBER 1, 2017
         covchain, meanchain, wsum = mcfun.covupd(
                 chain[lasti+1:chainind+1,:], np.ones(1), oldcovchain, oldmeanchain, oldwsum)
                 
+#        print('covchain = {}'.format(covchain))
+#        print('meanchain = {}'.format(meanchain))
+#        print('wsum = {}'.format(wsum))
+        
+#        sys.exit()
+        
         lasti = chainind
                 
         # ram
         if doram:
             uu = u*(np.linalg.norm(u)**(-1))
             eta = (isimu**(etaparam))**(-1)
-            ram = np.eye(npar) + eta*(min(1, newset.alpha) - alphatarget)*(np.dot(uu.transpose(), uu))
+            ram = np.eye(npar) + eta*(min(1, newset.alpha) - alphatarget)*(
+                    np.dot(uu.transpose(), uu))
             upcov = np.dot(np.dot(R.transpose(),ram),R)
         else:
             upcov = covchain
             upcov[no_adapt_index, :] = qcov[no_adapt_index,:]
             upcov[:,no_adapt_index] = qcov[:,no_adapt_index]
+#            print('covchain = {}'.format(covchain))
+#            print('qcov = {}'.format(qcov))
+#            print('upcov = {}'.format(upcov))
+#            sys.exit()
                     
         # check if singular covariance matrix
-        pos_def = genfun.is_semi_pos_def_chol(upcov)
+        pos_def, pRa = genfun.is_semi_pos_def_chol(upcov)
         if pos_def == 1: # not singular!
-            Ra = np.linalg.cholesky(upcov)
-            Ra = Ra.transpose()
+            Ra = pRa # np.linalg.cholesky(upcov)
+#            Ra = Ra.transpose()
             R = Ra*qcov_scale
+#            print('Ra = {}, qcov_scale = {}, R = {}'.format(Ra, qcov_scale, R))
+#            sys.exit()
                     
         else: # singular covariance matrix
             # try to blow it up
@@ -182,9 +214,11 @@ def adaptation(isimu, burnintime, rej, rejl, reju, iiadapt, verbosity, R, burnin
                 
         # update dram covariance matrix
         lasti = isimu
-        RDR = []
-        invR = []
+        RDR = None
+        invR = None
         if ntry > 1: # delayed rejection
+            RDR = []
+            invR = []
             RDR.append(R)
             invR.append(np.linalg.solve(RDR[0], np.eye(npar)))
             for ii in range(1,ntry):

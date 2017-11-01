@@ -155,7 +155,7 @@ def gammar_mt1(a,b):
         return y
         
     
-def covupd(x, w, oldcov, oldmean, oldwsum, oldR = []):  
+def covupd(x, w, oldcov, oldmean, oldwsum, oldR = None):  
     #function [xcov,xmean,wsum,R]=covupd(x,w,oldcov,oldmean,oldwsum,oldR)
     #%COVUPD covariance update
     #% [xcov,xmean,wsum]=covupd(x,w,oldcov,oldmean,oldwsum)
@@ -177,12 +177,12 @@ def covupd(x, w, oldcov, oldmean, oldwsum, oldR = []):
     if len(w) == 1:
         w = np.ones(n)*w
         
-    if not oldR:
-        R = []
+    if oldR is None:
+        R = None
     else:
         R = oldR
            
-    if oldcov == []:
+    if oldcov is None:
 #        print('Input covariance is empty...')
         wsum = sum(w)
         xmean = np.zeros(p)
@@ -224,10 +224,10 @@ def covupd(x, w, oldcov, oldmean, oldwsum, oldR = []):
 #            print('oldcov = \n{}\n'.format(oldcov))
             
             xmean = oldmean + wsum*((wsum+oldwsum)**(-1))*(xi - oldmean)
-#            print('xmean = {}\n'.format(xmean))
+#            print('ii = {}, xmean = {}\n'.format(ii, xmean))
             
 #            print('R = {}\n'.format(R))
-            if R != []:
+            if R is not None:
                 print('R = \n{}\n'.format(R))
                 print('np.sqrt((oldwsum-1)*((wsum+oldwsum-1)**(-1))) = {}\n'.format(np.sqrt((oldwsum-1)*((wsum+oldwsum-1)**(-1)))))
             
@@ -243,6 +243,10 @@ def covupd(x, w, oldcov, oldmean, oldwsum, oldR = []):
 #            print('wsum*oldwsum = {}'.format(wsum*oldwsum - 1))
 #            print('xi - oldmean = {}'.format(xi - oldmean))
 #            print('np.dot((xi - oldmean).transpose(), (xi - oldmean)) = {}'.format(np.dot((xi-oldmean).reshape(1,1),(xi-oldmean).reshape(1,p))))
+            
+#            print('oldwsum = {}, wsum = {}'.format(oldwsum, wsum))
+#            print('oldcov = {}'.format(oldcov))
+#            print('xi - oldmean = {}'.format(xi - oldmean))
             xcov = (((oldwsum-1)*((wsum + oldwsum - 1)**(-1)))*oldcov 
                     + (wsum*oldwsum*((wsum+oldwsum-1)**(-1)))*((wsum 
                            + oldwsum)**(-1))*(np.dot((xi-oldmean).reshape(p,1),(xi-oldmean).reshape(1,p))))
@@ -297,10 +301,10 @@ def chainstats(chain, results = []):
         else:
             print('{:10s}: {:10.4f} {:10.4f}'.format(names[ii],meanii[ii],stdii[ii]))
     
-def batch_mean_standard_deviation(x, b = []):
+def batch_mean_standard_deviation(x, b = None):
     m, n = x.shape
     
-    if not b:
+    if b is None:
         b = max(10, np.fix(m/20))
         
     inds = range(0, m+1, b)
@@ -345,7 +349,7 @@ def setup_covariance_matrix(qcov, thetasig, value):
     
 def check_adascale(adascale, npar):
     # check adascale
-    if not adascale or adascale <= 0:
+    if adascale is None or adascale <= 0:
         qcov_scale = 2.4*(math.sqrt(npar)**(-1)) # scale factor in R
     else:
         qcov_scale = adascale
@@ -370,7 +374,8 @@ def setup_R_matrix(qcov, parind):
 def setup_RDR_matrix(R, invR, npar, drscale, ntry, options):
     RDR = options.RDR
     # if not empty
-    if not RDR: # check implementation
+    if RDR is None: # check implementation
+        RDR = [] # initialize listß
         RDR.append(R)
         invR.append(np.linalg.solve(R, np.eye(npar)))
         for ii in range(1,ntry):
@@ -389,24 +394,25 @@ def setup_RDR_matrix(R, invR, npar, drscale, ntry, options):
 def check_dependent_parameters(N, data, nbatch, N0, S20, sigma2, savesize, nsimu, 
                                updatesigma, ntry, lastadapt, printint, adaptint):
     # check dependent parameters
-    if not N:
-        N = np.zeros(1)
+    if N is None:
+        N = 0
         for ii in range(len(data.xdata)):
             N = N + data.n[ii]
+        N = np.array([N])
 #        sys.exit('Could not determine number of data points, \n please specify model.N')
 
-    if not nbatch:
-        nbatch = len(data.xdata)
+    if nbatch is None:
+        nbatch = len(data.n)
 #        genfun.message(verbosity, 1, 'Setting nbatch to 1\n')
     
     # This is for backward compatibility
     # if sigma2 given then default N0=1, else default N0=0
-    if not N0:
-        if not sigma2:
-            sigma2 = np.ones(1)
-            N0 = np.zeros(1)
+    if N0 is None:
+        if sigma2 is None:
+            sigma2 = np.ones([1])
+            N0 = np.zeros([1])
         else:
-            N0 = np.ones(1)
+            N0 = np.ones([1])
     else:
         # if N0 given, then also turn on updatesigma
         updatesigma = 1    
@@ -423,22 +429,22 @@ def check_dependent_parameters(N, data, nbatch, N0, S20, sigma2, savesize, nsimu
         
     # set default value for sigma2    
     # default for sigma2 is S20 or 1
-    if not sigma2:
+    if sigma2 is None:
         if not(math.isnan(S20)):
             sigma2 = S20
         else:
-            sigma2 = np.array([1])
+            sigma2 = np.ones([1])
     
-    if math.isnan(S20):
+    if np.isnan(S20):
         S20 = sigma2  # prior parameters for the error variance
     
-    if math.isnan(N0):
+    if N0 is None:
         N0 = np.array([1])
     
     if lastadapt < 1:
-        lastadapt=nsimu
+        lastadapt = nsimu
         
-    if math.isnan(printint):
+    if np.isnan(printint):
         printint = max(100,min(1000,adaptint))
         
     # in matlab version, ny = length(ss) where ss is the output from the sos evaluation
@@ -447,21 +453,13 @@ def check_dependent_parameters(N, data, nbatch, N0, S20, sigma2, savesize, nsimu
     if len(S20)==1:
         S20 = np.ones(ny)*S20
         
-    if isinstance(N, int): #len(N) == 1:
+    if len(N) == 1:
         N = np.ones(ny)*N
         
     if len(N) == ny + 1:
-        N = N[1:] # remove first column - (FIXME????)
+        N = N[1:] # remove first column
         
-    if isinstance(N0, int): #len(N0) == 1:
+    if len(N0) == 1:
         N0 = np.ones(ny)*N0
-        
-#    print('N = {}'.format(N))
-#    print('nbatch = {}'.format(nbatch))
-#    print('N0= {}'.format(N0))
-#    print('updatesigma = {}'.format(updatesigma))
-#    print('savesize = {}'.format(savesize))
-#    print('dodram = {}'.format(dodram))
-#    print('sigma2 = {}'.format(sigma2))
         
     return N, nbatch, N0, updatesigma, savesize, dodram, sigma2, S20, lastadapt, printint, ny
