@@ -44,7 +44,7 @@ class Options:
                  label = None, RDR = None, verbosity = 1, maxiter = None, 
                  priorupdatestart = 0, qcov_adjust = 1e-8, burnin_scale = 10, 
                  alphatarget = 0.234, etaparam = 0.7, initqcovn = None,
-                 doram = None):
+                 doram = None, rndseq = None):
         
         method_dictionary = {
             'mh': {'adaptint': 0, 'ntry': 1, 'doram': 0, 'adascale': adascale}, 
@@ -57,6 +57,8 @@ class Options:
         # define items from dictionary
         if adaptint is None:
             self.adaptint = method_dictionary[method]['adaptint']  # update interval for adaptation
+        elif method == 'mh' or method == 'dr':
+            self.adaptint = method_dictionary[method]['adaptint']  # no adaptation - enforce!
         else:
             self.adaptint = adaptint
         
@@ -113,6 +115,8 @@ class Options:
         self.s2chainfile = s2chainfile
         self.sschainfile = sschainfile
         self.savedir = savedir
+        
+        self.rndseq = rndseq # define random number sequence for testing
         
 class Model:
     def __init__(self, ssfun = None, priorfun = None, priortype = 1, 
@@ -331,4 +335,7 @@ class Results:
         
     def add_time_stats(self, mtime, drtime, adtime):
         self.results['time [mh, dr, am]'] = [mtime, drtime, adtime]
+        
+    def add_random_number_sequence(self, rndseq):
+        self.results['rndseq'] = rndseq
     

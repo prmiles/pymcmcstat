@@ -112,6 +112,7 @@ def mcmcrun(model, data, params, options, previous_results = None):
     verbosity = options.verbosity
     printint = options.printint
     nbatch = model.nbatch # number of batches
+    rndseq = options.rndseq # random numbers for testing
         
     # settings for adaptation
     adaptint = options.adaptint # number of iterates between adaptation
@@ -309,11 +310,20 @@ def mcmcrun(model, data, params, options, previous_results = None):
 #    print('qcov = {}'.format(qcov))
 #    print('adaptint = {}'.format(adaptint))
     
+    # unpack random number sequences
+#    mhrndseq = rndseq[0]
+#    mhrndseq2 = rndseq[1]
+#    drrndseq = rndseq[2]
+#    drrndseq2 = rndseq[3]
+#    
+#    rndnum_u_n = data.udobj[0]
+    
     # ----------------------------------------
     # start clocks
     mtime = []
     drtime = []
     adtime = []
+#    rndseq = []
     """
     Start main chain simulator
     """
@@ -335,7 +345,7 @@ def mcmcrun(model, data, params, options, previous_results = None):
 #        mtst = time.clock()
         oldset = mcclass.Parset(theta = oldpar, ss = ss, prior = oldprior,
                                 sigma2 = sigma2)
-        
+
         accept, newset, outbound, u = selalg.metropolis_algorithm(
                 oldset = oldset, low = low, upp = upp, parind = parind, 
                 npar = npar, R = R, priorobj = priorobj, sosobj = sosobj)
@@ -347,7 +357,7 @@ def mcmcrun(model, data, params, options, previous_results = None):
 #        print('isimu = {}, theta = {}, accept = {}'.format(isimu, newset.theta, accept))
         if dodram == 1 and accept == 0:
 #            drtst = time.clock()
-            # perform a new try according to delayed rejection            
+            # perform a new try according to delayed rejection 
             accept, newset, iacce, outbound, A_count = selalg.delayed_rejection(
                     oldset = oldset, newset = newset, RDR = RDR, ntry = ntry,
                     npar = npar, low = low, upp = upp, parind = parind, 
@@ -377,10 +387,13 @@ def mcmcrun(model, data, params, options, previous_results = None):
         
         # UPDATE ERROR VARIANCE
         # VERIFIED GAMMAR FUNCTION (10/17/17)
+        # CHECK VECTOR COMPATITIBILITY
         if updatesigma:
             for jj in range(0,ny):
-                sigma2[jj] = (mcfun.gammar(1, 1, 0.5*(N0[jj]+N[jj]), 
+                sigma2[jj] = (mcfun.gammar(1, 1, 0.5*(N0[jj]+N[jj]),
                       2*((N0[jj]*S20[jj]+ss[jj])**(-1))))**(-1)
+#                sigma2[jj] = (mcfun.gammar(1, 1, 0.5*(N0[jj]+N[jj]), rndnum_u_n[isimu,:],
+#                      2*((N0[jj]*S20[jj]+ss[jj])**(-1))))**(-1)
             s2chain[chainind,:] = sigma2
         
         if printint and iiprint + 1 == printint:
@@ -392,7 +405,7 @@ def mcmcrun(model, data, params, options, previous_results = None):
         
         # --------------------------------------------------------
         # ADAPTATION
-        if adaptint > 0 and iiadapt + 1 == adaptint:
+        if adaptint > 0 and iiadapt == adaptint:
 #        if adaptint > 0 and isimu <= lastadapt - 1 and np.fix(
 #                (isimu+1)*(adaptint**(-1))) == (isimu + 1)*(adaptint**(-1)):
 #            print('Adapting on step {} of {}'.format(isimu + 1, nsimu))
@@ -489,6 +502,9 @@ def mcmcrun(model, data, params, options, previous_results = None):
     
     # add time statistics
     tmp.add_time_stats(mtime, drtime, adtime)
+    
+    # add random number sequence
+    tmp.add_random_number_sequence(rndseq)
     
     results = tmp.results # assign dictionary
     
