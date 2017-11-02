@@ -15,6 +15,7 @@ import sys
 
 # -------------------------------------------
 def metropolis_algorithm(oldset, low, upp, parind, npar, R, priorobj, sosobj):
+#    def metropolis_algorithm(oldset, low, upp, parind, npar, R, priorobj, sosobj, u = None, u2 = None):
     
     # unpack oldset
     oldpar = oldset.theta
@@ -24,19 +25,9 @@ def metropolis_algorithm(oldset, low, upp, parind, npar, R, priorobj, sosobj):
     
     # Sample new candidate from Gaussian proposal
     u = np.random.randn(1,npar)
-    newpar = oldpar + np.dot(u,R)
-    
-#    print('u = {}'.format(u))
-#    print('R = {}'.format(R))
-#    print('oldpar = {}'.format(oldpar))
-#    print('newpar = {}'.format(newpar))
-#   
+    newpar = oldpar + np.dot(u,R)   
     newpar = newpar.reshape(npar)
-
-#    print('newpar = {}'.format(newpar))
-        
-#    sys.exit()
-        
+       
     # Reject points outside boundaries
     if (newpar < low[parind[:]]).any() or (newpar > upp[parind[:]]).any():
         # proposed value outside parameter limits
@@ -62,12 +53,11 @@ def metropolis_algorithm(oldset, low, upp, parind, npar, R, priorobj, sosobj):
         
 #        if alpha == np.inf:
 #            alpha = np.array(10) # greater than 1
-        
         if alpha <= 0:
             accept = 0 # print('alpha_test = {:10s} <= 0, accept = {:1d}'.format(alpha_test, accept))
-#        elif alpha >= 1:
-#            accept = 1 # print('alpha_test = {:10s} >= 1, accept = {:1d}'.format(alpha_test, accept))
-        elif alpha > np.random.rand(1,1):
+        elif alpha >= 1:
+            accept = 1 # print('alpha_test = {:10s} >= 1, accept = {:1d}'.format(alpha_test, accept))
+        elif alpha > np.random.rand(1,1): # u2
             accept = 1 # print('alpha_test = {:10s} > U(0,1), accept = {:1d}'.format(alpha_test, accept))
         else:
             accept = 0 # print('alpha_test = {:10s} < U(0,1), accept = {:1d}'.format(alpha_test, accept))
@@ -83,7 +73,8 @@ def metropolis_algorithm(oldset, low, upp, parind, npar, R, priorobj, sosobj):
 
 # -------------------------------------------
 def delayed_rejection(oldset, newset, RDR, ntry, npar, low, upp, 
-                      parind, iacce, A_count, invR, sosobj, priorobj):   
+                      parind, iacce, A_count, invR, sosobj, priorobj):
+#                          parind, iacce, A_count, invR, sosobj, priorobj, u, u2):
 
     # initialize output object
 #    outset = mcclass.Parset()
@@ -97,7 +88,9 @@ def delayed_rejection(oldset, newset, RDR, ntry, npar, low, upp,
         itry = itry + 1 # update dr step index
         # initialize next step parameter set
         nextset = mcclass.Parset()
-        nextset.theta = oldset.theta + np.dot(np.random.randn(1,npar),RDR[itry-1])
+        u = np.random.randn(1,npar) # u
+#        print('RDR[{}] = {}'.format(itry-1,RDR[itry-1]))
+        nextset.theta = oldset.theta + np.dot(u,RDR[itry-1])
         nextset.theta = nextset.theta.reshape(npar)
         nextset.sigma2 = newset.sigma2
                 
@@ -120,6 +113,7 @@ def delayed_rejection(oldset, newset, RDR, ntry, npar, low, upp,
         trypath[-1].alpha = alpha # add propability ratio
                        
         # check results of delayed rejection
+        # u2 = np.random.rand(1)
         if alpha >= 1 or np.random.rand(1) < alpha: # accept
             accept = 1
             outset = nextset
@@ -138,7 +132,10 @@ def adaptation(isimu, burnintime, rej, rejl, reju, iiadapt, verbosity, R, burnin
                chainind, oldcovchain, oldmeanchain, oldwsum, doram, u, etaparam, alphatarget,
                npar, newset, no_adapt_index, qcov, qcov_scale, qcov_adjust, 
                ntry, drscale):
-    
+    # initialize DR components
+    RDR = None
+    invR = None
+        
     if isimu < burnintime:
         # during burnin no adaptation, just scaling down
         if reju*(iiadapt**(-1)) > 0.95:
@@ -157,21 +154,23 @@ def adaptation(isimu, burnintime, rej, rejl, reju, iiadapt, verbosity, R, burnin
 
 
 #        print('lasti = {}, chainind = {}'.format(lasti, chainind))
+#        print('chain[{}:{},:] = {}'.format(lasti, chainind, chain[lasti:chainind,:]))
 #        print('covchain = {}'.format(oldcovchain))
 #        print('meanchain = {}'.format(oldmeanchain))
 #        print('wsum = {}'.format(oldwsum))
 #         update covariance matrix - cholesky
         # VERIFIED NOVEMBER 1, 2017
         covchain, meanchain, wsum = mcfun.covupd(
-                chain[lasti+1:chainind+1,:], np.ones(1), oldcovchain, oldmeanchain, oldwsum)
+                chain[lasti:chainind,:], np.ones(1), oldcovchain, oldmeanchain, oldwsum)
                 
 #        print('covchain = {}'.format(covchain))
 #        print('meanchain = {}'.format(meanchain))
 #        print('wsum = {}'.format(wsum))
+#        
+#        if isimu > 200:
+#            sys.exit()
         
-#        sys.exit()
-        
-        lasti = chainind
+        lasti = isimu
                 
         # ram
         if doram:
@@ -195,16 +194,16 @@ def adaptation(isimu, burnintime, rej, rejl, reju, iiadapt, verbosity, R, burnin
             Ra = pRa # np.linalg.cholesky(upcov)
 #            Ra = Ra.transpose()
             R = Ra*qcov_scale
-#            print('Ra = {}, qcov_scale = {}, R = {}'.format(Ra, qcov_scale, R))
+#            print('Ra = {}, qcov_scale = {}, R = {}, upcov = {}'.format(Ra, qcov_scale, R, upcov))
+#            print('covchain = {}'.format(covchain))
 #            sys.exit()
                     
         else: # singular covariance matrix
             # try to blow it up
             tmp = upcov + np.eye(npar)*qcov_adjust
-            pos_def_adjust = genfun.is_semi_pos_def_chol(tmp)
+            pos_def_adjust, pRa = genfun.is_semi_pos_def_chol(tmp)
             if pos_def_adjust == 1: # not singular!
-                Ra = np.linalg.cholesky(tmp)
-                Ra = Ra.transpose()
+                Ra = pRa
                 genfun.message(verbosity, 1, 'adjusted covariance matrix')
                 # scale R
                 R = Ra*qcov_scale
@@ -213,18 +212,20 @@ def adaptation(isimu, burnintime, rej, rejl, reju, iiadapt, verbosity, R, burnin
                 genfun.message(verbosity, 0, '{} {}'.format(errstr, reju*(iiadapt**(-1))*100))
                 
         # update dram covariance matrix
-        lasti = isimu
-        RDR = None
-        invR = None
         if ntry > 1: # delayed rejection
             RDR = []
             invR = []
             RDR.append(R)
             invR.append(np.linalg.solve(RDR[0], np.eye(npar)))
+#            print('-----------')
+#            print('RDR[{}] = {}'.format(0,RDR[0]))
+#            print('invR[{}] = {}'.format(0,invR[0]))
             for ii in range(1,ntry):
 #                print('DR scale = {}'.format(drscale[min(ii,len(drscale)) - 1]))
                 RDR.append(RDR[ii-1]*((drscale[min(ii,len(drscale)) - 1])**(-1))) 
                 invR.append(invR[ii-1]*(drscale[min(ii,len(drscale)) - 1]))
+#                print('RDR[{}] = {}'.format(ii,RDR[ii]))
+#                print('invR[{}] = {}'.format(ii,invR[ii]))
        
     genfun.message(verbosity, 2, '\n')
     reju = 0

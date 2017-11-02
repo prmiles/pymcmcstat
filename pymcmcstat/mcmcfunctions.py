@@ -122,7 +122,6 @@ def gammar_mt(m, n, a, b = 1):
     #% September 2000, 363-372.
     # Written for python by PRM
     import numpy as np
-    
     y = np.zeros([m,n])
     for jj in range(0,n):
         for ii in range(0,m):
@@ -214,18 +213,25 @@ def covupd(x, w, oldcov, oldmean, oldwsum, oldR = None):
                         
     else:
 #        print('Covariance is not empty...')
+#        prtcount = 0
+#        print('n = {}'.format(n))
         for ii in range(0,n):
 #            print('-----\nii = {}\n'.format(ii))
             xi = x[ii,:]
             wsum = w[ii]
-#            print('x[{},:] = {}'.format(ii, x[ii,:]))
-#            print('wsum = {}'.format(wsum))
-#            print('oldwsum = {}'.format(oldwsum))
-#            print('oldcov = \n{}\n'.format(oldcov))
-            
             xmean = oldmean + wsum*((wsum+oldwsum)**(-1))*(xi - oldmean)
-#            print('ii = {}, xmean = {}\n'.format(ii, xmean))
             
+#            prtcount += 1
+#            if prtcount == 100:
+##                print('x[0:9,:] = {}'.format(x[0:9,:]))
+#                print('x[{},:] = {}'.format(ii, x[ii,:]))
+#                print('wsum = {}'.format(wsum))
+#                print('oldwsum = {}'.format(oldwsum))
+#                print('oldcov = \n{}'.format(oldcov))
+#                print('ii = {}, xmean = {}'.format(ii, xmean))
+##                print('xi - oldmean = {}'.format(xi - oldmean))
+#                prtcount = 0
+                
 #            print('R = {}\n'.format(R))
             if R is not None:
                 print('R = \n{}\n'.format(R))
@@ -237,11 +243,7 @@ def covupd(x, w, oldcov, oldmean, oldwsum, oldR = None):
                                       *((wsum+oldwsum-1)**(-1))
                                       *((wsum+oldwsum)**(-1))))))
         
-#            print('oldwsum - 1 = {}'.format(oldwsum - 1))
-#            print('wsum + oldwsum - 1'.format(wsum + oldwsum - 1))
-#            print('oldcov = {}'.format(oldcov))
-#            print('wsum*oldwsum = {}'.format(wsum*oldwsum - 1))
-#            print('xi - oldmean = {}'.format(xi - oldmean))
+            
 #            print('np.dot((xi - oldmean).transpose(), (xi - oldmean)) = {}'.format(np.dot((xi-oldmean).reshape(1,1),(xi-oldmean).reshape(1,p))))
             
 #            print('oldwsum = {}, wsum = {}'.format(oldwsum, wsum))
