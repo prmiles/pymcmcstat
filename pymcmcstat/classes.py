@@ -214,13 +214,14 @@ class PriorObject:
     
 class SSObject:
     def __init__(self, ssfun = None, ssstyle = None, modelfun = None, 
-                 parind = None, local = None, data = None):
+                 parind = None, local = None, data = None, nbatch = None):
         self.ssfun = ssfun
         self.ssstyle = ssstyle
         self.modelfun = modelfun
         self.parind = parind
         self.local = local
         self.data = data
+        self.nbatch = nbatch
         
     def evaluate_sos(self, theta):
         # evaluate sum-of-squares function
@@ -234,20 +235,20 @@ class SSObject:
         return ss
                      
     def mcmcssfun(self, theta, data, local, modelfun):
-        nbatch = len(data.n); # number of data sets
         # initialize
-        ss = np.zeros(1)
+        ss = np.zeros(self.nbatch)
 
-        for ibatch in range(nbatch):
-            xdata = data.xdata[ibatch]
-            ydata = data.ydata[ibatch]
-            weight = data.weight[ibatch]
+        for ibatch in range(self.nbatch):
+            for iset in range(len(data[ibatch].n)):
+                xdata = data[ibatch].xdata[iset]
+                ydata = data[ibatch].ydata[iset]
+                weight = data[ibatch].weight[iset]
             
-            # evaluate model
-            ymodel = modelfun(xdata, theta)
+                # evaluate model
+                ymodel = modelfun(xdata, theta)
     
-            # calculate sum-of-squares error    
-            ss = ss + sum(weight*(ydata-ymodel)**2)
+                # calculate sum-of-squares error    
+                ss[ibatch] += sum(weight*(ydata-ymodel)**2)
         
         return ss
 
