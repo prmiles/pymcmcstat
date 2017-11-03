@@ -11,7 +11,7 @@ import classes as mcclass
 import mcmcfunctions as mcfun
 import generalfunctions as genfun
 import numpy as np
-import sys
+#import sys
 
 # -------------------------------------------
 def metropolis_algorithm(oldset, low, upp, parind, npar, R, priorobj, sosobj):
@@ -55,10 +55,12 @@ def metropolis_algorithm(oldset, low, upp, parind, npar, R, priorobj, sosobj):
 #            alpha = np.array(10) # greater than 1
         if alpha <= 0:
             accept = 0 # print('alpha_test = {:10s} <= 0, accept = {:1d}'.format(alpha_test, accept))
-        elif alpha >= 1:
+        elif alpha >= 1 or alpha > np.random.rand(1,1):
             accept = 1 # print('alpha_test = {:10s} >= 1, accept = {:1d}'.format(alpha_test, accept))
-        elif alpha > np.random.rand(1,1): # u2
-            accept = 1 # print('alpha_test = {:10s} > U(0,1), accept = {:1d}'.format(alpha_test, accept))
+#        elif alpha >= 1:
+#            accept = 1 # print('alpha_test = {:10s} >= 1, accept = {:1d}'.format(alpha_test, accept))
+#        elif alpha > np.random.rand(1,1): # u2
+#            accept = 1 # print('alpha_test = {:10s} > U(0,1), accept = {:1d}'.format(alpha_test, accept))
         else:
             accept = 0 # print('alpha_test = {:10s} < U(0,1), accept = {:1d}'.format(alpha_test, accept))
             
@@ -89,7 +91,6 @@ def delayed_rejection(oldset, newset, RDR, ntry, npar, low, upp,
         # initialize next step parameter set
         nextset = mcclass.Parset()
         u = np.random.randn(1,npar) # u
-#        print('RDR[{}] = {}'.format(itry-1,RDR[itry-1]))
         nextset.theta = oldset.theta + np.dot(u,RDR[itry-1])
         nextset.theta = nextset.theta.reshape(npar)
         nextset.sigma2 = newset.sigma2

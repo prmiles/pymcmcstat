@@ -230,7 +230,8 @@ def mcmcrun(model, data, params, options, previous_results = None):
     # define sum-of-squares object
     sosobj = mcclass.SSObject(ssfun = ssfun, 
                               ssstyle = ssstyle, modelfun = modelfun,
-                              parind = parind, local = local, data = data)
+                              parind = parind, local = local, data = data,
+                              nbatch = nbatch)
     
     # calculate sos with initial parameter set
     ss = sosobj.evaluate_sos(oldpar)
@@ -390,6 +391,11 @@ def mcmcrun(model, data, params, options, previous_results = None):
         # CHECK VECTOR COMPATITIBILITY
         if updatesigma:
             for jj in range(0,ny):
+#                print('jj = {}'.format(jj))
+#                print('N0[{}] = {}'.format(jj,N0[jj]))
+#                print('N[{}] = {}'.format(jj,N[jj]))
+#                print('S20[{}] = {}'.format(jj,S20[jj]))
+#                print('ss[{}] = {}'.format(jj,ss[jj]))
                 sigma2[jj] = (mcfun.gammar(1, 1, 0.5*(N0[jj]+N[jj]),
                       2*((N0[jj]*S20[jj]+ss[jj])**(-1))))**(-1)
 #                sigma2[jj] = (mcfun.gammar(1, 1, 0.5*(N0[jj]+N[jj]), rndnum_u_n[isimu,:],

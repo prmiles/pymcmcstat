@@ -9,6 +9,7 @@ Created on Fri Oct  6 14:48:24 2017
 import math
 import numpy as np
 import mcmcfunctions as mcfun
+import classes as mcclass
 import sys
 
 def alphafun(trypath, A_count, invR):
@@ -404,7 +405,11 @@ def check_dependent_parameters(N, data, nbatch, N0, S20, sigma2, savesize, nsimu
 #        sys.exit('Could not determine number of data points, \n please specify model.N')
 
     if nbatch is None:
-        nbatch = len(data.n)
+        if isinstance(data, mcclass.DataStructure):
+            nbatch = 1 # data is the class, not a list of classes
+        else:
+            nbatch = len(data) 
+            # data is a list of classes, where each class constitutes a batch
 #        genfun.message(verbosity, 1, 'Setting nbatch to 1\n')
     
     # This is for backward compatibility
@@ -435,7 +440,7 @@ def check_dependent_parameters(N, data, nbatch, N0, S20, sigma2, savesize, nsimu
         if not(math.isnan(S20)):
             sigma2 = S20
         else:
-            sigma2 = np.ones([1])
+            sigma2 = np.ones([nbatch])
     
     if np.isnan(S20):
         S20 = sigma2  # prior parameters for the error variance
@@ -451,7 +456,7 @@ def check_dependent_parameters(N, data, nbatch, N0, S20, sigma2, savesize, nsimu
         
     # in matlab version, ny = length(ss) where ss is the output from the sos evaluation
     # it should always have a length of 1, so I have chosen to simply define it as such
-    ny = 1
+    ny = nbatch
     if len(S20)==1:
         S20 = np.ones(ny)*S20
         
@@ -463,5 +468,13 @@ def check_dependent_parameters(N, data, nbatch, N0, S20, sigma2, savesize, nsimu
         
     if len(N0) == 1:
         N0 = np.ones(ny)*N0
+        
+    if len(sigma2) == 1:
+        sigma2 = np.ones(ny)*sigma2
+        
+#    print('nbatch = {}, ny = {}'.format(nbatch, ny))
+#    print('S20 = {}'.format(S20))
+#    print('N = {}'.format(N))
+#    print('N0 = {}'.format(N0))
         
     return N, nbatch, N0, updatesigma, savesize, dodram, sigma2, S20, lastadapt, printint, ny
