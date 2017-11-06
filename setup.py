@@ -1,7 +1,7 @@
 from setuptools import setup
 setup(
     name='pymcmcstat',
-    version='0.1',
+    version='0.2',
     description='A library to perform mcmc simulations',
     url='https://github.com/prmiles/pymcmcstat',
     author='Paul Miles',
@@ -15,10 +15,6 @@ setup(
           'numpy',
           'math',
           'matplotlib',
-          'pylab',
-          'uuid',
-          'HTML',
-          'Javascript',
-          'display',
+          'datetime',
       ],
 )
