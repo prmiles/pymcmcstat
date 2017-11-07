@@ -21,13 +21,16 @@ class DataStructure:
         self.weight = [] # initialize list - weight of data set
         self.udobj = [] # user defined object
         
-    def add_data_set(self, x, y, n = [], weight = 1, udobj = 0):
+    def add_data_set(self, x, y, n = None, weight = 1, udobj = 0):
         # append new data set
         self.xdata.append(x)
         self.ydata.append(y)
         
-        if not n:
-            self.n.append(len(y))
+        if n is None:
+            if isinstance(y, list): # y is a list
+                self.n.append(len(y))
+            else:
+                self.n.append(y.size) # assume y is a numpy array
         
         self.weight.append(weight)
         # add user defined objects option
@@ -257,20 +260,14 @@ class Results:
     def __init__(self):
         self.results = {} # initialize empty dictionary
         
-    def add_basic(self, label, rej, rejl, R, method, covchain, meanchain, names, 
-                  lowerlims, upperlims, theta, parind, local, nbatch, N,
-                  modelfun, ssfun, nsimu, adaptint, lastadapt, adascale, 
-                  skip, simutime, ntry, qcovorig):
+    def add_basic(self, nsimu, rej, rejl, R, covchain, meanchain, names, 
+                  lowerlims, upperlims, theta, parind, local, simutime, qcovorig):
     
         self.results['theta'] = theta
         
         self.results['parind'] = parind
         self.results['local'] = local
-        self.results['nbatch'] = nbatch
-        self.results['N'] = N
         
-        self.results['label'] = label
-        self.results['method'] = method
         self.results['rejected'] = rej*(nsimu**(-1)) # total rejected
         self.results['ulrejected'] = rejl*(nsimu**(-1)) # rejected due to sampling outside limits
         self.results['R'] = R
@@ -280,16 +277,8 @@ class Results:
         self.results['names'] = names
         self.results['limits'] = [lowerlims[parind[:]], upperlims[parind[:]]]
         
-        self.results['modelfun'] = modelfun
-        self.results['ssfun'] = ssfun
-            
         self.results['nsimu'] = nsimu
-        self.results['adaptint'] = adaptint
-        self.results['adaptend'] = lastadapt
-        self.results['adascale'] = adascale
-        self.results['skip'] = skip
         self.results['simutime'] = simutime
-        self.results['ntry'] = ntry
         self.results['qcovorig'] = qcovorig
     
     def add_updatesigma(self, updatesigma, sigma2, S20, N0):
