@@ -8,6 +8,7 @@ setup(
     author_email='prmiles@ncsu.edu',
     license='MIT',
     packages=['pymcmcstat'],
+    dependency_links=['http://github.com/prmiles/pymcmcstat/tarball/master#egg=package-1.0'],
     zip_safe=False,
     install_requires=[
           'sys',
