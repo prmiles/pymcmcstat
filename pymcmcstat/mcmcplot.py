@@ -65,7 +65,7 @@ def plot_density_panel(chains, names, hist_on = 0):
     ns1 = math.ceil(math.sqrt(nparam))
     ns2 = round(math.sqrt(nparam))
     
-    pyplot.figure(dpi=100) # initialize figure
+    pyplot.figure(figsize=(5,4)) # initialize figure
     for ii in range(nparam):
         # define chain
         chain = chains[:,ii] # check indexing
@@ -113,7 +113,7 @@ def plot_histogram_panel(chains, names):
     ns1 = math.ceil(math.sqrt(nparam))
     ns2 = round(math.sqrt(nparam))
     
-    pyplot.figure(dpi=100) # initialize figure
+    f = pyplot.figure(dpi=100, figsize=(5,4)) # initialize figure
     for ii in range(nparam):
         # define chain
         chain = chains[:,ii] # check indexing
@@ -126,6 +126,8 @@ def plot_histogram_panel(chains, names):
         pyplot.xlabel(names[ii])
         ax.set_yticklabels([])
         pyplot.tight_layout(rect=[0, 0.03, 1, 0.95],h_pad=1.0) # adjust spacing
+        
+    return f
         
 # plot chain panel
 # input:
@@ -141,7 +143,7 @@ def plot_chain_panel(chains, names):
     ns1 = math.ceil(math.sqrt(nparam))
     ns2 = round(math.sqrt(nparam))
     
-    pyplot.figure(dpi=100) # initialize figure
+    f = pyplot.figure(dpi=100, figsize=(5,4)) # initialize figure
     for ii in range(nparam):
         # define chain
         chain = chains[:,ii] # check indexing
@@ -155,6 +157,8 @@ def plot_chain_panel(chains, names):
         pyplot.ylabel(str('{}'.format(names[ii])))
         pyplot.tight_layout(rect=[0, 0.03, 1, 0.95],h_pad=1.0) # adjust spacing
         
+    return f
+        
 # plot pairwise correlation panel
 # input:
 # chains - 2d array - each column is chain of parameter (construct 2d array using numpy)
@@ -163,7 +167,7 @@ def plot_pairwise_correlation_panel(chains, names, skip=1):
     
     inds = range(0,nsimu,skip)
         
-    pyplot.figure(dpi=100) # initialize figure
+    f = pyplot.figure(dpi=100) # initialize figure
     for jj in range(2,nparam+1):
         for ii in range(1,jj):
             chain1 = chains[inds,ii-1]
@@ -190,6 +194,8 @@ def plot_pairwise_correlation_panel(chains, names, skip=1):
          
     # adjust figure margins
     pyplot.tight_layout(rect=[0, 0.03, 1, 0.95],h_pad=1.0) # adjust spacing
+    
+    return f
     
 def plot_chain_metrics(chain, name):
     pyplot.figure(dpi=100) # initialize figure
