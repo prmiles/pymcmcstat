@@ -396,14 +396,8 @@ def setup_RDR_matrix(R, invR, npar, drscale, ntry, options):
 
 def check_dependent_parameters(N, data, nbatch, N0, S20, sigma2, savesize, nsimu, 
                                updatesigma, ntry, lastadapt, printint, adaptint):
-    # check dependent parameters
-    if N is None:
-        N = 0
-        for ii in range(len(data.xdata)):
-            N = N + data.n[ii]
-        N = np.array([N])
-#        sys.exit('Could not determine number of data points, \n please specify model.N')
 
+    # check dependent parameters
     if nbatch is None:
         if isinstance(data, mcclass.DataStructure):
             nbatch = 1 # data is the class, not a list of classes
@@ -411,7 +405,15 @@ def check_dependent_parameters(N, data, nbatch, N0, S20, sigma2, savesize, nsimu
             nbatch = len(data) 
             # data is a list of classes, where each class constitutes a batch
 #        genfun.message(verbosity, 1, 'Setting nbatch to 1\n')
-    
+            
+    if N is None:
+        N = 0
+        for ii in range(nbatch):
+            for kk in range(len(data[0].n)):
+                N += data[ii].n[kk]
+        N = np.array([N])
+#        sys.exit('Could not determine number of data points, \n please specify model.N')
+
     # This is for backward compatibility
     # if sigma2 given then default N0=1, else default N0=0
     if N0 is None:

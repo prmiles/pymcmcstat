@@ -86,7 +86,6 @@ Python author: prmiles
 """
 
 # import required packages
-from __future__ import division
 import sys
 #import os
 import time
@@ -477,15 +476,10 @@ def mcmcrun(model, data, params, options, previous_results = None):
     # BUILD RESULTS OBJECT
     tmp = mcclass.Results() # inititialize
         
-    tmp.add_basic(label = label, rej = rej, rejl = rejl, R = R, method = method,
-                              covchain = covchain, meanchain = meanchain, 
-                              names = names, lowerlims = low, upperlims = upp,
-                              theta = thetalast, parind = parind, 
-                              local = local, nbatch = nbatch, N = N, 
-                              modelfun = modelfun, ssfun = ssfun, nsimu = nsimu,
-                              adaptint = adaptint, lastadapt = lastadapt,
-                              adascale = adascale, skip = skip, 
-                              simutime = simutime, ntry = ntry, qcovorig = qcovorig)
+    tmp.add_basic(nsimu = nsimu, rej = rej, rejl = rejl, R = R, covchain = covchain, 
+                  meanchain = meanchain, names = names, lowerlims = low, 
+                  upperlims = upp, theta = thetalast, parind = parind, 
+                  local = local, simutime = simutime, qcovorig = qcovorig)
                   
     tmp.add_updatesigma(updatesigma = updatesigma, sigma2 = sigma2,
                             S20 = S20, N0 = N0)
