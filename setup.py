@@ -10,12 +10,4 @@ setup(
     packages=['pymcmcstat'],
     dependency_links=['http://github.com/prmiles/pymcmcstat/tarball/master#egg=package-1.0'],
     zip_safe=False,
-    install_requires=[
-          'sys',
-          'time',
-          'numpy',
-          'math',
-          'matplotlib',
-          'datetime',
-      ],
 )
