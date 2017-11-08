@@ -250,7 +250,7 @@ def mcmcrun(model, data, params, options, previous_results = None):
     if updatesigma:
         s2chain = np.zeros([savesize, ny])
     else:
-        s2chain = []
+        s2chain = None
         
     # Save initialized values to chain, s2chain, sschain
     chainind = 0 # where we are in chain
