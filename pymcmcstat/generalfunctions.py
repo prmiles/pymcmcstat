@@ -9,6 +9,7 @@ Created on Fri Oct  6 16:50:08 2017
 from __future__ import division
 import math
 import numpy as np
+from scipy.interpolate import interp1d
 
 def less_than_or_equal_to_zero(x):
     return (x<=0)
@@ -48,4 +49,26 @@ def nordf(x, mu = 0, sigma2 = 1):
     # Marko Laine <Marko.Laine@Helsinki.FI>
     # $Revision: 1.5 $  $Date: 2007/12/04 08:57:00 $
     # adapted for Python by Paul Miles, November 8, 2017
-    return 0.5 + 0.5*math.erf((x-mu)/math.sqrt(sigma2)/math.sqrt(2));
+    return 0.5 + 0.5*math.erf((x-mu)/math.sqrt(sigma2)/math.sqrt(2))
+
+def empirical_quantiles(x, p = np.array([0.25, 0.5, 0.75])):
+    """
+    function y=plims(x,p)
+    %PLIMS Empirical quantiles
+    % plims(x,p)  calculates p quantiles from columns of x
+    % Marko Laine <Marko.Laine@Helsinki.FI>
+    % $Revision: 1.4 $  $Date: 2007/05/21 11:19:12 $
+    Adapted for Python by Paul Miles on 2017/11/08
+    """
+
+    # extract number of rows/cols from np.array
+    n, m = x.shape 
+    
+    # define vector valued interpolation function
+    xpoints = range(n)
+    interpfun = interp1d(xpoints, np.sort(x, 0), axis = 0)
+    
+    # evaluation points
+    itpoints = (n-1)*p + 1    
+    
+    return interpfun(itpoints)
