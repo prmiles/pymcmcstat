@@ -312,19 +312,19 @@ class Results:
         self.results['priortype'] = priortype
         self.results['priorpars'] = priorpars
         
-    def add_options(self, options = []):
+    def add_options(self, options = None):
         self.results['options'] = options
         
-    def add_model(self, model = []):
+    def add_model(self, model = None):
         self.results['model'] = model
         
-    def add_chain(self, chain = []):
+    def add_chain(self, chain = None):
         self.results['chain'] = chain
         
-    def add_s2chain(self, s2chain = []):
+    def add_s2chain(self, s2chain = None):
         self.results['s2chain'] = s2chain
         
-    def add_sschain(self, sschain = []):
+    def add_sschain(self, sschain = None):
         self.results['sschain'] = sschain
         
     def add_time_stats(self, mtime, drtime, adtime):
