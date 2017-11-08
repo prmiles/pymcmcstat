@@ -235,6 +235,10 @@ class SSObject:
         else:
             ss = self.ssfun(theta, self.data, self.local)
         
+        # make sure sos is a numpy array
+        if not isinstance(ss, np.ndarray):
+            ss = np.array([ss])
+            
         return ss
                      
     def mcmcssfun(self, theta, data, local, modelfun):
