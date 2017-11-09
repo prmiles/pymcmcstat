@@ -24,7 +24,7 @@ import math
 import numpy as np
 import matplotlib.pyplot as plt
 
-def mcmcpredplot(out, data = None, adddata = None):
+def mcmcpredplot(out, s2chainflag = 1, data = None, adddata = None):
     
     if data is None:
         data = out['data']
@@ -35,6 +35,9 @@ def mcmcpredplot(out, data = None, adddata = None):
     # unpack out dictionary
     credible_intervals = out['credible_intervals']
     prediction_intervals = out['prediction_intervals']
+    
+    if s2chainflag == 0:
+        prediction_intervals = None # turn off prediction intervals
     
     # define number of batches
     nbatch = len(credible_intervals)
