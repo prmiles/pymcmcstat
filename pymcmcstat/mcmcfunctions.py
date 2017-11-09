@@ -409,7 +409,7 @@ def check_dependent_parameters(N, data, nbatch, N0, S20, sigma2, savesize, nsimu
     if N is None:
         N = 0
         for ii in range(nbatch):
-            for kk in range(len(data[0].n)):
+            for kk in range(len(data[ii].n)):
                 N += data[ii].n[kk]
         N = np.array([N])
 #        sys.exit('Could not determine number of data points, \n please specify model.N')
