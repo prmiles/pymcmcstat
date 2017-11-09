@@ -62,24 +62,28 @@ def mcmcpred(results, data, modelfun, sstype = None, nsample = None):
         iisample = range(nsimu) # sample all points from chain
     else:
         # randomly sample from chain
-        iisample = np.ceil(np.random.rand(nsample,1)*nsimu)
+        iisample = np.ceil(np.random.rand(nsample,1)*nsimu) - 1
         iisample = iisample.astype(int)
     
     
     # loop through data sets
     ybatchsave = []
     obatchsave = []
+    credible_intervals = []
+    prediction_intervals = []
     for ii in xrange(nbatch):
         for jj in xrange(len(data[ii].n)):
             dataii = data[ii].xdata[jj]
             ysave = np.zeros([nsample, data[ii].n[jj]])
             osave = np.zeros([nsample, data[ii].n[jj]])
+#            print('ii = {}, jj = {}'.format(ii,jj))
             for kk in xrange(nsample):
 #                print('iisample[{}] = {}'.format(kk,iisample[kk]))
                 theta[parind[:]] = chain[iisample[kk],:]
                 # some parameters may only apply to certain batch sets
-                th = theta[local == 0]
-                th = th[local == ii] 
+                test1 = local == 0
+                test2 = local == ii
+                th = theta[test1 + test2]
                 y = modelfun(dataii, th)
                 ysave[kk,:] = y # store model output
             
@@ -100,22 +104,30 @@ def mcmcpred(results, data, modelfun, sstype = None, nsample = None):
             obatchsave.append(osave)
 
 
-    # generate quantiles
-    ny = len(ybatchsave)
-    plim = []
-    olim = []
-    for jj in range(ny):
-        if 0 and nbatch == 1 and ny == 1:
-            plim.append(genfun.empirical_quantiles(ybatchsave[jj], lims))
-        elif 0 and nbatch == 1:
-            plim.append(genfun.empirical_quantiles(ybatchsave[jj], lims))
-        else:
-            plim.append(genfun.empirical_quantiles(ybatchsave[jj], lims))
+        # generate quantiles
+        ny = len(ybatchsave)
+        plim = []
+        olim = []
+        for jj in range(ny):
+            if 0 and nbatch == 1 and ny == 1:
+                plim.append(genfun.empirical_quantiles(ybatchsave[jj], lims))
+            elif 0 and nbatch == 1:
+                plim.append(genfun.empirical_quantiles(ybatchsave[jj], lims))
+            else:
+                plim.append(genfun.empirical_quantiles(ybatchsave[jj], lims))
             
-        if s2chain is not None:
-            olim.append(genfun.empirical_quantiles(obatchsave[jj], lims))
+            if s2chain is not None:
+                olim.append(genfun.empirical_quantiles(obatchsave[jj], lims))
+                
+        credible_intervals.append(plim)
+        prediction_intervals.append(olim)
+        
+    if s2chain is None:
+        prediction_intervals = None
         
     # generate output dictionary
-    out = {'predlims': plim, 'obslims': olim, 'data': data}
+    out = {'credible_intervals': credible_intervals, 
+           'prediction_intervals': prediction_intervals, 
+           'data': data}
     
     return out
