@@ -19,6 +19,11 @@ function h=mcmcpredplot(out,data,adddata)
 Adapted for Python by Paul Miles 2017/11/08
 """
 
+from __future__ import division
+import math
+import numpy as np
+import matplotlib.pyplot as plt
+
 def mcmcpredplot(out, data = None, adddata = None):
     
     if data is None:
@@ -26,4 +31,63 @@ def mcmcpredplot(out, data = None, adddata = None):
         
     if adddata is None:
         adddata = 0
+                
+    # unpack out dictionary
+    credible_intervals = out['credible_intervals']
+    prediction_intervals = out['prediction_intervals']
+    
+    # define number of batches
+    nbatch = len(credible_intervals)
+    
+    # define counting metrics
+    nlines = len(credible_intervals[0][0]) # number of lines
+    nn = (nlines + 1)/2 # median
+    nlines = nn - 1
+    
+    # initialize figure handle
+    hh = []
+    tmp = plt.figure()
+    hh.append(tmp)
+    for ii in range(nbatch):
+        if ii > 0:
+            tmp = plt.figure() # create new figure
+            hh.append(tmp)
+        
+        credlims = credible_intervals[ii] # should be np lists inside
+        ny = len(credlims)
+        
+        # extract data
+        dataii = data[ii]
+        
+        time = dataii.xdata[0] # need to add functionality for multiple xdata
+        
+        for jj in range(ny):
+            intcol = [0.9, 0.9, 0.9] # dimmest (lightest) color
+            fig, ax = plt.subplots(ny,1)
+            if ny == 1:
+                ax = [ax]
+                
+            if prediction_intervals is not None:
+                ax[jj].fill_between(time, prediction_intervals[ii][jj][0], 
+                                prediction_intervals[ii][jj][-1], facecolor = intcol, alpha = 0.5)
+                intcol = [0.8, 0.8, 0.8]
+            
+            ax[jj].fill_between(time, credlims[jj][0], credlims[jj][-1],
+                              facecolor = intcol, alpha = 0.5)
+            
+            for kk in range(1,int(nn)-1):
+                tmpintcol = np.array(intcol)*0.9**(kk)
+                ax[jj].fill_between(time, credlims[jj][kk], credlims[jj][-kk - 1],
+                              facecolor = tmpintcol, alpha = 0.5)
+            # add model (median parameter values)
+            ax[jj].plot(time, credlims[jj][nn], '-k', linewidth=2)
+                
+            if adddata:
+                plt.plot(dataii.xdata[0], dataii.ydata[0], 'sk', linewidth=2)
+            
+            if nbatch > 1:
+                plt.title(str('Data set {}, y[{}]'.format(ii,jj)))
+            elif ny > 1:
+                plt.title(str('y[{}]'.format(jj)))
 
+    return hh
