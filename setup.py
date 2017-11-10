@@ -1,7 +1,7 @@
 from setuptools import setup
 setup(
     name='pymcmcstat',
-    version='0.4dev',
+    version='0.4.1dev',
     description='A library to perform mcmc simulations',
     url='https://github.com/prmiles/pymcmcstat',
     author='Paul Miles',
