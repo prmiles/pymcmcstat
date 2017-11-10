@@ -24,7 +24,7 @@ from __future__ import division
 import numpy as np
 import matplotlib.pyplot as plt
 
-def mcmcpredplot(out, s2chainflag = 1, data = None, adddata = None):
+def mcmcpredplot(out, piflag = 1, data = None, adddata = None):
     
     if data is None:
         data = out['data']
@@ -36,10 +36,10 @@ def mcmcpredplot(out, s2chainflag = 1, data = None, adddata = None):
     clabels = ['95% CI']
     plabels = ['95% PI']
     
-    if s2chainflag == 0:
+    if piflag == None or prediction_intervals is None:
         prediction_intervals = None # turn off prediction intervals
         clabels = ['99% CI', '95% CI', '90% CI', '50% CI']
-    
+        
     # define number of batches
     nbatch = len(credible_intervals)
     
@@ -47,6 +47,9 @@ def mcmcpredplot(out, s2chainflag = 1, data = None, adddata = None):
     nlines = len(credible_intervals[0][0]) # number of lines
     nn = np.int((nlines + 1)/2) # median
     nlines = nn - 1
+    
+    if prediction_intervals is None and nlines == 1:
+        clabels = ['95% CI']
     
     # initialize figure handle
     fighandle = []

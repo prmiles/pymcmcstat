@@ -25,11 +25,14 @@ import sys
 import generalfunctions as genfun
 import classes as mcclass
 
-def mcmcpred(results, data, modelfun, sstype = None, nsample = None):
+def mcmcpred(results, data, modelfun, sstype = None, nsample = None, include_pi = None):
     
     # extract chain & s2chain from results
     chain = results['chain']
-    s2chain = results['s2chain']
+    if include_pi is None:
+        s2chain = None
+    else:
+        s2chain = results['s2chain']
     
     # define number of simulations by the size of the chain array
     nsimu, npar = chain.shape
