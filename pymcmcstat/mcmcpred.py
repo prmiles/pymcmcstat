@@ -23,6 +23,7 @@ Adapted for Python by Paul miles
 import numpy as np
 import sys
 import generalfunctions as genfun
+import classes as mcclass
 
 def mcmcpred(results, data, modelfun, sstype = None, nsample = None):
     
@@ -67,13 +68,17 @@ def mcmcpred(results, data, modelfun, sstype = None, nsample = None):
     
     
     # loop through data sets
-    ybatchsave = []
-    obatchsave = []
     credible_intervals = []
     prediction_intervals = []
     for ii in xrange(nbatch):
+        ybatchsave = []
+        obatchsave = []
         for jj in xrange(len(data[ii].n)):
-            dataii = data[ii].xdata[jj]
+            # setup data structure for prediction
+            # this is required to allow user to send objects other than xdata to model function
+            datapred = mcclass.DataStructure()
+            datapred.add_data_set(x = data[ii].xdata[jj], y = data[ii].ydata[jj], udobj = data[ii].udobj[jj])
+            
             ysave = np.zeros([nsample, data[ii].n[jj]])
             osave = np.zeros([nsample, data[ii].n[jj]])
 #            print('ii = {}, jj = {}'.format(ii,jj))
@@ -84,7 +89,7 @@ def mcmcpred(results, data, modelfun, sstype = None, nsample = None):
                 test1 = local == 0
                 test2 = local == ii
                 th = theta[test1 + test2]
-                y = modelfun(dataii, th)
+                y = modelfun(datapred, th)
                 ysave[kk,:] = y # store model output
             
                 if s2chain is not None:
@@ -106,6 +111,7 @@ def mcmcpred(results, data, modelfun, sstype = None, nsample = None):
 
         # generate quantiles
         ny = len(ybatchsave)
+        print('ny = {}'.format(ny))
         plim = []
         olim = []
         for jj in range(ny):
