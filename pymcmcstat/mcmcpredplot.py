@@ -24,7 +24,7 @@ from __future__ import division
 import numpy as np
 import matplotlib.pyplot as plt
 
-def mcmcpredplot(out, piflag = 1, data = None, adddata = None):
+def mcmcpredplot(out, plot_pred_int = 'on', data = None, adddata = None):
     
     if data is None:
         data = out['data']
@@ -36,7 +36,8 @@ def mcmcpredplot(out, piflag = 1, data = None, adddata = None):
     clabels = ['95% CI']
     plabels = ['95% PI']
     
-    if piflag == None or prediction_intervals is None:
+    # check if prediction intervals exist and if user wants to plot them
+    if plot_pred_int is not 'on' or prediction_intervals is None:
         prediction_intervals = None # turn off prediction intervals
         clabels = ['99% CI', '95% CI', '90% CI', '50% CI']
         

@@ -25,11 +25,11 @@ import sys
 import generalfunctions as genfun
 import classes as mcclass
 
-def mcmcpred(results, data, modelfun, sstype = None, nsample = None, include_pi = None):
+def mcmcpred(results, data, modelfun, sstype = None, nsample = None, calc_pred_int = 'on'):
     
     # extract chain & s2chain from results
     chain = results['chain']
-    if include_pi is None:
+    if calc_pred_int is not 'on':
         s2chain = None
     else:
         s2chain = results['s2chain']
@@ -114,7 +114,7 @@ def mcmcpred(results, data, modelfun, sstype = None, nsample = None, include_pi 
 
         # generate quantiles
         ny = len(ybatchsave)
-        print('ny = {}'.format(ny))
+        #print('ny = {}'.format(ny))
         plim = []
         olim = []
         for jj in range(ny):
