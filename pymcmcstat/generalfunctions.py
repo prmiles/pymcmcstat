@@ -36,12 +36,12 @@ def print_mod(string, value, flag):
     if flag:
         print('{}{}'.format(string, value))
         
-def display_dictionary(dictionary):
-    print('Dictionary Contents:')
-    attrs = vars(dictionary)
-#            print('{} = {}\n' for item in attrs.items())
-#            print ', '.join("%s: %s" % item for item in attrs.items())
-    print ''.join('%s = %s\n' % item for item in attrs.items())
+#def display_dictionary(dictionary):
+#    print('Dictionary Contents:')
+#    attrs = vars(dictionary)
+##            print('{} = {}\n' for item in attrs.items())
+##            print ', '.join("%s: %s" % item for item in attrs.items())
+#    print ''.join('%s = %s\n' % item for item in attrs.items())
     
 def nordf(x, mu = 0, sigma2 = 1):
     # NORDF the standard normal (Gaussian) cumulative distribution.
