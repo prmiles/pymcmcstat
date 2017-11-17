@@ -41,7 +41,7 @@ class Options:
     def __init__(self, nsimu=10000, adaptint = None, ntry = None, method='dram',
                  printint=np.nan, adaptend = 0, lastadapt = 0, burnintime = 0,
                  waitbar = 1, debug = 0, qcov = None, updatesigma = 0, 
-                 noadaptind = [], stats = 0, drscale = np.array([5, 4, 3]),
+                 noadaptind = [], stats = 0, drscale = np.array([5, 4, 3], dtype = float),
                  adascale = None, savesize = 0, maxmem = 0, chainfile = None,
                  s2chainfile = None, sschainfile = None, savedir = None, skip = 1,
                  label = None, RDR = None, verbosity = 1, maxiter = None, 
