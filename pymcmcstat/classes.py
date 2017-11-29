@@ -151,7 +151,7 @@ class Model:
         
         
         if nbatch is None:
-            self.nbatch = N0
+            self.nbatch = len(N0)
         else:
             self.nbatch = np.array([nbatch])
             
