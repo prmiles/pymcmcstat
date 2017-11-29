@@ -63,14 +63,14 @@ def empirical_quantiles(x, p = np.array([0.25, 0.5, 0.75])):
 
     # extract number of rows/cols from np.array
     n, m = x.shape 
-    print('n = {}, m = {}'.format(n,m))
+#    print('n = {}, m = {}'.format(n,m))
     # define vector valued interpolation function
     xpoints = range(n)
     interpfun = interp1d(xpoints, np.sort(x, 0), axis = 0)
     
     # evaluation points
     itpoints = (n-1)*p   
-    print('xpoints = {}'.format(xpoints))
-    print('itpoints = {}'.format(itpoints))
+#    print('xpoints = {}'.format(xpoints))
+#    print('itpoints = {}'.format(itpoints))
     
     return interpfun(itpoints)
