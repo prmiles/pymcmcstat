@@ -64,6 +64,7 @@ def mcmcpred(results, data, modelfun, sstype = None, nsample = None, calc_pred_i
     # define sample points
     if nsample >= nsimu:
         iisample = range(nsimu) # sample all points from chain
+        nsample = nsimu
     else:
         # randomly sample from chain
         iisample = np.ceil(np.random.rand(nsample,1)*nsimu) - 1
@@ -96,15 +97,16 @@ def mcmcpred(results, data, modelfun, sstype = None, nsample = None, calc_pred_i
                 ysave[kk,:] = y # store model output
             
                 if s2chain is not None:
+                    s2elem = s2chain[iisample[kk],ii].reshape(1,1)
                     if sstype == 0:
                         osave[kk,:] = y + np.random.randn(y.size)*np.diag(
-                            np.sqrt(s2chain[iisample[kk],:]))
+                            np.sqrt(s2elem))
                     elif sstype == 1: # sqrt
                         osave[kk,:] = (np.sqrt(y) + np.random.randn(y.size)*np.diag(
-                            np.sqrt(s2chain[iisample[kk],:])))**2
+                            np.sqrt(s2elem)))**2
                     elif sstype == 2: # log
                         osave[kk,:] = y*np.exp(np.random.randn(y.size))*np.diag(
-                            np.sqrt(s2chain[iisample[kk],:]))
+                            np.sqrt(s2elem))
                     else:
                         sys.exit('Unknown sstype')
                         
