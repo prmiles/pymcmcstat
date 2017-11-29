@@ -137,23 +137,23 @@ class Model:
         if sigma2 is None:
             self.sigma2 = sigma2
         else:
-            self.sigma2 = np.array([sigma2])
+            self.sigma2 = np.array(sigma2)
         
         if N is None:
             self.N = N
         else:
-            self.N = np.array([N])
+            self.N = np.array(N)
             
         if N0 is None:
             self.N0 = N0
         else:
-            self.N0 = np.array([N0])
+            self.N0 = np.array(N0)
         
         
         if nbatch is None:
             self.nbatch = len(N0)
         else:
-            self.nbatch = np.array([nbatch])
+            self.nbatch = np.array(nbatch)
             
         self.S20 = np.array([S20])
         

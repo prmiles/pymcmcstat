@@ -49,6 +49,7 @@ def metropolis_algorithm(oldset, low, upp, parind, npar, R, priorobj, sosobj):
         # evaluate test
 #        print('sigma2 = {}'.format(sigma2))
         alpha = np.exp(-0.5*(sum((ss1 - ss2)*(sigma2**(-1))) + newprior - oldprior))
+        alpha = sum(alpha)
 #        print('metropolis alpha = {}, ss1 = {}, ss2 = {}'.format(alpha, ss1, ss2))
         
 #        if alpha == np.inf:

@@ -165,6 +165,8 @@ def mcmcrun(model, data, params, options, previous_results = None):
             N, data, nbatch, N0, S20, sigma2, savesize, nsimu, updatesigma, 
             ntry, lastadapt, printint, adaptint)
         
+#    print('N0 = {}'.format(N0[0]))
+#    print('S20 = {}'.format(S20))
     # use values from previous run (if inputted)
     if previous_results != None:
         genfun.message(verbosity, 0, '\nUsing values from the previous run')

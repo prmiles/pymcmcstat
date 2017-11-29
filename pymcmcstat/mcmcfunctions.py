@@ -37,10 +37,12 @@ def alphafun(trypath, A_count, invR):
             return alpha, A_count
         
     y = mcfun.logposteriorratio(trypath[0], trypath[-1])
+#    print('y = {}'.format(y))
     
     for k in range(stage):
         y = y + mcfun.qfun(k, trypath, invR)
         
+#    print('y = {}'.format(y))
     alpha = min(np.ones(1), np.exp(y)*a2*(a1**(-1)))
 #    print('A_count = {}, alpha = {}, y = {}, a1 = {}, a2 = {}'.format(A_count, alpha, y, a1, a2))
     
@@ -85,9 +87,17 @@ def logposteriorratio(x1, x2):
 #    print('x2.ss = {}, x2.sigma2 = {}, x2.prior = {}'.format(x2.ss, x2.sigma2, x2.prior))
     
     
-    zq = -0.5*(sum((x2.ss*(x2.sigma2**(-1)) - x1.ss*(x1.sigma2**(-1)))) + x2.prior - x1.prior)
-    
-    return zq
+    zq = -0.5*(sum((x2.ss*(x2.sigma2**(-1.0)) - x1.ss*(x1.sigma2**(-1.0)))) + x2.prior - x1.prior)
+#    print('zq = {}'.format(zq))
+#    print('x1.prior = {}'.format(x1.prior))
+#    print('x2.prior = {}'.format(x2.prior))
+#    print('x1.sigma2 = {}'.format(x1.sigma2))
+#    print('x2.sigma2 = {}'.format(x2.sigma2))
+#    print('x2.ss*(x2.sigma2**(-1.0)) = {}'.format(x2.ss*(x2.sigma2**(-1.0))))
+#    print('x1.ss*(x1.sigma2**(-1.0)) = {}'.format(x1.ss*(x1.sigma2**(-1.0))))
+#    print('sum = {}'.format(x2.ss*(x2.sigma2**(-1.0)) - x1.ss*(x1.sigma2**(-1.0))))
+#    print('sum = {}'.format(sum(zq)))
+    return sum(zq)
     
     
 def gammar(m,n,a,b = 1):
@@ -442,9 +452,9 @@ def check_dependent_parameters(N, data, nbatch, N0, S20, sigma2, savesize, nsimu
         if not(np.isnan(S20)).any:
             sigma2 = S20
         else:
-            sigma2 = np.ones([nbatch])
+            sigma2 = np.ones(nbatch)
     
-    if np.isnan(S20):
+    if np.isnan(S20).any:
         S20 = sigma2  # prior parameters for the error variance
     
     if N0 is None:
@@ -458,7 +468,7 @@ def check_dependent_parameters(N, data, nbatch, N0, S20, sigma2, savesize, nsimu
         
     # in matlab version, ny = length(ss) where ss is the output from the sos evaluation
     # it should always have a length of 1, so I have chosen to simply define it as such
-    ny = nbatch
+    ny = int(nbatch)
     if len(S20)==1:
         S20 = np.ones(ny)*S20
         
