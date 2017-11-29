@@ -51,7 +51,7 @@ def scale_bandwidth(x):
     if iqrange(x) <=0:
         s = 1.06*np.std(x, ddof=1)*n**(-1/5)
     else:
-        s = 1.06*min(np.std(x, ddof=1),iqrange(x)/1.34)**(-1/5)
+        s = 1.06*min(np.std(x, ddof=1),iqrange(x)/1.34)*n**(-1/5)
     return s
     
         
@@ -88,7 +88,7 @@ def plot_density_panel(chains, names, hist_on = 0):
         for jj in range(ngrid):
 #            chain_density[jj,0] = 1/nrow*sum(gaussian_density_function((chain_grid[jj,0]-chain)/s, 0, 1))/s
             gdf = np.vectorize(gaussian_density_function)
-            chain_density[jj,0] = 1/(s*nrow)*sum(gdf((chain_grid[jj,0]-chain)/s, 0, 1))
+            chain_density[jj,0] = 1/(s*nrow)*sum(gdf((chain_grid[jj,0]-chain), 0, 1))
             
         
         # plot density on subplot
