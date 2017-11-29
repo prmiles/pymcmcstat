@@ -439,7 +439,7 @@ def check_dependent_parameters(N, data, nbatch, N0, S20, sigma2, savesize, nsimu
     # set default value for sigma2    
     # default for sigma2 is S20 or 1
     if sigma2 is None:
-        if not(math.isnan(S20)):
+        if not(np.isnan(S20)):
             sigma2 = S20
         else:
             sigma2 = np.ones([nbatch])
