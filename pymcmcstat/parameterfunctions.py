@@ -123,13 +123,13 @@ def results2params(results, params, use_local = 1):
             name = names[ii]
 
         for kk in range(len(params.parameters)):
-            if name == params.parameters[kk][0]:
+            if name == params.parameters[kk]['name']:
                 # change NaN prior mu (=use initial) to the original initial value
-                if np.isnan(params.parameters[kk][4]):
-                    params.parameters[kk][4] = params[kk][1]
+                if np.isnan(params.parameters[kk]['mu']):
+                    params.parameters[kk]['mu'] = params[kk]['theta0']
                     
                 # only change if parind = 1 in params (1 is the default)
-                if params.parameters[kk][6] == 1 or params.parameters[kk][6] is None:
-                    params.parameters[kk][1] = theta[parind[ii]]
+                if params.parameters[kk]['sample'] == 1 or params.parameters[kk]['sample'] is None:
+                    params.parameters[kk]['theta0'] = theta[parind[ii]]
         
     return params
