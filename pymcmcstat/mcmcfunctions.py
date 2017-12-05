@@ -406,7 +406,13 @@ def setup_RDR_matrix(R, invR, npar, drscale, ntry, options):
 
 def check_dependent_parameters(N, data, nbatch, N0, S20, sigma2, savesize, nsimu, 
                                updatesigma, ntry, lastadapt, printint, adaptint):
-
+    """
+    sigma2   initial error variance
+    N        total number of observations
+    S20      prior for sigma2
+    N0       prior accuracy for S20
+    nbatch   number of datasets
+    """
     # check dependent parameters
     if nbatch is None:
         if isinstance(data, mcclass.DataStructure):

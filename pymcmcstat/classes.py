@@ -135,36 +135,38 @@ class Model:
         self.priorpars = priorpars
         self.modelfun = modelfun
         
-        if sigma2 is None:
-            self.sigma2 = sigma2
-        else:
-            self.sigma2 = np.array(sigma2)
+        # check value of sigma2 - initial error variance
+        self.sigma2 = self.array_type(sigma2)
         
-        if N is None:
-            self.N = N
+        # check value of N - total number of observations
+        self.N = self.array_type(N)
+        
+        # check value of N0 - prior accuracy for S20
+        self.N0 = self.array_type(N0)       
+        
+        # check nbatch - number of data sets
+        self.nbatch = self.array_type(nbatch)
+            
+        # S20 - prior for sigma2
+        self.S20 = self.array_type(S20)
+    
+    def array_type(self, x):
+        # All settings in this class should be converted to numpy ndarray
+        if x is None:
+            x = x
         else:
-            if isinstance(N, int):
-                self.N = np.array([np.array(N)])
-            elif isinstance(N, list):
-                self.N = np.array(N)
-            elif isinstance(N, np.ndarray):
-                self.N = N
+            if isinstance(x, int): # scalar -> ndarray[scalar]
+                x = np.array([np.array(x)])
+            elif isinstance(x, float): # scalar -> ndarray[scalar]
+                x = np.array([np.array(x)])
+            elif isinstance(x, list): # [...] -> ndarray[...]
+                x = np.array(x)
+            elif isinstance(x, np.ndarray): 
+                x = x
             else:
-                sys.exit('Unknown data type for N - Please use int, ndarray, or list')
-            
-        if N0 is None:
-            self.N0 = N0
-        else:
-            self.N0 = np.array(N0)
+                sys.exit('Unknown data type - Please use int, ndarray, or list')
         
-        
-        if nbatch is None:
-            self.nbatch = nbatch
-        else:
-            self.nbatch = np.array(nbatch)
-            
-        self.S20 = np.array([S20])
-        
+        return x
         
 class Parameters:
     def __init__(self):
