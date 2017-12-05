@@ -452,6 +452,8 @@ def mcmcrun(model, data, params, options, previous_results = None):
     
     # define last set of values
     thetalast = oldpar
+    
+#    print('\n Simulation complete - Generate results structure...\n')
 
     # --------------------------------------------                
     # CREATE OPTIONS OBJECT FOR DEBUG

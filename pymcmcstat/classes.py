@@ -11,6 +11,7 @@ Common classes for pymcmc
 # import required packages
 import numpy as np
 from datetime import datetime
+import sys
 
 class DataStructure:
     """Simple data structure"""        
@@ -142,7 +143,14 @@ class Model:
         if N is None:
             self.N = N
         else:
-            self.N = np.array(N)
+            if isinstance(N, int):
+                self.N = np.array([np.array(N)])
+            elif isinstance(N, list):
+                self.N = np.array(N)
+            elif isinstance(N, np.ndarray):
+                self.N = N
+            else:
+                sys.exit('Unknown data type for N - Please use int, ndarray, or list')
             
         if N0 is None:
             self.N0 = N0
@@ -151,7 +159,7 @@ class Model:
         
         
         if nbatch is None:
-            self.nbatch = len(N0)
+            self.nbatch = nbatch
         else:
             self.nbatch = np.array(nbatch)
             

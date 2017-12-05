@@ -434,7 +434,10 @@ def check_dependent_parameters(N, data, nbatch, N0, S20, sigma2, savesize, nsimu
             N0 = np.ones([1])
     else:
         # if N0 given, then also turn on updatesigma
-        updatesigma = 1    
+        updatesigma = 1   
+        # check if nbatch matches size of N0
+        if len(N0) != nbatch:
+            nbatch = len(N0)
         
     # save options
     if savesize <= 0 or savesize > nsimu:
@@ -456,9 +459,6 @@ def check_dependent_parameters(N, data, nbatch, N0, S20, sigma2, savesize, nsimu
     
     if np.isnan(S20).any:
         S20 = sigma2  # prior parameters for the error variance
-    
-    if N0 is None:
-        N0 = np.array([1])
     
     if lastadapt < 1:
         lastadapt = nsimu
