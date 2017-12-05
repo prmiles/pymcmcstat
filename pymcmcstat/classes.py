@@ -140,41 +140,30 @@ class Model:
         else:
             self.sigma2 = np.array(sigma2)
         
-        if N is None:
-            self.N = N
-        else:
-            if isinstance(N, int):
-                self.N = np.array([np.array(N)])
-            elif isinstance(N, list):
-                self.N = np.array(N)
-            elif isinstance(N, np.ndarray):
-                self.N = N
-            else:
-                sys.exit('Unknown data type for N - Please use int, ndarray, or list')
-            
-        if N0 is None:
-            self.N0 = N0
-        else:
-            self.N0 = np.array(N0)
+        # check value of N
+        self.N = self.array_type(N)
         
+        # check value of N0
+        self.N0 = self.array_type(N0)       
         
-        if nbatch is None:
-            self.nbatch = nbatch
-        else:
-            self.nbatch = np.array(nbatch)
+        # check nbatch - number of data sets
+        self.nbatch = self.array_type(nbatch)
             
+        
         self.S20 = np.array([S20])
     
-    def array_type(x):
+    def array_type(self, x):
         # All settings in this class should be converted to numpy ndarray
         if x is None:
             x = x
         else:
             if isinstance(x, int): # scalar -> ndarray[scalar]
                 x = np.array([np.array(x)])
-            elif isinstance(x, list):
+            elif isinstance(x, float): # scalar -> ndarray[scalar]
+                x = np.array([np.array(x)])
+            elif isinstance(x, list): # [...] -> ndarray[...]
                 x = np.array(x)
-            elif isinstance(x, np.ndarray):
+            elif isinstance(x, np.ndarray): 
                 x = x
             else:
                 sys.exit('Unknown data type - Please use int, ndarray, or list')
