@@ -135,22 +135,20 @@ class Model:
         self.priorpars = priorpars
         self.modelfun = modelfun
         
-        if sigma2 is None:
-            self.sigma2 = sigma2
-        else:
-            self.sigma2 = np.array(sigma2)
+        # check value of sigma2 - initial error variance
+        self.sigma2 = self.array_type(sigma2)
         
-        # check value of N
+        # check value of N - total number of observations
         self.N = self.array_type(N)
         
-        # check value of N0
+        # check value of N0 - prior accuracy for S20
         self.N0 = self.array_type(N0)       
         
         # check nbatch - number of data sets
         self.nbatch = self.array_type(nbatch)
             
-        
-        self.S20 = np.array([S20])
+        # S20 - prior for sigma2
+        self.S20 = self.array_type(S20)
     
     def array_type(self, x):
         # All settings in this class should be converted to numpy ndarray
