@@ -164,7 +164,22 @@ class Model:
             self.nbatch = np.array(nbatch)
             
         self.S20 = np.array([S20])
+    
+    def array_type(x):
+        # All settings in this class should be converted to numpy ndarray
+        if x is None:
+            x = x
+        else:
+            if isinstance(x, int): # scalar -> ndarray[scalar]
+                x = np.array([np.array(x)])
+            elif isinstance(x, list):
+                x = np.array(x)
+            elif isinstance(x, np.ndarray):
+                x = x
+            else:
+                sys.exit('Unknown data type - Please use int, ndarray, or list')
         
+        return x
         
 class Parameters:
     def __init__(self):
