@@ -36,8 +36,11 @@ def is_semi_pos_def_chol(x):
         return False, c
 
 def print_mod(string, value, flag):
+    printed = False
     if flag:
         print('{}{}'.format(string, value))
+        printed = True
+    return printed
         
 #def display_dictionary(dictionary):
 #    print('Dictionary Contents:')
