@@ -21,8 +21,11 @@ def replace_list_elements(x, testfunction, value):
     return x
 
 def message(verbosity, level, printthis):
+    printed = False
     if verbosity >= level:
         print(printthis)
+        printed = True
+    return printed
         
 def is_semi_pos_def_chol(x):
     c = None
