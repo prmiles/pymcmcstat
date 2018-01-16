@@ -3,6 +3,33 @@
 """
 Created on Fri Oct  6 14:48:24 2017
 
+Description: This file contains a set of functions used as part of the MCMC package.
+Several functions are used in part of the selection algorithms, specifically the DR
+algorithm uses "alphafun" as the recursive procedure for the n-stage delayed rejection
+process.  The "covupd" and "cholupdate" functions are important for AM.  Also included
+are several setup functions that check the input and adjust settings as required.
+In a newer release specific aspects of this code will likely be changed to be methods
+within a class.
+
+Contents:
+    - alphafun(trypath, A_count, invR):
+    - qfun(iq, trypath, invR):
+    - logposteriorratio(x1, x2):
+    - gammar(m,n,a,b = 1):
+    - gammar_mt(m, n, a, b = 1):
+    - gammar_mt1(a,b):
+    - covupd(x, w, oldcov, oldmean, oldwsum, oldR = None): 
+    - cholupdate(R, x):
+    - chainstats(chain, results = []):
+    - batch_mean_standard_deviation(x, b = None):
+    - setup_no_adapt_index(noadaptind, parind):
+    - setup_covariance_matrix(qcov, thetasig, value):
+    - check_adascale(adascale, npar):
+    - setup_R_matrix(qcov, parind):
+    - setup_RDR_matrix(R, invR, npar, drscale, ntry, options):
+    - check_dependent_parameters(N, data, nbatch, N0, S20, sigma2, savesize, nsimu, 
+                               updatesigma, ntry, lastadapt, printint, adaptint):
+
 @author: prmiles
 """
 
