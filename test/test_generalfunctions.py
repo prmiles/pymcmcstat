@@ -16,7 +16,8 @@ functions tested include:
 
 @author: prmiles
 """
-from pymcmcstat.generalfunctions import less_than_or_equal_to_zero, replace_list_elements, message, is_semi_pos_def_chol, print_mod, nordf, empirical_quantiles
+from pymcmcstat.generalfunctions import less_than_or_equal_to_zero, replace_list_elements
+from pymcmcstat.generalfunctions import message, is_semi_pos_def_chol, print_mod, nordf, empirical_quantiles
 import unittest
 import numpy as np
 
@@ -26,7 +27,7 @@ import numpy as np
 class Less_Than_Or_Equal_To_Zero_Test(unittest.TestCase):
     
     def test_is_negative_one_less_than_or_equal_to_zero(self):
-        self.assertTrue(less_than_or_equal_to_zero(-1), msg = '-1 is less than or equal to 0')
+        self.assertTrue(less_than_or_equal_to_zero(-1), msg = '-1 is less than or equal to 0')    
         
     def test_is_zero_less_than_or_equal_to_zero(self):
         self.assertTrue(less_than_or_equal_to_zero(0), msg = '0 is less than or equal to 0')
