@@ -2,17 +2,88 @@
 # -*- coding: utf-8 -*-
 """
 Created on Wed Jan 17 09:08:13 2018
-
+    # general settings
+    nsimu - number of chain interates
+    method - sampling method ('mh', 'am', 'dr', 'dram')
+    waitbar - flag to display progress bar
+    debug - display certain features to assist in code debugging
+    noadaptind - do not adapt these indices
+    stats - convergence statistics
+    verbosity - verbosity of display output
+    printint - printing interval
+    nbatch - number of batches
+    rndseq - random numbers for testing
+        
+    # settings for adaptation
+    adaptint - number of iterates between adaptation
+    qcov - proposal covariance
+    qcov_adjust -
+    initqcovn - proposal covariance weight in update
+    adascale - user defined covariance scale
+    lastadapt - last adapt (i.e., no more adaptation beyond this iteration)
+    burnintime -
+    burnin_scale - scale in burn-in down/up
+    
+    # settings for updating error variance estimator
+    updatesigma - flag saying whether or not to update the measurement variance estimate
+    
+    # settings associated with saving to bin files
+    savesize - rows of the chain in memory
+    maxmem - memory available in mega bytes
+    chainfile - chain file name
+    s2chainfile - s2chain file name
+    sschainfile - sschain file name
+    savedir - directory files saved to
+    skip -
+    label -
+    
+    # settings for delayed rejection
+    ntry - number of stages in delayed rejection algorithm
+    RDR - R matrix for each stage of delayed rejection
+    drscale - scale sampling distribution for delayed rejection
+    alphatarget - acceptance ratio target
+   
 @author: prmiles
 """
 
 # import required packages
 import numpy as np
 from datetime import datetime
+from DataStructure import DataStructure
 
 class SimulationOptions:
-    """Simulator Options"""
-    def __init__(self, nsimu=10000, adaptint = None, ntry = None, method='dram',
+    
+    def __init__(self):
+        
+        self.nsimu = 10000
+        self.adaptint = None
+        self.ntry = None
+        self.method = 'dram'
+        self.printint = np.nan
+        self.adaptend = 0
+        self.lastadapt = 0
+        self.burnintime = 0
+        self.noadaptind = []
+        self.stats = 0
+        self.drscale = np.array([5,4,3], dtype = float)
+        self.adascale = None
+        self.savesize = 0
+        self.maxmem = 0
+        self.chainfile = None
+        self.s2chainfile = None
+        self.sschainfile = None
+        self.savedir = None
+        self.skip = 1
+        self.priorupdatestart = 0
+        self.qcov_adjust = 1e-8
+        self.burnin_scale = 10
+        self.alphatarget = 0.234
+        self.etaparam = 0.7
+        self.initqcovn = None
+        self.doram = None
+        self.rndseq = None
+        
+    def update_simulation_options(self, nsimu=10000, adaptint = None, ntry = None, method='dram',
                  printint=np.nan, adaptend = 0, lastadapt = 0, burnintime = 0,
                  waitbar = 1, debug = 0, qcov = None, updatesigma = 0, 
                  noadaptind = [], stats = 0, drscale = np.array([5, 4, 3], dtype = float),
@@ -95,3 +166,25 @@ class SimulationOptions:
         
         self.rndseq = rndseq # define random number sequence for testing
         
+    def check_dependent_simulation_options(self, data, model):
+        # check dependent parameters
+                
+        # save options
+        if self.savesize <= 0 or self.savesize > self.nsimu:
+            self.savesize = self.nsimu
+        
+        # turn on DR if ntry > 1
+        if self.ntry > 1:
+            self.dodram = 1
+        else:
+            self.dodram = 0
+            
+        if self.lastadapt < 1:
+            self.lastadapt = self.nsimu
+            
+        if np.isnan(self.printint):
+            self.printint = max(100,min(1000,self.adaptint))
+            
+        # if N0 given, then also turn on updatesigma
+        if model.N0 is not None:
+            self.updatesigma = 1  
