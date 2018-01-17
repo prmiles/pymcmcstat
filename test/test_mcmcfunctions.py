@@ -36,9 +36,6 @@ import unittest
 import numpy as np
 
 # --------------------------
-# less_than_or_equal_to_zero       
+# alphafun
 # --------------------------
-class Alphafun_Test(unittest.TestCase):
-    
-    def test_is_negative_one_less_than_or_equal_to_zero(self):
-        self.assertTrue(less_than_or_equal_to_zero(-1), msg = '-1 is less than or equal to 0')
+#class Alphafun_Test(unittest.TestCase):
