@@ -3,6 +3,8 @@
 """
 Created on Wed Jan 17 09:18:19 2018
 
+Description: Class used to organize results of MCMC simulation.
+
 @author: prmiles
 """
 
