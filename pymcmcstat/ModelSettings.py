@@ -79,3 +79,54 @@ class ModelSettings:
                 sys.exit('Unknown data type - Please use int, ndarray, or list')
         
         return x
+    
+    def check_dependent_model_settings(self, data, options):
+        # check dependent parameters
+        if self.nbatch is None:
+            self.nbatch = data.get_number_of_batches()
+            
+        if self.N is not None:
+            N = data.get_number_of_observations()
+            if self.N == N:
+                self.N = N
+            else:
+                print('User defined N = {}.  Estimate based on data structure is N = {}.  Possible error?'.format(self.N, N))
+        else:
+            self.N = data.get_number_of_observations()
+            
+        # This is for backward compatibility
+        # if sigma2 given then default N0=1, else default N0=0
+        if self.N0 is None:
+            if self.sigma2 is None:
+                self.sigma2 = np.ones([1])
+                self.N0 = np.zeros([1])
+            else:
+                self.N0 = np.ones([1])
+            
+        # set default value for sigma2    
+        # default for sigma2 is S20 or 1
+        if self.sigma2 is None:
+            if not(np.isnan(self.S20)).any:
+                self.sigma2 = self.S20
+            else:
+                self.sigma2 = np.ones(self.nbatch)
+        
+        if np.isnan(self.S20).any:
+            self.S20 = self.sigma2  # prior parameters for the error variance
+        
+        # in matlab version, ny = length(ss) where ss is the output from the sos evaluation
+        ny = int(self.nbatch)
+        if len(self.S20)==1:
+            self.S20 = np.ones(ny)*self.S20
+            
+        if len(self.N) == 1:
+            self.N = np.ones(ny)*self.N
+            
+        if len(self.N) == ny + 1:
+            self.N = self.N[1:] # remove first column
+            
+        if len(self.N0) == 1:
+            self.N0 = np.ones(ny)*self.N0
+            
+        if len(self.sigma2) == 1:
+            self.sigma2 = np.ones(ny)*self.sigma2
