@@ -12,22 +12,31 @@ then the user supplied model function will be used in the default mcmc sos-funct
 
 # Import required packages
 import numpy as np
+import sys
 
 class SumOfSquares:
-    def __init__(self, sos_function = None, sos_style = None, model_function = None, 
-                 parind = None, local = None, data = None, nbatch = None):
-        self.sos_function = sos_function
+    def __init__(self, model, data, parameters):
+                
+        # check if sos function and model function are defined
+        if model.sos_function is None: #isempty(ssfun)
+            if model.model_function is None: #isempty(modelfun)
+                sys.exit('No ssfun or modelfun specified!')
+            sos_style = 4
+        else:
+            sos_style = 1
+        
+        self.sos_function = model.sos_function
         self.sos_style = sos_style
-        self.model_function = model_function
-        self.parind = parind
-        self.local = local
+        self.model_function = model.model_function
+        self.parind = parameters.parind
+        self.local = parameters.local
         self.data = data
-        self.nbatch = nbatch
+        self.nbatch = model.nbatch
         
     def evaluate_sos_function(self, theta):
         # evaluate sum-of-squares function
         if self.sos_style == 1:
-            ss = self.ssfun(theta, self.data)
+            ss = self.sos_function(theta, self.data)
         elif self.sos_style == 4:
             ss = self.mcmc_sos_function(theta, self.data, self.local, self.model_function)
         else:

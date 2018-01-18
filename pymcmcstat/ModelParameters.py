@@ -76,32 +76,8 @@ class ModelParameters:
             
         # make parind list of nonzero elements
         self.parind = np.flatnonzero(self.parind)
-
-    def display_parameter_settings(self, parind, names, value, low, upp, thetamu, 
-                               thetasig, noadaptind):
         
-        print('Sampling these parameters:')
-        print('{:10s} {:>7s} [{:>6s}, {:>6s}] N({:>4s}, {:>4s})'.format('name',
-              'start', 'min', 'max', 'mu', 'sigma^2'))
-        nprint = len(parind)
-        for ii in range(nprint):
-            if ii in noadaptind: # THIS PARAMETER IS FIXED
-                st = ' (*)'
-            else:
-                st = ''
-            if math.isinf(thetasig[parind[ii]]):
-                h2 = ''
-            else:
-                h2 = '^2'
-                
-            if value[parind[ii]] > 1e4:
-                print('{:10}: {:6.2g} [{:6.2g}, {:6.2g}] N({:4.2g},{:4.2f}{:s}){:s}'.format(names[parind[ii]], 
-                  value[parind[ii]], low[parind[ii]], upp[parind[ii]],
-                  thetamu[parind[ii]], thetasig[parind[ii]], h2, st))
-            else:
-                print('{:10}: {:6.2f} [{:6.2f}, {:6.2f}] N({:4.2f},{:4.2f}{:s}){:s}'.format(names[parind[ii]], 
-                  value[parind[ii]], low[parind[ii]], upp[parind[ii]],
-                  thetamu[parind[ii]], thetasig[parind[ii]], h2, st))
+        self.npar = npar # append number of parameters to structure
                 
     def results_to_params(self, results, use_local = 1):
     
@@ -153,3 +129,37 @@ class ModelParameters:
             print(printthis)
             printed = True
         return printed
+    
+    def display_parameter_settings(self, options):
+        # display parameter settings
+        parind = self.parind
+        names = self.names
+        value = self.initial_value
+        lower_limits = self.lower_limits
+        upper_limits = self.upper_limits
+        theta_mu = self.thetamu
+        theta_sigma = self.thetasigma
+        
+        if options.verbosity > 0:
+            print('Sampling these parameters:')
+            print('{:10s} {:>7s} [{:>6s}, {:>6s}] N({:>4s}, {:>4s})'.format('name',
+                  'start', 'min', 'max', 'mu', 'sigma^2'))
+            nprint = len(parind)
+            for ii in range(nprint):
+                if ii in options.noadaptind: # THIS PARAMETER IS FIXED
+                    st = ' (*)'
+                else:
+                    st = ''
+                if math.isinf(theta_sigma[parind[ii]]):
+                    h2 = ''
+                else:
+                    h2 = '^2'
+                    
+                if value[parind[ii]] > 1e4:
+                    print('{:10}: {:6.2g} [{:6.2g}, {:6.2g}] N({:4.2g},{:4.2f}{:s}){:s}'.format(names[parind[ii]], 
+                      value[parind[ii]], lower_limits[parind[ii]], upper_limits[parind[ii]],
+                      theta_mu[parind[ii]], theta_sigma[parind[ii]], h2, st))
+                else:
+                    print('{:10}: {:6.2f} [{:6.2f}, {:6.2f}] N({:4.2f},{:4.2f}{:s}){:s}'.format(names[parind[ii]], 
+                      value[parind[ii]], lower_limits[parind[ii]], upper_limits[parind[ii]],
+                      theta_mu[parind[ii]], theta_sigma[parind[ii]], h2, st))
