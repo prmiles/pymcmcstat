@@ -41,14 +41,13 @@ def test_modelfun(xdata, theta):
     return y
 
 def test_ssfun(theta, data):
-    nbatch = len(data)
+    nbatch = len(data.xdata)
     ss = np.zeros(nbatch)
     
     for ibatch in range(nbatch):
-        for iset in range(len(data[ibatch].n)):
-            xdata = data[ibatch].xdata[iset]
-            ydata = data[ibatch].ydata[iset]
-            weight = data[ibatch].weight[iset]
+            xdata = data.xdata[ibatch]
+            ydata = data.ydata[ibatch]
+            weight = data.weight[ibatch]
         
             # eval model
             ymodel = test_modelfun(xdata, theta)
@@ -62,7 +61,8 @@ mcstat = MCMC()
 
 # Add data
 x = np.linspace(2, 3, num=10)
-y = 2*x - 3
+noise = 0.1*np.random.randn(10)
+y = 2*x - 3 + noise
 mcstat.data.add_data_set(x, y)
 
 #x2 = np.array([[1,2],[2,1]])
@@ -74,11 +74,13 @@ mcstat.parameters.add_model_parameter(name = 'm', theta0 = 1.2, minimum = -10, m
 mcstat.parameters.add_model_parameter(name = 'b', theta0 = 40.2, minimum = -10, maximum = 100)
 
 # update simulation options
-mcstat.options.update_simulation_options(nsimu = int(5.0e3), updatesigma = 1, method = 'dram',
-                     adaptint = 100, verbosity = 0, waitbar = 1)
+mcstat.simulation_options.update_simulation_options(nsimu = int(5.0e3), updatesigma = 1, method = 'dram',
+                     adaptint = 100, verbosity = 1, waitbar = 1)
 
 # update model settings
-mcstat.model.update_model_settings(ssfun = test_ssfun)
+mcstat.model_settings.update_model_settings(sos_function = test_ssfun)
 
 # Run mcmcrun
 mcstat.run_simulation()
+
+plt.plot(mcstat.simulation_results.results['chain'][:,0],'.b')
