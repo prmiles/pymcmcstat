@@ -25,7 +25,7 @@ class MetropolisAlgorithm:
         newpar = newpar.reshape(parameters.npar)
            
         # Reject points outside boundaries
-        if (newpar < parameters.lower_limits[parameters.parind[:]]).any() or (newpar > parameters.upper_limits[parameters.parind[:]]).any():
+        if (newpar < parameters._lower_limits[parameters._parind[:]]).any() or (newpar > parameters._upper_limits[parameters._parind[:]]).any():
             # proposed value outside parameter limits
             accept = 0
             newprior = 0

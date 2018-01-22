@@ -18,12 +18,12 @@ class ErrorVarianceEstimator:
         nsos = len(sos)
         
         for jj in range(0,nsos):
-            sigma2[jj] = (self.gammar(1, 1, 0.5*(N0[jj]+N[jj]),
+            sigma2[jj] = (self.__gammar(1, 1, 0.5*(N0[jj]+N[jj]),
                           2*((N0[jj]*S20[jj]+sos[jj])**(-1))))**(-1)
 
         return sigma2
             
-    def gammar(self, m,n,a,b = 1):
+    def __gammar(self, m,n,a,b = 1):
         #%GAMMAR random deviates from gamma distribution
         #%  GAMMAR(M,N,A,B) returns a M*N matrix of random deviates from the Gamma
         #%  distribution with shape parameter A and scale parameter B:
@@ -37,10 +37,10 @@ class ErrorVarianceEstimator:
             y = np.zeros([m,n])
             return y
         
-        y = self.gammar_mt(m, n, a, b)
+        y = self.__gammar_mt(m, n, a, b)
         return y
     
-    def gammar_mt(self, m, n, a, b = 1):
+    def __gammar_mt(self, m, n, a, b = 1):
         #%GAMMAR_MT random deviates from gamma distribution
         #% 
         #%  GAMMAR_MT(M,N,A,B) returns a M*N matrix of random deviates from the Gamma
@@ -59,13 +59,13 @@ class ErrorVarianceEstimator:
         y = np.zeros([m,n])
         for jj in range(0,n):
             for ii in range(0,m):
-                y[ii,jj] = self.gammar_mt1(a,b)
+                y[ii,jj] = self.__gammar_mt1(a,b)
                 
         return y
         
-    def gammar_mt1(self, a,b):
+    def __gammar_mt1(self, a,b):
         if a < 1:
-            y = self.gammar_mt1(1+a,b)*np.random.rand(1)**(a**(-1))
+            y = self.__gammar_mt1(1+a,b)*np.random.rand(1)**(a**(-1))
             return y
         else:
             d = a - 3**(-1)

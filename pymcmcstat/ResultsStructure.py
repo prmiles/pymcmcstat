@@ -21,22 +21,22 @@ class ResultsStructure:
     
         self.results['theta'] = theta
         
-        self.results['parind'] = parameters.parind
-        self.results['local'] = parameters.local
+        self.results['parind'] = parameters._parind
+        self.results['local'] = parameters._local
         
         self.results['total_rejected'] = rejected['total']*(options.nsimu**(-1)) # total rejected
         self.results['rejected_outside_bounds'] = rejected['outside_bounds']*(options.nsimu**(-1)) # rejected due to sampling outside limits
-        self.results['R'] = covariance.R
-        self.results['qcov'] = np.dot(covariance.R.transpose(),covariance.R)
-        self.results['cov'] = covariance.covchain
-        self.results['mean'] = covariance.meanchain
-        self.results['names'] = parameters.names
-        self.results['limits'] = [parameters.lower_limits[parameters.parind[:]], 
-                     parameters.upper_limits[parameters.parind[:]]]
+        self.results['R'] = covariance._R
+        self.results['qcov'] = np.dot(covariance._R.transpose(),covariance._R)
+        self.results['cov'] = covariance._covchain
+        self.results['mean'] = covariance._meanchain
+        self.results['names'] = parameters._names
+        self.results['limits'] = [parameters._lower_limits[parameters._parind[:]], 
+                     parameters._upper_limits[parameters._parind[:]]]
         
         self.results['nsimu'] = options.nsimu
         self.results['simutime'] = simutime
-        self.results['qcovorig'] = covariance.qcovorig
+        self.results['qcovorig'] = covariance._qcovorig
     
     def add_updatesigma(self, updatesigma, sigma2, S20, N0):
         self.results['updatesigma'] = updatesigma

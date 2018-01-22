@@ -13,36 +13,37 @@ import sys
 class ModelSettings:
     def __init__(self):
         # Initialize all variables to default values
-        self.model = BaseModelSettings()
+#        self.model = BaseModelSettings()
+        self.description = 'Model Settings'
         
-    def update_model_settings(self, sos_function = None, prior_function = None, prior_type = 1, 
+    def define_model_settings(self, sos_function = None, prior_function = None, prior_type = 1, 
                  prior_update_function = None, prior_pars = None, model_function = None, 
                  sigma2 = None, N = None, 
                  S20 = np.nan, N0 = None, nbatch = None):
     
-        self.model.sos_function = sos_function
-        self.model.prior_function = prior_function
-        self.model.prior_type = prior_type
-        self.model.prior_update_function = prior_update_function
-        self.model.prior_pars = prior_pars
-        self.model.model_function = model_function
+        self.sos_function = sos_function
+        self.prior_function = prior_function
+        self.prior_type = prior_type
+        self.prior_update_function = prior_update_function
+        self.prior_pars = prior_pars
+        self.model_function = model_function
         
         # check value of sigma2 - initial error variance
-        self.model.sigma2 = self.array_type(sigma2)
+        self.sigma2 = self.__array_type(sigma2)
         
         # check value of N - total number of observations
-        self.model.N = self.array_type(N)
+        self.N = self.__array_type(N)
         
         # check value of N0 - prior accuracy for S20
-        self.model.N0 = self.array_type(N0)       
+        self.N0 = self.__array_type(N0)       
         
         # check nbatch - number of data sets
-        self.model.nbatch = self.array_type(nbatch)
+        self.nbatch = self.__array_type(nbatch)
             
         # S20 - prior for sigma2
-        self.model.S20 = self.array_type(S20)
+        self.S20 = self.__array_type(S20)
     
-    def array_type(self, x):
+    def __array_type(self, x):
         # All settings in this class should be converted to numpy ndarray
         if x is None:
             x = x
@@ -60,86 +61,86 @@ class ModelSettings:
         
         return x
     
-    def check_dependent_model_settings(self, data, options):
+    def _check_dependent_model_settings(self, data, options):
         # check dependent parameters
-        if self.model.nbatch is None:
-            self.model.nbatch = data.get_number_of_batches()
+        if self.nbatch is None:
+            self.nbatch = data.get_number_of_batches()
             
-        if self.model.N is not None:
+        if self.N is not None:
             N = data.get_number_of_observations()
-            if self.model.N == N:
-                self.model.N = N
+            if self.N == N:
+                self.N = N
             else:
                 print('User defined N = {}.  Estimate based on data structure is N = {}.  Possible error?'.format(self.model.N, N))
         else:
-            self.model.N = data.get_number_of_observations()
+            self.N = data.get_number_of_observations()
             
         # This is for backward compatibility
         # if sigma2 given then default N0=1, else default N0=0
-        if self.model.N0 is None:
-            if self.model.sigma2 is None:
-                self.model.sigma2 = np.ones([1])
-                self.model.N0 = np.zeros([1])
+        if self.N0 is None:
+            if self.sigma2 is None:
+                self.sigma2 = np.ones([1])
+                self.N0 = np.zeros([1])
             else:
-                self.model.N0 = np.ones([1])
+                self.N0 = np.ones([1])
             
         # set default value for sigma2    
         # default for sigma2 is S20 or 1
-        if self.model.sigma2 is None:
-            if not(np.isnan(self.model.S20)).any:
-                self.model.sigma2 = self.model.S20
+        if self.sigma2 is None:
+            if not(np.isnan(self.S20)).any:
+                self.sigma2 = self.S20
             else:
-                self.model.sigma2 = np.ones(self.model.nbatch)
+                self.sigma2 = np.ones(self.nbatch)
         
-        if np.isnan(self.model.S20).any:
-            self.model.S20 = self.model.sigma2  # prior parameters for the error variance
+        if np.isnan(self.S20).any:
+            self.S20 = self.sigma2  # prior parameters for the error variance
         
-    def check_dependent_model_settings_wrt_nsos(self, nsos):
+    def _check_dependent_model_settings_wrt_nsos(self, nsos):
         # in matlab version, ny = length(sos) where ss is the output from the sos evaluation
-        if len(self.model.S20)==1:
-            self.model.S20 = np.ones(nsos)*self.model.S20
+        if len(self.S20)==1:
+            self.S20 = np.ones(nsos)*self.S20
             
-        if len(self.model.N) == 1:
-            self.model.N = np.ones(nsos)*self.model.N
+        if len(self.N) == 1:
+            self.N = np.ones(nsos)*self.N
             
-        if len(self.model.N) == nsos + 1:
-            self.model.N = self.model.N[1:] # remove first column
+        if len(self.N) == nsos + 1:
+            self.N = self.N[1:] # remove first column
             
-        if len(self.model.N0) == 1:
-            self.model.N0 = np.ones(nsos)*self.model.N0
+        if len(self.N0) == 1:
+            self.N0 = np.ones(nsos)*self.N0
             
-        if len(self.model.sigma2) == 1:
-            self.model.sigma2 = np.ones(nsos)*self.model.sigma2
+        if len(self.sigma2) == 1:
+            self.sigma2 = np.ones(nsos)*self.sigma2
             
-        self.model.nsos = nsos
+        self.nsos = nsos
         
     def display_model_settings(self):
         print_these = ['sos_function', 'model_function', 'sigma2', 'N', 'N0', 'S20', 'nsos', 'nbatch']
-        print('model_settings:')
+        print('model settings:')
         for ii in xrange(len(print_these)):
-            print('\t{} = {}'.format(print_these[ii], getattr(self.model, print_these[ii])))
+            print('\t{} = {}'.format(print_these[ii], getattr(self, print_these[ii])))
             
-class BaseModelSettings:
-    def __init__(self):
-        # Initialize all variables to default values
-        self.sos_function = None
-        self.prior_function = None
-        self.prior_type = 1
-        self.prior_update_function = None
-        self.prior_pars = None
-        self.model_function = None
-        
-        # check value of sigma2 - initial error variance
-        self.sigma2 = None
-        
-        # check value of N - total number of observations
-        self.N = None
-        
-        # check value of N0 - prior accuracy for S20
-        self.N0 = None       
-        
-        # check nbatch - number of data sets
-        self.nbatch = None
-            
-        # S20 - prior for sigma2
-        self.S20 = np.nan
+#class BaseModelSettings:
+#    def __init__(self):
+#        # Initialize all variables to default values
+#        self.sos_function = None
+#        self.prior_function = None
+#        self.prior_type = 1
+#        self.prior_update_function = None
+#        self.prior_pars = None
+#        self.model_function = None
+#        
+#        # check value of sigma2 - initial error variance
+#        self.sigma2 = None
+#        
+#        # check value of N - total number of observations
+#        self.N = None
+#        
+#        # check value of N0 - prior accuracy for S20
+#        self.N0 = None       
+#        
+#        # check nbatch - number of data sets
+#        self.nbatch = None
+#            
+#        # S20 - prior for sigma2
+#        self.S20 = np.nan

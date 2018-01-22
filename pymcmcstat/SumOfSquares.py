@@ -28,8 +28,8 @@ class SumOfSquares:
         self.sos_function = model.sos_function
         self.sos_style = sos_style
         self.model_function = model.model_function
-        self.parind = parameters.parind
-        self.local = parameters.local
+        self.parind = parameters._parind
+        self.local = parameters._local
         self.data = data
         self.nbatch = model.nbatch
         
