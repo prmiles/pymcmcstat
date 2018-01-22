@@ -52,21 +52,21 @@ class AdaptationAlgorithm:
         if isimu < burnintime:
             # during burnin no adaptation, just scaling down
             if rejected['in_adaptation_interval']*(iiadapt**(-1)) > 0.95:
-                self.message(options.verbosity, 2, str(' (burnin/down) {3.2f}'.format(
+                self.__message(options.verbosity, 2, str(' (burnin/down) {3.2f}'.format(
                         rejected['in_adaptation_interval']*(iiadapt**(-1))*100)))
                 R = R*(burnin_scale**(-1))
             elif rejected['in_adaptation_interval']*(iiadapt**(-1)) < 0.05:
-                self.message(options.verbosity, 2, str(' (burnin/up) {3.2f}'.format(
+                self.__message(options.verbosity, 2, str(' (burnin/up) {3.2f}'.format(
                         rejected['in_adaptation_interval']*(iiadapt**(-1))*100)))
                 R = R*burnin_scale
                     
         else:
-            self.message(options.verbosity, 2, str('i:{} adapting ({}, {}, {})'.format(
+            self.__message(options.verbosity, 2, str('i:{} adapting ({}, {}, {})'.format(
                     isimu, rejected['total']*(isimu**(-1))*100, rejected['in_adaptation_interval']*(iiadapt**(-1))*100, 
                     rejected['outside_bounds']*(isimu**(-1))*100)))
     
             # UPDATE COVARIANCE MATRIX - CHOLESKY
-            covchain, meanchain, wsum = self.covupd(
+            covchain, meanchain, wsum = self.__covupd(
                     chain[last_index_since_adaptation:chainind,:], np.ones(1), oldcovchain, oldmeanchain, oldwsum)
                     
             last_index_since_adaptation = isimu
@@ -84,7 +84,7 @@ class AdaptationAlgorithm:
                 upcov[:,no_adapt_index] = qcov[:,no_adapt_index]
 
             # check if singular covariance matrix
-            pos_def, pRa = self.is_semi_pos_def_chol(upcov)
+            pos_def, pRa = self.__is_semi_pos_def_chol(upcov)
             if pos_def == 1: # not singular!
                 Ra = pRa # np.linalg.cholesky(upcov)
                 R = Ra*qcov_scale
@@ -92,15 +92,15 @@ class AdaptationAlgorithm:
             else: # singular covariance matrix
                 # try to blow it up
                 tmp = upcov + np.eye(npar)*qcov_adjust
-                pos_def_adjust, pRa = self.is_semi_pos_def_chol(tmp)
+                pos_def_adjust, pRa = self.__is_semi_pos_def_chol(tmp)
                 if pos_def_adjust == 1: # not singular!
                     Ra = pRa
-                    self.message(options.verbosity, 1, 'adjusted covariance matrix')
+                    self.__message(options.verbosity, 1, 'adjusted covariance matrix')
                     # scale R
                     R = Ra*qcov_scale
                 else: # still singular...
                     errstr = str('convariance matrix singular, no adaptation')
-                    self.message(options.verbosity, 0, '{} {}'.format(errstr, rejected['in_adaptation_interval']*(iiadapt**(-1))*100))
+                    self.__message(options.verbosity, 0, '{} {}'.format(errstr, rejected['in_adaptation_interval']*(iiadapt**(-1))*100))
         
             # update dram covariance matrix
             if ntry > 1: # delayed rejection
@@ -121,7 +121,7 @@ class AdaptationAlgorithm:
         
         return covariance
     
-    def covupd(self, x, w, oldcov, oldmean, oldwsum, oldR = None):  
+    def __covupd(self, x, w, oldcov, oldmean, oldwsum, oldR = None):  
         #function [xcov,xmean,wsum,R]=covupd(x,w,oldcov,oldmean,oldwsum,oldR)
         #%COVUPD covariance update
         #% [xcov,xmean,wsum]=covupd(x,w,oldcov,oldmean,oldwsum)
@@ -174,7 +174,7 @@ class AdaptationAlgorithm:
                     print('R = \n{}\n'.format(R))
                     print('np.sqrt((oldwsum-1)*((wsum+oldwsum-1)**(-1))) = {}\n'.format(np.sqrt((oldwsum-1)*((wsum+oldwsum-1)**(-1)))))
                 
-                    R = self.cholupdate(np.sqrt((oldwsum-1)*((wsum+oldwsum-1)**(-1)))*R, 
+                    R = self.__cholupdate(np.sqrt((oldwsum-1)*((wsum+oldwsum-1)**(-1)))*R, 
                                    np.dot((xi - oldmean).transpose(), 
                                           np.sqrt(((wsum*oldwsum)
                                           *((wsum+oldwsum-1)**(-1))
@@ -193,7 +193,7 @@ class AdaptationAlgorithm:
         return xcov, xmean, wsum
     
     # Cholesky Update
-    def cholupdate(self, R, x):
+    def __cholupdate(self, R, x):
         n = len(x)
         R1 = R.copy()
         x1 = x.copy()
@@ -208,7 +208,7 @@ class AdaptationAlgorithm:
     
         return R1
     
-    def is_semi_pos_def_chol(self, x):
+    def __is_semi_pos_def_chol(self, x):
         c = None
         try:
             c = np.linalg.cholesky(x)
@@ -216,7 +216,7 @@ class AdaptationAlgorithm:
         except np.linalg.linalg.LinAlgError:
             return False, c
         
-    def message(self, verbosity, level, printthis):
+    def __message(self, verbosity, level, printthis):
         printed = False
         if verbosity >= level:
             print(printthis)
