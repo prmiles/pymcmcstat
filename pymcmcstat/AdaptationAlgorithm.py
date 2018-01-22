@@ -167,7 +167,7 @@ class AdaptationAlgorithm:
             for ii in range(0,n):
                 xi = x[ii,:]
                 wsum = w[ii]
-                xmean = oldmean + wsum*((wsum+oldwsum)**(-1))*(xi - oldmean)
+                xmean = oldmean + wsum*((wsum+oldwsum)**(-1.0))*(xi - oldmean)
                 
                     
                 if R is not None:

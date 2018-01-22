@@ -82,7 +82,6 @@ class ModelParameters:
     def _results_to_params(self, results, use_local = 1):
     
         # unpack results dictionary
-        parameters = self.parameters
         parind = results['parind']
         names = results['names']
         local = results['local']
@@ -94,15 +93,16 @@ class ModelParameters:
             else:
                 name = names[ii]
     
-            for kk in range(len(parameters)):
-                if name == parameters[kk]['name']:
+            for kk in range(len(self.parameters)):
+                if name == self.parameters[kk]['name']:
                     # change NaN prior mu (=use initial) to the original initial value
-                    if np.isnan(parameters[kk]['mu']):
-                        parameters[kk]['mu'] = parameters[kk]['theta0']
+                    if np.isnan(self.parameters[kk]['prior_mu']):
+                        self.parameters[kk]['prior_mu'] = self.parameters[kk]['theta0']
                         
                     # only change if parind = 1 in params (1 is the default)
-                    if parameters[kk]['sample'] == 1 or parameters[kk]['sample'] is None:
-                        parameters[kk]['theta0'] = theta[parind[ii]]
+                    if self.parameters[kk]['sample'] == 1 or self.parameters[kk]['sample'] is None:
+                        self.parameters[kk]['theta0'] = theta[parind[ii]]
+                        
     
     def _check_initial_values_wrt_parameter_limits(self):
         # check initial parameter values are inside range

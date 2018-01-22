@@ -16,21 +16,18 @@ import math
 class CovarianceProcedures:
     def __init__(self):
         self.description = 'Covariance Variables and Methods'
+        
+    def _initialize_covariance_settings(self, parameters, options):
+        
         self._qcov = None
         self._qcov_scale = None
         self._R = None
         self._qcov_original = None
         self._invR = None
         self._iacce = None
-        
         self._covchain = None
         self._meanchain = None
-        
         self._last_index_since_adaptation = 0
-        
-#        R, covchain, meanchain, wsum, lasti, RDR, invR, iiadapt, rejection
-        
-    def _initialize_covariance_settings(self, parameters, options):
         
         self._wsum = options.initqcovn
         
