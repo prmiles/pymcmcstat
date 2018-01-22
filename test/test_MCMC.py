@@ -14,23 +14,14 @@ import sys
 #import math
 import numpy as np
 from pymcmcstat.MCMC import MCMC
-import time
+#import time
+
+# for graphics
+from pymcmcstat import mcmcplot as mcpl
 
 # for graphics
 #from pymcmcstat import mcmcplot as mcpl
 import matplotlib.pyplot as plt
-
-# clear command window
-#print(chr(27) + "[2J")
-
-# load random number sequences
-#mhrndseq = np.loadtxt('mhrndseq0.txt')
-#mhrndseq2 = np.loadtxt('mhrndseq1.txt')
-#drrndseq = np.loadtxt('drrndseq0.txt')
-#drrndseq2 = np.loadtxt('drrndseq1.txt')
-
-#rndseq = [mhrndseq, mhrndseq2, drrndseq, drrndseq2]
-#rndnum_u_n = np.loadtxt('rndnum_u_n.txt');
 
 # define test model function
 def test_modelfun(xdata, theta):
@@ -60,9 +51,11 @@ def test_ssfun(theta, data):
 mcstat = MCMC()
 
 # Add data
-x = np.linspace(2, 3, num=10)
-noise = 0.1*np.random.randn(10)
-y = 2*x - 3 + noise
+x = np.linspace(2, 3, num=50)
+m = 2 # slope
+b = -3 # offset
+noise = 0.1*np.random.randn(len(x))
+y = m*x + b + noise
 mcstat.data.add_data_set(x, y)
 
 #x2 = np.array([[1,2],[2,1]])
@@ -70,17 +63,43 @@ mcstat.data.add_data_set(x, y)
 #mcstat.data.add_data_set(x2, y2)
 
 # initialize parameter array
-mcstat.parameters.add_model_parameter(name = 'm', theta0 = 1.2, minimum = -10, maximum = 10, prior_sigma = -1)
-mcstat.parameters.add_model_parameter(name = 'b', theta0 = 40.2, minimum = -10, maximum = 100)
+mcstat.parameters.add_model_parameter(name = 'm', theta0 = 1., minimum = -10, maximum = 10)
+mcstat.parameters.add_model_parameter(name = 'b', theta0 = -5., minimum = -10, maximum = 100)
 
 # update simulation options
-mcstat.simulation_options.update_simulation_options(nsimu = int(5.0e3), updatesigma = 1, method = 'dram',
+mcstat.simulation_options.define_simulation_options(nsimu = int(5.0e4), updatesigma = 1, method = 'dram',
                      adaptint = 100, verbosity = 1, waitbar = 1)
 
 # update model settings
-mcstat.model_settings.update_model_settings(sos_function = test_ssfun)
+mcstat.model_settings.define_model_settings(sos_function = test_ssfun)
 
 # Run mcmcrun
 mcstat.run_simulation()
 
-plt.plot(mcstat.simulation_results.results['chain'][:,0],'.b')
+# Extract results
+results = mcstat.simulation_results.results
+
+# extend simulation
+#mcstat.run_simulation(use_previous_results = True)
+#mcstat.run_simulation(use_previous_results = True)
+
+chain = results['chain']
+s2chain = results['s2chain']
+sschain = results['sschain']
+
+names = results['names']
+
+# define burnin
+burnin = 2000
+# display chain statistics
+mcstat.chainstats(chain[burnin:,:], results)
+# generate mcmc plots
+mcpl.plot_density_panel(chain[burnin:,:], names)
+mcpl.plot_chain_panel(chain[burnin:,:], names)
+mcpl.plot_pairwise_correlation_panel(chain[burnin:,:], names)
+
+# plot data & model
+plt.figure()
+plt.plot(x,y,'.k')
+plt.plot(x, m*x + b, '-r')
+plt.plot(x, test_modelfun(x, np.mean(results['chain'],0)), '--k')  
