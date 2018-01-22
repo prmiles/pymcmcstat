@@ -52,6 +52,34 @@ class MCMC:
 
     def run_simulation(self, previous_results = None):
         start_time = time.clock()
+        
+        self.__initialize_simulation()
+        chain_index = 0
+        self.__initialize_chains(chainind = chain_index)
+        # ---------------------
+        # setup progress bar
+        if self.simulation_options.options.waitbar:
+            wbarstatus = progress_bar(int(self.simulation_options.options.nsimu))
+        # ---------------------
+        # displacy current settings
+        if self.simulation_options.options.verbosity >= 2:
+            self.__display_current_mcmc_settings()        
+        
+        # ---------------------
+        """
+        Execute main simulator
+        """
+        self.__execute_simulator(chain_index = chain_index, wbarstatus = wbarstatus)
+        
+        end_time = time.clock()
+        self.simulation_time = end_time - start_time
+
+        # --------------------
+        # Generate Results
+        self.__generate_simulation_results()
+      
+        
+    def __initialize_simulation(self):
         # ---------------------------------
         # check dependent parameters
         self.simulation_options.check_dependent_simulation_options(self.data, self.model_settings.model)
@@ -79,92 +107,79 @@ class MCMC:
         self.covariance.initialize_covariance_settings(self.parameters, self.simulation_options.options)
         
         # ---------------------
-        # Define initial parameter set
-        old_set = ParameterSet(theta = self.parameters.initial_value[self.parameters.parind[:]])
-        
-        # ---------------------
         # define sum-of-squares object
         self.sos_object = SumOfSquares(self.model_settings.model, self.data, self.parameters)
-        
-        # calculate sos with initial parameter set
-        old_set.ss = self.sos_object.evaluate_sos_function(old_set.theta)
-        nsos = len(old_set.ss)
-        
-        # recheck certain values in model settings that are dependent on the output of the sos function
-        self.model_settings.check_dependent_model_settings_wrt_nsos(nsos)
-        
+
         # ---------------------
         # define prior object
         self.prior_object = PriorFunction(priorfun = self.model_settings.model.prior_function, 
                                        mu = self.parameters.thetamu, 
                                        sigma = self.parameters.thetasigma)
         
+        # ---------------------
+        # Define initial parameter set
+        self.initial_set = ParameterSet(theta = self.parameters.initial_value[self.parameters.parind[:]])
+        
+        # calculate sos with initial parameter set
+        self.initial_set.ss = self.sos_object.evaluate_sos_function(self.initial_set.theta)
+        nsos = len(self.initial_set.ss)
+        
         # evaluate prior with initial parameter set
-        old_set.prior = self.prior_object.evaluate_prior(old_set.theta)
+        self.initial_set.prior = self.prior_object.evaluate_prior(self.initial_set.theta)
         
         # add initial error variance to initial parameter set
-        old_set.sigma2 = self.model_settings.model.sigma2
-      
-        # ---------------------
-        # Initialize chain, error variance, and SS
-        chain = np.zeros([self.simulation_options.options.savesize, self.parameters.npar])
-        sschain = np.zeros([self.simulation_options.options.savesize, nsos])
-        if self.simulation_options.options.updatesigma:
-            s2chain = np.zeros([self.simulation_options.options.savesize, nsos])
-        else:
-            s2chain = None
-            
-        # Save initialized values to chain, s2chain, sschain
-        chainind = 0 # where we are in chain
-        chain[chainind,:] = old_set.theta       
-        sschain[chainind,:] = old_set.ss
-        if self.simulation_options.options.updatesigma:
-            s2chain[chainind,:] = self.model_settings.model.sigma2
-      
+        self.initial_set.sigma2 = self.model_settings.model.sigma2
+
+        # recheck certain values in model settings that are dependent on the output of the sos function
+        self.model_settings.check_dependent_model_settings_wrt_nsos(nsos)
         
-    
         # ---------------------
         # Update variables covariance adaptation
-        self.covariance.update_covariance_settings(old_set.theta)
+        self.covariance.update_covariance_settings(self.initial_set.theta)
         
         if self.simulation_options.options.ntry > 1:
-            self.sampling_methods.delayed_rejection.initialize_dr_metrics(self.simulation_options.options)
+            self.sampling_methods.delayed_rejection.initialize_dr_metrics(self.simulation_options.options)    
+
+    def __initialize_chains(self, chainind = 0):
+        # ---------------------
+        # Initialize chain, error variance, and SS
+        self.chain = np.zeros([self.simulation_options.options.savesize, self.parameters.npar])
+        self.sschain = np.zeros([self.simulation_options.options.savesize, self.model_settings.model.nsos])
+        if self.simulation_options.options.updatesigma:
+            self.s2chain = np.zeros([self.simulation_options.options.savesize, self.model_settings.model.nsos])
+        else:
+            self.s2chain = None
+            
+        # Save initialized values to chain, s2chain, sschain
+#        chainind = 0 # where we are in chain
+        self.chain[chainind,:] = self.initial_set.theta       
+        self.sschain[chainind,:] = self.initial_set.ss
+        if self.simulation_options.options.updatesigma:
+            self.s2chain[chainind,:] = self.model_settings.model.sigma2
         
-        # ---------------------
-        # setup progress bar
-        if self.simulation_options.options.waitbar:
-            wbarstatus = progress_bar(int(self.simulation_options.options.nsimu))
-    
-        # ---------------------
-        # displacy current settings
-        if self.simulation_options.options.verbosity >= 2:
-            self.display_current_mcmc_settings()        
-        
-        # ---------------------
-        """
-        Start main chain simulator
-        """
+    def __execute_simulator(self, chain_index, wbarstatus):
         iiadapt = 0 # adaptation counter
         iiprint = 0 # print counter
         nsimu = self.simulation_options.options.nsimu
                 
-        rejected = {'total': 0, 'in_adaptation_interval': 0, 'outside_bounds': 0}
+        self.rejected = {'total': 0, 'in_adaptation_interval': 0, 'outside_bounds': 0}
+        self.old_set = self.initial_set
         
         for isimu in range(1, nsimu): # simulation loop
             # update indexing
             iiadapt += 1 # local adaptation index
             iiprint += 1 # local print index
-            chainind += 1
+            chain_index += 1
             # progress bar
             if self.simulation_options.options.waitbar:
                 wbarstatus.update(isimu)
                 
-            self.message(self.simulation_options.options.verbosity, 100, str('i:%d/%d\n'.format(isimu,nsimu)));
+            self.__message(self.simulation_options.options.verbosity, 100, str('i:%d/%d\n'.format(isimu,nsimu)));
             
             # ---------------------------------------------------------
             # METROPOLIS ALGORITHM
             accept, new_set, outbound, npar_sample_from_normal = self.sampling_methods.metropolis.run_metropolis_step(
-                    old_set = old_set, parameters = self.parameters, R = self.covariance.R, 
+                    old_set = self.old_set, parameters = self.parameters, R = self.covariance.R, 
                     prior_object = self.prior_object, sos_object = self.sos_object)
     
             # --------------------------------------------------------
@@ -172,7 +187,7 @@ class MCMC:
             if self.simulation_options.options.ntry > 1 and accept == 0:
                 # perform a new try according to delayed rejection 
                 accept, new_set, outbound = self.sampling_methods.delayed_rejection.run_delayed_rejection(
-                        old_set = old_set, new_set = new_set, RDR = self.covariance.RDR, ntry = self.simulation_options.options.ntry,
+                        old_set = self.old_set, new_set = new_set, RDR = self.covariance.RDR, ntry = self.simulation_options.options.ntry,
                         parameters = self.parameters, invR = self.covariance.invR, 
                         sosobj = self.sos_object, priorobj = self.prior_object)
     
@@ -181,87 +196,58 @@ class MCMC:
             # UPDATE CHAIN
             if accept:
                 # accept
-                chain[chainind,:] = new_set.theta
-                old_set = new_set
+                self.chain[chain_index,:] = new_set.theta
+                self.old_set = new_set
             else:
                 # reject
-                chain[chainind,:] = old_set.theta
-                rejected['total'] += 1
-                rejected['in_adaptation_interval'] += 1
+                self.chain[chain_index,:] = self.old_set.theta
+                self.rejected['total'] += 1
+                self.rejected['in_adaptation_interval'] += 1
                 if outbound:
-                    rejected['outside_bounds'] += 1
+                    self.rejected['outside_bounds'] += 1
                     
+            # --------------------------------------------------------
+            # PRINT REJECTION STATISTICS    
+            if self.simulation_options.options.printint and iiprint + 1 == self.simulation_options.options.printint:
+                self.__message(self.simulation_options.options.verbosity, 2, 
+                               str('i:{} ({},{},{})\n'.format(isimu,
+                                   self.rejected['total']*isimu**(-1)*100, self.rejected['in_adaptation_interval']*iiadapt**(-1)*100, 
+                                   self.rejected['outside_bounds']*isimu**(-1)*100)))
+                iiprint = 0 # reset print counter
+                
             # UPDATE SUM-OF-SQUARES CHAIN
-            sschain[chainind,:] = old_set.ss
+            self.sschain[chain_index,:] = self.old_set.ss
             
             # UPDATE ERROR VARIANCE
             if self.simulation_options.options.updatesigma:
-                new_sigma2 = self.error_variance.update_error_variance(old_set.ss, self.model_settings.model)
+                new_sigma2 = self.error_variance.update_error_variance(self.old_set.ss, self.model_settings.model)
 
-                s2chain[chainind,:] = new_sigma2
+                self.s2chain[chain_index,:] = new_sigma2
             
             # --------------------------------------------------------
             # ADAPTATION
             if self.simulation_options.options.adaptint > 0 and iiadapt == self.simulation_options.options.adaptint:
                 self.covariance = self.sampling_methods.adaptation.run_adaptation(
                         covariance = self.covariance, options = self.simulation_options.options, 
-                        isimu = isimu, iiadapt = iiadapt, rejected = rejected, 
-                        chain = chain, chainind = chainind, u = npar_sample_from_normal, 
+                        isimu = isimu, iiadapt = iiadapt, rejected = self.rejected, 
+                        chain = self.chain, chainind = chain_index, u = npar_sample_from_normal, 
                         npar = self.parameters.npar, new_set = new_set)
                 
                 iiadapt = 0 # reset local adaptation index
-                rejected['in_adaptation_interval'] = 0 # reset local rejection index
-                
-            # --------------------------------------------------------
-            # PRINT REJECTION STATISTICS    
-            if self.simulation_options.options.printint and iiprint + 1 == self.simulation_options.options.printint:
-                self.message(self.simulation_options.options.verbosity, 2, 
-                               str('i:{} ({},{},{})\n'.format(isimu,
-                                   rejected['total']*isimu**(-1)*100, rejected['in_adaptation_interval']*iiadapt**(-1)*100, 
-                                   rejected['outside_bounds']*isimu**(-1)*100)))
-                iiprint = 0 # reset print counter
-                
-        # -------------------------------------------------------------------------
-        """
-        End main chain simulator
-        """
-        end_time = time.clock()
-        simulation_time = end_time - start_time
-
-        
-        # define last set of values
-        thetalast = old_set.theta
-
-#        # --------------------------------------------                
-#        # CREATE OPTIONS OBJECT FOR DEBUG
-#        actual_options = mcclass.Options(nsimu=nsimu, adaptint=adaptint, ntry=ntry, 
-#                             method=method, printint=printint,
-#                             lastadapt = lastadapt, burnintime = burnintime,
-#                             waitbar = waitbar, debug = debug, qcov = qcov,
-#                             updatesigma = updatesigma, noadaptind = noadaptind, 
-#                             stats = stats, drscale = drscale, adascale = adascale,
-#                             savesize = savesize, maxmem = maxmem, chainfile = chainfile,
-#                             s2chainfile = s2chainfile, sschainfile = sschainfile,
-#                             savedir = savedir, skip = skip, label = label, RDR = RDR,
-#                             verbosity = verbosity,
-#                             priorupdatestart = priorupdatestart, qcov_adjust = qcov_adjust,
-#                             burnin_scale = burnin_scale, alphatarget = alphatarget, 
-#                             etaparam = etaparam, initqcovn = initqcovn, doram = doram)
-#        
-#        actual_model_settings = mcclass.Model(
-#                ssfun = ssfun, priorfun = priorfun, priortype = priortype, 
-#                priorupdatefun = priorupdatefun, priorpars = priorpars, 
-#                modelfun = modelfun, sigma2 = sigma2, N = N, S20 = S20, N0 = N0, 
-#                nbatch = nbatch)
+                self.rejected['in_adaptation_interval'] = 0 # reset local rejection index
+       
+    def __generate_simulation_results(self):
         # --------------------------------------------
         # BUILD RESULTS OBJECT
         self.simulation_results = ResultsStructure() # inititialize
             
-#        self.simulation_results.add_basic(nsimu = nsimu, rej = rej, rejl = rejl, R = R, covchain = covchain, 
-#                      meanchain = meanchain, names = names, lowerlims = low, 
-#                      upperlims = upp, theta = thetalast, parind = parind, 
-#                      local = local, simutime = simutime, qcovorig = qcovorig)
-#                      
+        self.simulation_results.add_basic(options = self.simulation_options.options,
+                                          model = self.model_settings.model,
+                                          covariance = self.covariance,
+                                          parameters = self.parameters,
+                                          rejected = self.rejected, simutime = self.simulation_time, 
+                                          theta = self.old_set.theta)
+                
 #        self.simulation_results.add_updatesigma(updatesigma = updatesigma, sigma2 = sigma2,
 #                                S20 = S20, N0 = N0)
 #        
@@ -277,20 +263,46 @@ class MCMC:
 #        self.simulation_results.add_model(model = actual_model_settings)
         
         # add chain, s2chain, and sschain
-        self.simulation_results.add_chain(chain = chain)
-        self.simulation_results.add_s2chain(s2chain = s2chain)
-        self.simulation_results.add_sschain(sschain = sschain)
+        self.simulation_results.add_chain(chain = self.chain)
+        self.simulation_results.add_s2chain(s2chain = self.s2chain)
+        self.simulation_results.add_sschain(sschain = self.sschain)
         
         self.simulation_results.results # assign dictionary
         
-    def message(self, verbosity, level, printthis):
+    # display chain statistics
+    def chainstats(self, chain, results = []):
+        # 
+        m,n = chain.shape
+        
+        if results == []: # results is dictionary
+            names = []
+            for ii in range(n):
+                names.append(str('P{}'.format(ii)))
+        else:
+            names = results['names']
+        
+        meanii = []
+        stdii = []
+        for ii in range(n):
+            meanii.append(np.mean(chain[:,ii]))
+            stdii.append(np.std(chain[:,ii]))
+            
+        print('\n---------------------')
+        print('{:10s}: {:>10s} {:>10s}'.format('name','mean','std'))
+        for ii in range(n):
+            if meanii[ii] > 1e4:
+                print('{:10s}: {:10.4g} {:10.4g}'.format(names[ii],meanii[ii],stdii[ii]))
+            else:
+                print('{:10s}: {:10.4f} {:10.4f}'.format(names[ii],meanii[ii],stdii[ii]))
+            
+    def __message(self, verbosity, level, printthis):
         printed = False
         if verbosity >= level:
             print(printthis)
             printed = True
         return printed
     
-    def display_current_mcmc_settings(self):
+    def __display_current_mcmc_settings(self):
         self.model_settings.display_model_settings()
         self.simulation_options.display_simulation_options()
         self.covariance.display_covariance_settings()

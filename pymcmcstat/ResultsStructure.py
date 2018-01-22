@@ -15,26 +15,28 @@ class ResultsStructure:
     def __init__(self):
         self.results = {} # initialize empty dictionary
         
-    def add_basic(self, nsimu, rej, rejl, R, covchain, meanchain, names, 
-                  lowerlims, upperlims, theta, parind, local, simutime, qcovorig):
+    def add_basic(self, options, model, covariance, parameters, rejected, simutime, theta):
+#                  nsimu, rejected, R, covchain, meanchain, names, 
+#                  lowerlims, upperlims, theta, parind, local, simutime, qcovorig):
     
         self.results['theta'] = theta
         
-        self.results['parind'] = parind
-        self.results['local'] = local
+        self.results['parind'] = parameters.parind
+        self.results['local'] = parameters.local
         
-        self.results['rejected'] = rej*(nsimu**(-1)) # total rejected
-        self.results['ulrejected'] = rejl*(nsimu**(-1)) # rejected due to sampling outside limits
-        self.results['R'] = R
-        self.results['qcov'] = np.dot(R.transpose(),R)
-        self.results['cov'] = covchain
-        self.results['mean'] = meanchain
-        self.results['names'] = names
-        self.results['limits'] = [lowerlims[parind[:]], upperlims[parind[:]]]
+        self.results['total_rejected'] = rejected['total']*(options.nsimu**(-1)) # total rejected
+        self.results['rejected_outside_bounds'] = rejected['outside_bounds']*(options.nsimu**(-1)) # rejected due to sampling outside limits
+        self.results['R'] = covariance.R
+        self.results['qcov'] = np.dot(covariance.R.transpose(),covariance.R)
+        self.results['cov'] = covariance.covchain
+        self.results['mean'] = covariance.meanchain
+        self.results['names'] = parameters.names
+        self.results['limits'] = [parameters.lower_limits[parameters.parind[:]], 
+                     parameters.upper_limits[parameters.parind[:]]]
         
-        self.results['nsimu'] = nsimu
+        self.results['nsimu'] = options.nsimu
         self.results['simutime'] = simutime
-        self.results['qcovorig'] = qcovorig
+        self.results['qcovorig'] = covariance.qcovorig
     
     def add_updatesigma(self, updatesigma, sigma2, S20, N0):
         self.results['updatesigma'] = updatesigma
