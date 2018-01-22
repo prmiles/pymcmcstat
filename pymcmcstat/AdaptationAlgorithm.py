@@ -39,15 +39,15 @@ class AdaptationAlgorithm:
         doram = options.doram
         
         # covariance 
-        last_index_since_adaptation = covariance.last_index_since_adaptation
-        R = covariance.R
-        oldcovchain = covariance.covchain
-        oldmeanchain = covariance.meanchain
-        oldwsum = covariance.wsum
-        no_adapt_index = covariance.no_adapt_index
+        last_index_since_adaptation = covariance._last_index_since_adaptation
+        R = covariance._R
+        oldcovchain = covariance._covchain
+        oldmeanchain = covariance._meanchain
+        oldwsum = covariance._wsum
+        no_adapt_index = covariance._no_adapt_index
         
-        qcov_scale = covariance.qcov_scale
-        qcov = covariance.qcov
+        qcov_scale = covariance._qcov_scale
+        qcov = covariance._qcov
         
         if isimu < burnintime:
             # during burnin no adaptation, just scaling down
@@ -114,10 +114,10 @@ class AdaptationAlgorithm:
           
         
         
-        covariance.update_covariance_from_adaptation(R, covchain, meanchain, wsum, 
+        covariance._update_covariance_from_adaptation(R, covchain, meanchain, wsum, 
                                           last_index_since_adaptation, iiadapt)
         
-        covariance.update_covariance_for_delayed_rejection_from_adaptation(RDR = RDR, invR = invR)
+        covariance._update_covariance_for_delayed_rejection_from_adaptation(RDR = RDR, invR = invR)
         
         return covariance
     
