@@ -60,10 +60,11 @@ class MCMC:
         
         if use_previous_results == True:
             if self._mcmc_status == True:
-                self.__expand_chains()
                 self.parameters._results_to_params(self.simulation_results.results, 1)
-                self.__restart_simulation()
+                self.__initialize_simulation()
+                self.__expand_chains()
         else:
+            self.__chain_index = 0 # start index at zero
             self.__initialize_simulation()
             self.__initialize_chains(chainind = self.__chain_index)
         # ---------------------
@@ -126,7 +127,6 @@ class MCMC:
         self.simulation_options._check_dependent_simulation_options(self.data, self.model_settings)
         self.model_settings._check_dependent_model_settings(self.data, self.simulation_options)
         
-        self.__chain_index = 0 # start index at zero
         # open and parse the parameter structure
         self.parameters._openparameterstructure(self.model_settings.nbatch)
         # check initial parameter values are inside range
@@ -175,10 +175,10 @@ class MCMC:
 
     def __initialize_chains(self, chainind):
         # Initialize chain, error variance, and SS
-        self.__chain = np.zeros([self.simulation_options.savesize, self.parameters.npar])
-        self.__sschain = np.zeros([self.simulation_options.savesize, self.model_settings.nsos])
+        self.__chain = np.zeros([self.simulation_options.nsimu, self.parameters.npar])
+        self.__sschain = np.zeros([self.simulation_options.nsimu, self.model_settings.nsos])
         if self.simulation_options.updatesigma:
-            self.__s2chain = np.zeros([self.simulation_options.savesize, self.model_settings.nsos])
+            self.__s2chain = np.zeros([self.simulation_options.nsimu, self.model_settings.nsos])
         else:
             self.__s2chain = None
             
@@ -188,64 +188,12 @@ class MCMC:
         if self.simulation_options.updatesigma:
             self.__s2chain[chainind,:] = self.model_settings.sigma2
         
-    def __restart_simulation(self):
-        # ---------------------------------
-        # check dependent parameters
-        self.simulation_options._check_dependent_simulation_options(self.data, self.model_settings)
-        self.model_settings._check_dependent_model_settings(self.data, self.simulation_options)
-
-        # open and parse the parameter structure
-        self.parameters._openparameterstructure(self.model_settings.nbatch)
-        # check initial parameter values are inside range
-        self.parameters._check_initial_values_wrt_parameter_limits()
-        # add check that prior standard deviation > 0
-        self.parameters._check_prior_sigma(self.simulation_options.verbosity)
-        # display parameter settings
-        self.parameters.display_parameter_settings(self.simulation_options)
-        
-        # setup covariance matrix and initial Cholesky decomposition
-        self._covariance._initialize_covariance_settings(self.parameters, self.simulation_options)
-        
-        # ---------------------
-        # define sum-of-squares object
-        self.__sos_object = SumOfSquares(self.model_settings, self.data, self.parameters)
-
-        # ---------------------
-        # define prior object
-        self.__prior_object = PriorFunction(priorfun = self.model_settings.prior_function, 
-                                       mu = self.parameters._thetamu, 
-                                       sigma = self.parameters._thetasigma)
-        
-        # ---------------------
-        # Define initial parameter set
-        self.__initial_set = ParameterSet(theta = self.parameters._initial_value[self.parameters._parind[:]])
-        
-        # calculate sos with initial parameter set
-        self.__initial_set.ss = self.__sos_object.evaluate_sos_function(self.__initial_set.theta)
-        nsos = len(self.__initial_set.ss)
-        
-        # evaluate prior with initial parameter set
-        self.__initial_set.prior = self.__prior_object.evaluate_prior(self.__initial_set.theta)
-        
-        # add initial error variance to initial parameter set
-        self.__initial_set.sigma2 = self.model_settings.sigma2
-
-        # recheck certain values in model settings that are dependent on the output of the sos function
-        self.model_settings._check_dependent_model_settings_wrt_nsos(nsos)
-        
-        # ---------------------
-        # Update variables covariance adaptation
-        self._covariance._update_covariance_settings(self.__initial_set.theta)
-        
-        if self.simulation_options.ntry > 1:
-            self._sampling_methods.delayed_rejection._initialize_dr_metrics(self.simulation_options)    
-        
     def __expand_chains(self):
         # continuing simulation, so we must expand storage arrays
-        zero_chain = np.zeros([self.simulation_options.savesize, self.parameters.npar])
-        zero_sschain = np.zeros([self.simulation_options.savesize, self.model_settings.nsos])
+        zero_chain = np.zeros([self.simulation_options.nsimu-1, self.parameters.npar])
+        zero_sschain = np.zeros([self.simulation_options.nsimu-1, self.model_settings.nsos])
         if self.simulation_options.updatesigma:
-            zero_s2chain = np.zeros([self.simulation_options.savesize, self.model_settings.nsos])
+            zero_s2chain = np.zeros([self.simulation_options.nsimu-1, self.model_settings.nsos])
         else:
             zero_s2chain = None
             
