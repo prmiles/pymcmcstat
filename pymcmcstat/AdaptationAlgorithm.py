@@ -103,6 +103,8 @@ class AdaptationAlgorithm:
                     self.__message(options.verbosity, 0, '{} {}'.format(errstr, rejected['in_adaptation_interval']*(iiadapt**(-1))*100))
         
             # update dram covariance matrix
+            RDR = None
+            invR = None
             if ntry > 1: # delayed rejection
                 RDR = []
                 invR = []
@@ -116,7 +118,7 @@ class AdaptationAlgorithm:
         
         covariance._update_covariance_from_adaptation(R, covchain, meanchain, wsum, 
                                           last_index_since_adaptation, iiadapt)
-        
+
         covariance._update_covariance_for_delayed_rejection_from_adaptation(RDR = RDR, invR = invR)
         
         return covariance

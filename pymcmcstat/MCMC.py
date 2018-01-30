@@ -70,7 +70,7 @@ class MCMC:
         # ---------------------
         # setup progress bar
         if self.simulation_options.waitbar:
-            wbarstatus = progress_bar(iters = int(self.simulation_options.nsimu))
+            self.__wbarstatus = progress_bar(iters = int(self.simulation_options.nsimu))
             
         # ---------------------
         # displacy current settings
@@ -81,7 +81,7 @@ class MCMC:
         """
         Execute main simulator
         """
-        self.__execute_simulator(wbarstatus = wbarstatus)
+        self.__execute_simulator()
         
         end_time = time.clock()
         self.__simulation_time = end_time - start_time
@@ -205,7 +205,7 @@ class MCMC:
         else:
             self.__s2chain = None
         
-    def __execute_simulator(self, wbarstatus):
+    def __execute_simulator(self):
         iiadapt = 0 # adaptation counter
         iiprint = 0 # print counter
         nsimu = self.simulation_options.nsimu
@@ -220,7 +220,7 @@ class MCMC:
             self.__chain_index += 1
             # progress bar
             if self.simulation_options.waitbar:
-                wbarstatus.update(isimu)
+                self.__wbarstatus.update(isimu)
                 
             self.__message(self.simulation_options.verbosity, 100, str('i:%d/%d\n'.format(isimu,nsimu)));
 
@@ -250,7 +250,9 @@ class MCMC:
             
             # UPDATE ERROR VARIANCE
             if self.simulation_options.updatesigma:
-                self.__s2chain[self.__chain_index,:] = self._error_variance.update_error_variance(self.__old_set.ss, self.model_settings)
+                sigma2 = self._error_variance.update_error_variance(self.__old_set.ss, self.model_settings)
+                self.__s2chain[self.__chain_index,:] = sigma2
+                self.__old_set.sigma2 = sigma2
 
             # ADAPTATION
             if self.simulation_options.adaptint > 0 and iiadapt == self.simulation_options.adaptint:
@@ -286,8 +288,8 @@ class MCMC:
 #            self.simulation_results.add_dram(dodram = dodram, drscale = drscale, iacce = iacce,
 #                         alpha_count = A_count, RDR = RDR, nsimu = nsimu, rej = rej)
 #        
-#        self.simulation_results.add_options(options = actual_options)
-#        self.simulation_results.add_model(model = actual_model_settings)
+        self.simulation_results.add_options(options = self.simulation_options)
+        self.simulation_results.add_model(model = self.model_settings)
         
         # add chain, s2chain, and sschain
         self.simulation_results.add_chain(chain = self.__chain)
