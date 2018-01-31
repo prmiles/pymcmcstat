@@ -14,10 +14,11 @@ import sys
 #import math
 import numpy as np
 from pymcmcstat.MCMC import MCMC
+
 #import time
 
 # for graphics
-from pymcmcstat import mcmcplot as mcpl
+#from pymcmcstat import mcmcplot as mcpl
 
 # for graphics
 #from pymcmcstat import mcmcplot as mcpl
@@ -67,7 +68,7 @@ mcstat.parameters.add_model_parameter(name = 'm', theta0 = 1., minimum = -10, ma
 mcstat.parameters.add_model_parameter(name = 'b', theta0 = -5., minimum = -10, maximum = 100)
 
 # update simulation options
-mcstat.simulation_options.define_simulation_options(nsimu = int(5.0e4), updatesigma = 1, method = 'dram',
+mcstat.simulation_options.define_simulation_options(nsimu = int(5.0e3), updatesigma = 1, method = 'dram',
                      adaptint = 100, verbosity = 1, waitbar = 1)
 
 # update model settings
@@ -94,6 +95,7 @@ burnin = 2000
 # display chain statistics
 mcstat.chainstats(chain[burnin:,:], results)
 # generate mcmc plots
+mcpl = mcstat.mcmcplot # initialize plotting methods
 mcpl.plot_density_panel(chain[burnin:,:], names)
 mcpl.plot_chain_panel(chain[burnin:,:], names)
 mcpl.plot_pairwise_correlation_panel(chain[burnin:,:], names)
