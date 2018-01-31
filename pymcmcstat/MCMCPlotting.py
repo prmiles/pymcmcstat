@@ -34,14 +34,6 @@ class MCMCPlotting:
             
             # define x grid
             chain_grid = self.__make_x_grid(chain)        
-            
-            ss = 2 # typically defined this way in matlab version
-            s = self.__scale_bandwidth(chain)
-            
-            if ss > 0:
-                s = ss*s
-            elif s<0:
-                s = abs(ss)
 
             # Compuate kernel density estimate
             kde = KDEMultivariate(chain, bw = 'normal_reference', var_type = 'c')
@@ -52,7 +44,6 @@ class MCMCPlotting:
             if hist_on == 1: # include histograms
                 hist(chain, normed=True)
                 
-#            pyplot.plot(chain_grid, chain_density, 'k')
             pyplot.plot(chain_grid, kde.pdf(chain_grid), 'k')
             # format figure
             pyplot.xlabel(names[ii])
