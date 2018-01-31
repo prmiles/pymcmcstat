@@ -32,6 +32,7 @@ from PriorFunction import PriorFunction
 from ParameterSet import ParameterSet
 from SamplingMethods import SamplingMethods
 from ErrorVarianceEstimator import ErrorVarianceEstimator
+from MCMCPlotting import MCMCPlotting
 #import parameterfunctions as parfun
 #import generalfunctions as genfun
 #import mcmcfunctions as mcfun
@@ -46,6 +47,7 @@ class MCMC:
         self.model_settings = ModelSettings()
         self.simulation_options = SimulationOptions()
         self.parameters = ModelParameters()
+        self.mcmcplot = MCMCPlotting()
         
         # private variables
         self._error_variance = ErrorVarianceEstimator()
