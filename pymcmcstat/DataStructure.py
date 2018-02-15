@@ -16,6 +16,7 @@ class DataStructure:
         self.xdata = [] # initialize list
         self.ydata = [] # initialize list
         self.n = [] # initialize list - number of data points
+        self.shape = [] # shape of ydata - important if information stored as matrix
         self.weight = [] # initialize list - weight of data set
         self.user_defined_object = [] # user defined object
         
@@ -56,6 +57,8 @@ class DataStructure:
             else:
                 self.n.append(y.size) # assume y is a numpy array
         
+        self.shape.append(y.shape)
+        
         self.weight.append(weight)
         # add user defined objects option
         self.user_defined_object.append(user_defined_object)
@@ -68,7 +71,18 @@ class DataStructure:
         return True
     
     def get_number_of_batches(self):
-        return np.array([len(self.n)])
+        dshapes = self.shape
+        ndatabatches = len(dshapes)
+        nrows = []
+        ncols = []
+        for ii in xrange(ndatabatches):
+            nrows.append(dshapes[ii][0])
+            if len(dshapes[0]) != 1:
+                ncols.append(dshapes[ii][1])
+        
+        self.nbatch = sum(ncols)
+        
+        return self.nbatch
     
     def get_number_of_observations(self):
         n = np.sum(self.n)
