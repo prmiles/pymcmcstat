@@ -55,7 +55,7 @@ class DataStructure:
             if isinstance(y, list): # y is a list
                 self.n.append(len(y))
             else:
-                self.n.append(y.size) # assume y is a numpy array
+                self.n.append(y.shape[0]) # assume y is a numpy array - nrows is n
         
         self.shape.append(y.shape)
         
@@ -71,6 +71,10 @@ class DataStructure:
         return True
     
     def get_number_of_batches(self):
+        self.nbatch = len(self.shape)
+        return self.nbatch
+    
+    def get_number_of_data_sets(self):
         dshapes = self.shape
         ndatabatches = len(dshapes)
         nrows = []
@@ -80,9 +84,9 @@ class DataStructure:
             if len(dshapes[0]) != 1:
                 ncols.append(dshapes[ii][1])
         
-        self.nbatch = sum(ncols)
+        self.ndatasets = sum(ncols)
         
-        return self.nbatch
+        return self.ndatasets
     
     def get_number_of_observations(self):
         n = np.sum(self.n)
