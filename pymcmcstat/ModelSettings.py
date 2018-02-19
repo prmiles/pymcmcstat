@@ -96,7 +96,7 @@ class ModelSettings:
             self.S20 = self.sigma2  # prior parameters for the error variance
         
     def _check_dependent_model_settings_wrt_nsos(self, nsos):
-        # in matlab version, ny = length(sos) where ss is the output from the sos evaluation
+        # in matlab version, ny = length(sos) where sos is the output from the sos evaluation
         if len(self.S20)==1:
             self.S20 = np.ones(nsos)*self.S20
             

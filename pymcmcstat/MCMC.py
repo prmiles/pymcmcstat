@@ -33,6 +33,7 @@ from ParameterSet import ParameterSet
 from SamplingMethods import SamplingMethods
 from ErrorVarianceEstimator import ErrorVarianceEstimator
 from MCMCPlotting import MCMCPlotting
+from PredictionIntervals import PredictionIntervals
 #import parameterfunctions as parfun
 #import generalfunctions as genfun
 #import mcmcfunctions as mcfun
@@ -47,7 +48,6 @@ class MCMC:
         self.model_settings = ModelSettings()
         self.simulation_options = SimulationOptions()
         self.parameters = ModelParameters()
-        self.mcmcplot = MCMCPlotting()
         
         # private variables
         self._error_variance = ErrorVarianceEstimator()
@@ -91,6 +91,9 @@ class MCMC:
         # --------------------
         # Generate Results
         self.__generate_simulation_results()
+        self.mcmcplot = MCMCPlotting()
+        self.PI = PredictionIntervals()
+        
         self._mcmc_status = True # simulation has been performed
         
     # display chain statistics

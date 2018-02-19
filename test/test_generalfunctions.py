@@ -94,21 +94,21 @@ class Nordf_Test(unittest.TestCase):
     def test_does_nordf_return_float_for_scalar_input(self):
         self.assertIsInstance(nordf(0), float)
         
-# --------------------------
-# empirical_quantiles 
-# --------------------------
-class Empirical_Quantiles_Test(unittest.TestCase):
-
-    def test_does_default_empirical_quantiles_return_3_element_array(self):
-        test_out = empirical_quantiles(np.random.rand(10,1))
-        self.assertEqual(test_out.shape, (3,1), msg = 'Default output shape is (3,1)')
-        
-    def test_does_non_default_empirical_quantiles_return_2_element_array(self):
-        test_out = empirical_quantiles(np.random.rand(10,1), p = np.array([0.2, 0.5]))
-        self.assertEqual(test_out.shape, (2,1), msg = 'Non-default output shape should be (2,1)')
-        
-    def test_empirical_quantiles_should_not_support_list_input(self):
+## --------------------------
+## empirical_quantiles 
+## --------------------------
+#class Empirical_Quantiles_Test(unittest.TestCase):
+#
+#    def test_does_default_empirical_quantiles_return_3_element_array(self):
 #        test_out = empirical_quantiles(np.random.rand(10,1))
-        with self.assertRaises(AttributeError):
-#            empirical_quantiles(test_out)
-            empirical_quantiles([-1,0,1])
+#        self.assertEqual(test_out.shape, (3,1), msg = 'Default output shape is (3,1)')
+#        
+#    def test_does_non_default_empirical_quantiles_return_2_element_array(self):
+#        test_out = empirical_quantiles(np.random.rand(10,1), p = np.array([0.2, 0.5]))
+#        self.assertEqual(test_out.shape, (2,1), msg = 'Non-default output shape should be (2,1)')
+#        
+#    def test_empirical_quantiles_should_not_support_list_input(self):
+##        test_out = empirical_quantiles(np.random.rand(10,1))
+#        with self.assertRaises(AttributeError):
+##            empirical_quantiles(test_out)
+#            empirical_quantiles([-1,0,1])
