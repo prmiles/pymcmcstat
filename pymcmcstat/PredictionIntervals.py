@@ -199,6 +199,8 @@ class PredictionIntervals:
                 if s2chain is not None:
                     s2elem = s2chain[iisample[kk],self.__s2chain_index[ii][0]:self.__s2chain_index[ii][1]]
                     opred = self._observation_sample(s2elem, ypred, sstype)
+                else:
+                    opred = np.zeros([self.__nrow[ii], self.__ncol[ii]])
                    
                 # store model prediction
                 ysave[kk,:,:] = ypred # store model output
