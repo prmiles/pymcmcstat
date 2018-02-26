@@ -87,7 +87,8 @@ class PredictionIntervals:
 #        print('ndatabatches = {}'.format(self.__ndatabatches))
         
         # analyze structure of s2chain with respect to model output
-        self._analyze_s2chain()
+        if self.__s2chain is not None:
+            self._analyze_s2chain()
         
     def _analyze_s2chain(self):
         """
