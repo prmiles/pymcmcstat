@@ -102,6 +102,9 @@ class MCMCPlotting:
             # format figure
             pyplot.xlabel('Iteration')
             pyplot.ylabel(str('{}'.format(names[ii])))
+            if ii+1 <= ns1*ns2 - ns2:
+                pyplot.xlabel('')
+                
             pyplot.tight_layout(rect=[0, 0.03, 1, 0.95],h_pad=1.0) # adjust spacing
             
         return f
