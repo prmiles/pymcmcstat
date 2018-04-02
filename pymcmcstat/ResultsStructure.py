@@ -66,10 +66,12 @@ class ResultsStructure:
         self.results['priorpars'] = priorpars
         
     def add_options(self, options = None):
-        self.results['options'] = options
-        
+        # must convert 'options' object to a dictionary
+        self.results['options'] = options.__dict__
+
     def add_model(self, model = None):
-        self.results['model'] = model
+        # must convert 'model' object to a dictionary
+        self.results['model'] = model.__dict__
         
     def add_chain(self, chain = None):
         self.results['chain'] = chain
