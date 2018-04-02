@@ -16,8 +16,8 @@ as well as several types of predictive tests.
 """
 
 # import required packages
-import sys
-#import os
+#import sys
+import os
 import time
 import numpy as np
 import json
@@ -218,6 +218,8 @@ class MCMC:
     def __execute_simulator(self):
         iiadapt = 0 # adaptation counter
         iiprint = 0 # print counter
+        savecount = 0 # save counter
+        lastbin = 0 # initialize bin counter
         nsimu = self.simulation_options.nsimu
                 
         self.__rejected = {'total': 0, 'in_adaptation_interval': 0, 'outside_bounds': 0}
@@ -227,6 +229,7 @@ class MCMC:
             # update indexing
             iiadapt += 1 # local adaptation index
             iiprint += 1 # local print index
+            savecount += 1 # counter for saving to bin files
             self.__chain_index += 1
             # progress bar
             if self.simulation_options.waitbar:
@@ -274,7 +277,24 @@ class MCMC:
                 
                 iiadapt = 0 # reset local adaptation index
                 self.__rejected['in_adaptation_interval'] = 0 # reset local rejection index
+                
+            # SAVE TO BIN FILE
+            if self.simulation_options.save_to_bin is True and savecount == self.simulation_options.savesize:
+                savesize = self.simulation_options.savesize
+                start = isimu - savesize
+                end = isimu
+                self.__save_chains_to_bin(start, end)
+                # reset counter
+                savecount = 0
+                lastbin = isimu
        
+        # SAVE REMAINING ELEMENTS TO BIN FILE
+        if self.simulation_options.save_to_bin is True:
+            start = lastbin
+            end = isimu + 1
+            self.__save_chains_to_bin(start, end)
+            
+            
     def __generate_simulation_results(self):
         # --------------------------------------------
         # BUILD RESULTS OBJECT
@@ -307,7 +327,38 @@ class MCMC:
         self.simulation_results.add_sschain(sschain = self.__sschain)
         
         self.simulation_results.results # assign dictionary
+    
+    def __save_chains_to_bin(self, start, end):
+#        print('start = {}, end = {}'.format(start, end))
         
+        savedir = self.simulation_options.savedir
+        
+        if not os.path.exists(savedir):
+            os.makedirs(savedir)
+        
+        chainfile = os.path.join(savedir, self.simulation_options.chainfile)
+        s2chainfile = os.path.join(savedir, self.simulation_options.s2chainfile)
+        sschainfile = os.path.join(savedir, self.simulation_options.sschainfile)
+        
+        binlogfile = os.path.join(savedir, 'binlogfile.txt')
+        binstr = datetime.datetime.now().strftime('%Y%m%d_%H%M%S\n')
+        self.__add_to_bin_log(binlogfile, binstr)
+        
+        self.__save_to_bin_file(chainfile, self.__chain[start:end,:]) 
+        self.__save_to_bin_file(sschainfile, self.__sschain[start:end,:]) 
+    
+        if self.simulation_options.updatesigma == 1:
+            self.__save_to_bin_file(s2chainfile, self.__s2chain[start:end,:]) 
+    
+    def __add_to_bin_log(self, filename, binstr):
+        with open(filename, 'a') as binfile:
+            binfile.write(binstr)
+    
+    def __save_to_bin_file(self, filename, mtx):
+        handle = open(filename, 'a')
+        np.savetxt(handle,mtx)
+        handle.close()
+    
     def __export_simulation_results_to_json_file(self, results = None):
                        
         if self.simulation_options.results_filename is None:
@@ -318,8 +369,6 @@ class MCMC:
             
         #save_dill_object(mcstat, filename)
         self.__save_json_object(results, filename)
-    
-    
     
     def __save_json_object(self, obj, filename):
         with open(filename, 'w') as out:
