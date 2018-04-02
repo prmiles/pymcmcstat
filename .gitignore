@@ -1,2 +1,4 @@
 # Compiled python modules.
 *.pyc
+*.json
+
