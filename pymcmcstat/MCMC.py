@@ -20,6 +20,8 @@ import sys
 #import os
 import time
 import numpy as np
+import json
+import datetime
 
 from DataStructure import DataStructure
 from ModelSettings import ModelSettings
@@ -34,6 +36,7 @@ from SamplingMethods import SamplingMethods
 from ErrorVarianceEstimator import ErrorVarianceEstimator
 from MCMCPlotting import MCMCPlotting
 from PredictionIntervals import PredictionIntervals
+from NumpyEncoder import NumpyEncoder
 #import parameterfunctions as parfun
 #import generalfunctions as genfun
 #import mcmcfunctions as mcfun
@@ -91,6 +94,8 @@ class MCMC:
         # --------------------
         # Generate Results
         self.__generate_simulation_results()
+        if self.simulation_options.save_to_json == True:
+            self.__export_simulation_results_to_json_file(self.simulation_results.results)
         self.mcmcplot = MCMCPlotting()
         self.PI = PredictionIntervals()
         
@@ -302,7 +307,29 @@ class MCMC:
         self.simulation_results.add_sschain(sschain = self.__sschain)
         
         self.simulation_results.results # assign dictionary
-         
+        
+    def __export_simulation_results_to_json_file(self, results = None):
+                       
+        if self.simulation_options.results_filename is None:
+            dtstr = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
+            filename = str('{}{}{}'.format(dtstr,'_','mcmc_simulation.json'))
+        else:
+            filename = self.simulation_options.results_filename
+            
+        #save_dill_object(mcstat, filename)
+        self.__save_json_object(results, filename)
+    
+    
+    
+    def __save_json_object(self, obj, filename):
+        with open(filename, 'w') as out:
+            json.dump(obj, out, sort_keys=True, indent=4, cls=NumpyEncoder)
+            
+    def load_json_object(self, filename):
+        with open(filename, 'r') as obj:
+            results = json.load(obj)
+        return results
+    
     def __update_chain(self, accept, new_set, outbound):
         if accept:
             # accept

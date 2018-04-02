@@ -67,7 +67,7 @@ class SimulationOptions:
                  label = None, RDR = None, verbosity = 1, maxiter = None, 
                  priorupdatestart = 0, qcov_adjust = 1e-8, burnin_scale = 10, 
                  alphatarget = 0.234, etaparam = 0.7, initqcovn = None,
-                 doram = None, rndseq = None):
+                 doram = None, rndseq = None, results_filename = None, save_to_json = False):
         
         method_dictionary = {
             'mh': {'adaptint': 0, 'ntry': 1, 'doram': 0, 'adascale': adascale}, 
@@ -138,6 +138,8 @@ class SimulationOptions:
         self.s2chainfile = s2chainfile
         self.sschainfile = sschainfile
         self.savedir = savedir
+        self.results_filename = results_filename
+        self.save_to_json = save_to_json
         
         self.__options_set = True # options have been defined
         
