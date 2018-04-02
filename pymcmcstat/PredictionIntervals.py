@@ -24,6 +24,7 @@ import numpy as np
 import sys
 from scipy.interpolate import interp1d
 from pymcmcstat.DataStructure import DataStructure
+from pymcmcstat.ModelSettings import ModelSettings
 import matplotlib.pyplot as plt
 
 class PredictionIntervals:
@@ -58,7 +59,12 @@ class PredictionIntervals:
         self.__s2chain = results['s2chain']
         self.__parind = results['parind']
         self.__local = results['local']
-        self.__nbatch = results['model'].nbatch
+        # Check how 'model' object was saved in results structure
+        if isinstance(results['model'], ModelSettings):
+            self.__nbatch = results['model'].nbatch
+        else:
+            self.__nbatch = results['model']['nbatch']
+            
         self.__theta = results['theta']
         
         if 'sstype' in results:
