@@ -86,7 +86,7 @@ class ModelParameters:
         names = results['names']
         local = results['local']
         theta = results['theta']
-        
+
         for ii in range(len(parind)):
             if use_local == 1 and local[parind[ii]] == 1:
                 name = names[ii] # unclear usage
