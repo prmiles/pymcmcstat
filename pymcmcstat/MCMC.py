@@ -20,6 +20,8 @@ import sys
 #import os
 import time
 import numpy as np
+import json
+import datetime
 
 from DataStructure import DataStructure
 from ModelSettings import ModelSettings
@@ -302,7 +304,22 @@ class MCMC:
         self.simulation_results.add_sschain(sschain = self.__sschain)
         
         self.simulation_results.results # assign dictionary
-         
+        
+    def __export_simulation_results_to_json_file(self, results = None):
+                       
+        if self.simulation_options.results_filename is None:
+            dtstr = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
+            filename = str('{}{}{}'.format(dtstr,'_','mcmc_simulation'))
+        else:
+            filename = self.simulation_options.results_filename
+            
+        #save_dill_object(mcstat, filename)
+        self.__save_json_object(results, filename)
+    
+    def __save_json_object(self, obj, filename):
+        with open(filename, 'w') as out:
+            json.dump(obj, out, sort_keys=True, indent=4)
+                
     def __update_chain(self, accept, new_set, outbound):
         if accept:
             # accept
