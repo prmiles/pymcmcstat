@@ -25,6 +25,7 @@ import sys
 from scipy.interpolate import interp1d
 from pymcmcstat.DataStructure import DataStructure
 from pymcmcstat.ModelSettings import ModelSettings
+from pymcmcstat.progressbar import progress_bar
 import matplotlib.pyplot as plt
 
 class PredictionIntervals:
@@ -144,7 +145,7 @@ class PredictionIntervals:
                 sys.exit('Unclear data structure: error variances do not match size of model output')
         
         
-    def generate_prediction_intervals(self, sstype = None, nsample = 500, calc_pred_int = 'on'):
+    def generate_prediction_intervals(self, sstype = None, nsample = 500, calc_pred_int = 'on', waitbar = False):
         
         # extract chain & s2chain from results
         chain = self.__chain
@@ -180,6 +181,12 @@ class PredictionIntervals:
             iisample = np.ceil(np.random.rand(nsample,1)*nsimu) - 1
             iisample = iisample.astype(int)
         
+        # ---------------------
+        # setup progress bar
+        print('Generating credible/prediction intervals:\n')
+        if waitbar is True:
+            self.__wbarstatus = progress_bar(iters = int(nsample))
+            
         # loop through data sets
         theta = self.__theta
         credible_intervals = []
@@ -191,6 +198,10 @@ class PredictionIntervals:
             osave = np.zeros([nsample, self.__nrow[ii], self.__ncol[ii]])
             
             for kk in xrange(nsample):
+                # progress bar
+                if waitbar is True:
+                    self.__wbarstatus.update(kk)
+                
                 theta[self.__parind[:]] = chain[iisample[kk],:]
                 # some parameters may only apply to certain batch sets
                 test1 = self.__local == 0
@@ -231,6 +242,8 @@ class PredictionIntervals:
         self.intervals = {'credible_intervals': credible_intervals, 
                'prediction_intervals': prediction_intervals}
     
+        print('\nInterval generation complete\n')
+        
     def _observation_sample(self, s2elem, ypred, sstype):
         # check shape of s2elem and ypred
         my, ny = ypred.shape
