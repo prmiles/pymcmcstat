@@ -64,11 +64,11 @@ class SimulationOptions:
                  waitbar = 1, debug = 0, qcov = None, updatesigma = 0, 
                  noadaptind = [], stats = 0, drscale = np.array([5, 4, 3], dtype = float),
                  adascale = None, savesize = 0, maxmem = 0, chainfile = 'chainfile.txt',
-                 s2chainfile = 's2chainfile.txt', sschainfile = 'sschainfile.txt', savedir = os.getcwd(), skip = 1,
-                 label = None, RDR = None, verbosity = 1, maxiter = None, 
+                 s2chainfile = 's2chainfile.txt', sschainfile = 'sschainfile.txt', savedir = os.getcwd(), 
+                 save_to_bin = False, skip = 1, label = None, RDR = None, verbosity = 1, maxiter = None, 
                  priorupdatestart = 0, qcov_adjust = 1e-8, burnin_scale = 10, 
                  alphatarget = 0.234, etaparam = 0.7, initqcovn = None,
-                 doram = None, rndseq = None, results_filename = None, save_to_json = False, save_to_bin = False):
+                 doram = None, rndseq = None, results_filename = None, save_to_json = False):
         
         method_dictionary = {
             'mh': {'adaptint': 0, 'ntry': 1, 'doram': 0, 'adascale': adascale}, 
