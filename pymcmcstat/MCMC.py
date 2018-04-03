@@ -341,8 +341,8 @@ class MCMC:
         sschainfile = os.path.join(savedir, self.simulation_options.sschainfile)
         
         binlogfile = os.path.join(savedir, 'binlogfile.txt')
-        binstr = datetime.datetime.now().strftime('%Y%m%d_%H%M%S\n')
-        self.__add_to_bin_log(binlogfile, binstr)
+        binstr = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        self.__add_to_bin_log(binlogfile, str('{}\t{}\t{}\n'.format(binstr, start, end-1)))
         
         self.__save_to_bin_file(chainfile, self.__chain[start:end,:]) 
         self.__save_to_bin_file(sschainfile, self.__sschain[start:end,:]) 
