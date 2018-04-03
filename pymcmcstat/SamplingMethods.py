@@ -7,12 +7,10 @@ Created on Thu Jan 18 10:11:40 2018
 """
 # import required packages
 #import numpy as np
-from MetropolisAlgorithm import MetropolisAlgorithm
-from DelayedRejectionAlgorithm import DelayedRejectionAlgorithm
-from AdaptationAlgorithm import AdaptationAlgorithm
+from pymcmcstat import MetropolisAlgorithm, AdaptationAlgorithm, DelayedRejectionAlgorithm
 
 class SamplingMethods:
     def __init__(self):
-        self.metropolis = MetropolisAlgorithm()
-        self.delayed_rejection = DelayedRejectionAlgorithm()
-        self.adaptation = AdaptationAlgorithm()
+        self.metropolis = MetropolisAlgorithm.MetropolisAlgorithm()
+        self.delayed_rejection = DelayedRejectionAlgorithm.DelayedRejectionAlgorithm()
+        self.adaptation = AdaptationAlgorithm.AdaptationAlgorithm()
