@@ -23,39 +23,44 @@ import numpy as np
 import json
 import datetime
 
-from DataStructure import DataStructure
-from ModelSettings import ModelSettings
-from ModelParameters import ModelParameters
-from SimulationOptions import SimulationOptions
-from CovarianceProcedures import CovarianceProcedures
-from ResultsStructure import ResultsStructure
-from SumOfSquares import SumOfSquares
-from PriorFunction import PriorFunction
-from ParameterSet import ParameterSet
-from SamplingMethods import SamplingMethods
-from ErrorVarianceEstimator import ErrorVarianceEstimator
-from MCMCPlotting import MCMCPlotting
-from PredictionIntervals import PredictionIntervals
-from NumpyEncoder import NumpyEncoder
-#import parameterfunctions as parfun
+from pymcmcstat import DataStructure, ModelSettings, ModelParameters, SimulationOptions
+from pymcmcstat import CovarianceProcedures, ResultsStructure, SumOfSquares, PriorFunction
+from pymcmcstat import ParameterSet, SamplingMethods, ErrorVarianceEstimator
+from pymcmcstat import MCMCPlotting, PredictionIntervals, NumpyEncoder
+#from DataStructure import DataStructure
+#import pymcmcstat.DataStructure
+#from ModelSettings import ModelSettings
+#from ModelParameters import ModelParameters
+#from SimulationOptions import SimulationOptions
+#from CovarianceProcedures import CovarianceProcedures
+#from ResultsStructure import ResultsStructure
+#from SumOfSquares import SumOfSquares
+#from PriorFunction import PriorFunction
+#from ParameterSet import ParameterSet
+#from SamplingMethods import SamplingMethods
+#from ErrorVarianceEstimator import ErrorVarianceEstimator
+#from MCMCPlotting import MCMCPlotting
+#from PredictionIntervals import PredictionIntervals
+#from NumpyEncoder import NumpyEncoder
+##import parameterfunctions as parfun
 #import generalfunctions as genfun
 #import mcmcfunctions as mcfun
 #import selection_algorithms as selalg
-from progressbar import progress_bar
+from pymcmcstat.progressbar import progress_bar
 
 class MCMC:
     def __init__(self):
         
         # public variables
-        self.data = DataStructure()
-        self.model_settings = ModelSettings()
-        self.simulation_options = SimulationOptions()
-        self.parameters = ModelParameters()
+        self.data = DataStructure.DataStructure()
+        self.model_settings = ModelSettings.ModelSettings()
+        self.simulation_options = SimulationOptions.SimulationOptions()
+        self.parameters = ModelParameters.ModelParameters()
         
         # private variables
-        self._error_variance = ErrorVarianceEstimator()
-        self._covariance = CovarianceProcedures()
-        self._sampling_methods = SamplingMethods()
+        self._error_variance = ErrorVarianceEstimator.ErrorVarianceEstimator()
+        self._covariance = CovarianceProcedures.CovarianceProcedures()
+        self._sampling_methods = SamplingMethods.SamplingMethods()
         
         self._mcmc_status = False
             
@@ -96,8 +101,8 @@ class MCMC:
         self.__generate_simulation_results()
         if self.simulation_options.save_to_json == True:
             self.__export_simulation_results_to_json_file(self.simulation_results.results)
-        self.mcmcplot = MCMCPlotting()
-        self.PI = PredictionIntervals()
+        self.mcmcplot = MCMCPlotting.MCMCPlotting()
+        self.PI = PredictionIntervals.PredictionIntervals()
         
         self._mcmc_status = True # simulation has been performed
         
@@ -151,17 +156,17 @@ class MCMC:
         
         # ---------------------
         # define sum-of-squares object
-        self.__sos_object = SumOfSquares(self.model_settings, self.data, self.parameters)
+        self.__sos_object = SumOfSquares.SumOfSquares(self.model_settings, self.data, self.parameters)
 
         # ---------------------
         # define prior object
-        self.__prior_object = PriorFunction(priorfun = self.model_settings.prior_function, 
+        self.__prior_object = PriorFunction.PriorFunction(priorfun = self.model_settings.prior_function, 
                                        mu = self.parameters._thetamu, 
                                        sigma = self.parameters._thetasigma)
         
         # ---------------------
         # Define initial parameter set
-        self.__initial_set = ParameterSet(theta = self.parameters._initial_value[self.parameters._parind[:]])
+        self.__initial_set = ParameterSet.ParameterSet(theta = self.parameters._initial_value[self.parameters._parind[:]])
         
         # calculate sos with initial parameter set
         self.__initial_set.ss = self.__sos_object.evaluate_sos_function(self.__initial_set.theta)
@@ -298,7 +303,7 @@ class MCMC:
     def __generate_simulation_results(self):
         # --------------------------------------------
         # BUILD RESULTS OBJECT
-        self.simulation_results = ResultsStructure() # inititialize
+        self.simulation_results = ResultsStructure.ResultsStructure() # inititialize
             
         self.simulation_results.add_basic(options = self.simulation_options,
                                           model = self.model_settings,

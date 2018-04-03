@@ -7,7 +7,7 @@ Created on Thu Jan 18 10:30:29 2018
 """
 # import required packages
 import numpy as np
-from ParameterSet import ParameterSet
+from pymcmcstat import ParameterSet
 
 class MetropolisAlgorithm:
     # -------------------------------------------
@@ -54,7 +54,7 @@ class MetropolisAlgorithm:
                 accept = 0
                     
         # store parameter sets in objects    
-        newset = ParameterSet(theta = newpar, ss = ss1, prior = newprior,
+        newset = ParameterSet.ParameterSet(theta = newpar, ss = ss1, prior = newprior,
                                 sigma2 = sigma2, alpha = alpha)
         
         return accept, newset, outbound, npar_sample_from_normal

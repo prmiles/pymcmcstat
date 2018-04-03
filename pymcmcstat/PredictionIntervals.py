@@ -37,7 +37,7 @@ class PredictionIntervals:
         self.__ndatabatches = len(dshapes)
         nrows = []
         ncols = []
-        for ii in xrange(self.__ndatabatches):
+        for ii in range(self.__ndatabatches):
             nrows.append(dshapes[ii][0])
             if len(dshapes[0]) != 1:
                 ncols.append(dshapes[ii][1])
@@ -45,7 +45,7 @@ class PredictionIntervals:
                 ncols.append(1)
                 
         self.datapred = []
-        for ii in xrange(self.__ndatabatches):
+        for ii in range(self.__ndatabatches):
             # setup data structure for prediction
             # this is required to allow user to send objects other than xdata to model function
             self.datapred.append(DataStructure())
@@ -76,7 +76,7 @@ class PredictionIntervals:
         # evaluate model function to determine shape of response
         self.__nrow = []
         self.__ncol = []
-        for ii in xrange(self.__ndatabatches):
+        for ii in range(self.__ndatabatches):
             if isinstance(modelfunction, list):
                 y = self.modelfunction[ii](self.datapred[ii], self.__theta)
             else:
@@ -117,12 +117,12 @@ class PredictionIntervals:
         
         if n == 1: # only one obs. error for all data sets
             self.__s2chain_index = np.zeros([self.__ndatabatches,2], dtype = int)
-            for ii in xrange(self.__ndatabatches):
+            for ii in range(self.__ndatabatches):
                 self.__s2chain_index[ii,:] = np.array([0, 1])
             
         elif n != 1 and total_columns == n: # then different obs. error for each column
             self.__s2chain_index = np.zeros([self.__ndatabatches,2], dtype = int)
-            for ii in xrange(self.__ndatabatches):
+            for ii in range(self.__ndatabatches):
                 if ii == 1:
                     self.__s2chain_index[ii,:] = np.array([0, self.__ncol[ii]])
                 else:
@@ -132,7 +132,7 @@ class PredictionIntervals:
         elif n != 1 and total_columns != n: 
             if n == self.__ndatabatches: # assume separate obs. error for each batch
                 self.__s2chain_index = np.zeros([self.__ndatabatches,2], dtype = int)
-                for ii in xrange(self.__ndatabatches):
+                for ii in range(self.__ndatabatches):
                     if ii == 1:
                         self.__s2chain_index[ii,:] = np.array([0, 1])
                     else:
@@ -191,13 +191,13 @@ class PredictionIntervals:
         theta = self.__theta
         credible_intervals = []
         prediction_intervals = []
-        for ii in xrange(len(self.datapred)):
+        for ii in range(len(self.datapred)):
             datapredii = self.datapred[ii]
             
             ysave = np.zeros([nsample, self.__nrow[ii], self.__ncol[ii]])
             osave = np.zeros([nsample, self.__nrow[ii], self.__ncol[ii]])
             
-            for kk in xrange(nsample):
+            for kk in range(nsample):
                 # progress bar
                 if waitbar is True:
                     self.__wbarstatus.update(kk)
@@ -227,7 +227,7 @@ class PredictionIntervals:
             # generate quantiles
             plim = []
             olim = []
-            for jj in xrange(self.__ncol[ii]):
+            for jj in range(self.__ncol[ii]):
                 plim.append(self._empirical_quantiles(ysave[:,:,jj], lims))
                 if s2chain is not None:
                     olim.append(self._empirical_quantiles(osave[:,:,jj], lims))

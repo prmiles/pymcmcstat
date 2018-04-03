@@ -7,7 +7,7 @@ Created on Thu Jan 18 10:42:07 2018
 """
 # import required packages
 import numpy as np
-from ParameterSet import ParameterSet
+from pymcmcstat import ParameterSet
 
 class DelayedRejectionAlgorithm:
         # -------------------------------------------
@@ -20,7 +20,7 @@ class DelayedRejectionAlgorithm:
         while accept == 0 and itry < ntry:
             itry = itry + 1 # update dr step index
             # initialize next step parameter set
-            next_set = ParameterSet()
+            next_set = ParameterSet.ParameterSet()
             u = np.random.randn(1,parameters.npar) # u
             next_set.theta = old_set.theta + np.dot(u,RDR[itry-1])
             next_set.theta = next_set.theta.reshape(parameters.npar)
