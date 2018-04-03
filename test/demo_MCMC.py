@@ -8,7 +8,7 @@ Created on Fri Oct  6 12:12:31 2017
 
 # import required packages
 import sys
-path_to_prm_pymcmcstat = '/Users/prmiles/Google Drive/prm_python_modules/pymcmcstat/'
+path_to_prm_pymcmcstat = '/Users/prmiles/Google Drive/python_packages/pymcmcstat/'
 sys.path.insert(0, path_to_prm_pymcmcstat)
 
 #import math
