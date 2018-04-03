@@ -77,7 +77,7 @@ mcstat.parameters.add_model_parameter(name = 'b', theta0 = -5., minimum = -10, m
 
 # update simulation options
 mcstat.simulation_options.define_simulation_options(nsimu = int(5.0e3), updatesigma = 1, method = 'dram',
-                     adaptint = 100, verbosity = 1, waitbar = 1, save_to_bin = True, savesize = 1000, savedir = 'bins')
+                     adaptint = 100, verbosity = 1, waitbar = 1, save_to_bin = True, savesize = 1000)
 
 # update model settings
 mcstat.model_settings.define_model_settings(sos_function = test_ssfun)
