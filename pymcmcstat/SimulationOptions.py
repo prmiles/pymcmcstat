@@ -181,7 +181,7 @@ class SimulationOptions:
     def display_simulation_options(self):
         print_these = ['nsimu', 'adaptint', 'ntry', 'method', 'printint', 'lastadapt', 'drscale']
         print('simulation options:')
-        for ii in xrange(len(print_these)):
+        for ii in range(len(print_these)):
             print('\t{} = {}'.format(print_these[ii], getattr(self, print_these[ii])))
             
 #class BaseSimulationOptions:

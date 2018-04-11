@@ -117,7 +117,7 @@ class ModelSettings:
     def display_model_settings(self):
         print_these = ['sos_function', 'model_function', 'sigma2', 'N', 'N0', 'S20', 'nsos', 'nbatch']
         print('model settings:')
-        for ii in xrange(len(print_these)):
+        for ii in range(len(print_these)):
             print('\t{} = {}'.format(print_these[ii], getattr(self, print_these[ii])))
             
 #class BaseModelSettings:
