@@ -232,5 +232,5 @@ class MCMCPlotting:
         # generate generic parameter name set
         names = []
         for ii in range(npar):
-            names.append(str('$p_{}$'.format(ii)))
+            names.append(str('$p_{{{}}}$'.format(ii)))
         return names
