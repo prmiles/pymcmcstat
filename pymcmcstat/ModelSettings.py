@@ -71,7 +71,7 @@ class ModelSettings:
             if self.N == N:
                 self.N = N
             else:
-                print('User defined N = {}.  Estimate based on data structure is N = {}.  Possible error?'.format(self.model.N, N))
+                sys.exit('User defined N = {}.  Estimate based on data structure is N = {}.  Possible error?'.format(self.N, N))
         else:
             self.N = data.get_number_of_observations()
             
