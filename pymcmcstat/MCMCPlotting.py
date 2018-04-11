@@ -29,6 +29,10 @@ class MCMCPlotting:
         # Check if names defined
         if names == None:
             names = self.__generate_default_names(nparam)
+            
+        # Check if enough names defined
+        if len(names) != nparam:
+            names = self.__extend_names_to_match_nparam(names, nparam)
         
         pyplot.figure(figsize=(5,4)) # initialize figure
         for ii in range(nparam):
@@ -68,6 +72,10 @@ class MCMCPlotting:
         if names == None:
             names = self.__generate_default_names(nparam)
         
+        # Check if enough names defined
+        if len(names) != nparam:
+            names = self.__extend_names_to_match_nparam(names, nparam)
+            
         f = pyplot.figure(dpi=100, figsize=(5,4)) # initialize figure
         for ii in range(nparam):
             # define chain
@@ -102,6 +110,10 @@ class MCMCPlotting:
         if names == None:
             names = self.__generate_default_names(nparam)
         
+        # Check if enough names defined
+        if len(names) != nparam:
+            names = self.__extend_names_to_match_nparam(names, nparam)
+            
         f = pyplot.figure(dpi=100, figsize=(5,4)) # initialize figure
         for ii in range(nparam):
             # define chain
@@ -132,6 +144,10 @@ class MCMCPlotting:
         # Check if names defined
         if names == None:
             names = self.__generate_default_names(nparam)
+            
+        # Check if enough names defined
+        if len(names) != nparam:
+            names = self.__extend_names_to_match_nparam(names, nparam)
             
         f = pyplot.figure(dpi=100) # initialize figure
         for jj in range(2,nparam+1):
@@ -228,9 +244,16 @@ class MCMCPlotting:
             s = 1.06*min(np.std(x, ddof=1),self.__iqrange(x)/1.34)*n**(-1/5)
         return s
     
-    def __generate_default_names(self, npar):
+    def __generate_default_names(self, nparam):
         # generate generic parameter name set
         names = []
-        for ii in range(npar):
+        for ii in range(nparam):
+            names.append(str('$p_{{{}}}$'.format(ii)))
+        return names
+    
+    def __extend_names_to_match_nparam(self, names, nparam):
+        # generate generic parameter name set
+        n0 = len(names)
+        for ii in range(n0,nparam):
             names.append(str('$p_{{{}}}$'.format(ii)))
         return names
