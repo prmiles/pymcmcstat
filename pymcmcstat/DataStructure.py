@@ -20,33 +20,17 @@ class DataStructure:
         self.weight = [] # initialize list - weight of data set
         self.user_defined_object = [] # user defined object
         
-#        self.xdata = [] # initialize list
-#        self.ydata = [] # initialize list
-#        self.n = [] # initialize list - number of data points
-#        self.weight = [] # initialize list - weight of data set
-#        self.user_defined_object = [] # user defined object
-#        
-               
-        
-#    def add_empty_data_batch(self, initial_batch_flag = False):
-#        # Check if data already initialized
-#        if initial_batch_flag is True:
-#            self.batch = []
-#            
-##        self.batch.append(BasicDataStructure())
-#        
-##    def add_empty_data_batch(self, initial_batch_flag = 1):
-##        # Check if data already initialized
-##        if initial_batch_flag is None:
-##            self.data = []
-##            
-##        self.data.append(DataStructure())
-#        
-#        self.batch.append({'xdata': None, 'ydata': None, 'n': None,
-#                                'weight': None, 'user_defined_object': None})
-        
     
     def add_data_set(self, x, y, n = None, weight = 1, user_defined_object = 0):
+        # in general, it is recommended that user's format their data as a column
+        # vector.  So, if you have nds independent data points, x and y should be
+        # [nds,1] or [nds,] numpy arrays.  Note if a list is sent, the code will 
+        # convert it to a numpy array.
+        
+        # check that x and y are numpy arrays
+        x = self.__convert_to_numpy_array(x)
+        y = self.__convert_to_numpy_array(y)
+        
         # append new data set
         self.xdata.append(x)
         self.ydata.append(y)
@@ -62,6 +46,11 @@ class DataStructure:
         self.weight.append(weight)
         # add user defined objects option
         self.user_defined_object.append(user_defined_object)
+        
+    def __convert_to_numpy_array(self, xy):
+        if isinstance(xy, np.ndarray) is False:
+            xy = np.array(xy)
+        return xy
         
     def check_data_type(self, xy):
         
@@ -79,7 +68,7 @@ class DataStructure:
         ndatabatches = len(dshapes)
         nrows = []
         ncols = []
-        for ii in xrange(ndatabatches):
+        for ii in range(ndatabatches):
             nrows.append(dshapes[ii][0])
             if len(dshapes[0]) != 1:
                 ncols.append(dshapes[ii][1])
