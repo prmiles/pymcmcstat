@@ -19,12 +19,16 @@ class MCMCPlotting:
     # plot density panel
     # input:
     # chains - 2d array - each column is chain of parameter (construct 2d array using numpy)
-    def plot_density_panel(self, chains, names, hist_on = 0):
+    def plot_density_panel(self, chains, names = None, hist_on = 0):
         nrow, ncol = chains.shape # number of rows, number of columns
         
         nparam = ncol # number of parameter chains
         ns1 = math.ceil(math.sqrt(nparam))
         ns2 = round(math.sqrt(nparam))
+
+        # Check if names defined
+        if names == None:
+            names = self.__generate_default_names(nparam)
         
         pyplot.figure(figsize=(5,4)) # initialize figure
         for ii in range(nparam):
@@ -53,12 +57,16 @@ class MCMCPlotting:
     # plot histogram panel
     # input:
     # chains - 2d array - each column is chain of parameter (construct 2d array using numpy)
-    def plot_histogram_panel(self, chains, names):
+    def plot_histogram_panel(self, chains, names = None):
         nrow, ncol = chains.shape # number of rows, number of columns
         
         nparam = ncol # number of parameter chains
         ns1 = math.ceil(math.sqrt(nparam))
         ns2 = round(math.sqrt(nparam))
+        
+        # Check if names defined
+        if names == None:
+            names = self.__generate_default_names(nparam)
         
         f = pyplot.figure(dpi=100, figsize=(5,4)) # initialize figure
         for ii in range(nparam):
@@ -79,7 +87,7 @@ class MCMCPlotting:
     # plot chain panel
     # input:
     # chains - 2d array - each column is chain of parameter (construct 2d array using numpy)
-    def plot_chain_panel(self, chains, names):
+    def plot_chain_panel(self, chains, names = None):
         nsimu, nparam = chains.shape # number of rows, number of columns
     
         skip = 1
@@ -89,6 +97,10 @@ class MCMCPlotting:
         
         ns1 = math.ceil(math.sqrt(nparam))
         ns2 = round(math.sqrt(nparam))
+        
+        # Check if names defined
+        if names == None:
+            names = self.__generate_default_names(nparam)
         
         f = pyplot.figure(dpi=100, figsize=(5,4)) # initialize figure
         for ii in range(nparam):
@@ -112,10 +124,14 @@ class MCMCPlotting:
     # plot pairwise correlation panel
     # input:
     # chains - 2d array - each column is chain of parameter (construct 2d array using numpy)
-    def plot_pairwise_correlation_panel(self, chains, names, skip=1):
+    def plot_pairwise_correlation_panel(self, chains, names = None, skip=1):
         nsimu, nparam = chains.shape # number of rows, number of columns
         
         inds = range(0,nsimu,skip)
+        
+        # Check if names defined
+        if names == None:
+            names = self.__generate_default_names(nparam)
             
         f = pyplot.figure(dpi=100) # initialize figure
         for jj in range(2,nparam+1):
@@ -211,6 +227,10 @@ class MCMCPlotting:
         else:
             s = 1.06*min(np.std(x, ddof=1),self.__iqrange(x)/1.34)*n**(-1/5)
         return s
-        
-            
     
+    def __generate_default_names(self, npar):
+        # generate generic parameter name set
+        names = []
+        for ii in range(npar):
+            names.append(str('$p_{}$'.format(ii)))
+        return names
