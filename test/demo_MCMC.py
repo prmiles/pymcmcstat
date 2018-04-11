@@ -107,6 +107,9 @@ mcpl = mcstat.mcmcplot # initialize plotting methods
 #mcpl.plot_density_panel(chain[burnin:,:], names)
 #mcpl.plot_chain_panel(chain[burnin:,:], names)
 #mcpl.plot_pairwise_correlation_panel(chain[burnin:,:], names)
+mcpl.plot_density_panel(chain[burnin:,:], ['a'])
+mcpl.plot_chain_panel(chain[burnin:,:])
+mcpl.plot_pairwise_correlation_panel(chain[burnin:,:])
 
 # plot data & model
 plt.figure()
