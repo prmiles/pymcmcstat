@@ -9,6 +9,7 @@ Created on Wed Jan 17 09:06:51 2018
 # import required packages
 import numpy as np
 import sys
+import warnings
 
 class ModelSettings:
     def __init__(self):
@@ -69,9 +70,21 @@ class ModelSettings:
         if self.N is not None:
 #            N = data.get_number_of_observations()
             N = data.n
+            # check if user defined N matches data structure
             if np.array_equal(self.N, N):
                 self.N = N
+            elif len(N) > len(self.N) and len(self.N) == 1:
+                if np.all(N == self.N):
+                    self.N = N
+                else:
+                    sys.exit('User defined N = {}.  Estimate based on data structure is N = {}.  Possible error?'.format(self.N, N))
+            elif len(self.N) > len(N) and len(N) == 1:
+                if np.all(N == self.N):
+                    self.N = self.N
+                else:
+                    sys.exit('User defined N = {}.  Estimate based on data structure is N = {}.  Possible error?'.format(self.N, N))
             else:
+#                warnings.warn('User defined N = {}.  Estimate based on data structure is N = {}.  Possible error?'.format(self.N, N))
                 sys.exit('User defined N = {}.  Estimate based on data structure is N = {}.  Possible error?'.format(self.N, N))
         else:
             self.N = data.get_number_of_observations()
