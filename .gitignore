@@ -3,4 +3,5 @@
 *.json
 *.txt
 *.spyproject
+*demo_MCMC.py
 
