@@ -44,6 +44,7 @@ class CovarianceProcedures:
         
         # ----------------
         # setup R matrix (R used to update in metropolis)
+#        print('qcov.shape = {}'.format(self._qcov.shape))
         self.__setup_R_matrix(parameters._parind)
             
         # ----------------
@@ -83,7 +84,7 @@ class CovarianceProcedures:
             qcov[qcov==0] = 1 # if initial value was zero, use 1 as stdev
             qcov = np.diagflat(qcov) # create covariance matrix
     
-        self._qcov = qcov        
+        self._qcov = np.atleast_2d(qcov)
         
     def __check_adascale(self, adascale, npar):
         # check adascale
@@ -95,16 +96,21 @@ class CovarianceProcedures:
         self._qcov_scale = qcov_scale
     
     def __setup_R_matrix(self, parind):
+#        print('qcov.shape = {}'.format(self._qcov.shape))
         cm, cn = self._qcov.shape # number of rows, number of columns
         if min([cm, cn]) == 1: # qcov contains variances!
-            s = np.sqrt(self._qcov[parind[:]])
+            s = np.sqrt(self._qcov[np.ix_(parind,parind)])
             self._R = np.diagflat(s)
             self._qcovorig = np.diagflat(self._qcov[:]) # save original qcov
-            self._qcov = np.diag(self._qcov[parind[:]])
+            self._qcov = np.diag(self._qcov[np.ix_(parind,parind)])
         else: # qcov has covariance matrix in it
             self._qcovorig = self._qcov # save qcov
-    #        qcov = qcov[parind[:],parind[:]] # this operation in matlab maintains matrix (debug)
-            self._R = np.linalg.cholesky(self._qcov) # cholesky decomposition
+            self._qcov = self._qcov[np.ix_(parind,parind)] # this operation in matlab maintains matrix (debug)
+#            print('qcov.shape = {}, qcov = {}'.format(self._qcov.shape,self._qcov))
+            if self._qcov.size == 1:
+                self._R = np.sqrt(self._qcov)
+            else:
+                self._R = np.linalg.cholesky(self._qcov) # cholesky decomposition
             self._R = self._R.transpose() # matches output of matlab function
     
     def __setup_RDR_matrix(self, npar, drscale, ntry, RDR):
