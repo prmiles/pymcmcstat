@@ -119,28 +119,3 @@ class ModelSettings:
         print('model settings:')
         for ii in range(len(print_these)):
             print('\t{} = {}'.format(print_these[ii], getattr(self, print_these[ii])))
-            
-#class BaseModelSettings:
-#    def __init__(self):
-#        # Initialize all variables to default values
-#        self.sos_function = None
-#        self.prior_function = None
-#        self.prior_type = 1
-#        self.prior_update_function = None
-#        self.prior_pars = None
-#        self.model_function = None
-#        
-#        # check value of sigma2 - initial error variance
-#        self.sigma2 = None
-#        
-#        # check value of N - total number of observations
-#        self.N = None
-#        
-#        # check value of N0 - prior accuracy for S20
-#        self.N0 = None       
-#        
-#        # check nbatch - number of data sets
-#        self.nbatch = None
-#            
-#        # S20 - prior for sigma2
-#        self.S20 = np.nan
