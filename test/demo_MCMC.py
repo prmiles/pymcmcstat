@@ -31,9 +31,9 @@ def test_modelfun(xdata, theta):
     b = theta[1]
     
     nrow, ncol = xdata.shape
-    y = np.zeros([nrow,1])
+    y = np.zeros([nrow,2])
     y[:,0] = m*xdata.reshape(nrow,) + b
-#    y[:,1] = m*(xdata.reshape(nrow,))**2 + b
+    y[:,1] = m*(xdata.reshape(nrow,))**2 + b
     return y
 
 def test_ssfun(theta, data):
@@ -64,8 +64,8 @@ y2 = m*(x**2) + b + noise
 ymat = np.zeros([nds,2])
 ymat[:,0] = y1.reshape(nds,)
 ymat[:,1] = y2.reshape(nds,)
-mcstat.data.add_data_set(x, y1)
-#mcstat.data.add_data_set(x, y)
+mcstat.data.add_data_set(x, ymat)
+#mcstat.data.add_data_set(x, y2)
 
 #x2 = np.array([[1,2],[2,1]])
 #y2 = 2*x2
@@ -76,8 +76,10 @@ mcstat.parameters.add_model_parameter(name = 'm', theta0 = 1., minimum = -10, ma
 mcstat.parameters.add_model_parameter(name = 'b', theta0 = -5., minimum = -10, maximum = 100)
 
 # update simulation options
+#mcstat.simulation_options.define_simulation_options(nsimu = int(5.0e3), updatesigma = 1, method = 'dram',
+#                     adaptint = 100, verbosity = 1, waitbar = 1, save_to_bin = True, savesize = 1000)
 mcstat.simulation_options.define_simulation_options(nsimu = int(5.0e3), updatesigma = 1, method = 'dram',
-                     adaptint = 100, verbosity = 1, waitbar = 1, save_to_bin = True, savesize = 1000)
+                     adaptint = 100, verbosity = 1, waitbar = 1, save_to_bin = False, savesize = 1000)
 
 # update model settings
 mcstat.model_settings.define_model_settings(sos_function = test_ssfun)

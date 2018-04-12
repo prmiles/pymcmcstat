@@ -67,14 +67,17 @@ class ModelSettings:
             self.nbatch = data.get_number_of_batches()
             
         if self.N is not None:
-            N = data.get_number_of_observations()
-            if self.N == N:
+#            N = data.get_number_of_observations()
+            N = data.n
+            if np.array_equal(self.N, N):
                 self.N = N
             else:
-                print('User defined N = {}.  Estimate based on data structure is N = {}.  Possible error?'.format(self.model.N, N))
+                sys.exit('User defined N = {}.  Estimate based on data structure is N = {}.  Possible error?'.format(self.N, N))
         else:
             self.N = data.get_number_of_observations()
-            
+        
+        self.Nshape = data.shape
+        
         # This is for backward compatibility
         # if sigma2 given then default N0=1, else default N0=0
         if self.N0 is None:
@@ -92,55 +95,44 @@ class ModelSettings:
             else:
                 self.sigma2 = np.ones(self.nbatch)
         
-        if np.isnan(self.S20).any:
+        if np.isnan(self.S20).any():
             self.S20 = self.sigma2  # prior parameters for the error variance
         
     def _check_dependent_model_settings_wrt_nsos(self, nsos):
         # in matlab version, ny = length(sos) where sos is the output from the sos evaluation
-        if len(self.S20)==1:
-            self.S20 = np.ones(nsos)*self.S20
+        self.S20 = self.__check_size_of_setting_wrt_nsos(self.S20, nsos)
+        self.N0 = self.__check_size_of_setting_wrt_nsos(self.N0, nsos)
+        self.sigma2 = self.__check_size_of_setting_wrt_nsos(self.sigma2, nsos)
+        self.N = self.__check_size_of_observations_wrt_nsos(self.N, nsos, self.Nshape)    
+#        if len(self.N) == 1:
+#            self.N = np.ones(nsos)*self.N
             
-        if len(self.N) == 1:
-            self.N = np.ones(nsos)*self.N
-            
-        if len(self.N) == nsos + 1:
-            self.N = self.N[1:] # remove first column
-            
-        if len(self.N0) == 1:
-            self.N0 = np.ones(nsos)*self.N0
-            
-        if len(self.sigma2) == 1:
-            self.sigma2 = np.ones(nsos)*self.sigma2
+#        if len(self.N) == nsos + 1:
+#            self.N = self.N[1:] # remove first column
             
         self.nsos = nsos
         
+    def __check_size_of_setting_wrt_nsos(self, x, nsos):
+        if len(x) == 1:
+            x = np.ones(nsos)*x
+        elif len(x) > nsos: # more x elements than sos elements
+            sys.exit('SOS function returns nsos = {} elements.  Expect same number of elements in S20, N0, sigma2'.format(nsos))
+        elif len(x) < nsos and len(x) != 1:
+            sys.exit('SOS function returns nsos = {} elements.  Length of S20, N0, or sigma2 is {}.  These settings must have one element or nsos elements.'.format(nsos, len(x)))
+        return x
+     
+    def __check_size_of_observations_wrt_nsos(self, N, nsos, Nshape):
+        if len(N) == 1:
+            N = np.ones(nsos)*N
+        elif len(N) < nsos and len(N) > 1:
+            sys.exit('Unclear data structure!  SOS function return nsos = {} elements.  len(N) = {}.'.format(nsos, len(N)))
+        elif nsos == 1 and len(N) > 1:
+            N = np.array([np.sum(N)])
+            
+        return N
+            
     def display_model_settings(self):
         print_these = ['sos_function', 'model_function', 'sigma2', 'N', 'N0', 'S20', 'nsos', 'nbatch']
         print('model settings:')
         for ii in range(len(print_these)):
             print('\t{} = {}'.format(print_these[ii], getattr(self, print_these[ii])))
-            
-#class BaseModelSettings:
-#    def __init__(self):
-#        # Initialize all variables to default values
-#        self.sos_function = None
-#        self.prior_function = None
-#        self.prior_type = 1
-#        self.prior_update_function = None
-#        self.prior_pars = None
-#        self.model_function = None
-#        
-#        # check value of sigma2 - initial error variance
-#        self.sigma2 = None
-#        
-#        # check value of N - total number of observations
-#        self.N = None
-#        
-#        # check value of N0 - prior accuracy for S20
-#        self.N0 = None       
-#        
-#        # check nbatch - number of data sets
-#        self.nbatch = None
-#            
-#        # S20 - prior for sigma2
-#        self.S20 = np.nan
