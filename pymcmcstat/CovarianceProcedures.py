@@ -140,5 +140,5 @@ class CovarianceProcedures:
     def display_covariance_settings(self):
         print_these = ['qcov', 'R', 'RDR', 'invR', 'last_index_since_adaptation', 'covchain']
         print('covariance:')
-        for ii in xrange(len(print_these)):
+        for ii in range(len(print_these)):
             print('\t{} = {}'.format(print_these[ii], getattr(self, str('_{}'.format(print_these[ii])))))

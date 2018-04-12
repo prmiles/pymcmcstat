@@ -64,7 +64,7 @@ class SimulationOptions:
                  waitbar = 1, debug = 0, qcov = None, updatesigma = 0, 
                  noadaptind = [], stats = 0, drscale = np.array([5, 4, 3], dtype = float),
                  adascale = None, savesize = 0, maxmem = 0, chainfile = 'chainfile.txt',
-                 s2chainfile = 's2chainfile.txt', sschainfile = 'sschainfile.txt', savedir = None, 
+                 s2chainfile = 's2chainfile.txt', sschainfile = 'sschainfile.txt', covchainfile = 'covchainfile.txt', savedir = None, 
                  save_to_bin = False, skip = 1, label = None, RDR = None, verbosity = 1, maxiter = None, 
                  priorupdatestart = 0, qcov_adjust = 1e-8, burnin_scale = 10, 
                  alphatarget = 0.234, etaparam = 0.7, initqcovn = None,
@@ -142,6 +142,7 @@ class SimulationOptions:
         self.chainfile = chainfile
         self.s2chainfile = s2chainfile
         self.sschainfile = sschainfile
+        self.covchainfile = covchainfile
         if savedir is None:
             self.savedir = str('{}_{}'.format(datestr,'chain_bins'))
         else:
