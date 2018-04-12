@@ -344,6 +344,7 @@ class MCMC:
         chainfile = os.path.join(savedir, self.simulation_options.chainfile)
         s2chainfile = os.path.join(savedir, self.simulation_options.s2chainfile)
         sschainfile = os.path.join(savedir, self.simulation_options.sschainfile)
+        covchainfile = os.path.join(savedir, self.simulation_options.covchainfile)
         
         binlogfile = os.path.join(savedir, 'binlogfile.txt')
         binstr = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
@@ -351,15 +352,19 @@ class MCMC:
         
         self.__save_to_bin_file(chainfile, self.__chain[start:end,:]) 
         self.__save_to_bin_file(sschainfile, self.__sschain[start:end,:]) 
-    
+        self.__save_to_bin_file(covchainfile, np.dot(self._covariance._R.transpose(),self._covariance._R), True)
         if self.simulation_options.updatesigma == 1:
             self.__save_to_bin_file(s2chainfile, self.__s2chain[start:end,:]) 
-    
+
     def __add_to_bin_log(self, filename, binstr):
         with open(filename, 'a') as binfile:
             binfile.write(binstr)
     
-    def __save_to_bin_file(self, filename, mtx):
+    def __save_to_bin_file(self, filename, mtx, separate_set = False):
+        if separate_set:
+            with open(filename, "a") as text_file:
+                text_file.write('--------------------------\n')
+                
         handle = open(filename, 'a')
         np.savetxt(handle,mtx)
         handle.close()
