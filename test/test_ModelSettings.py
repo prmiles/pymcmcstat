@@ -104,9 +104,9 @@ class Define_Model_Settings(unittest.TestCase):
             ms.define_model_settings(N = (1,2))
             
 # --------------------------
-# dependent_model_settings
+# _check_dependent_model_settings
 # --------------------------
-class Dependent_Model_Settings(unittest.TestCase):
+class Check_Dependent_Model_Settings(unittest.TestCase):
     
     def test_nbatch_calc_from_data(self):
         # create test data
@@ -420,3 +420,369 @@ class Dependent_Model_Settings(unittest.TestCase):
         comp = np.linalg.norm(ms.sigma2 - ms.S20)
         self.assertAlmostEqual(comp, 0, msg='default is sigma2')
         
+# --------------------------
+# _check_dependent_model_settings_wrt_nsos
+# --------------------------
+class Check_Dependent_Model_Settings_WRT_Nsos(unittest.TestCase):
+    
+    def test_size_S20_wrt_nsos(self):
+        # create test data
+        data = DataStructure.DataStructure()
+        x = np.zeros([2])
+        y = np.zeros([2])
+        data.add_data_set(x,y)
+        
+        # create options
+        options = SimulationOptions.SimulationOptions()
+        options.define_simulation_options(nsimu = int(1000))
+        
+        # create settings        
+        ms = ModelSettings.ModelSettings()
+        ms.define_model_settings()
+        
+        # calculate dependencies
+        ms._check_dependent_model_settings(data, options)
+        
+        nsos = 2
+        ms._check_dependent_model_settings_wrt_nsos(nsos = nsos)
+        
+        self.assertEqual(len(ms.S20), nsos, msg = 'length of S20 should equal number of elements returned from sos function')
+        
+    def test_size_N0_wrt_nsos(self):
+        # create test data
+        data = DataStructure.DataStructure()
+        x = np.zeros([2])
+        y = np.zeros([2])
+        data.add_data_set(x,y)
+        
+        # create options
+        options = SimulationOptions.SimulationOptions()
+        options.define_simulation_options(nsimu = int(1000))
+        
+        # create settings        
+        ms = ModelSettings.ModelSettings()
+        ms.define_model_settings()
+        
+        # calculate dependencies
+        ms._check_dependent_model_settings(data, options)
+        
+        nsos = 2
+        ms._check_dependent_model_settings_wrt_nsos(nsos = nsos)
+        
+        self.assertEqual(len(ms.N0), nsos, msg = 'length of N0 should equal number of elements returned from sos function')
+        
+    def test_size_sigma2_wrt_nsos(self):
+        # create test data
+        data = DataStructure.DataStructure()
+        x = np.zeros([2])
+        y = np.zeros([2])
+        data.add_data_set(x,y)
+        
+        # create options
+        options = SimulationOptions.SimulationOptions()
+        options.define_simulation_options(nsimu = int(1000))
+        
+        # create settings        
+        ms = ModelSettings.ModelSettings()
+        ms.define_model_settings()
+        
+        # calculate dependencies
+        ms._check_dependent_model_settings(data, options)
+        
+        nsos = 2
+        ms._check_dependent_model_settings_wrt_nsos(nsos = nsos)
+        
+        self.assertEqual(len(ms.sigma2), nsos, msg = 'length of sigma2 should equal number of elements returned from sos function')
+    
+    def test_size_N_wrt_nsos(self):
+        # create test data
+        data = DataStructure.DataStructure()
+        x = np.zeros([2])
+        y = np.zeros([2])
+        data.add_data_set(x,y)
+        
+        # create options
+        options = SimulationOptions.SimulationOptions()
+        options.define_simulation_options(nsimu = int(1000))
+        
+        # create settings        
+        ms = ModelSettings.ModelSettings()
+        ms.define_model_settings()
+        
+        # calculate dependencies
+        ms._check_dependent_model_settings(data, options)
+        
+        nsos = 2
+        ms._check_dependent_model_settings_wrt_nsos(nsos = nsos)
+        
+        self.assertEqual(len(ms.N), nsos, msg = 'length of N should equal number of elements returned from sos function')
+        
+    def test_size_S20_wrt_nsos_for_non_default_S20(self):
+        # create test data
+        data = DataStructure.DataStructure()
+        x = np.zeros([2])
+        y = np.zeros([2])
+        data.add_data_set(x,y)
+        
+        # create options
+        options = SimulationOptions.SimulationOptions()
+        options.define_simulation_options(nsimu = int(1000))
+        
+        # create settings        
+        ms = ModelSettings.ModelSettings()
+        ms.define_model_settings(S20 = [1,2])
+        
+        # calculate dependencies
+        ms._check_dependent_model_settings(data, options)
+        
+        nsos = 2
+        ms._check_dependent_model_settings_wrt_nsos(nsos = nsos)
+        
+        self.assertEqual(len(ms.S20), nsos, msg = 'length of S20 should equal number of elements returned from sos function')
+        
+    def test_size_S20_wrt_nsos_for_non_default_S20_raises_error(self):
+        # create test data
+        data = DataStructure.DataStructure()
+        x = np.zeros([2])
+        y = np.zeros([2])
+        data.add_data_set(x,y)
+        
+        # create options
+        options = SimulationOptions.SimulationOptions()
+        options.define_simulation_options(nsimu = int(1000))
+        
+        # create settings        
+        ms = ModelSettings.ModelSettings()
+        ms.define_model_settings(S20 = [1,2])
+        
+        # calculate dependencies
+        ms._check_dependent_model_settings(data, options)
+        
+        nsos = 3
+        with self.assertRaises(SystemExit, msg = 'S20 size mismatch'):
+            ms._check_dependent_model_settings_wrt_nsos(nsos = nsos)
+            
+    def test_size_N0_wrt_nsos_for_non_default_N0(self):
+        # create test data
+        data = DataStructure.DataStructure()
+        x = np.zeros([2])
+        y = np.zeros([2])
+        data.add_data_set(x,y)
+        
+        # create options
+        options = SimulationOptions.SimulationOptions()
+        options.define_simulation_options(nsimu = int(1000))
+        
+        # create settings        
+        ms = ModelSettings.ModelSettings()
+        ms.define_model_settings(N0 = [1,2])
+        
+        # calculate dependencies
+        ms._check_dependent_model_settings(data, options)
+        
+        nsos = 2
+        ms._check_dependent_model_settings_wrt_nsos(nsos = nsos)
+        
+        self.assertEqual(len(ms.N0), nsos, msg = 'length of N0 should equal number of elements returned from sos function')
+    
+    def test_size_N_wrt_nsos_for_non_default_N(self):
+        # create test data
+        data = DataStructure.DataStructure()
+        x = np.zeros([2])
+        y = np.zeros([2])
+        data.add_data_set(x,y)
+        y = np.zeros([4,2])
+        data.add_data_set(x,y)
+        
+        # create options
+        options = SimulationOptions.SimulationOptions()
+        options.define_simulation_options(nsimu = int(1000))
+        
+        # create settings        
+        ms = ModelSettings.ModelSettings()
+        ms.define_model_settings(N = [2,4])
+        
+        # calculate dependencies
+        ms._check_dependent_model_settings(data, options)
+        
+        nsos = 3
+        
+        with self.assertRaises(SystemExit, msg = 'length of N should equal number of elements returned from sos function'):
+            ms._check_dependent_model_settings_wrt_nsos(nsos = nsos)
+            
+    def test_size_N_wrt_nsos_for_non_default_N_and_nsos_equal_1(self):
+        # create test data
+        data = DataStructure.DataStructure()
+        x = np.zeros([2])
+        y = np.zeros([2])
+        data.add_data_set(x,y)
+        y = np.zeros([4,2])
+        data.add_data_set(x,y)
+        
+        # create options
+        options = SimulationOptions.SimulationOptions()
+        options.define_simulation_options(nsimu = int(1000))
+        
+        # create settings        
+        ms = ModelSettings.ModelSettings()
+        ms.define_model_settings(N = [2,4])
+        
+        # calculate dependencies
+        ms._check_dependent_model_settings(data, options)
+        
+        nsos = 1
+        ms._check_dependent_model_settings_wrt_nsos(nsos = nsos)
+        
+        self.assertEqual(len(ms.N), nsos, msg = 'length of N should equal number of elements returned from sos function')
+    
+    def test_value_N_wrt_nsos_for_non_default_N_and_nsos_equal_1(self):
+        # create test data
+        data = DataStructure.DataStructure()
+        x = np.zeros([2])
+        y = np.zeros([2])
+        data.add_data_set(x,y)
+        y = np.zeros([4,2])
+        data.add_data_set(x,y)
+        
+        # create options
+        options = SimulationOptions.SimulationOptions()
+        options.define_simulation_options(nsimu = int(1000))
+        
+        # create settings        
+        ms = ModelSettings.ModelSettings()
+        ms.define_model_settings(N = [2,4])
+        
+        # calculate dependencies
+        ms._check_dependent_model_settings(data, options)
+        
+        nsos = 1
+        ms._check_dependent_model_settings_wrt_nsos(nsos = nsos)
+        
+        self.assertEqual(ms.N, 6, msg = 'length of N should equal number of elements returned from sos function')
+    
+    def test_size_N0_wrt_nsos_for_non_default_N0_raises_error(self):
+        # create test data
+        data = DataStructure.DataStructure()
+        x = np.zeros([2])
+        y = np.zeros([2])
+        data.add_data_set(x,y)
+        
+        # create options
+        options = SimulationOptions.SimulationOptions()
+        options.define_simulation_options(nsimu = int(1000))
+        
+        # create settings        
+        ms = ModelSettings.ModelSettings()
+        ms.define_model_settings(N0 = [1,2])
+        
+        # calculate dependencies
+        ms._check_dependent_model_settings(data, options)
+        
+        nsos = 3
+        with self.assertRaises(SystemExit, msg = 'N0 size mismatch'):
+            ms._check_dependent_model_settings_wrt_nsos(nsos = nsos)
+        
+    def test_size_sigma2_wrt_nsos_for_non_default_sigma2(self):
+        # create test data
+        data = DataStructure.DataStructure()
+        x = np.zeros([2])
+        y = np.zeros([2])
+        data.add_data_set(x,y)
+        
+        # create options
+        options = SimulationOptions.SimulationOptions()
+        options.define_simulation_options(nsimu = int(1000))
+        
+        # create settings        
+        ms = ModelSettings.ModelSettings()
+        ms.define_model_settings(sigma2 = [1,2])
+        
+        # calculate dependencies
+        ms._check_dependent_model_settings(data, options)
+        
+        nsos = 2
+        ms._check_dependent_model_settings_wrt_nsos(nsos = nsos)
+        
+        self.assertEqual(len(ms.sigma2), nsos, msg = 'length of sigma2 should equal number of elements returned from sos function')
+        
+    def test_size_sigma2_wrt_nsos_for_non_default_sigma2_raises_error(self):
+        # create test data
+        data = DataStructure.DataStructure()
+        x = np.zeros([2])
+        y = np.zeros([2])
+        data.add_data_set(x,y)
+        
+        # create options
+        options = SimulationOptions.SimulationOptions()
+        options.define_simulation_options(nsimu = int(1000))
+        
+        # create settings        
+        ms = ModelSettings.ModelSettings()
+        ms.define_model_settings(sigma2 = [1,2])
+        
+        # calculate dependencies
+        ms._check_dependent_model_settings(data, options)
+        
+        nsos = 3
+        with self.assertRaises(SystemExit, msg = 'sigma2 size mismatch'):
+            ms._check_dependent_model_settings_wrt_nsos(nsos = nsos)
+            
+    def test_value_S20_wrt_nsos_raises_error(self):
+        # create test data
+        data = DataStructure.DataStructure()
+        x = np.zeros([2])
+        y = np.zeros([2])
+        data.add_data_set(x,y)
+        
+        # create options
+        options = SimulationOptions.SimulationOptions()
+        options.define_simulation_options(nsimu = int(1000))
+        
+        # create settings        
+        ms = ModelSettings.ModelSettings()
+        ms.define_model_settings(S20 = [1, 2])
+        # calculate dependencies
+        ms._check_dependent_model_settings(data, options)
+        nsos = 1
+        with self.assertRaises(SystemExit, msg = 'S20 should not be larger than nsos'):
+            ms._check_dependent_model_settings_wrt_nsos(nsos = nsos)
+            
+    def test_value_N0_wrt_nsos_raises_error(self):
+        # create test data
+        data = DataStructure.DataStructure()
+        x = np.zeros([2])
+        y = np.zeros([2])
+        data.add_data_set(x,y)
+        
+        # create options
+        options = SimulationOptions.SimulationOptions()
+        options.define_simulation_options(nsimu = int(1000))
+        
+        # create settings        
+        ms = ModelSettings.ModelSettings()
+        ms.define_model_settings(N0 = [1, 2])
+        # calculate dependencies
+        ms._check_dependent_model_settings(data, options)
+        nsos = 1
+        with self.assertRaises(SystemExit, msg = 'N0 should not be larger than nsos'):
+            ms._check_dependent_model_settings_wrt_nsos(nsos = nsos)
+            
+    def test_value_sigma2_wrt_nsos_raises_error(self):
+        # create test data
+        data = DataStructure.DataStructure()
+        x = np.zeros([2])
+        y = np.zeros([2])
+        data.add_data_set(x,y)
+        
+        # create options
+        options = SimulationOptions.SimulationOptions()
+        options.define_simulation_options(nsimu = int(1000))
+        
+        # create settings        
+        ms = ModelSettings.ModelSettings()
+        ms.define_model_settings(sigma2 = [1, 2])
+        # calculate dependencies
+        ms._check_dependent_model_settings(data, options)
+        nsos = 1
+        with self.assertRaises(SystemExit, msg = 'sigma2 should not be larger than nsos'):
+            ms._check_dependent_model_settings_wrt_nsos(nsos = nsos)
