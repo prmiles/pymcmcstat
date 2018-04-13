@@ -100,7 +100,7 @@ class Define_Model_Settings(unittest.TestCase):
         
     def test_tuple_N_returns_error(self):
         ms = ModelSettings.ModelSettings()
-        with self.assertRaises(SystemExit, msg = 'Tuple input not excepted'):
+        with self.assertRaises(SystemExit, msg = 'Tuple input not accepted'):
             ms.define_model_settings(N = (1,2))
             
 # --------------------------
@@ -211,7 +211,7 @@ class Check_Dependent_Model_Settings(unittest.TestCase):
         # calculate dependencies
         ms._check_dependent_model_settings(data, options)
         
-        self.assertEqual(ms.N[0], 2, msg = 'N should equal total number of rows in each y set')
+        self.assertTrue(np.array_equal(ms.N, np.array([2])), msg = 'N should equal total number of rows in each y set')
         
     def test_N_calc_from_data_with_multiple_sets(self):
         # create test data
@@ -219,7 +219,7 @@ class Check_Dependent_Model_Settings(unittest.TestCase):
         x = np.zeros([2])
         y = np.zeros([2,2])
         data.add_data_set(x,y)
-        y = np.zeros([3,2])        
+        y = np.zeros([3,3])        
         data.add_data_set(x,y)
         
         # create options
@@ -233,7 +233,31 @@ class Check_Dependent_Model_Settings(unittest.TestCase):
         # calculate dependencies
         ms._check_dependent_model_settings(data, options)
         
-        self.assertEqual(ms.N[0], 5, msg = 'N should equal total number of rows in each y set')
+        self.assertTrue(np.array_equal(ms.N, np.array([2,3])), msg = 'N should equal total number of rows in each y set')
+        
+    def test_N_calc_from_data_with_multiple_sets_of_different_size(self):
+        # create test data
+        data = DataStructure.DataStructure()
+        x = np.zeros([2])
+        y = np.zeros([2,2])
+        data.add_data_set(x,y)
+        y = np.zeros([3,3])        
+        data.add_data_set(x,y)
+        y = np.zeros([4,7])
+        data.add_data_set(x,y)
+        
+        # create options
+        options = SimulationOptions.SimulationOptions()
+        options.define_simulation_options(nsimu = int(1000))
+        
+        # create settings        
+        ms = ModelSettings.ModelSettings()
+        ms.define_model_settings()
+        
+        # calculate dependencies
+        ms._check_dependent_model_settings(data, options)
+        
+        self.assertTrue(np.array_equal(ms.N, np.array([2,3,4])), msg = 'N should equal total number of rows in each y set')
         
     def test_N_conflict_produces_error_message(self):
         # create test data
@@ -494,29 +518,6 @@ class Check_Dependent_Model_Settings_WRT_Nsos(unittest.TestCase):
         
         self.assertEqual(len(ms.sigma2), nsos, msg = 'length of sigma2 should equal number of elements returned from sos function')
     
-    def test_size_N_wrt_nsos(self):
-        # create test data
-        data = DataStructure.DataStructure()
-        x = np.zeros([2])
-        y = np.zeros([2])
-        data.add_data_set(x,y)
-        
-        # create options
-        options = SimulationOptions.SimulationOptions()
-        options.define_simulation_options(nsimu = int(1000))
-        
-        # create settings        
-        ms = ModelSettings.ModelSettings()
-        ms.define_model_settings()
-        
-        # calculate dependencies
-        ms._check_dependent_model_settings(data, options)
-        
-        nsos = 2
-        ms._check_dependent_model_settings_wrt_nsos(nsos = nsos)
-        
-        self.assertEqual(len(ms.N), nsos, msg = 'length of N should equal number of elements returned from sos function')
-        
     def test_size_S20_wrt_nsos_for_non_default_S20(self):
         # create test data
         data = DataStructure.DataStructure()
@@ -584,81 +585,6 @@ class Check_Dependent_Model_Settings_WRT_Nsos(unittest.TestCase):
         ms._check_dependent_model_settings_wrt_nsos(nsos = nsos)
         
         self.assertEqual(len(ms.N0), nsos, msg = 'length of N0 should equal number of elements returned from sos function')
-    
-    def test_size_N_wrt_nsos_for_non_default_N(self):
-        # create test data
-        data = DataStructure.DataStructure()
-        x = np.zeros([2])
-        y = np.zeros([2])
-        data.add_data_set(x,y)
-        y = np.zeros([4,2])
-        data.add_data_set(x,y)
-        
-        # create options
-        options = SimulationOptions.SimulationOptions()
-        options.define_simulation_options(nsimu = int(1000))
-        
-        # create settings        
-        ms = ModelSettings.ModelSettings()
-        ms.define_model_settings(N = [2,4])
-        
-        # calculate dependencies
-        ms._check_dependent_model_settings(data, options)
-        
-        nsos = 3
-        
-        with self.assertRaises(SystemExit, msg = 'length of N should equal number of elements returned from sos function'):
-            ms._check_dependent_model_settings_wrt_nsos(nsos = nsos)
-            
-    def test_size_N_wrt_nsos_for_non_default_N_and_nsos_equal_1(self):
-        # create test data
-        data = DataStructure.DataStructure()
-        x = np.zeros([2])
-        y = np.zeros([2])
-        data.add_data_set(x,y)
-        y = np.zeros([4,2])
-        data.add_data_set(x,y)
-        
-        # create options
-        options = SimulationOptions.SimulationOptions()
-        options.define_simulation_options(nsimu = int(1000))
-        
-        # create settings        
-        ms = ModelSettings.ModelSettings()
-        ms.define_model_settings(N = [2,4])
-        
-        # calculate dependencies
-        ms._check_dependent_model_settings(data, options)
-        
-        nsos = 1
-        ms._check_dependent_model_settings_wrt_nsos(nsos = nsos)
-        
-        self.assertEqual(len(ms.N), nsos, msg = 'length of N should equal number of elements returned from sos function')
-    
-    def test_value_N_wrt_nsos_for_non_default_N_and_nsos_equal_1(self):
-        # create test data
-        data = DataStructure.DataStructure()
-        x = np.zeros([2])
-        y = np.zeros([2])
-        data.add_data_set(x,y)
-        y = np.zeros([4,2])
-        data.add_data_set(x,y)
-        
-        # create options
-        options = SimulationOptions.SimulationOptions()
-        options.define_simulation_options(nsimu = int(1000))
-        
-        # create settings        
-        ms = ModelSettings.ModelSettings()
-        ms.define_model_settings(N = [2,4])
-        
-        # calculate dependencies
-        ms._check_dependent_model_settings(data, options)
-        
-        nsos = 1
-        ms._check_dependent_model_settings_wrt_nsos(nsos = nsos)
-        
-        self.assertEqual(ms.N, 6, msg = 'length of N should equal number of elements returned from sos function')
     
     def test_size_N0_wrt_nsos_for_non_default_N0_raises_error(self):
         # create test data
@@ -786,3 +712,130 @@ class Check_Dependent_Model_Settings_WRT_Nsos(unittest.TestCase):
         nsos = 1
         with self.assertRaises(SystemExit, msg = 'sigma2 should not be larger than nsos'):
             ms._check_dependent_model_settings_wrt_nsos(nsos = nsos)
+     
+    '''
+    CHECK CALCULATION OF NUMBER OF OBSERVATIONS
+    '''
+    def test_size_N_wrt_nsos(self):
+        # create test data
+        data = DataStructure.DataStructure()
+        x = np.zeros([2])
+        y = np.zeros([2])
+        data.add_data_set(x,y)
+        
+        # create options
+        options = SimulationOptions.SimulationOptions()
+        options.define_simulation_options(nsimu = int(1000))
+        
+        # create settings        
+        ms = ModelSettings.ModelSettings()
+        ms.define_model_settings()
+        
+        # calculate dependencies
+        ms._check_dependent_model_settings(data, options)
+        
+        nsos = 2
+        ms._check_dependent_model_settings_wrt_nsos(nsos = nsos)
+        
+        self.assertEqual(len(ms.N), nsos, msg = 'length of N should equal number of elements returned from sos function')
+       
+    def test_size_N_wrt_nsos_for_2_data_sets(self):
+        # create test data
+        data = DataStructure.DataStructure()
+        x = np.zeros([2])
+        y = np.zeros([2])
+        data.add_data_set(x,y)
+        data.add_data_set(x,y)
+        
+        # create options
+        options = SimulationOptions.SimulationOptions()
+        options.define_simulation_options(nsimu = int(1000))
+        
+        # create settings        
+        ms = ModelSettings.ModelSettings()
+        ms.define_model_settings()
+        
+        # calculate dependencies
+        ms._check_dependent_model_settings(data, options)
+        
+        nsos = 2
+        print('N = {}, nsos = {}'.format(ms.N, nsos))
+        ms._check_dependent_model_settings_wrt_nsos(nsos = nsos)
+        print('N = {}, nsos = {}'.format(ms.N, nsos))
+        self.assertEqual(len(ms.N), nsos, msg = 'length of N should equal number of elements returned from sos function')
+       
+    def test_size_N_wrt_nsos_for_non_default_N(self):
+        # create test data
+        data = DataStructure.DataStructure()
+        x = np.zeros([2])
+        y = np.zeros([2])
+        data.add_data_set(x,y)
+        y = np.zeros([4,2])
+        data.add_data_set(x,y)
+        
+        # create options
+        options = SimulationOptions.SimulationOptions()
+        options.define_simulation_options(nsimu = int(1000))
+        
+        # create settings        
+        ms = ModelSettings.ModelSettings()
+        ms.define_model_settings(N = [2,4])
+        
+        # calculate dependencies
+        ms._check_dependent_model_settings(data, options)
+        
+        nsos = 3
+        
+        with self.assertRaises(SystemExit, msg = 'length of N should equal number of elements returned from sos function'):
+            ms._check_dependent_model_settings_wrt_nsos(nsos = nsos)
+            
+    def test_size_N_wrt_nsos_for_non_default_N_and_nsos_equal_1(self):
+        # create test data
+        data = DataStructure.DataStructure()
+        x = np.zeros([2])
+        y = np.zeros([2])
+        data.add_data_set(x,y)
+        y = np.zeros([4,2])
+        data.add_data_set(x,y)
+        
+        # create options
+        options = SimulationOptions.SimulationOptions()
+        options.define_simulation_options(nsimu = int(1000))
+        
+        # create settings        
+        ms = ModelSettings.ModelSettings()
+        ms.define_model_settings(N = [2,4])
+        
+        # calculate dependencies
+        ms._check_dependent_model_settings(data, options)
+        
+        nsos = 1
+        ms._check_dependent_model_settings_wrt_nsos(nsos = nsos)
+        
+        self.assertEqual(len(ms.N), nsos, msg = 'length of N should equal number of elements returned from sos function')
+    
+    def test_value_N_wrt_nsos_for_non_default_N_and_nsos_equal_1(self):
+        # create test data
+        data = DataStructure.DataStructure()
+        x = np.zeros([2])
+        y = np.zeros([2])
+        data.add_data_set(x,y)
+        y = np.zeros([4,2])
+        data.add_data_set(x,y)
+        
+        # create options
+        options = SimulationOptions.SimulationOptions()
+        options.define_simulation_options(nsimu = int(1000))
+        
+        # create settings        
+        ms = ModelSettings.ModelSettings()
+        ms.define_model_settings(N = [2,4])
+        
+        # calculate dependencies
+        ms._check_dependent_model_settings(data, options)
+        
+        nsos = 1
+        ms._check_dependent_model_settings_wrt_nsos(nsos = nsos)
+        
+        self.assertEqual(ms.N, 6, msg = 'length of N should equal number of elements returned from sos function')
+    
