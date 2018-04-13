@@ -29,18 +29,20 @@ class SumOfSquares:
         self.sos_style = sos_style
         self.model_function = model.model_function
         self.parind = parameters._parind
+        self.value = parameters._initial_value
         self.local = parameters._local
         self.data = data
         self.nbatch = model.nbatch
         
     def evaluate_sos_function(self, theta):
         # evaluate sum-of-squares function
+        self.value[self.parind] = theta
         if self.sos_style == 1:
-            ss = self.sos_function(theta, self.data)
+            ss = self.sos_function(self.value, self.data)
         elif self.sos_style == 4:
-            ss = self.mcmc_sos_function(theta, self.data, self.local, self.model_function)
+            ss = self.mcmc_sos_function(self.value, self.data, self.local, self.model_function)
         else:
-            ss = self.sos_function(theta, self.data, self.local)
+            ss = self.sos_function(self.value, self.data, self.local)
         
         # make sure sos is a numpy array
         if not isinstance(ss, np.ndarray):

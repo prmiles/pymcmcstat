@@ -298,8 +298,10 @@ class MCMC:
             start = lastbin
             end = isimu + 1
             self.__save_chains_to_bin(start, end)
-            
-            
+           
+        # update value to end value
+        self.parameters._value[self.parameters._parind] = self.__old_set.theta
+           
     def __generate_simulation_results(self):
         # --------------------------------------------
         # BUILD RESULTS OBJECT
@@ -310,7 +312,7 @@ class MCMC:
                                           covariance = self._covariance,
                                           parameters = self.parameters,
                                           rejected = self.__rejected, simutime = self.__simulation_time, 
-                                          theta = self.__old_set.theta)
+                                          theta = self.parameters._value)
                 
 #        self.simulation_results.add_updatesigma(updatesigma = updatesigma, sigma2 = sigma2,
 #                                S20 = S20, N0 = N0)

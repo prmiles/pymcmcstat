@@ -30,7 +30,7 @@ class Add_Model_Parameter_Test(unittest.TestCase):
         self.assertEqual(MP.parameters[0]['maximum'], np.inf)
         self.assertEqual(MP.parameters[0]['prior_mu'],np.zeros([1]))
         self.assertEqual(MP.parameters[0]['prior_sigma'],np.inf)
-        self.assertEqual(MP.parameters[0]['sample'],None)
+        self.assertEqual(MP.parameters[0]['sample'],1)
         self.assertEqual(MP.parameters[0]['local'],0)
         
     def test_results_to_params(self):

@@ -187,7 +187,17 @@ class Get_Number_Of_Data_Sets(unittest.TestCase):
         data.add_data_set(x,y)
         data.get_number_of_data_sets()
         self.assertEqual(data.ndatasets, 4, msg = 'ndatasets should match total number of columns of elements of ydata')
-        
+     
+    def test_does_double_data_set_match_with_2d_sets_of_different_size(self):
+        data = DataStructure.DataStructure()
+        x = np.zeros([2])
+        y = np.zeros([2,2])
+        data.add_data_set(x,y)
+        y = np.zeros([3,4])
+        data.add_data_set(x,y)
+        data.get_number_of_data_sets()
+        self.assertEqual(data.ndatasets, 6, msg = 'ndatasets should match total number of columns of elements of ydata')
+     
     def test_does_double_data_set_match_with_different_sizes(self):
         data = DataStructure.DataStructure()
         x = np.zeros([2])
@@ -237,3 +247,13 @@ class Get_Number_Of_Observations(unittest.TestCase):
         data.add_data_set(x,y)
         nds = data.get_number_of_observations()
         self.assertEqual(nds[0], 4, msg = 'total number of observations is number of rows in y - summed over all sets of y')
+        
+    def test_number_of_observations_match_sum_of_n_with_multiple_2d_sets(self):
+        data = DataStructure.DataStructure()
+        x = np.zeros([2])
+        y = np.zeros([1,2])
+        data.add_data_set(x,y)
+        y = np.zeros([2,2])
+        data.add_data_set(x,y)
+        nds = data.get_number_of_observations()
+        self.assertEqual(nds[0], 3, msg = 'total number of observations is number of rows in y - summed over all sets of y')

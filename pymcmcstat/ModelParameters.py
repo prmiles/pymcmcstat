@@ -17,7 +17,7 @@ class ModelParameters:
         
     def add_model_parameter(self, name, theta0, minimum = -np.inf,
                       maximum = np.inf, prior_mu = np.zeros([1]), prior_sigma = np.inf,
-                      sample = None, local = 0):
+                      sample = 1, local = 0):
         
         # append dictionary element
         self.parameters.append({'name': name, 'theta0': theta0, 'minimum': minimum,
@@ -33,6 +33,7 @@ class ModelParameters:
         # initialize arrays - as lists and numpy arrays (improved functionality)
         self._names = []
         self._initial_value = np.zeros(npar)
+        self._value = np.zeros(npar)
         self._parind = np.ones(npar, dtype = int)
         self._local = np.zeros(npar)
         self._upper_limits = np.ones(npar)*np.inf
@@ -43,7 +44,7 @@ class ModelParameters:
         # scan for local variables
         ii = 0
         for kk in range(npar):
-            if parameters[kk]['sample'] is not None:
+            if parameters[kk]['sample'] == 0:
                 if parameters[kk]['local'] != 0:
                     self._local[ii:(ii+nbatch-1)] = range(0,nbatch)
                     npar = npar + nbatch - 1
@@ -57,7 +58,7 @@ class ModelParameters:
             if self._local[ii] == 0:
                 self._names.append(parameters[kk]['name'])
                 self._initial_value[ii] = parameters[kk]['theta0']
-                
+                self._value[ii] = parameters[kk]['theta0']
                 # default values defined in "Parameters" class in classes.py
                 # define lower limits
                 self._lower_limits[ii] = parameters[kk]['minimum']
@@ -71,13 +72,14 @@ class ModelParameters:
                 self._thetasigma[ii] = parameters[kk]['prior_sigma']
                 if self._thetasigma[ii] == 0:
                     self._thetasigma[ii] = np.inf
-                    
+                # turn sampling on/off
+                self._parind[ii] = parameters[kk]['sample']
             ii += 1 # update counter
             
         # make parind list of nonzero elements
         self._parind = np.flatnonzero(self._parind)
         
-        self.npar = npar # append number of parameters to structure
+        self.npar = len(self._parind) # append number of parameters to structure
                 
     def _results_to_params(self, results, use_local = 1):
     
@@ -106,7 +108,7 @@ class ModelParameters:
     
     def _check_initial_values_wrt_parameter_limits(self):
         # check initial parameter values are inside range
-        if (self._initial_value < self._lower_limits[self._parind[:]]).any() or (self._initial_value > self._upper_limits[self._parind[:]]).any():
+        if (self._initial_value[np.ix_(self._parind)] < self._lower_limits[np.ix_(self._parind)]).any() or (self._initial_value[np.ix_(self._parind)] > self._upper_limits[np.ix_(self._parind)]).any():
             # proposed value outside parameter limits
             sys.exit('Proposed value outside parameter limits - select new initial parameter values')
             
