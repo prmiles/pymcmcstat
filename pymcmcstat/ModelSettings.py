@@ -87,7 +87,8 @@ class ModelSettings:
 #                warnings.warn('User defined N = {}.  Estimate based on data structure is N = {}.  Possible error?'.format(self.N, N))
                 sys.exit('User defined N = {}.  Estimate based on data structure is N = {}.  Possible error?'.format(self.N, N))
         else:
-            self.N = data.get_number_of_observations()
+#            self.N = data.get_number_of_observations()
+            self.N = data.n
         
         self.Nshape = data.shape
         

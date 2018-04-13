@@ -30,12 +30,13 @@ class ResultsStructure:
         self.results['qcov'] = np.dot(covariance._R.transpose(),covariance._R)
         self.results['cov'] = covariance._covchain
         self.results['mean'] = covariance._meanchain
-        self.results['names'] = parameters._names
+        self.results['names'] = [parameters._names[ii] for ii in parameters._parind]
         self.results['limits'] = [parameters._lower_limits[parameters._parind[:]], 
                      parameters._upper_limits[parameters._parind[:]]]
         
         self.results['nsimu'] = options.nsimu
         self.results['simutime'] = simutime
+        covariance._qcovorig[np.ix_(parameters._parind,parameters._parind)] = self.results['qcov']
         self.results['qcovorig'] = covariance._qcovorig
     
     def add_updatesigma(self, updatesigma, sigma2, S20, N0):

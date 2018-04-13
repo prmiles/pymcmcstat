@@ -108,7 +108,7 @@ class ModelParameters:
     
     def _check_initial_values_wrt_parameter_limits(self):
         # check initial parameter values are inside range
-        if (self._initial_value < self._lower_limits[self._parind[:]]).any() or (self._initial_value > self._upper_limits[self._parind[:]]).any():
+        if (self._initial_value[np.ix_(self._parind)] < self._lower_limits[np.ix_(self._parind)]).any() or (self._initial_value[np.ix_(self._parind)] > self._upper_limits[np.ix_(self._parind)]).any():
             # proposed value outside parameter limits
             sys.exit('Proposed value outside parameter limits - select new initial parameter values')
             
