@@ -133,7 +133,7 @@ class PredictionIntervals:
             if n == self.__ndatabatches: # assume separate obs. error for each batch
                 self.__s2chain_index = np.zeros([self.__ndatabatches,2], dtype = int)
                 for ii in range(self.__ndatabatches):
-                    if ii == 1:
+                    if ii == 0: # 1?
                         self.__s2chain_index[ii,:] = np.array([0, 1])
                     else:
                         self.__s2chain_index[ii,:] = np.array([self.__s2chain_index[ii-1,1], 
@@ -213,9 +213,14 @@ class PredictionIntervals:
                     ypred = self.modelfunction(datapredii, th)
                         
                 ypred = ypred.reshape(self.__nrow[ii], self.__ncol[ii])
-
+#                print('ypred.shape = {}'.format(ypred.shape))
                 if s2chain is not None:
                     s2elem = s2chain[iisample[kk],self.__s2chain_index[ii][0]:self.__s2chain_index[ii][1]]
+                    if s2elem.shape != (1,s2elem.size):
+                        s2elem = s2elem.reshape(1,s2elem.shape[0]) # make row vector
+#                    print('s2elem = {}'.format(s2elem))
+#                    print('s2elem.shape={}'.format(s2elem.shape))
+#                    print('iisample[kk] = {}, s2chain_idx[ii][0] ={}:s2chain_idx[ii][1] = {}'.format(iisample[kk], self.__s2chain_index[ii][0], self.__s2chain_index[ii][1]))
                     opred = self._observation_sample(s2elem, ypred, sstype)
                 else:
                     opred = np.zeros([self.__nrow[ii], self.__ncol[ii]])
@@ -290,7 +295,7 @@ class PredictionIntervals:
         
         return interpfun(itpoints)
     
-    def plot_prediction_intervals(self, plot_pred_int = 'on', adddata = False):
+    def plot_prediction_intervals(self, plot_pred_int = 'on', adddata = False, addlegend = True, figsizeinches = None):
         
         # unpack out dictionary
         credible_intervals = self.intervals['credible_intervals']
@@ -309,6 +314,10 @@ class PredictionIntervals:
         if plot_pred_int is not 'on' or prediction_intervals is None:
             prediction_intervals = None # turn off prediction intervals
             clabels = ['99% CI', '95% CI', '90% CI', '50% CI']
+            
+        # check if figure size was specified
+        if figsizeinches is None:
+            figsizeinches = [7,5]
             
         # define number of batches
         nbatch = len(credible_intervals)
@@ -339,7 +348,7 @@ class PredictionIntervals:
             for jj in range(ny):
                 fighandcolumn = str('Column # {}'.format(jj))
                 fighand = str('{} | {}'.format(fighandbatch, fighandcolumn))                 
-                htmp = plt.figure(fighand, figsize=(7,5)) # create new figure
+                htmp = plt.figure(fighand, figsize=(figsizeinches)) # create new figure
                 fighandle.append(htmp)
                 
                 intcol = [0.85, 0.85, 0.85] # dimmest (lightest) color
@@ -383,7 +392,8 @@ class PredictionIntervals:
                     plt.title(str('Column #{}'.format(jj)))
                     
                 # add legend
-                handles, labels = ax.get_legend_handles_labels()
-                ax.legend(handles, labels, loc='upper left')
+                if addlegend is True:
+                    handles, labels = ax.get_legend_handles_labels()
+                    ax.legend(handles, labels, loc='upper left')
     
         return fighandle, axhandle
