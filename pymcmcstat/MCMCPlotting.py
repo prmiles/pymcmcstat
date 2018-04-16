@@ -19,7 +19,7 @@ class MCMCPlotting:
     # plot density panel
     # input:
     # chains - 2d array - each column is chain of parameter (construct 2d array using numpy)
-    def plot_density_panel(self, chains, names = None, hist_on = 0):
+    def plot_density_panel(self, chains, names = None, hist_on = 0, figsizeinches = None):
         nrow, ncol = chains.shape # number of rows, number of columns
         
         nparam = ncol # number of parameter chains
@@ -34,7 +34,10 @@ class MCMCPlotting:
         if len(names) != nparam:
             names = self.__extend_names_to_match_nparam(names, nparam)
         
-        pyplot.figure(figsize=(5,4)) # initialize figure
+        if figsizeinches is None:
+            figsizeinches = [5,4]
+            
+        pyplot.figure(dpi=100, figsize=(figsizeinches)) # initialize figure
         for ii in range(nparam):
             # define chain
             chain = chains[:,ii] # check indexing
@@ -61,7 +64,7 @@ class MCMCPlotting:
     # plot histogram panel
     # input:
     # chains - 2d array - each column is chain of parameter (construct 2d array using numpy)
-    def plot_histogram_panel(self, chains, names = None):
+    def plot_histogram_panel(self, chains, names = None, figsizeinches = None):
         nrow, ncol = chains.shape # number of rows, number of columns
         
         nparam = ncol # number of parameter chains
@@ -75,8 +78,11 @@ class MCMCPlotting:
         # Check if enough names defined
         if len(names) != nparam:
             names = self.__extend_names_to_match_nparam(names, nparam)
+           
+        if figsizeinches is None:
+            figsizeinches = [5,4]
             
-        f = pyplot.figure(dpi=100, figsize=(5,4)) # initialize figure
+        f = pyplot.figure(dpi=100, figsize=(figsizeinches)) # initialize figure
         for ii in range(nparam):
             # define chain
             chain = chains[:,ii] # check indexing
@@ -95,7 +101,7 @@ class MCMCPlotting:
     # plot chain panel
     # input:
     # chains - 2d array - each column is chain of parameter (construct 2d array using numpy)
-    def plot_chain_panel(self, chains, names = None):
+    def plot_chain_panel(self, chains, names = None, figsizeinches = None):
         nsimu, nparam = chains.shape # number of rows, number of columns
     
         skip = 1
@@ -114,7 +120,10 @@ class MCMCPlotting:
         if len(names) != nparam:
             names = self.__extend_names_to_match_nparam(names, nparam)
             
-        f = pyplot.figure(dpi=100, figsize=(5,4)) # initialize figure
+        if figsizeinches is None:
+            figsizeinches = [5,4]
+            
+        f = pyplot.figure(dpi=100, figsize=(figsizeinches)) # initialize figure
         for ii in range(nparam):
             # define chain
             chain = chains[:,ii] # check indexing
@@ -136,7 +145,7 @@ class MCMCPlotting:
     # plot pairwise correlation panel
     # input:
     # chains - 2d array - each column is chain of parameter (construct 2d array using numpy)
-    def plot_pairwise_correlation_panel(self, chains, names = None, skip=1):
+    def plot_pairwise_correlation_panel(self, chains, names = None, figsizeinches = None, skip=1):
         nsimu, nparam = chains.shape # number of rows, number of columns
         
         inds = range(0,nsimu,skip)
@@ -149,7 +158,10 @@ class MCMCPlotting:
         if len(names) != nparam:
             names = self.__extend_names_to_match_nparam(names, nparam)
             
-        f = pyplot.figure(dpi=100) # initialize figure
+        if figsizeinches is None:
+            figsizeinches = [7,5]
+            
+        f = pyplot.figure(dpi=100, figsize=(figsizeinches)) # initialize figure
         for jj in range(2,nparam+1):
             for ii in range(1,jj):
                 chain1 = chains[inds,ii-1]
