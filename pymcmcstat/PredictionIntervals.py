@@ -295,7 +295,7 @@ class PredictionIntervals:
         
         return interpfun(itpoints)
     
-    def plot_prediction_intervals(self, plot_pred_int = 'on', adddata = False, addlegend = True):
+    def plot_prediction_intervals(self, plot_pred_int = 'on', adddata = False, addlegend = True, figsizeinches = None):
         
         # unpack out dictionary
         credible_intervals = self.intervals['credible_intervals']
@@ -314,6 +314,10 @@ class PredictionIntervals:
         if plot_pred_int is not 'on' or prediction_intervals is None:
             prediction_intervals = None # turn off prediction intervals
             clabels = ['99% CI', '95% CI', '90% CI', '50% CI']
+            
+        # check if figure size was specified
+        if figsizeinches is None:
+            figsizeinches = [7,5]
             
         # define number of batches
         nbatch = len(credible_intervals)
@@ -344,7 +348,7 @@ class PredictionIntervals:
             for jj in range(ny):
                 fighandcolumn = str('Column # {}'.format(jj))
                 fighand = str('{} | {}'.format(fighandbatch, fighandcolumn))                 
-                htmp = plt.figure(fighand, figsize=(7,5)) # create new figure
+                htmp = plt.figure(fighand, figsize=(figsizeinches)) # create new figure
                 fighandle.append(htmp)
                 
                 intcol = [0.85, 0.85, 0.85] # dimmest (lightest) color
