@@ -12,7 +12,13 @@ import math
 import numpy as np
 import matplotlib.pyplot as pyplot
 from pylab import hist 
-from statsmodels.nonparametric.kernel_density import KDEMultivariate
+
+import warnings
+
+try:
+    from statsmodels.nonparametric.kernel_density import KDEMultivariate
+except ImportError as e:
+    warnings.warn("Exception raised importing statsmodels.nonparametric.kernel_density - plot_density_panel will not work.)", ImportWarning)
 
 class MCMCPlotting:
 
