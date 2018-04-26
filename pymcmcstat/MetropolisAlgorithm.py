@@ -7,6 +7,7 @@ Created on Thu Jan 18 10:30:29 2018
 """
 # import required packages
 import numpy as np
+from scipy.special import expit
 from .ParameterSet import ParameterSet
 
 class MetropolisAlgorithm:
@@ -43,8 +44,9 @@ class MetropolisAlgorithm:
             ss1 = sos_object.evaluate_sos_function(newpar)
             
             # evaluate test
-            alpha = np.exp(-0.5*(sum((ss1 - ss2)*(sigma2**(-1))) + newprior - oldprior))
-            alpha = sum(alpha)
+#            alpha = np.exp(-0.5*(sum((ss1 - ss2)*(sigma2**(-1))) + newprior - oldprior))
+#            alpha = sum(alpha)
+            alpha = self.evaluate_likelihood_function(ss1, ss2, sigma2, newprior, oldprior)
             
             if alpha <= 0:
                 accept = 0
@@ -58,3 +60,7 @@ class MetropolisAlgorithm:
                                 sigma2 = sigma2, alpha = alpha)
         
         return accept, newset, outbound, npar_sample_from_normal
+    
+    def evaluate_likelihood_function(self, ss1, ss2, sigma2, newprior, oldprior):
+        alpha = expit(-0.5*(sum((ss1 - ss2)*(sigma2**(-1))) + newprior - oldprior))
+        return sum(alpha)
