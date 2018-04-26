@@ -7,6 +7,7 @@ Created on Thu Jan 18 10:42:07 2018
 """
 # import required packages
 import numpy as np
+from scipy.special import expit
 from .ParameterSet import ParameterSet
 
 class DelayedRejectionAlgorithm:
@@ -79,7 +80,7 @@ class DelayedRejectionAlgorithm:
         for k in range(stage):
             y = y + self.__qfun(k, trypath, invR)
             
-        alpha = min(np.ones(1), np.exp(y)*a2*(a1**(-1)))
+        alpha = min(np.ones(1), expit(y)*a2*(a1**(-1)))
         
         return alpha
         
