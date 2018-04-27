@@ -35,6 +35,7 @@ from .ParameterSet import ParameterSet
 from .SamplingMethods import SamplingMethods
 from .ErrorVarianceEstimator import ErrorVarianceEstimator
 from .MCMCPlotting import MCMCPlotting
+from .ChainStatistics import ChainStatistics
 from .NumpyEncoder import NumpyEncoder
 from .PredictionIntervals import PredictionIntervals
 from .progressbar import progress_bar
@@ -52,6 +53,7 @@ class MCMC:
         self._error_variance = ErrorVarianceEstimator()
         self._covariance = CovarianceProcedures()
         self._sampling_methods = SamplingMethods()
+        self._chain_statistics = ChainStatistics()
         
         self._mcmc_status = False
             
@@ -94,38 +96,39 @@ class MCMC:
             self.__export_simulation_results_to_json_file(self.simulation_results.results)
         self.mcmcplot = MCMCPlotting()
         self.PI = PredictionIntervals()
+        self.chainstats = self._chain_statistics.chainstats
         
         self._mcmc_status = True # simulation has been performed
         
-    # display chain statistics
-    def chainstats(self, chain = None, results = []):
-        # 
-        if chain is None:
-            print('No chain reported - run simulation first.')
-            pass
-        else:
-            m,n = chain.shape
-            
-            if results == []: # results is dictionary
-                names = []
-                for ii in range(n):
-                    names.append(str('P{}'.format(ii)))
-            else:
-                names = results['names']
-            
-            meanii = []
-            stdii = []
-            for ii in range(n):
-                meanii.append(np.mean(chain[:,ii]))
-                stdii.append(np.std(chain[:,ii]))
-                
-            print('\n---------------------')
-            print('{:10s}: {:>10s} {:>10s}'.format('name','mean','std'))
-            for ii in range(n):
-                if meanii[ii] > 1e4:
-                    print('{:10s}: {:10.4g} {:10.4g}'.format(names[ii],meanii[ii],stdii[ii]))
-                else:
-                    print('{:10s}: {:10.4f} {:10.4f}'.format(names[ii],meanii[ii],stdii[ii]))
+#    # display chain statistics
+#    def chainstats(self, chain = None, results = []):
+#        # 
+#        if chain is None:
+#            print('No chain reported - run simulation first.')
+#            pass
+#        else:
+#            m,n = chain.shape
+#            
+#            if results == []: # results is dictionary
+#                names = []
+#                for ii in range(n):
+#                    names.append(str('P{}'.format(ii)))
+#            else:
+#                names = results['names']
+#            
+#            meanii = []
+#            stdii = []
+#            for ii in range(n):
+#                meanii.append(np.mean(chain[:,ii]))
+#                stdii.append(np.std(chain[:,ii]))
+#                
+#            print('\n---------------------')
+#            print('{:10s}: {:>10s} {:>10s}'.format('name','mean','std'))
+#            for ii in range(n):
+#                if meanii[ii] > 1e4:
+#                    print('{:10s}: {:10.4g} {:10.4g}'.format(names[ii],meanii[ii],stdii[ii]))
+#                else:
+#                    print('{:10s}: {:10.4f} {:10.4f}'.format(names[ii],meanii[ii],stdii[ii]))
                     
     def __initialize_simulation(self):
         # ---------------------------------
