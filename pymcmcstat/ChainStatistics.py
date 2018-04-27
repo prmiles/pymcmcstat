@@ -19,7 +19,7 @@ class ChainStatistics:
 #        self.description = 'Chain Statistics'
         
     # display chain statistics
-    def chainstats(self, chain = None, results = None):
+    def chainstats(self, chain = None, results = None, returnstats = None):
         # 
         if chain is None:
             print('No chain reported - run simulation first.')
@@ -37,21 +37,39 @@ class ChainStatistics:
                 
             # calculate batch mean standard deviation
             bmstd = self.batch_mean_standard_deviation(chain)
-            mcerr = bmstd/sqrt(nsimu)
+            mcerr = bmstd/np.sqrt(nsimu)
                 
             # calculate geweke's MCMC convergence diagnostic
             z,p = self.geweke(chain)
             
+            # estimate integrated autocorrelation time
+            tau, m = self.integrated_autocorrelation_time(chain)
             
             # print statistics
-            print('\n---------------------')
-            print('{:10s}: {:>10s} {:>10s}'.format('name','mean','std'))
-            for ii in range(npar):
-                if meanii[ii] > 1e4:
-                    print('{:10s}: {:10.4g} {:10.4g}'.format(names[ii],meanii[ii],stdii[ii]))
-                else:
-                    print('{:10s}: {:10.4f} {:10.4f}'.format(names[ii],meanii[ii],stdii[ii]))
-                    
+            self.print_chain_statistics(names, meanii, stdii, mcerr, tau, p)
+            
+            # assign stats to dictionary
+            stats = {'mean': list(meanii),
+                    'std': list(stdii),
+                    'bmstd': list(bmstd),
+                    'geweke': list(p),
+                    'tau': list(tau)}
+            
+            if returnstats is not None:
+                return stats
+          
+    def print_chain_statistics(self, names, meanii, stdii, mcerr, tau, p):
+        npar = len(names)
+        # print statistics
+        print('\n---------------------')
+        print('{:10s}: {:>10s} {:>10s} {:>10s} {:>10s} {:>10s}'.format('name','mean','std', 'MC_err', 'tau', 'geweke'))
+        for ii in range(npar):
+            if meanii[ii] > 1e4:
+                print('{:10s}: {:10.4g} {:10.4g} {:10.4f} {:10.4f} {:10.4f}'.format(names[ii],meanii[ii],stdii[ii],mcerr[ii],tau[ii],p[ii]))
+            else:
+                print('{:10s}: {:10.4f} {:10.4f} {:10.4f} {:10.4f} {:10.4f}'.format(names[ii],meanii[ii],stdii[ii],mcerr[ii],tau[ii],p[ii]))
+      
+    # ----------------------------------------------------              
     def batch_mean_standard_deviation(self, chain, b = None):
         """
         %BMSTD standard deviation calculated from batch means
@@ -89,7 +107,7 @@ class ChainStatistics:
         s = np.sqrt(sum((y - np.matlib.repmat(np.mean(chain,0),nb,1))**2)/(nb-1)*b)
         
         return s
-    
+    # ----------------------------------------------------
     def geweke(self, chain, a = 0.1, b = 0.5):
         """
         %GEWEKE Geweke's MCMC convergence diagnostic
@@ -138,7 +156,7 @@ class ChainStatistics:
             x: portion of chain
         '''
         m,n = x.shape
-        s = np.zeros([1,n])
+        s = np.zeros([n,])
         for ii in range(n):
             y,f = self.__power_spectral_density_using_hanning_window(x[:,ii],m)
             s[ii] = y[0]
@@ -183,7 +201,45 @@ class ChainStatistics:
         y = y[0:n2]
         f = 1/n*np.arange(0,n2)
         return y, f
-    
+    # ----------------------------------------------------
+    def integrated_autocorrelation_time(self, chain):
+        '''
+        Estimates the integrated autocorrelation time using Sokal's
+        adaptive truncated periodogram estimator.
+        
+        Input:
+            chain: [nsimu, npar]
+        '''
+        # get shape of chain
+        nsimu, npar = chain.shape
+        
+        # initialize arrays
+        tau = np.zeros([npar,])
+        m = np.zeros([npar,])
+        
+        x = scp.fftpack.fft(chain,axis=0)
+        xr = np.real(x)
+        xi = np.imag(x)
+        xmag = xr**2 + xi**2
+        xmag[0,:] = 0.
+        xmag = np.real(scp.fftpack.fft(xmag,axis=0))
+        var = xmag[0,:]/len(chain)/(len(chain)-1)
+        
+        for jj in range(npar):
+            if var[jj] == 0:
+                continue
+            xmag[:,jj] = xmag[:,jj]/xmag[0,jj]
+            snum = -1/3
+            for ii in range(len(chain)):
+                snum = snum + xmag[ii,jj] - 1/6
+                if snum < 0:
+                    tau[jj] = 2*(snum + (ii)/6)
+                    m[jj] = ii + 1
+                    break
+                
+        return tau, m
+                
+    # ----------------------------------------------------
     def __get_parameter_names(self, n, results):
         if results is None: # results not specified
             names = self.__generate_default_names(n)
