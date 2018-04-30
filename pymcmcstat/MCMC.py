@@ -278,20 +278,26 @@ class MCMC:
                 self.__rejected['in_adaptation_interval'] = 0 # reset local rejection index
                 
             # SAVE TO BIN FILE
-            if self.simulation_options.save_to_bin is True and savecount == self.simulation_options.savesize:
+            if savecount == self.simulation_options.savesize:
                 savesize = self.simulation_options.savesize
                 start = isimu - savesize
                 end = isimu
-                self.__save_chains_to_bin(start, end)
+                if self.simulation_options.save_to_bin is True:
+                    self.__save_chains_to_bin(start, end)
+                if self.simulation_options.save_to_txt is True:
+                    self.__save_chains_to_txt(start, end)
+                    
                 # reset counter
                 savecount = 0
                 lastbin = isimu
        
         # SAVE REMAINING ELEMENTS TO BIN FILE
+        start = lastbin
+        end = isimu + 1
         if self.simulation_options.save_to_bin is True:
-            start = lastbin
-            end = isimu + 1
             self.__save_chains_to_bin(start, end)
+        if self.simulation_options.save_to_txt is True:
+            self.__save_chains_to_txt(start, end)            
            
         # update value to end value
         self.parameters._value[self.parameters._parind] = self.__old_set.theta
@@ -330,17 +336,17 @@ class MCMC:
         self.simulation_results.results # assign dictionary
     
     def __save_chains_to_bin(self, start, end):
-#        print('start = {}, end = {}'.format(start, end))
-        
         savedir = self.simulation_options.savedir
         
         if not os.path.exists(savedir):
             os.makedirs(savedir)
         
-        chainfile = os.path.join(savedir, self.simulation_options.chainfile)
-        s2chainfile = os.path.join(savedir, self.simulation_options.s2chainfile)
-        sschainfile = os.path.join(savedir, self.simulation_options.sschainfile)
-        covchainfile = os.path.join(savedir, self.simulation_options.covchainfile)
+        extension = 'npy'
+        chainfile = os.path.join(savedir, str('{}.{}'.format(self.simulation_options.chainfile,extension)))
+        s2chainfile = os.path.join(savedir, str('{}.{}'.format(self.simulation_options.s2chainfile,extension)))
+        sschainfile = os.path.join(savedir, str('{}.{}'.format(self.simulation_options.sschainfile,extension)))
+        covchainfile = os.path.join(savedir, str('{}.{}'.format(self.simulation_options.covchainfile,extension)))
+        
         
         binlogfile = os.path.join(savedir, 'binlogfile.txt')
         binstr = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
@@ -348,15 +354,44 @@ class MCMC:
         
         self.__save_to_bin_file(chainfile, self.__chain[start:end,:]) 
         self.__save_to_bin_file(sschainfile, self.__sschain[start:end,:]) 
-        self.__save_to_bin_file(covchainfile, np.dot(self._covariance._R.transpose(),self._covariance._R), True)
+        self.__save_to_bin_file(covchainfile, np.dot(self._covariance._R.transpose(),self._covariance._R))
+        
         if self.simulation_options.updatesigma == 1:
             self.__save_to_bin_file(s2chainfile, self.__s2chain[start:end,:]) 
+            
+    def __save_chains_to_txt(self, start, end):
+        savedir = self.simulation_options.savedir
+        
+        if not os.path.exists(savedir):
+            os.makedirs(savedir)
+        
+        extension = 'txt'
+        chainfile = os.path.join(savedir, str('{}.{}'.format(self.simulation_options.chainfile,extension)))
+        s2chainfile = os.path.join(savedir, str('{}.{}'.format(self.simulation_options.s2chainfile,extension)))
+        sschainfile = os.path.join(savedir, str('{}.{}'.format(self.simulation_options.sschainfile,extension)))
+        covchainfile = os.path.join(savedir, str('{}.{}'.format(self.simulation_options.covchainfile,extension)))
+        
+        binlogfile = os.path.join(savedir, 'binlogfile.txt')
+        binstr = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        self.__add_to_bin_log(binlogfile, str('{}\t{}\t{}\n'.format(binstr, start, end-1)))
+        
+        self.__save_to_txt_file(chainfile, self.__chain[start:end,:]) 
+        self.__save_to_txt_file(sschainfile, self.__sschain[start:end,:]) 
+        self.__save_to_txt_file(covchainfile, np.dot(self._covariance._R.transpose(),self._covariance._R), True)
+        
+        if self.simulation_options.updatesigma == 1:
+            self.__save_to_txt_file(s2chainfile, self.__s2chain[start:end,:]) 
 
     def __add_to_bin_log(self, filename, binstr):
         with open(filename, 'a') as binfile:
             binfile.write(binstr)
     
-    def __save_to_bin_file(self, filename, mtx, separate_set = False):
+    def __save_to_bin_file(self, filename, mtx):
+        handle = open(filename, 'a')
+        np.save(handle,mtx)
+        handle.close()
+        
+    def __save_to_txt_file(self, filename, mtx, separate_set = False):
         if separate_set:
             with open(filename, "a") as text_file:
                 text_file.write('--------------------------\n')

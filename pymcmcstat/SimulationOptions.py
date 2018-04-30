@@ -63,12 +63,12 @@ class SimulationOptions:
                  printint=np.nan, adaptend = 0, lastadapt = 0, burnintime = 0,
                  waitbar = 1, debug = 0, qcov = None, updatesigma = 0, 
                  noadaptind = [], stats = 0, drscale = np.array([5, 4, 3], dtype = float),
-                 adascale = None, savesize = 0, maxmem = 0, chainfile = 'chainfile.txt',
-                 s2chainfile = 's2chainfile.txt', sschainfile = 'sschainfile.txt', covchainfile = 'covchainfile.txt', savedir = None, 
+                 adascale = None, savesize = 0, maxmem = 0, chainfile = 'chainfile',
+                 s2chainfile = 's2chainfile', sschainfile = 'sschainfile', covchainfile = 'covchainfile', savedir = None, 
                  save_to_bin = False, skip = 1, label = None, RDR = None, verbosity = 1, maxiter = None, 
                  priorupdatestart = 0, qcov_adjust = 1e-8, burnin_scale = 10, 
                  alphatarget = 0.234, etaparam = 0.7, initqcovn = None,
-                 doram = None, rndseq = None, results_filename = None, save_to_json = False):
+                 doram = None, rndseq = None, results_filename = None, save_to_json = False, save_to_txt = False):
         
         method_dictionary = {
             'mh': {'adaptint': 0, 'ntry': 1, 'doram': 0, 'adascale': adascale}, 
@@ -136,20 +136,22 @@ class SimulationOptions:
         self.verbosity = verbosity # amount of information to print
         self.maxiter = maxiter
         
+        # bin settings
         self.savesize = savesize
         self.maxmem = maxmem
-        
+            
         self.chainfile = chainfile
         self.s2chainfile = s2chainfile
         self.sschainfile = sschainfile
         self.covchainfile = covchainfile
+        
         if savedir is None:
             self.savedir = str('{}_{}'.format(datestr,'chain_bins'))
         else:
             self.savedir = savedir
             
         self.save_to_bin = save_to_bin
-        
+        self.save_to_txt = save_to_txt
         
         self.results_filename = results_filename
         self.save_to_json = save_to_json
