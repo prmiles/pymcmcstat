@@ -12,8 +12,7 @@ from .ParameterSet import ParameterSet
 
 class DelayedRejectionAlgorithm:
         # -------------------------------------------
-    def run_delayed_rejection(self, old_set, new_set, RDR, ntry, parameters,
-                              invR, sosobj, priorobj):
+    def run_delayed_rejection(self, old_set, new_set, RDR, ntry, parameters, invR, sosobj, priorobj):
         # create trypath
         trypath = [old_set, new_set]
         itry = 1; # dr step index
@@ -21,20 +20,12 @@ class DelayedRejectionAlgorithm:
         while accept == 0 and itry < ntry:
             itry = itry + 1 # update dr step index
             # initialize next step parameter set
-            next_set = ParameterSet()
-            u = np.random.randn(1,parameters.npar) # u
-            next_set.theta = old_set.theta + np.dot(u,RDR[itry-1])
-            next_set.theta = next_set.theta.reshape(parameters.npar)
-            next_set.sigma2 = new_set.sigma2
+            next_set, u = self.initialize_next_metropolis_step(parameters.npar, old_set, new_set, RDR, itry)
                     
             # Reject points outside boundaries
-            if (next_set.theta < parameters._lower_limits[parameters._parind[:]]).any() or (next_set.theta > parameters._upper_limits[parameters._parind[:]]).any():
-                next_set.alpha = 0
-                next_set.prior = 0
-                next_set.ss = np.inf
-                trypath.append(next_set)
-                outbound = 1
-                out_set = old_set
+            outsidebounds = self._is_sample_outside_bounds(next_set.theta, parameters._lower_limits[parameters._parind[:]], parameters._upper_limits[parameters._parind[:]])
+            if outsidebounds is True:
+                out_set, next_set, trypath, outbound = self._outside_bounds(old_set = old_set, next_set = next_set, trypath = trypath)
                 continue
                     
             # Evaluate new proposals
@@ -46,20 +37,50 @@ class DelayedRejectionAlgorithm:
             trypath[-1].alpha = alpha # add propability ratio
                            
             # check results of delayed rejection
-            # u2 = np.random.rand(1)
-            if alpha >= 1 or np.random.rand(1) < alpha: # accept
-                accept = 1
-                out_set = next_set
-                self.iacce[itry-1] += 1 # number accepted from DR
-            else:
-                out_set = old_set
+            accept, out_set = self.acceptance_test(alpha = alpha, old_set = old_set, next_set = next_set, itry = itry)
                 
         return accept, out_set, outbound
+    
+    def initialize_next_metropolis_step(self, npar, old_set, new_set, RDR, itry):
+        # initialize next step parameter set
+        next_set = ParameterSet()
+        u = np.random.randn(1,npar) # u
+        next_set.theta = old_set.theta + np.dot(u,RDR[itry-1])
+        next_set.theta = next_set.theta.reshape(npar)
+        next_set.sigma2 = new_set.sigma2
+        return next_set, u
+    
+    def acceptance_test(self, alpha, old_set, next_set, itry):
+        if alpha >= 1 or np.random.rand(1) < alpha: # accept
+            accept = 1
+            out_set = next_set
+            self.iacce[itry-1] += 1 # number accepted from DR
+        else:
+            accept = 0
+            out_set = old_set
+        return accept, out_set
     
     def _initialize_dr_metrics(self, options):
         self.iacce = np.zeros(options.ntry)
         self.dr_step_counter = 0
     
+    def _is_sample_outside_bounds(self, theta, lower_limits, upper_limits):
+        if (theta < lower_limits).any() or (theta > upper_limits).any():
+            outsidebounds = True
+        else:
+            outsidebounds = False
+        return outsidebounds
+    
+    def _outside_bounds(self, old_set, next_set, trypath):
+        next_set.alpha = 0
+        next_set.prior = 0
+        next_set.ss = np.inf
+        trypath.append(next_set)
+        outbound = 1
+        out_set = old_set
+        
+        return out_set, next_set, trypath, outbound
+        
     def __alphafun(self, trypath, invR):
         self.dr_step_counter = self.dr_step_counter + 1
         stage = len(trypath) - 1 # The stage we're in, elements in trypath - 1
