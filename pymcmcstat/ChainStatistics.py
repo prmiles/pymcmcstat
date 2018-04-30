@@ -9,8 +9,8 @@ Created on Thu Apr 26 10:23:51 2018
 # import required packages
 import numpy as np
 import sys
-import scipy as scp
-#from scipy.fftpack import fft
+import scipy
+from scipy.fftpack import fft
 #from scipy.stats import norm
 
 class ChainStatistics:
@@ -144,7 +144,7 @@ class ChainStatistics:
         sb = self._spectral_estimate_for_variance(chain[nb:nsimu+1,:])
         
         z = (m1 - m2)/(np.sqrt(sa/na + sb/(nsimu - nb)))
-        p = 2*(1-scp.stats.norm.cdf(np.abs(z)))
+        p = 2*(1-scipy.stats.norm.cdf(np.abs(z)))
         return z, p
         
         
@@ -193,7 +193,7 @@ class ChainStatistics:
         for ii in range(k):
             xw = w*x[index]
             index = index + (nw - noverlap)
-            Xx = np.abs(scp.fftpack.fft(xw,nfft)**2).reshape(nfft,1)
+            Xx = np.abs(fft(xw,nfft)**2).reshape(nfft,1)
             y = y + Xx
         
         y = y*(1/kmu) # normalize
@@ -217,12 +217,12 @@ class ChainStatistics:
         tau = np.zeros([npar,])
         m = np.zeros([npar,])
         
-        x = scp.fftpack.fft(chain,axis=0)
+        x = fft(chain,axis=0)
         xr = np.real(x)
         xi = np.imag(x)
         xmag = xr**2 + xi**2
         xmag[0,:] = 0.
-        xmag = np.real(scp.fftpack.fft(xmag,axis=0))
+        xmag = np.real(fft(xmag,axis=0))
         var = xmag[0,:]/len(chain)/(len(chain)-1)
         
         for jj in range(npar):
