@@ -146,7 +146,7 @@ class SimulationOptions:
         self.covchainfile = covchainfile
         
         if savedir is None:
-            self.savedir = str('{}_{}'.format(datestr,'chain_bins'))
+            self.savedir = str('{}_{}'.format(datestr,'chain_log'))
         else:
             self.savedir = savedir
             
