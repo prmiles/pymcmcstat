@@ -49,7 +49,7 @@ Created on Wed Jan 17 09:08:13 2018
 # import required packages
 import numpy as np
 from datetime import datetime
-import os
+#import os
 
 class SimulationOptions:
     
@@ -68,7 +68,8 @@ class SimulationOptions:
                  save_to_bin = False, skip = 1, label = None, RDR = None, verbosity = 1, maxiter = None, 
                  priorupdatestart = 0, qcov_adjust = 1e-8, burnin_scale = 10, 
                  alphatarget = 0.234, etaparam = 0.7, initqcovn = None,
-                 doram = None, rndseq = None, results_filename = None, save_to_json = False, save_to_txt = False):
+                 doram = None, rndseq = None, results_filename = None, save_to_json = False, save_to_txt = False,
+                 json_restart_file = None):
         
         method_dictionary = {
             'mh': {'adaptint': 0, 'ntry': 1, 'doram': 0, 'adascale': adascale}, 
@@ -126,6 +127,7 @@ class SimulationOptions:
         self.skip = skip
         
         datestr = datetime.now().strftime('%Y%m%d_%H%M%S')
+        self.datestr = datestr
         
         if label is None:
             self.label = str('MCMC run at {}'.format(datestr))
@@ -136,7 +138,7 @@ class SimulationOptions:
         self.verbosity = verbosity # amount of information to print
         self.maxiter = maxiter
         
-        # bin settings
+        # log settings
         self.savesize = savesize
         self.maxmem = maxmem
             
@@ -155,6 +157,7 @@ class SimulationOptions:
         
         self.results_filename = results_filename
         self.save_to_json = save_to_json
+        self.json_restart_file = json_restart_file
         
         self.__options_set = True # options have been defined
         
@@ -182,7 +185,7 @@ class SimulationOptions:
             self.updatesigma = 1  
             
     def display_simulation_options(self):
-        print_these = ['nsimu', 'adaptint', 'ntry', 'method', 'printint', 'lastadapt', 'drscale']
+        print_these = ['nsimu', 'adaptint', 'ntry', 'method', 'printint', 'lastadapt', 'drscale', 'qcov']
         print('simulation options:')
         for ii in range(len(print_these)):
             print('\t{} = {}'.format(print_these[ii], getattr(self, print_these[ii])))
