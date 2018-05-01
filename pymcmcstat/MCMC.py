@@ -36,6 +36,7 @@ from .SamplingMethods import SamplingMethods
 from .ErrorVarianceEstimator import ErrorVarianceEstimator
 from .MCMCPlotting import MCMCPlotting
 from .ChainStatistics import ChainStatistics
+from .ChainProcessing import ChainProcessing
 from .NumpyEncoder import NumpyEncoder
 from .PredictionIntervals import PredictionIntervals
 from .progressbar import progress_bar
@@ -54,10 +55,11 @@ class MCMC:
         self._covariance = CovarianceProcedures()
         self._sampling_methods = SamplingMethods()
         self._chain_statistics = ChainStatistics()
+        self._chain_processing = ChainProcessing()
         
         self._mcmc_status = False
             
-
+    # --------------------------------------------------------
     def run_simulation(self, use_previous_results = False):
         start_time = time.clock()
         
@@ -99,37 +101,8 @@ class MCMC:
         self.chainstats = self._chain_statistics.chainstats
         
         self._mcmc_status = True # simulation has been performed
-        
-#    # display chain statistics
-#    def chainstats(self, chain = None, results = []):
-#        # 
-#        if chain is None:
-#            print('No chain reported - run simulation first.')
-#            pass
-#        else:
-#            m,n = chain.shape
-#            
-#            if results == []: # results is dictionary
-#                names = []
-#                for ii in range(n):
-#                    names.append(str('P{}'.format(ii)))
-#            else:
-#                names = results['names']
-#            
-#            meanii = []
-#            stdii = []
-#            for ii in range(n):
-#                meanii.append(np.mean(chain[:,ii]))
-#                stdii.append(np.std(chain[:,ii]))
-#                
-#            print('\n---------------------')
-#            print('{:10s}: {:>10s} {:>10s}'.format('name','mean','std'))
-#            for ii in range(n):
-#                if meanii[ii] > 1e4:
-#                    print('{:10s}: {:10.4g} {:10.4g}'.format(names[ii],meanii[ii],stdii[ii]))
-#                else:
-#                    print('{:10s}: {:10.4f} {:10.4f}'.format(names[ii],meanii[ii],stdii[ii]))
-                    
+     
+    # --------------------------------------------------------               
     def __initialize_simulation(self):
         # ---------------------------------
         # check dependent parameters
@@ -182,6 +155,7 @@ class MCMC:
         if self.simulation_options.ntry > 1:
             self._sampling_methods.delayed_rejection._initialize_dr_metrics(self.simulation_options)    
 
+    # --------------------------------------------------------
     def __initialize_chains(self, chainind):
         # Initialize chain, error variance, and SS
         self.__chain = np.zeros([self.simulation_options.nsimu, self.parameters.npar])
@@ -213,7 +187,8 @@ class MCMC:
             self.__s2chain = np.concatenate((self.__s2chain, zero_s2chain), axis = 0)
         else:
             self.__s2chain = None
-        
+     
+    # --------------------------------------------------------
     def __execute_simulator(self):
         iiadapt = 0 # adaptation counter
         iiprint = 0 # print counter
@@ -278,24 +253,31 @@ class MCMC:
                 self.__rejected['in_adaptation_interval'] = 0 # reset local rejection index
                 
             # SAVE TO BIN FILE
-            if self.simulation_options.save_to_bin is True and savecount == self.simulation_options.savesize:
+            if savecount == self.simulation_options.savesize:
                 savesize = self.simulation_options.savesize
                 start = isimu - savesize
                 end = isimu
-                self.__save_chains_to_bin(start, end)
+                if self.simulation_options.save_to_bin is True:
+                    self.__save_chains_to_bin(start, end)
+                if self.simulation_options.save_to_txt is True:
+                    self.__save_chains_to_txt(start, end)
+                    
                 # reset counter
                 savecount = 0
                 lastbin = isimu
        
         # SAVE REMAINING ELEMENTS TO BIN FILE
+        start = lastbin
+        end = isimu + 1
         if self.simulation_options.save_to_bin is True:
-            start = lastbin
-            end = isimu + 1
             self.__save_chains_to_bin(start, end)
+        if self.simulation_options.save_to_txt is True:
+            self.__save_chains_to_txt(start, end)            
            
         # update value to end value
         self.parameters._value[self.parameters._parind] = self.__old_set.theta
-           
+    
+    # --------------------------------------------------------       
     def __generate_simulation_results(self):
         # --------------------------------------------
         # BUILD RESULTS OBJECT
@@ -329,42 +311,46 @@ class MCMC:
         
         self.simulation_results.results # assign dictionary
     
+    # --------------------------------------------------------
     def __save_chains_to_bin(self, start, end):
-#        print('start = {}, end = {}'.format(start, end))
-        
         savedir = self.simulation_options.savedir
+        self._chain_processing._check_directory(savedir)
         
-        if not os.path.exists(savedir):
-            os.makedirs(savedir)
-        
-        chainfile = os.path.join(savedir, self.simulation_options.chainfile)
-        s2chainfile = os.path.join(savedir, self.simulation_options.s2chainfile)
-        sschainfile = os.path.join(savedir, self.simulation_options.sschainfile)
-        covchainfile = os.path.join(savedir, self.simulation_options.covchainfile)
+        chainfile, s2chainfile, sschainfile, covchainfile = self._chain_processing._create_path_with_extension_for_all_logs(self.simulation_options, extension = 'h5')
         
         binlogfile = os.path.join(savedir, 'binlogfile.txt')
         binstr = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        self.__add_to_bin_log(binlogfile, str('{}\t{}\t{}\n'.format(binstr, start, end-1)))
-        
-        self.__save_to_bin_file(chainfile, self.__chain[start:end,:]) 
-        self.__save_to_bin_file(sschainfile, self.__sschain[start:end,:]) 
-        self.__save_to_bin_file(covchainfile, np.dot(self._covariance._R.transpose(),self._covariance._R), True)
-        if self.simulation_options.updatesigma == 1:
-            self.__save_to_bin_file(s2chainfile, self.__s2chain[start:end,:]) 
+        self._chain_processing._add_to_log(binlogfile, str('{}\t{}\t{}\n'.format(binstr, start, end-1)))
 
-    def __add_to_bin_log(self, filename, binstr):
-        with open(filename, 'a') as binfile:
-            binfile.write(binstr)
+        # define set name based in start/end
+        datasetname = str('{}_{}_{}'.format('nsimu',start,end-1))
+        
+        self._chain_processing._save_to_bin_file(chainfile, datasetname = datasetname, mtx = self.__chain[start:end,:]) 
+        self._chain_processing._save_to_bin_file(sschainfile, datasetname = datasetname, mtx = self.__sschain[start:end,:]) 
+        self._chain_processing._save_to_bin_file(covchainfile, datasetname = datasetname, mtx = np.dot(self._covariance._R.transpose(),self._covariance._R))
+        
+        if self.simulation_options.updatesigma == 1:
+            self._chain_processing._save_to_bin_file(s2chainfile, datasetname = datasetname, mtx = self.__s2chain[start:end,:]) 
+            
+    # --------------------------------------------------------
+    def __save_chains_to_txt(self, start, end):
+        savedir = self.simulation_options.savedir
+        self._chain_processing._check_directory(savedir)
+        
+        chainfile, s2chainfile, sschainfile, covchainfile = self._chain_processing._create_path_with_extension_for_all_logs(self.simulation_options, extension = 'txt')
+       
+        txtlogfile = os.path.join(savedir, 'txtlogfile.txt')
+        txtstr = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        self._chain_processing._add_to_log(txtlogfile, str('{}\t{}\t{}\n'.format(txtstr, start, end-1)))
+        
+        self._chain_processing._save_to_txt_file(chainfile, self.__chain[start:end,:]) 
+        self._chain_processing._save_to_txt_file(sschainfile, self.__sschain[start:end,:]) 
+        self._chain_processing._save_to_txt_file(covchainfile, np.dot(self._covariance._R.transpose(),self._covariance._R))
+        
+        if self.simulation_options.updatesigma == 1:
+            self._chain_processing._save_to_txt_file(s2chainfile, self.__s2chain[start:end,:]) 
     
-    def __save_to_bin_file(self, filename, mtx, separate_set = False):
-        if separate_set:
-            with open(filename, "a") as text_file:
-                text_file.write('--------------------------\n')
-                
-        handle = open(filename, 'a')
-        np.savetxt(handle,mtx)
-        handle.close()
-    
+    # --------------------------------------------------------
     def __export_simulation_results_to_json_file(self, results = None):
                        
         if self.simulation_options.results_filename is None:
@@ -373,7 +359,6 @@ class MCMC:
         else:
             filename = self.simulation_options.results_filename
             
-        #save_dill_object(mcstat, filename)
         self.__save_json_object(results, filename)
     
     def __save_json_object(self, obj, filename):
@@ -385,6 +370,7 @@ class MCMC:
             results = json.load(obj)
         return results
     
+    # --------------------------------------------------------
     def __update_chain(self, accept, new_set, outbound):
         if accept:
             # accept
