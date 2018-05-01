@@ -61,7 +61,7 @@ class DelayedRejectionAlgorithm:
         return accept, out_set
     
     def _initialize_dr_metrics(self, options):
-        self.iacce = np.zeros(options.ntry)
+        self.iacce = np.zeros(options.ntry, dtype = int)
         self.dr_step_counter = 0
     
     def _is_sample_outside_bounds(self, theta, lower_limits, upper_limits):

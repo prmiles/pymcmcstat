@@ -20,8 +20,8 @@ as well as several types of predictive tests.
 import os
 import time
 import numpy as np
-import json
 import datetime
+import sys
 
 from .DataStructure import DataStructure
 from .ModelSettings import ModelSettings
@@ -37,7 +37,6 @@ from .ErrorVarianceEstimator import ErrorVarianceEstimator
 from .MCMCPlotting import MCMCPlotting
 from .ChainStatistics import ChainStatistics
 from .ChainProcessing import ChainProcessing
-from .NumpyEncoder import NumpyEncoder
 from .PredictionIntervals import PredictionIntervals
 from .progressbar import progress_bar
 
@@ -61,14 +60,22 @@ class MCMC:
             
     # --------------------------------------------------------
     def run_simulation(self, use_previous_results = False):
-        start_time = time.clock()
+        start_time = time.time()
         
         if use_previous_results == True:
             if self._mcmc_status == True:
                 self.parameters._results_to_params(self.simulation_results.results, 1)
                 self.__initialize_simulation()
                 self.__expand_chains()
+            else:
+                sys.exit('No previous results found.  Set ''use_previous_results'' to ''False''')
         else:
+            if self.simulation_options.json_restart_file is not None:
+                RS = ResultsStructure()
+                res = RS.load_json_object(self.simulation_options.json_restart_file)
+                self.parameters._results_to_params(res, 1)
+                self.simulation_options.qcov = np.array(res['qcov'])
+                
             self.__chain_index = 0 # start index at zero
             self.__initialize_simulation()
             self.__initialize_chains(chainind = self.__chain_index)
@@ -88,18 +95,17 @@ class MCMC:
         """
         self.__execute_simulator()
         
-        end_time = time.clock()
+        end_time = time.time()
         self.__simulation_time = end_time - start_time
-
         # --------------------
         # Generate Results
         self.__generate_simulation_results()
         if self.simulation_options.save_to_json == True:
-            self.__export_simulation_results_to_json_file(self.simulation_results.results)
+            if self.simulation_results.basic == True: # check that results structure has been created
+                self.simulation_results.export_simulation_results_to_json_file(results = self.simulation_results.results, options = self.simulation_options)
         self.mcmcplot = MCMCPlotting()
         self.PI = PredictionIntervals()
         self.chainstats = self._chain_statistics.chainstats
-        
         self._mcmc_status = True # simulation has been performed
      
     # --------------------------------------------------------               
@@ -108,7 +114,6 @@ class MCMC:
         # check dependent parameters
         self.simulation_options._check_dependent_simulation_options(self.data, self.model_settings)
         self.model_settings._check_dependent_model_settings(self.data, self.simulation_options)
-        
         # open and parse the parameter structure
         self.parameters._openparameterstructure(self.model_settings.nbatch)
         # check initial parameter values are inside range
@@ -117,37 +122,26 @@ class MCMC:
         self.parameters._check_prior_sigma(self.simulation_options.verbosity)
         # display parameter settings
         self.parameters.display_parameter_settings(self.simulation_options)
-        
         # setup covariance matrix and initial Cholesky decomposition
         self._covariance._initialize_covariance_settings(self.parameters, self.simulation_options)
-        
         # ---------------------
         # define sum-of-squares object
         self.__sos_object = SumOfSquares(self.model_settings, self.data, self.parameters)
-
         # ---------------------
         # define prior object
-        self.__prior_object = PriorFunction(priorfun = self.model_settings.prior_function, 
-                                       mu = self.parameters._thetamu, 
-                                       sigma = self.parameters._thetasigma)
-        
+        self.__prior_object = PriorFunction(priorfun = self.model_settings.prior_function, mu = self.parameters._thetamu, sigma = self.parameters._thetasigma)
         # ---------------------
         # Define initial parameter set
         self.__initial_set = ParameterSet(theta = self.parameters._initial_value[self.parameters._parind[:]])
-        
         # calculate sos with initial parameter set
         self.__initial_set.ss = self.__sos_object.evaluate_sos_function(self.__initial_set.theta)
         nsos = len(self.__initial_set.ss)
-        
         # evaluate prior with initial parameter set
         self.__initial_set.prior = self.__prior_object.evaluate_prior(self.__initial_set.theta)
-        
         # add initial error variance to initial parameter set
         self.__initial_set.sigma2 = self.model_settings.sigma2
-
         # recheck certain values in model settings that are dependent on the output of the sos function
         self.model_settings._check_dependent_model_settings_wrt_nsos(nsos)
-        
         # ---------------------
         # Update variables covariance adaptation
         self._covariance._update_covariance_settings(self.__initial_set.theta)
@@ -225,7 +219,7 @@ class MCMC:
                         sosobj = self.__sos_object, priorobj = self.__prior_object)
 
             # UPDATE CHAIN
-            self.__update_chain(accept = accept, new_set = new_set, outbound = outbound)
+            self.__update_chain(accept = accept, new_set = new_set, outsidebounds = outbound)
 
             # PRINT REJECTION STATISTICS    
             if self.simulation_options.printint and iiprint + 1 == self.simulation_options.printint:
@@ -252,7 +246,7 @@ class MCMC:
                 iiadapt = 0 # reset local adaptation index
                 self.__rejected['in_adaptation_interval'] = 0 # reset local rejection index
                 
-            # SAVE TO BIN FILE
+            # SAVE TO LOG FILE
             if savecount == self.simulation_options.savesize:
                 savesize = self.simulation_options.savesize
                 start = isimu - savesize
@@ -282,25 +276,11 @@ class MCMC:
         # --------------------------------------------
         # BUILD RESULTS OBJECT
         self.simulation_results = ResultsStructure() # inititialize
-            
-        self.simulation_results.add_basic(options = self.simulation_options,
-                                          model = self.model_settings,
-                                          covariance = self._covariance,
-                                          parameters = self.parameters,
-                                          rejected = self.__rejected, simutime = self.__simulation_time, 
-                                          theta = self.parameters._value)
-                
-#        self.simulation_results.add_updatesigma(updatesigma = updatesigma, sigma2 = sigma2,
-#                                S20 = S20, N0 = N0)
-#        
-#        self.simulation_results.add_prior(mu = thetamu[parind[:]], sig = thetasig[parind[:]], 
-#                          priorfun = priorfun, priortype = priortype, 
-#                          priorpars = priorpars)
-#        
-#        if dodram == 1:
-#            self.simulation_results.add_dram(dodram = dodram, drscale = drscale, iacce = iacce,
-#                         alpha_count = A_count, RDR = RDR, nsimu = nsimu, rej = rej)
-#        
+        self.simulation_results.add_basic(options = self.simulation_options, model = self.model_settings, covariance = self._covariance, parameters = self.parameters, rejected = self.__rejected, simutime = self.__simulation_time, theta = self.parameters._value)
+
+        if self.simulation_options.ntry > 1:
+            self.simulation_results.add_dram(options = self.simulation_options, covariance = self._covariance, rejected = self.__rejected, drsettings = self._sampling_methods.delayed_rejection)
+        
         self.simulation_results.add_options(options = self.simulation_options)
         self.simulation_results.add_model(model = self.model_settings)
         
@@ -351,27 +331,7 @@ class MCMC:
             self._chain_processing._save_to_txt_file(s2chainfile, self.__s2chain[start:end,:]) 
     
     # --------------------------------------------------------
-    def __export_simulation_results_to_json_file(self, results = None):
-                       
-        if self.simulation_options.results_filename is None:
-            dtstr = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
-            filename = str('{}{}{}'.format(dtstr,'_','mcmc_simulation.json'))
-        else:
-            filename = self.simulation_options.results_filename
-            
-        self.__save_json_object(results, filename)
-    
-    def __save_json_object(self, obj, filename):
-        with open(filename, 'w') as out:
-            json.dump(obj, out, sort_keys=True, indent=4, cls=NumpyEncoder)
-            
-    def load_json_object(self, filename):
-        with open(filename, 'r') as obj:
-            results = json.load(obj)
-        return results
-    
-    # --------------------------------------------------------
-    def __update_chain(self, accept, new_set, outbound):
+    def __update_chain(self, accept, new_set, outsidebounds):
         if accept:
             # accept
             self.__chain[self.__chain_index,:] = new_set.theta
@@ -379,7 +339,7 @@ class MCMC:
         else:
             # reject
             self.__chain[self.__chain_index,:] = self.__old_set.theta
-            self.__update_rejected(outbound)
+            self.__update_rejected(outsidebounds)
             
     def __print_rejection_statistics(self, isimu, iiadapt, verbosity):
         self.__message(verbosity, 2, str('i:{} ({},{},{})\n'.format(
@@ -398,8 +358,8 @@ class MCMC:
         self.simulation_options.display_simulation_options()
         self.covariance.display_covariance_settings()
 
-    def __update_rejected(self, outbound):
+    def __update_rejected(self, outsidebounds):
         self.__rejected['total'] += 1
         self.__rejected['in_adaptation_interval'] += 1
-        if outbound:
+        if outsidebounds:
             self.__rejected['outside_bounds'] += 1

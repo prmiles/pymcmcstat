@@ -84,7 +84,7 @@ class CovarianceProcedures:
             qcov[qcov==0] = 1 # if initial value was zero, use 1 as stdev
             qcov = np.diagflat(qcov) # create covariance matrix
     
-        self._qcov = np.atleast_2d(qcov)
+        self._qcov = np.atleast_2d(qcov[:])
         
     def __check_adascale(self, adascale, npar):
         # check adascale
@@ -104,7 +104,7 @@ class CovarianceProcedures:
             self._qcovorig = np.diagflat(self._qcov[:]) # save original qcov
             self._qcov = np.diag(self._qcov[np.ix_(parind,parind)])
         else: # qcov has covariance matrix in it
-            self._qcovorig = self._qcov # save qcov
+            self._qcovorig = np.copy(self._qcov) # save qcov
             self._qcov = self._qcov[np.ix_(parind,parind)] # this operation in matlab maintains matrix (debug)
 #            print('qcov.shape = {}, qcov = {}'.format(self._qcov.shape,self._qcov))
             if self._qcov.size == 1:
