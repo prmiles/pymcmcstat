@@ -8,7 +8,7 @@ Created on Tue May  1 09:12:06 2018
 import h5py
 import numpy as np
 import os
-import fnmatch
+#import fnmatch
 import warnings
 
 class ChainProcessing:
@@ -69,6 +69,17 @@ class ChainProcessing:
         else:
             warnings.warn('Unknown extension specified -> log files saved as either h5 (binary) or txt (text).')
         
+        return out
+    
+    def read_in_parallel_savedir_files(self, parallel_dir, extension = 'h5', chainfile = 'chainfile', sschainfile = 'sschainfile', s2chainfile = 's2chainfile', covchainfile = 'covchainfile'):
+        # find folders in parallel_dir with name 'chain_#'
+        chainfolders = os.listdir(parallel_dir)
+        out = []
+        for folder in chainfolders:
+            # create full path names with extension
+            savedir = self._create_path_without_extension(parallel_dir, folder)
+            out.append(self.read_in_savedir_files(savedir, extension = extension, chainfile = chainfile, sschainfile = sschainfile, s2chainfile = s2chainfile, covchainfile = covchainfile))
+            
         return out
     
     def read_in_bin_file(self, filename):
