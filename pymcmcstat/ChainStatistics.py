@@ -68,7 +68,8 @@ class ChainStatistics:
                 print('{:10s}: {:10.4g} {:10.4g} {:10.4f} {:10.4f} {:10.4f}'.format(names[ii],meanii[ii],stdii[ii],mcerr[ii],tau[ii],p[ii]))
             else:
                 print('{:10s}: {:10.4f} {:10.4f} {:10.4f} {:10.4f} {:10.4f}'.format(names[ii],meanii[ii],stdii[ii],mcerr[ii],tau[ii],p[ii]))
-      
+        print('---------------------')
+        
     # ----------------------------------------------------              
     def batch_mean_standard_deviation(self, chain, b = None):
         """
