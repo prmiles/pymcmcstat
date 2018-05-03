@@ -143,7 +143,7 @@ class ModelParameters:
         theta_sigma = self._thetasigma
         
         if options.verbosity > 0:
-            print('Sampling these parameters:')
+            print('\nSampling these parameters:')
             print('{:10s} {:>7s} [{:>6s}, {:>6s}] N({:>4s}, {:>4s})'.format('name',
                   'start', 'min', 'max', 'mu', 'sigma^2'))
             nprint = len(parind)
