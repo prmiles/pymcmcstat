@@ -12,6 +12,7 @@ Description: Class used to organize results of MCMC simulation.
 import json
 import numpy as np
 from .NumpyEncoder import NumpyEncoder
+import os
 
 class ResultsStructure:
     def __init__(self):
@@ -20,14 +21,14 @@ class ResultsStructure:
      
     # --------------------------------------------------------
     def export_simulation_results_to_json_file(self, results, options):
-                       
+        savedir = options.savedir
         if options.results_filename is None:
             dtstr = options.datestr
             filename = str('{}{}{}'.format(dtstr,'_','mcmc_simulation.json'))
         else:
             filename = options.results_filename
             
-        self.save_json_object(results, filename)
+        self.save_json_object(results, os.path.join(savedir, filename))
     
     def save_json_object(self, results, filename):
         with open(filename, 'w') as out:
