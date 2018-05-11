@@ -4,4 +4,4 @@
 *.txt
 *.spyproject
 *demo_MCMC.py
-
+*doc/build/
