@@ -22,7 +22,6 @@ pymcmcstat.ChainProcessing module
 
 pymcmcstat.ChainStatistics module
 ---------------------------------
-Check chain statistics
 
 .. automodule:: pymcmcstat.ChainStatistics
     :members:
