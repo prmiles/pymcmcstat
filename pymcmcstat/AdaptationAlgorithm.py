@@ -10,6 +10,12 @@ import numpy as np
 import math
 
 class AdaptationAlgorithm:
+    """
+    Adaptive Metropolis (AM) algorithm based on [haario2001adaptive]_ (`URL <https://projecteuclid.org/euclid.bj/1080222083>`_)
+        
+    .. [haario2001adaptive] Haario, Heikki, Eero Saksman, and Johanna Tamminen. "An adaptive Metropolis algorithm." Bernoulli 7, no. 2 (2001): 223-242. 
+        
+    """
     def __init__(self):
         self.label = 'Covariance Variables and Methods'
         self.qcov = None
@@ -25,9 +31,35 @@ class AdaptationAlgorithm:
         self.last_index_since_adaptation = 0
         
     # -------------------------------------------
-    def run_adaptation(self, covariance, options, isimu, iiadapt, rejected, chain,
-                   chainind, u, npar, new_set):
-            
+    def run_adaptation(self, covariance, options, isimu, iiadapt, rejected, chain, chainind, u, npar, new_set):
+        """
+        Run adaptation step
+        
+        :param covariance: Covariance methods and variables
+        :type covariance: :class:`~pymcmcstat.CovarianceProcedures.CovarianceProcedures`
+        :param options: Options for MCMC simulation
+        :type options: :class:`~pymcmcstat.SimulationOptions.SimulationOptions`
+        :param isimu: simulation count
+        :type isimu: :py:class:`int`
+        :param iiadapt: adaptation counter
+        :type iiadapt: :py:class:`int`
+        :param rejected: rejection statistics
+        :type rejected: :py:class:`dict`
+        :param chain: sampling chain
+        :type chain: :class:`~numpy.ndarray`
+        :param chainind: relative point in chain       
+        :type chainind: :py:class:`int`
+        :param u: Latest random sample point
+        :type u: :class:`~numpy.ndarray`
+        :param npar: Number of parameters being sampled
+        :type npar: :py:class:`int`
+        :param new_set: Features of newest parameter set
+        :type new_set: :class:`~pymcmcstat.ParameterSet.ParameterSet`
+        
+        :returns: Updated covariance object
+        :rtype: :class:`~pymcmcstat.CovarianceProcedures.CovarianceProcedures`
+        
+        """
         # unpack input arguments
         burnintime = options.burnintime
         burnin_scale = options.burnin_scale
@@ -66,7 +98,7 @@ class AdaptationAlgorithm:
                     rejected['outside_bounds']*(isimu**(-1))*100)))
     
             # UPDATE COVARIANCE MATRIX - CHOLESKY
-            covchain, meanchain, wsum = self.__covupd(
+            covchain, meanchain, wsum = self.covupd(
                     chain[last_index_since_adaptation:chainind,:], np.ones(1), oldcovchain, oldmeanchain, oldwsum)
                     
             last_index_since_adaptation = isimu
@@ -84,7 +116,7 @@ class AdaptationAlgorithm:
                 upcov[:,no_adapt_index] = qcov[:,no_adapt_index]
 
             # check if singular covariance matrix
-            pos_def, pRa = self.__is_semi_pos_def_chol(upcov)
+            pos_def, pRa = self.is_semi_pos_def_chol(upcov)
             if pos_def == 1: # not singular!
                 Ra = pRa # np.linalg.cholesky(upcov)
                 R = Ra*qcov_scale
@@ -123,18 +155,25 @@ class AdaptationAlgorithm:
         
         return covariance
     
-    def __covupd(self, x, w, oldcov, oldmean, oldwsum, oldR = None):  
-        #function [xcov,xmean,wsum,R]=covupd(x,w,oldcov,oldmean,oldwsum,oldR)
-        #%COVUPD covariance update
-        #% [xcov,xmean,wsum]=covupd(x,w,oldcov,oldmean,oldwsum)
-        #
-        #% optionally updates also the Cholesky factor R
-        #
-        #% Marko Laine <Marko.Laine@Helsinki.FI>
-        #% $Revision: 1.3 $  $Date: 2006/09/06 09:15:16 $
-        # Written for Python by PRM
+    def covupd(self, x, w, oldcov, oldmean, oldwsum, oldR = None):
+        """
+        Update covariance chain, local mean, local sum
+        
+        :param x: chain segment
+        :type x: :class:`~numpy.ndarray`
+        :param w: weights
+        :type w: :class:`~numpy.ndarray`
+        :param oldcov: previous covariance matrix
+        :type oldcov: :class:`~numpy.ndarray` or None
+        :param oldmean: previous mean chain value
+        :type oldmean: :class:`~numpy.ndarray`
+        :param oldwsum: previous weighted sum
+        :type oldwsum: :class:`~numpy.ndarray`
+        :param oldR: previous cholesky decomposition of covariance matrix
+        :type oldR: :class:`~numpy.ndarray`
+        :returns: Updated covariance, mean, and sum
+        """
         n, p = x.shape
-    #    print('n = {}, p = {}'.format(n, p))
         
         if n == 0: # nothing to update with
             return oldcov, oldmean, oldwsum
@@ -176,11 +215,8 @@ class AdaptationAlgorithm:
                     print('R = \n{}\n'.format(R))
                     print('np.sqrt((oldwsum-1)*((wsum+oldwsum-1)**(-1))) = {}\n'.format(np.sqrt((oldwsum-1)*((wsum+oldwsum-1)**(-1)))))
                 
-                    R = self.__cholupdate(np.sqrt((oldwsum-1)*((wsum+oldwsum-1)**(-1)))*R, 
-                                   np.dot((xi - oldmean).transpose(), 
-                                          np.sqrt(((wsum*oldwsum)
-                                          *((wsum+oldwsum-1)**(-1))
-                                          *((wsum+oldwsum)**(-1))))))
+                    R = self.cholupdate(np.sqrt((oldwsum-1)*((wsum+oldwsum-1)**(-1)))*R, np.dot((xi - oldmean).transpose(), 
+                                          np.sqrt(((wsum*oldwsum)*((wsum+oldwsum-1)**(-1))*((wsum+oldwsum)**(-1))))))
             
                 
                 xcov = (((oldwsum-1)*((wsum + oldwsum - 1)**(-1)))*oldcov 
@@ -195,7 +231,16 @@ class AdaptationAlgorithm:
         return xcov, xmean, wsum
     
     # Cholesky Update
-    def __cholupdate(self, R, x):
+    def cholupdate(self, R, x):
+        """
+        Update Cholesky decomposition
+        
+        :param R: weighted Cholesky decomposition
+        :type R: :class:`~numpy.ndarray`
+        :param x: weighted sum based on local chain update
+        :returns: Updated Cholesky decomposition
+        :rtype: :class:`~numpy.ndarray`
+        """
         n = len(x)
         R1 = R.copy()
         x1 = x.copy()
@@ -210,7 +255,15 @@ class AdaptationAlgorithm:
     
         return R1
     
-    def __is_semi_pos_def_chol(self, x):
+    def is_semi_pos_def_chol(self, x):
+        """
+        Check if matrix is semi-positive definite using Cholesky Decomposition
+        
+        :param x: Covariance matrix
+        :type x: :class:`~numpy.ndarray`
+        :returns: Boolean, Cholesky Decomposition (Upper Triangular Form) or None
+        """
+        
         c = None
         try:
             c = np.linalg.cholesky(x)
