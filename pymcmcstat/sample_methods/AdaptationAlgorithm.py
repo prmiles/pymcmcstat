@@ -9,7 +9,7 @@ Created on Thu Jan 18 11:14:11 2018
 import numpy as np
 import math
 
-class AdaptationAlgorithm:
+class Adaptation:
     """
     Adaptive Metropolis (AM) algorithm based on [haario2001adaptive]_ (`URL <https://projecteuclid.org/euclid.bj/1080222083>`_)
         

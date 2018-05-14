@@ -8,9 +8,9 @@ Created on Thu Jan 18 10:30:29 2018
 # import required packages
 import numpy as np
 from scipy.special import expit
-from .ParameterSet import ParameterSet
+from ..ParameterSet import ParameterSet
 
-class MetropolisAlgorithm:
+class Metropolis:
     # -------------------------------------------
     def run_metropolis_step(self, old_set, parameters, R, prior_object, sos_object):
            

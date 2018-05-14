@@ -8,9 +8,9 @@ Created on Thu Jan 18 10:42:07 2018
 # import required packages
 import numpy as np
 from scipy.special import expit
-from .ParameterSet import ParameterSet
+from ..ParameterSet import ParameterSet
 
-class DelayedRejectionAlgorithm:
+class DelayedRejection:
         # -------------------------------------------
     def run_delayed_rejection(self, old_set, new_set, RDR, ntry, parameters, invR, sosobj, priorobj):
         # create trypath
