@@ -32,7 +32,7 @@ from .ResultsStructure import ResultsStructure
 from .SumOfSquares import SumOfSquares
 from .PriorFunction import PriorFunction
 from .ParameterSet import ParameterSet
-from .SamplingMethods import SamplingMethods
+from .sample_methods.SamplingMethods import SamplingMethods
 from .ErrorVarianceEstimator import ErrorVarianceEstimator
 from .plotting import MCMCPlotting
 from .ChainStatistics import ChainStatistics
