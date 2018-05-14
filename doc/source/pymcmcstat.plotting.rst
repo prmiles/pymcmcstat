@@ -11,6 +11,14 @@ pymcmcstat.plotting.MCMCPlotting module
     :members:
     :undoc-members:
     :show-inheritance:
+    
+pymcmcstat.plotting.utilities module
+---------------------------------------
+
+.. automodule:: pymcmcstat.plotting.utilities
+    :members:
+    :undoc-members:
+    :show-inheritance:
 
 
 Module contents
