@@ -2,6 +2,6 @@ pymcmcstat
 ==========
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 4
 
    pymcmcstat
