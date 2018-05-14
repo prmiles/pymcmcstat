@@ -34,7 +34,7 @@ from .PriorFunction import PriorFunction
 from .ParameterSet import ParameterSet
 from .SamplingMethods import SamplingMethods
 from .ErrorVarianceEstimator import ErrorVarianceEstimator
-from .MCMCPlotting import MCMCPlotting
+from .plotting.MCMCPlotting import MCMCPlotting
 from .ChainStatistics import ChainStatistics
 from .ChainProcessing import ChainProcessing
 from .PredictionIntervals import PredictionIntervals
