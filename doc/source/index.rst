@@ -22,7 +22,8 @@ Contents:
 .. toctree::
    :maxdepth: 2
    
-   pymcmcstat
+   modules
+   pymcmcstat.plotting
 
 Indices and tables
 ==================
