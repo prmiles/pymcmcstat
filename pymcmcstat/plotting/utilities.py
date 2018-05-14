@@ -5,8 +5,9 @@ Created on Mon May 14 06:24:12 2018
 
 @author: prmiles
 """
-
 import numpy as np
+from scipy import pi,sin,cos
+import sys
 import math
 
 def generate_default_names(nparam):
@@ -116,3 +117,45 @@ def __scale_bandwidth(x):
     else:
         s = 1.06*min(np.std(x, ddof=1),__iqrange(x)/1.34)*n**(-1/5)
     return s
+
+# -------------------------------------------- 
+def generate_ellipse(mu, cmat, ndp = 100):
+    '''
+    % Generates points for a probability contour ellipse
+    
+    % Marko Laine <Marko.Laine@Helsinki.FI>
+    % $Revision: 1.6 $  $Date: 2007/08/10 08:50:40 $
+    
+    Modified for Python by Paul Miles
+    '''
+    
+    # check shape of covariance matrix
+    if cmat.shape != (2,2):
+        sys.exit('covariance matrix must be 2x2')
+    
+    if check_symmetric(cmat) is not True:
+        sys.exit('covariance matrix must be symmetric')
+        
+    
+    # define t space
+    t = np.linspace(0, 2*pi, ndp)
+    
+    pdflag, R = is_semi_pos_def_chol(cmat)
+    if pdflag is False:
+        sys.exit('covariance matrix must be positive definite')
+    
+    x = mu[0] + R[0,0]*cos(t)
+    y = mu[1] + R[0,1]*cos(t) + R[1,1]*sin(t)
+    
+    return x, y
+
+def check_symmetric(a, tol=1e-8):
+    return np.allclose(a, a.T, atol = tol)
+
+def is_semi_pos_def_chol(x):
+    c = None
+    try:
+        c = np.linalg.cholesky(x)
+        return True, c.transpose()
+    except np.linalg.linalg.LinAlgError:
+        return False, c
