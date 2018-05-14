@@ -1,16 +1,16 @@
 pymcmcstat package
 ==================
 
+Subpackages
+-----------
+
+.. toctree::
+
+    pymcmcstat.plotting
+    pymcmcstat.sample_methods
+
 Submodules
 ----------
-
-pymcmcstat.AdaptationAlgorithm module
--------------------------------------
-
-.. automodule:: pymcmcstat.AdaptationAlgorithm
-    :members:
-    :undoc-members:
-    :show-inheritance:
 
 pymcmcstat.ChainProcessing module
 ---------------------------------
@@ -44,14 +44,6 @@ pymcmcstat.DataStructure module
     :undoc-members:
     :show-inheritance:
 
-pymcmcstat.DelayedRejectionAlgorithm module
--------------------------------------------
-
-.. automodule:: pymcmcstat.DelayedRejectionAlgorithm
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 pymcmcstat.EllipseContour module
 --------------------------------
 
@@ -72,14 +64,6 @@ pymcmcstat.MCMC module
 ----------------------
 
 .. automodule:: pymcmcstat.MCMC
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-pymcmcstat.MetropolisAlgorithm module
--------------------------------------
-
-.. automodule:: pymcmcstat.MetropolisAlgorithm
     :members:
     :undoc-members:
     :show-inheritance:
@@ -144,14 +128,6 @@ pymcmcstat.ResultsStructure module
 ----------------------------------
 
 .. automodule:: pymcmcstat.ResultsStructure
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-pymcmcstat.SamplingMethods module
----------------------------------
-
-.. automodule:: pymcmcstat.SamplingMethods
     :members:
     :undoc-members:
     :show-inheritance:
