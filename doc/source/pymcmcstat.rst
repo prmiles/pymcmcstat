@@ -76,14 +76,6 @@ pymcmcstat.MCMC module
     :undoc-members:
     :show-inheritance:
 
-pymcmcstat.MCMCPlotting module
-------------------------------
-
-.. automodule:: pymcmcstat.MCMCPlotting
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 pymcmcstat.MetropolisAlgorithm module
 -------------------------------------
 
