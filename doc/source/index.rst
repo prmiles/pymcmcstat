@@ -20,7 +20,7 @@ This code can be found on the `Github project page <https://github.com/prmiles/p
 Contents:
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    
    modules
    pymcmcstat.plotting
