@@ -27,17 +27,24 @@ from .settings.DataStructure import DataStructure
 from .settings.ModelSettings import ModelSettings
 from .settings.ModelParameters import ModelParameters
 from .settings.SimulationOptions import SimulationOptions
-from .CovarianceProcedures import CovarianceProcedures
-from .ResultsStructure import ResultsStructure
-from .SumOfSquares import SumOfSquares
-from .PriorFunction import PriorFunction
+
+from .procedures.CovarianceProcedures import CovarianceProcedures
+from .procedures.SumOfSquares import SumOfSquares
+from .procedures.PriorFunction import PriorFunction
+from .procedures.ErrorVarianceEstimator import ErrorVarianceEstimator
+
 from .ParameterSet import ParameterSet
+
+from .ResultsStructure import ResultsStructure
+
 from .samplers.SamplingMethods import SamplingMethods
-from .ErrorVarianceEstimator import ErrorVarianceEstimator
+
 from .plotting import MCMCPlotting
+from .plotting.PredictionIntervals import PredictionIntervals
+
 from .chain.ChainStatistics import ChainStatistics
 from .chain.ChainProcessing import ChainProcessing
-from .plotting.PredictionIntervals import PredictionIntervals
+
 from .utilities.progressbar import progress_bar
 
 class MCMC:
