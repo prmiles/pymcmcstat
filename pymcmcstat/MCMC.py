@@ -23,10 +23,10 @@ import numpy as np
 import datetime
 import sys
 
-from .DataStructure import DataStructure
-from .ModelSettings import ModelSettings
-from .ModelParameters import ModelParameters
-from .SimulationOptions import SimulationOptions
+from .settings.DataStructure import DataStructure
+from .settings.ModelSettings import ModelSettings
+from .settings.ModelParameters import ModelParameters
+from .settings.SimulationOptions import SimulationOptions
 from .CovarianceProcedures import CovarianceProcedures
 from .ResultsStructure import ResultsStructure
 from .SumOfSquares import SumOfSquares
