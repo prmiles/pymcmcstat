@@ -35,8 +35,8 @@ from .ParameterSet import ParameterSet
 from .sample_methods.SamplingMethods import SamplingMethods
 from .ErrorVarianceEstimator import ErrorVarianceEstimator
 from .plotting import MCMCPlotting
-from .ChainStatistics import ChainStatistics
-from .ChainProcessing import ChainProcessing
+from .chain_processing.ChainStatistics import ChainStatistics
+from .chain_processing.ChainProcessing import ChainProcessing
 from .plotting.PredictionIntervals import PredictionIntervals
 from .utilities.progressbar import progress_bar
 
