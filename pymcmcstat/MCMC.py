@@ -33,9 +33,8 @@ from .procedures.SumOfSquares import SumOfSquares
 from .procedures.PriorFunction import PriorFunction
 from .procedures.ErrorVarianceEstimator import ErrorVarianceEstimator
 
-from .ParameterSet import ParameterSet
-
-from .ResultsStructure import ResultsStructure
+from .structures.ParameterSet import ParameterSet
+from .structures.ResultsStructure import ResultsStructure
 
 from .samplers.SamplingMethods import SamplingMethods
 

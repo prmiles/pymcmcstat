@@ -25,6 +25,7 @@ Contents:
    modules
    pymcmcstat.settings
    pymcmcstat.procedures
+   pymcmcstat.structures
    pymcmcstat.plotting
    pymcmcstat.samplers
    pymcmcstat.chain
