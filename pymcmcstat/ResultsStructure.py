@@ -11,7 +11,7 @@ Description: Class used to organize results of MCMC simulation.
 # import required packages
 import json
 import numpy as np
-from .NumpyEncoder import NumpyEncoder
+from .utilities.NumpyEncoder import NumpyEncoder
 import os
 
 class ResultsStructure:
