@@ -8,28 +8,13 @@ Subpackages
 
     pymcmcstat.chain
     pymcmcstat.plotting
+    pymcmcstat.procedures
     pymcmcstat.samplers
     pymcmcstat.settings
     pymcmcstat.utilities
 
 Submodules
 ----------
-
-pymcmcstat.CovarianceProcedures module
---------------------------------------
-
-.. automodule:: pymcmcstat.CovarianceProcedures
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-pymcmcstat.ErrorVarianceEstimator module
-----------------------------------------
-
-.. automodule:: pymcmcstat.ErrorVarianceEstimator
-    :members:
-    :undoc-members:
-    :show-inheritance:
 
 pymcmcstat.MCMC module
 ----------------------
@@ -55,26 +40,10 @@ pymcmcstat.ParameterSet module
     :undoc-members:
     :show-inheritance:
 
-pymcmcstat.PriorFunction module
--------------------------------
-
-.. automodule:: pymcmcstat.PriorFunction
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 pymcmcstat.ResultsStructure module
 ----------------------------------
 
 .. automodule:: pymcmcstat.ResultsStructure
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-pymcmcstat.SumOfSquares module
-------------------------------
-
-.. automodule:: pymcmcstat.SumOfSquares
     :members:
     :undoc-members:
     :show-inheritance:
