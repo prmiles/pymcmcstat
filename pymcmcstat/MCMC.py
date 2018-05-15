@@ -37,7 +37,7 @@ from .ErrorVarianceEstimator import ErrorVarianceEstimator
 from .plotting import MCMCPlotting
 from .ChainStatistics import ChainStatistics
 from .ChainProcessing import ChainProcessing
-from .PredictionIntervals import PredictionIntervals
+from .plotting.PredictionIntervals import PredictionIntervals
 from .utilities.progressbar import progress_bar
 
 class MCMC:
