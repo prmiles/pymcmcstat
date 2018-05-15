@@ -9,6 +9,7 @@ Subpackages
     pymcmcstat.chain
     pymcmcstat.plotting
     pymcmcstat.samplers
+    pymcmcstat.settings
     pymcmcstat.utilities
 
 Submodules
@@ -18,14 +19,6 @@ pymcmcstat.CovarianceProcedures module
 --------------------------------------
 
 .. automodule:: pymcmcstat.CovarianceProcedures
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-pymcmcstat.DataStructure module
--------------------------------
-
-.. automodule:: pymcmcstat.DataStructure
     :members:
     :undoc-members:
     :show-inheritance:
@@ -42,22 +35,6 @@ pymcmcstat.MCMC module
 ----------------------
 
 .. automodule:: pymcmcstat.MCMC
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-pymcmcstat.ModelParameters module
----------------------------------
-
-.. automodule:: pymcmcstat.ModelParameters
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-pymcmcstat.ModelSettings module
--------------------------------
-
-.. automodule:: pymcmcstat.ModelSettings
     :members:
     :undoc-members:
     :show-inheritance:
@@ -90,14 +67,6 @@ pymcmcstat.ResultsStructure module
 ----------------------------------
 
 .. automodule:: pymcmcstat.ResultsStructure
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-pymcmcstat.SimulationOptions module
------------------------------------
-
-.. automodule:: pymcmcstat.SimulationOptions
     :members:
     :undoc-members:
     :show-inheritance:

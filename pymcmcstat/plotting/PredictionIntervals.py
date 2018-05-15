@@ -23,8 +23,8 @@ Adapted for Python by Paul miles
 import numpy as np
 import sys
 from scipy.interpolate import interp1d
-from ..DataStructure import DataStructure
-from ..ModelSettings import ModelSettings
+from ..settings.DataStructure import DataStructure
+from ..settings.ModelSettings import ModelSettings
 from ..utilities.progressbar import progress_bar
 import matplotlib.pyplot as plt
 

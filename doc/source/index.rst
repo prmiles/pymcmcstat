@@ -23,6 +23,7 @@ Contents:
    :maxdepth: 1
    
    modules
+   pymcmcstat.settings
    pymcmcstat.plotting
    pymcmcstat.samplers
    pymcmcstat.chain
