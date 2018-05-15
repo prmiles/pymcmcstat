@@ -6,28 +6,13 @@ Subpackages
 
 .. toctree::
 
+    pymcmcstat.chain
     pymcmcstat.plotting
-    pymcmcstat.sample_methods
+    pymcmcstat.samplers
     pymcmcstat.utilities
 
 Submodules
 ----------
-
-pymcmcstat.ChainProcessing module
----------------------------------
-
-.. automodule:: pymcmcstat.ChainProcessing
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-pymcmcstat.ChainStatistics module
----------------------------------
-
-.. automodule:: pymcmcstat.ChainStatistics
-    :members:
-    :undoc-members:
-    :show-inheritance:
 
 pymcmcstat.CovarianceProcedures module
 --------------------------------------
