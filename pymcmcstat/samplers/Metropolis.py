@@ -8,7 +8,7 @@ Created on Thu Jan 18 10:30:29 2018
 # import required packages
 import numpy as np
 from scipy.special import expit
-from ..ParameterSet import ParameterSet
+from ..structures.ParameterSet import ParameterSet
 
 class Metropolis:
     # -------------------------------------------
