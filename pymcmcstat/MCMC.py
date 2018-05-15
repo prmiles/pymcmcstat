@@ -38,7 +38,7 @@ from .plotting import MCMCPlotting
 from .ChainStatistics import ChainStatistics
 from .ChainProcessing import ChainProcessing
 from .PredictionIntervals import PredictionIntervals
-from .progressbar import progress_bar
+from .utilities.progressbar import progress_bar
 
 class MCMC:
     def __init__(self):

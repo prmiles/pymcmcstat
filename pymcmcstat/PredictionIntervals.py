@@ -23,9 +23,9 @@ Adapted for Python by Paul miles
 import numpy as np
 import sys
 from scipy.interpolate import interp1d
-from pymcmcstat.DataStructure import DataStructure
-from pymcmcstat.ModelSettings import ModelSettings
-from pymcmcstat.progressbar import progress_bar
+from .DataStructure import DataStructure
+from .ModelSettings import ModelSettings
+from .utilities.progressbar import progress_bar
 import matplotlib.pyplot as plt
 
 class PredictionIntervals:
