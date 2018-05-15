@@ -11,8 +11,33 @@ from scipy.special import expit
 from ..structures.ParameterSet import ParameterSet
 
 class DelayedRejection:
+    """
+    Delayed Rejection (DR) algorithm based on [haario2006dram]_
+        
+    .. [haario2006dram] `Haario, Heikki, Marko Laine, Antonietta Mira, and Eero Saksman. "DRAM: efficient adaptive MCMC." Statistics and Computing 16, no. 4 (2006): 339-354. <https://link.springer.com/article/10.1007/s11222-006-9438-0>`_
+        
+    """
         # -------------------------------------------
     def run_delayed_rejection(self, old_set, new_set, RDR, ntry, parameters, invR, sosobj, priorobj):
+        """
+        Perform delayed rejection step - occurs in standard metropolis is not accepted.
+        
+        **Args:**
+            | `old_set` (:class:`~pymcmcstat.structures.ParameterSet.ParameterSet`): Features of :math:`q^{k-1}`
+            | `new_set` (:class:`~pymcmcstat.structures.ParameterSet.ParameterSet`): Features of :math:`q^*`
+            | `RDR` (:class:`~numpy.ndarray`): Cholesky decomposition of parameter covariance matrix for DR steps
+            | `ntry` (:py:class:`int`): Number of DR steps to perform until rejection
+            | `parameters` (:class:`~pymcmcstat.settings.ModelParameters.ModelParameters`): Model parameters
+            | `invR` (:class:`~numpy.ndarray`): Inverse Cholesky decomposition matrix
+            | `sosobj` (:class:`~pymcmcstat.procedures.SumOfSquares.SumOfSquares`): Sum-of-Squares function
+            | `priorobj` (:class:`~pymcmcstat.procedures.PriorFunction.PriorFunction`): Prior function
+
+        **Returns:**
+            | `accept` (:py:class:`int`): 0 - reject, 1 - accept
+            | `out_set` (:class:`~pymcmcstat.structures.ParameterSet.ParameterSet`): If accept == 1, then latest DR set; Else, :math:`q^k=q^{k-1}`
+            | `outbound` (:py:class:`int`): 1 - rejected due to sampling outside of parameter bounds
+            
+        """
         # create trypath
         trypath = [old_set, new_set]
         itry = 1; # dr step index
@@ -42,7 +67,21 @@ class DelayedRejection:
         return accept, out_set, outbound
     
     def initialize_next_metropolis_step(self, npar, old_set, new_set, RDR, itry):
-        # initialize next step parameter set
+        '''
+        Take metropolis step according to DR
+        
+        **Args:**
+            * **npar** (:py:class:`int`): Number of parameters
+            * **old_set** (:class:`~pymcmcstat.structures.ParameterSet.ParameterSet`): Features of :math:`q^{k-1}`
+            * **new_set** (:class:`~pymcmcstat.structures.ParameterSet.ParameterSet`): Features of :math:`q^*`
+            * **RDR** (:class:`~numpy.ndarray`): Cholesky decomposition of parameter covariance matrix for DR steps
+            * **itry** (:py:class:`int`): DR step counter
+            
+        **Returns:**
+            * **next_set** (:class:`~pymcmcstat.structures.ParameterSet.ParameterSet`): New proposal set
+            * **u** (:class:`numpy.ndarray`): Numbers sampled from standard normal distributions (:code:`u.shape = (1,npar)`)
+        
+        '''
         next_set = ParameterSet()
         u = np.random.randn(1,npar) # u
         next_set.theta = old_set.theta + np.dot(u,RDR[itry-1])

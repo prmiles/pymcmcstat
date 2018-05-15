@@ -11,9 +11,9 @@ import math
 
 class Adaptation:
     """
-    Adaptive Metropolis (AM) algorithm based on [haario2001adaptive]_ (`URL <https://projecteuclid.org/euclid.bj/1080222083>`_)
+    Adaptive Metropolis (AM) algorithm based on [haario2001adaptive]_
         
-    .. [haario2001adaptive] Haario, Heikki, Eero Saksman, and Johanna Tamminen. "An adaptive Metropolis algorithm." Bernoulli 7, no. 2 (2001): 223-242. 
+    .. [haario2001adaptive] `Haario, Heikki, Eero Saksman, and Johanna Tamminen. "An adaptive Metropolis algorithm." Bernoulli 7, no. 2 (2001): 223-242. <https://projecteuclid.org/euclid.bj/1080222083>`_ 
         
     """
     def __init__(self):
@@ -36,9 +36,9 @@ class Adaptation:
         Run adaptation step
         
         :param covariance: Covariance methods and variables
-        :type covariance: :class:`~pymcmcstat.CovarianceProcedures.CovarianceProcedures`
+        :type covariance: :class:`~pymcmcstat.procedures.CovarianceProcedures.CovarianceProcedures`
         :param options: Options for MCMC simulation
-        :type options: :class:`~pymcmcstat.SimulationOptions.SimulationOptions`
+        :type options: :class:`~pymcmcstat.settings.SimulationOptions.SimulationOptions`
         :param isimu: simulation count
         :type isimu: :py:class:`int`
         :param iiadapt: adaptation counter
@@ -54,7 +54,7 @@ class Adaptation:
         :param npar: Number of parameters being sampled
         :type npar: :py:class:`int`
         :param new_set: Features of newest parameter set
-        :type new_set: :class:`~pymcmcstat.ParameterSet.ParameterSet`
+        :type new_set: :class:`~pymcmcstat.structures.ParameterSet.ParameterSet`
         
         :returns: Updated covariance object
         :rtype: :class:`~pymcmcstat.CovarianceProcedures.CovarianceProcedures`
