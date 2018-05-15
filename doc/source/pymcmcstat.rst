@@ -11,6 +11,7 @@ Subpackages
     pymcmcstat.procedures
     pymcmcstat.samplers
     pymcmcstat.settings
+    pymcmcstat.structures
     pymcmcstat.utilities
 
 Submodules
@@ -28,22 +29,6 @@ pymcmcstat.ParallelMCMC module
 ------------------------------
 
 .. automodule:: pymcmcstat.ParallelMCMC
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-pymcmcstat.ParameterSet module
-------------------------------
-
-.. automodule:: pymcmcstat.ParameterSet
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-pymcmcstat.ResultsStructure module
-----------------------------------
-
-.. automodule:: pymcmcstat.ResultsStructure
     :members:
     :undoc-members:
     :show-inheritance:
