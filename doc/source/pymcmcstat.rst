@@ -44,14 +44,6 @@ pymcmcstat.DataStructure module
     :undoc-members:
     :show-inheritance:
 
-pymcmcstat.EllipseContour module
---------------------------------
-
-.. automodule:: pymcmcstat.EllipseContour
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 pymcmcstat.ErrorVarianceEstimator module
 ----------------------------------------
 

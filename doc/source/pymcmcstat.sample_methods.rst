@@ -4,26 +4,26 @@ pymcmcstat.sample\_methods package
 Submodules
 ----------
 
-pymcmcstat.sample\_methods.AdaptationAlgorithm module
------------------------------------------------------
+pymcmcstat.sample\_methods.Adaptation module
+--------------------------------------------
 
-.. automodule:: pymcmcstat.sample_methods.AdaptationAlgorithm
+.. automodule:: pymcmcstat.sample_methods.Adaptation
     :members:
     :undoc-members:
     :show-inheritance:
 
-pymcmcstat.sample\_methods.DelayedRejectionAlgorithm module
------------------------------------------------------------
+pymcmcstat.sample\_methods.DelayedRejection module
+--------------------------------------------------
 
-.. automodule:: pymcmcstat.sample_methods.DelayedRejectionAlgorithm
+.. automodule:: pymcmcstat.sample_methods.DelayedRejection
     :members:
     :undoc-members:
     :show-inheritance:
 
-pymcmcstat.sample\_methods.MetropolisAlgorithm module
------------------------------------------------------
+pymcmcstat.sample\_methods.Metropolis module
+--------------------------------------------
 
-.. automodule:: pymcmcstat.sample_methods.MetropolisAlgorithm
+.. automodule:: pymcmcstat.sample_methods.Metropolis
     :members:
     :undoc-members:
     :show-inheritance:
