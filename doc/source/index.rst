@@ -25,6 +25,8 @@ Contents:
    modules
    pymcmcstat.plotting
    pymcmcstat.sample_methods
+   pymcmcstat.utilities
+   
 
 Indices and tables
 ==================

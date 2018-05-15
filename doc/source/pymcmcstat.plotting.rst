@@ -12,6 +12,14 @@ pymcmcstat.plotting.MCMCPlotting module
     :undoc-members:
     :show-inheritance:
 
+pymcmcstat.plotting.PredictionIntervals module
+----------------------------------------------
+
+.. automodule:: pymcmcstat.plotting.PredictionIntervals
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 pymcmcstat.plotting.utilities module
 ------------------------------------
 

@@ -8,6 +8,7 @@ Subpackages
 
     pymcmcstat.plotting
     pymcmcstat.sample_methods
+    pymcmcstat.utilities
 
 Submodules
 ----------
@@ -76,14 +77,6 @@ pymcmcstat.ModelSettings module
     :undoc-members:
     :show-inheritance:
 
-pymcmcstat.NumpyEncoder module
-------------------------------
-
-.. automodule:: pymcmcstat.NumpyEncoder
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 pymcmcstat.ParallelMCMC module
 ------------------------------
 
@@ -96,14 +89,6 @@ pymcmcstat.ParameterSet module
 ------------------------------
 
 .. automodule:: pymcmcstat.ParameterSet
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-pymcmcstat.PredictionIntervals module
--------------------------------------
-
-.. automodule:: pymcmcstat.PredictionIntervals
     :members:
     :undoc-members:
     :show-inheritance:
@@ -136,14 +121,6 @@ pymcmcstat.SumOfSquares module
 ------------------------------
 
 .. automodule:: pymcmcstat.SumOfSquares
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-pymcmcstat.progressbar module
------------------------------
-
-.. automodule:: pymcmcstat.progressbar
     :members:
     :undoc-members:
     :show-inheritance:
