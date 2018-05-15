@@ -7,7 +7,7 @@ Created on Tue May  1 15:58:22 2018
 """
 
 from .MCMC import MCMC
-from .ChainStatistics import ChainStatistics
+from .chain.ChainStatistics import ChainStatistics
 from multiprocessing import Pool, cpu_count
 import numpy as np
 import sys

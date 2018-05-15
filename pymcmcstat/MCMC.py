@@ -32,11 +32,11 @@ from .ResultsStructure import ResultsStructure
 from .SumOfSquares import SumOfSquares
 from .PriorFunction import PriorFunction
 from .ParameterSet import ParameterSet
-from .sample_methods.SamplingMethods import SamplingMethods
+from .samplers.SamplingMethods import SamplingMethods
 from .ErrorVarianceEstimator import ErrorVarianceEstimator
 from .plotting import MCMCPlotting
-from .chain_processing.ChainStatistics import ChainStatistics
-from .chain_processing.ChainProcessing import ChainProcessing
+from .chain.ChainStatistics import ChainStatistics
+from .chain.ChainProcessing import ChainProcessing
 from .plotting.PredictionIntervals import PredictionIntervals
 from .utilities.progressbar import progress_bar
 
