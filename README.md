@@ -1,4 +1,7 @@
 # pymcmcstat
+
+|Coverage|
+
 Python implementation of Matlab package "mcmcstat"
 
 This code is designed to replicate the functionality of the Matlab routines developed and posted here: http://helios.fmi.fi/~lainema/mcmc/
