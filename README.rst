@@ -27,10 +27,9 @@ You can also clone the repository and run ``python  setup.py install``.
 
 Package is currently in the process of being added to the PyPI distribution site.
 
-Examples
-========
-
-https://github.com/prmiles/pymcmcstat_example_scripts
+Getting Started
+===============
+Tutorial `notebooks <https://nbviewer.jupyter.org/github/prmiles/notebooks/tree/master/pymcmcstat/index.ipynb>`_
 
 License
 =======
