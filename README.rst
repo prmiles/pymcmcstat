@@ -22,6 +22,8 @@ To install directly from Github,
 ::
     pip install git+https://github.com/prmiles/pymcmcstat.git
 
+You can also clone the repository and run ``python  setup.py install``.
+
 Package is currently in the process of being added to the PyPI distribution site.
 
 Examples
