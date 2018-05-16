@@ -17,6 +17,7 @@ The user interface is designed to be as similar to the Matlab version as possibl
 
 Installation
 ============
+
 This code can be found on the `Github project page <https://github.com/prmiles/pymcmcstat>`_.  It is open sources and provided under the MIT license.
 To install directly from Github,
 ::
@@ -28,4 +29,16 @@ Package is currently in the process of being added to the PyPI distribution site
 
 Examples
 ========
+
 https://github.com/prmiles/pymcmcstat_example_scripts
+
+License
+=======
+
+`MIT <https://github.com/prmiles/pymcmcstat/blob/master/LICENSE.txt>`_
+
+Contributors
+============
+
+See the `GitHub contributor
+page <https://github.com/prmiles/pymcmcstat/graphs/contributors>`_
