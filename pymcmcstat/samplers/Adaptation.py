@@ -35,30 +35,20 @@ class Adaptation:
         """
         Run adaptation step
         
-        :param covariance: Covariance methods and variables
-        :type covariance: :class:`~pymcmcstat.procedures.CovarianceProcedures.CovarianceProcedures`
-        :param options: Options for MCMC simulation
-        :type options: :class:`~pymcmcstat.settings.SimulationOptions.SimulationOptions`
-        :param isimu: simulation count
-        :type isimu: :py:class:`int`
-        :param iiadapt: adaptation counter
-        :type iiadapt: :py:class:`int`
-        :param rejected: rejection statistics
-        :type rejected: :py:class:`dict`
-        :param chain: sampling chain
-        :type chain: :class:`~numpy.ndarray`
-        :param chainind: relative point in chain       
-        :type chainind: :py:class:`int`
-        :param u: Latest random sample point
-        :type u: :class:`~numpy.ndarray`
-        :param npar: Number of parameters being sampled
-        :type npar: :py:class:`int`
-        :param new_set: Features of newest parameter set
-        :type new_set: :class:`~pymcmcstat.structures.ParameterSet.ParameterSet`
-        
-        :returns: Updated covariance object
-        :rtype: :class:`~pymcmcstat.CovarianceProcedures.CovarianceProcedures`
-        
+        **Args:**
+            * **covariance** (:class:`~.CovarianceProcedures`): Covariance methods and variables
+            * **options** (:class:`~.SimulationOptions`): Options for MCMC simulation
+            * **isimu** (:py:class:`int`): Simulation counter
+            * **iiadapt** (:py:class:`int`): Adaptation counter
+            * **rejected** (:py:class:`dict`): Rejection counter
+            * **chain** (:class:`~numpy.ndarray`): Sampling chain
+            * **chainind** (:py:class:`ind`): Relative point in chain
+            * **u** (:class:`~numpy.ndarray`): Latet random sample points
+            * **npar** (:py:class:`int`): Number of parameters being sampled
+            * **new_set** (:class:`~.ParameterSet`): Features of newest parameter set
+
+        **Returns:**
+            * **covariance** (:class:`~.CovarianceProcedures`): Updated covariance object
         """
         # unpack input arguments
         burnintime = options.burnintime
@@ -159,19 +149,18 @@ class Adaptation:
         """
         Update covariance chain, local mean, local sum
         
-        :param x: chain segment
-        :type x: :class:`~numpy.ndarray`
-        :param w: weights
-        :type w: :class:`~numpy.ndarray`
-        :param oldcov: previous covariance matrix
-        :type oldcov: :class:`~numpy.ndarray` or None
-        :param oldmean: previous mean chain value
-        :type oldmean: :class:`~numpy.ndarray`
-        :param oldwsum: previous weighted sum
-        :type oldwsum: :class:`~numpy.ndarray`
-        :param oldR: previous cholesky decomposition of covariance matrix
-        :type oldR: :class:`~numpy.ndarray`
-        :returns: Updated covariance, mean, and sum
+        **Args:**
+            * **x** (:class:`~numpy.ndarray`): Chain segment
+            * **w** (:class:`~numpy.ndarray`): Weights
+            * **oldcov** (:class:`~numpy.ndarray` or `None`): Previous covariance matrix
+            * **oldmean** (:class:`~numpy.ndarray`): Previous mean chain values
+            * **oldwsum** (:class:`~numpy.ndarray`): Previous weighted sum
+            * **oldR** (:class:`~numpy.ndarray`): Previous Cholesky decomposition matrix
+            
+        **Returns:**
+            * **xcov** (:class:`~numpy.ndarray`): Updated covariance matrix
+            * **xmean** (:class:`~numpy.ndarray`): Updated mean chain values
+            * **wsum** (:class:`~numpy.ndarray`): Updated weighted sum
         """
         n, p = x.shape
         
@@ -235,11 +224,12 @@ class Adaptation:
         """
         Update Cholesky decomposition
         
-        :param R: weighted Cholesky decomposition
-        :type R: :class:`~numpy.ndarray`
-        :param x: weighted sum based on local chain update
-        :returns: Updated Cholesky decomposition
-        :rtype: :class:`~numpy.ndarray`
+        **Args:**
+            * **R** (:class:`~numpy.ndarray`): Weighted Cholesky decomposition
+            * **x** (:class:`~numpy.ndarray`): Weighted sum based on local chain update
+            
+        **Returns:**
+            * **R1** (:class:`~numpy.ndarray`): Updated Cholesky decomposition
         """
         n = len(x)
         R1 = R.copy()
@@ -259,9 +249,12 @@ class Adaptation:
         """
         Check if matrix is semi-positive definite using Cholesky Decomposition
         
-        :param x: Covariance matrix
-        :type x: :class:`~numpy.ndarray`
-        :returns: Boolean, Cholesky Decomposition (Upper Triangular Form) or None
+        **Args:**
+            * **x** (:class:`~numpy.ndarray`): Covariance matrix
+            
+        **Returns:**
+            * `Boolean`
+            * **c** (:class:`~numpy.ndarray`): Cholesky decomposition (upper triangular form) or `None`
         """
         
         c = None
