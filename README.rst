@@ -19,7 +19,7 @@ Installation
 ============
 This code can be found on the `Github project page <https://github.com/prmiles/pymcmcstat>`_.  It is open sources and provided under the MIT license.
 To install directly from Github, 
-`pip install git+https://github.com/prmiles/pymcmcstat.git`
+:code:`pip install git+https://github.com/prmiles/pymcmcstat.git`
 
 Package is currently in the process of being added to the PyPI distribution site.
 
