@@ -13,6 +13,11 @@ from ..structures.ParameterSet import ParameterSet
 class DelayedRejection:
     """
     Delayed Rejection (DR) algorithm based on [haario2006dram]_
+    
+    **Attributes:**
+        * :meth:`~acceptance_test`
+        * :meth:`~initialize_next_metropolis_step`
+        * :meth:`~run_delayed_rejection`
         
     .. [haario2006dram] `Haario, Heikki, Marko Laine, Antonietta Mira, and Eero Saksman. "DRAM: efficient adaptive MCMC." Statistics and Computing 16, no. 4 (2006): 339-354. <https://link.springer.com/article/10.1007/s11222-006-9438-0>`_
         
@@ -92,6 +97,16 @@ class DelayedRejection:
     def acceptance_test(self, alpha, old_set, next_set, itry):
         '''
         Run acceptance test
+        
+        .. math::
+            
+            & \\text{If}~u_{\\alpha} <~\\alpha, \\
+            
+            & \\quad \\text{Set}~q^k = q^*,~SS_{q^k} = SS_{q^*} \\
+            
+            & \\text{Else} \\
+            
+            & \\quad \\text{Set}~q^k = q^{k-1},~SS_{q^k} = SS_{q^{k-1}}
         
         **Args:**
             * **alpha** (:py:class:`float`): Result of likelihood function according to delayed rejection

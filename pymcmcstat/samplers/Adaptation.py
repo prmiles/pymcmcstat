@@ -12,6 +12,12 @@ import math
 class Adaptation:
     """
     Adaptive Metropolis (AM) algorithm based on [haario2001adaptive]_
+    
+    **Attributes:**
+        * :meth:`~cholupdate`
+        * :meth:`~covupd`
+        * :meth:`~is_semi_pos_def_chol`
+        * :meth:`~run_adaptation`
         
     .. [haario2001adaptive] `Haario, Heikki, Eero Saksman, and Johanna Tamminen. "An adaptive Metropolis algorithm." Bernoulli 7, no. 2 (2001): 223-242. <https://projecteuclid.org/euclid.bj/1080222083>`_ 
         
