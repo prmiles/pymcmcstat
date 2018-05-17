@@ -13,6 +13,11 @@ from ..structures.ParameterSet import ParameterSet
 class DelayedRejection:
     """
     Delayed Rejection (DR) algorithm based on [haario2006dram]_
+    
+    **Attributes:**
+        * :meth:`~acceptance_test`
+        * :meth:`~initialize_next_metropolis_step`
+        * :meth:`~run_delayed_rejection`
         
     .. [haario2006dram] `Haario, Heikki, Marko Laine, Antonietta Mira, and Eero Saksman. "DRAM: efficient adaptive MCMC." Statistics and Computing 16, no. 4 (2006): 339-354. <https://link.springer.com/article/10.1007/s11222-006-9438-0>`_
         
@@ -23,19 +28,19 @@ class DelayedRejection:
         Perform delayed rejection step - occurs in standard metropolis is not accepted.
         
         **Args:**
-            | `old_set` (:class:`~pymcmcstat.structures.ParameterSet.ParameterSet`): Features of :math:`q^{k-1}`
-            | `new_set` (:class:`~pymcmcstat.structures.ParameterSet.ParameterSet`): Features of :math:`q^*`
-            | `RDR` (:class:`~numpy.ndarray`): Cholesky decomposition of parameter covariance matrix for DR steps
-            | `ntry` (:py:class:`int`): Number of DR steps to perform until rejection
-            | `parameters` (:class:`~pymcmcstat.settings.ModelParameters.ModelParameters`): Model parameters
-            | `invR` (:class:`~numpy.ndarray`): Inverse Cholesky decomposition matrix
-            | `sosobj` (:class:`~pymcmcstat.procedures.SumOfSquares.SumOfSquares`): Sum-of-Squares function
-            | `priorobj` (:class:`~pymcmcstat.procedures.PriorFunction.PriorFunction`): Prior function
+            * **old_set** (:class:`~.ParameterSet`): Features of :math:`q^{k-1}`
+            * **new_set** (:class:`~.ParameterSet`): Features of :math:`q^*`
+            * **RDR** (:class:`~numpy.ndarray`): Cholesky decomposition of parameter covariance matrix for DR steps
+            * **ntry** (:py:class:`int`): Number of DR steps to perform until rejection
+            * **parameters** (:class:`~.ModelParameters`): Model parameters
+            * **invR** (:class:`~numpy.ndarray`): Inverse Cholesky decomposition matrix
+            * **sosobj** (:class:`~.SumOfSquares`): Sum-of-Squares function
+            * **priorobj** (:class:`~.PriorFunction`): Prior function
 
         **Returns:**
-            | `accept` (:py:class:`int`): 0 - reject, 1 - accept
-            | `out_set` (:class:`~pymcmcstat.structures.ParameterSet.ParameterSet`): If accept == 1, then latest DR set; Else, :math:`q^k=q^{k-1}`
-            | `outbound` (:py:class:`int`): 1 - rejected due to sampling outside of parameter bounds
+            * **accept** (:py:class:`int`): 0 - reject, 1 - accept
+            * **out_set** (:class:`~.ParameterSet`): If accept == 1, then latest DR set; Else, :math:`q^k=q^{k-1}`
+            * **outbound** (:py:class:`int`): 1 - rejected due to sampling outside of parameter bounds
             
         """
         # create trypath
@@ -72,13 +77,13 @@ class DelayedRejection:
         
         **Args:**
             * **npar** (:py:class:`int`): Number of parameters
-            * **old_set** (:class:`~pymcmcstat.structures.ParameterSet.ParameterSet`): Features of :math:`q^{k-1}`
-            * **new_set** (:class:`~pymcmcstat.structures.ParameterSet.ParameterSet`): Features of :math:`q^*`
+            * **old_set** (:class:`~.ParameterSet`): Features of :math:`q^{k-1}`
+            * **new_set** (:class:`~.ParameterSet`): Features of :math:`q^*`
             * **RDR** (:class:`~numpy.ndarray`): Cholesky decomposition of parameter covariance matrix for DR steps
             * **itry** (:py:class:`int`): DR step counter
             
         **Returns:**
-            * **next_set** (:class:`~pymcmcstat.structures.ParameterSet.ParameterSet`): New proposal set
+            * **next_set** (:class:`~.ParameterSet`): New proposal set
             * **u** (:class:`numpy.ndarray`): Numbers sampled from standard normal distributions (:code:`u.shape = (1,npar)`)
         
         '''
@@ -90,6 +95,29 @@ class DelayedRejection:
         return next_set, u
     
     def acceptance_test(self, alpha, old_set, next_set, itry):
+        '''
+        Run acceptance test
+        
+        .. math::
+            
+            & \\text{If}~u_{\\alpha} <~\\alpha, \\
+            
+            & \\quad \\text{Set}~q^k = q^*,~SS_{q^k} = SS_{q^*} \\
+            
+            & \\text{Else} \\
+            
+            & \\quad \\text{Set}~q^k = q^{k-1},~SS_{q^k} = SS_{q^{k-1}}
+        
+        **Args:**
+            * **alpha** (:py:class:`float`): Result of likelihood function according to delayed rejection
+            * **old_set** (:class:`~.ParameterSet`): Features of :math:`q^{k-1}`
+            * **next_set** (:class:`~.ParameterSet`): New proposal set
+            * **itry** (:py:class:`int`): DR step counter
+            
+        **Returns:**
+            * **accept** (:py:class:`int`): 0 - reject, 1 - accept
+            * **out_set** (:class:`~.ParameterSet`): If accept == 1, then latest DR set; Else, :math:`q^k=q^{k-1}`
+        '''
         if alpha >= 1 or np.random.rand(1) < alpha: # accept
             accept = 1
             out_set = next_set
@@ -121,6 +149,16 @@ class DelayedRejection:
         return out_set, next_set, trypath, outbound
         
     def __alphafun(self, trypath, invR):
+        '''
+        Calculate likelihood according to DR
+        
+        **Args:**
+            * **trypath** (:py:class:`list`): Sequence of DR steps
+            * **invR** (:class:`~numpy.ndarray`): Inverse Cholesky decomposition matrix
+            
+        **Returns:**
+            * **alpha** (:py:class:`float`): Result of likelihood function according to delayed rejection
+        '''
         self.dr_step_counter = self.dr_step_counter + 1
         stage = len(trypath) - 1 # The stage we're in, elements in trypath - 1
         # recursively compute past alphas
