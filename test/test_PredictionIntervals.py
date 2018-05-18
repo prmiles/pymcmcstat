@@ -10,7 +10,7 @@ functions tested include:
 
 @author: prmiles
 """
-from pymcmcstat.PredictionIntervals import PredictionIntervals
+from pymcmcstat.plotting.PredictionIntervals import PredictionIntervals
 import unittest
 import numpy as np
 

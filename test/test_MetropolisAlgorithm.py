@@ -9,8 +9,8 @@ Created on Thu Apr 26 08:48:00 2018
 #from pymcmcstat.CovarianceProcedures import CovarianceProcedures
 #from pymcmcstat.SumOfSquares import SumOfSquares
 #from pymcmcstat.PriorFunction import PriorFunction
-from pymcmcstat.ParameterSet import ParameterSet
-from pymcmcstat.MetropolisAlgorithm import MetropolisAlgorithm
+from pymcmcstat.structures.ParameterSet import ParameterSet
+from pymcmcstat.samplers.Metropolis import Metropolis
 #from pymcmcstat.MCMC import MCMC
 
 import unittest
@@ -26,7 +26,7 @@ class UnpackSet(unittest.TestCase):
         CL = {'theta':1.0, 'ss': 1.0, 'prior':0.0, 'sigma2': 0.0}
         parset = ParameterSet(theta = CL['theta'], ss = CL['ss'], prior = CL['prior'], sigma2 = CL['sigma2'])
         
-        MA = MetropolisAlgorithm()
+        MA = Metropolis()
         oldpar, ss, oldprior, sigma2 = MA.unpack_set(parset)
         NL = {'theta':oldpar, 'ss': ss, 'prior':oldprior, 'sigma2': sigma2}
         self.assertDictEqual(CL,NL)
@@ -34,44 +34,44 @@ class UnpackSet(unittest.TestCase):
 class OutsideBounds(unittest.TestCase):
     
     def test_outsidebounds_p1_below(self):
-        MA = MetropolisAlgorithm()
+        MA = Metropolis()
         self.assertTrue(MA.is_sample_outside_bounds(theta = np.array([-1.0, 1.5]), lower_limits = np.array([0,1]), upper_limits=np.array([1,2])))
         
     def test_outsidebounds_p2_below(self):
-        MA = MetropolisAlgorithm()
+        MA = Metropolis()
         self.assertTrue(MA.is_sample_outside_bounds(theta = np.array([1.0, 0.5]), lower_limits = np.array([0,1]), upper_limits=np.array([1,2])))
         
     def test_outsidebounds_p1_above(self):
-        MA = MetropolisAlgorithm()
+        MA = Metropolis()
         self.assertTrue(MA.is_sample_outside_bounds(theta = np.array([1.5, 1.5]), lower_limits = np.array([0,1]), upper_limits=np.array([1,2])))
         
     def test_outsidebounds_p2_above(self):
-        MA = MetropolisAlgorithm()
+        MA = Metropolis()
         self.assertTrue(MA.is_sample_outside_bounds(theta = np.array([1.0, 2.5]), lower_limits = np.array([0,1]), upper_limits=np.array([1,2])))
         
     def test_not_outsidebounds_p1_on_lowlim(self):
-        MA = MetropolisAlgorithm()
+        MA = Metropolis()
         self.assertFalse(MA.is_sample_outside_bounds(theta = np.array([0, 1.5]), lower_limits = np.array([0,1]), upper_limits=np.array([1,2])))
         
     def test_not_outsidebounds_p2_on_lowlim(self):
-        MA = MetropolisAlgorithm()
+        MA = Metropolis()
         self.assertFalse(MA.is_sample_outside_bounds(theta = np.array([0.5, 1]), lower_limits = np.array([0,1]), upper_limits=np.array([1,2])))
         
     def test_not_outsidebounds_p1_on_upplim(self):
-        MA = MetropolisAlgorithm()
+        MA = Metropolis()
         self.assertFalse(MA.is_sample_outside_bounds(theta = np.array([1, 1.5]), lower_limits = np.array([0,1]), upper_limits=np.array([1,2])))
         
     def test_not_outsidebounds_p2_on_upplim(self):
-        MA = MetropolisAlgorithm()
+        MA = Metropolis()
         self.assertFalse(MA.is_sample_outside_bounds(theta = np.array([0.5, 2]), lower_limits = np.array([0,1]), upper_limits=np.array([1,2])))
         
     def test_not_outsidebounds_all(self):
-        MA = MetropolisAlgorithm()
+        MA = Metropolis()
         self.assertFalse(MA.is_sample_outside_bounds(theta = np.array([0.5, 1.5]), lower_limits = np.array([0,1]), upper_limits=np.array([1,2])))
         
 class EvaluateLikelihood(unittest.TestCase):
     def test_size_of_alpha_for_1d_nsos(self):
-        MA = MetropolisAlgorithm()
+        MA = Metropolis()
         ss1 = np.array([1.])
         ss2 = np.array([1.1])
         newprior = np.array([0.])
@@ -81,7 +81,7 @@ class EvaluateLikelihood(unittest.TestCase):
         self.assertEqual(alpha.size, 1)
         
     def test_size_of_alpha_for_2d_nsos(self):
-        MA = MetropolisAlgorithm()
+        MA = Metropolis()
         ss1 = np.array([1., 2.])
         ss2 = np.array([1.1, 2.4])
         newprior = np.array([0.,0.])
@@ -91,7 +91,7 @@ class EvaluateLikelihood(unittest.TestCase):
         self.assertEqual(alpha.size, 1)
         
     def test_likelihood_goes_up(self):
-        MA = MetropolisAlgorithm()
+        MA = Metropolis()
         ss1 = np.array([1., 2.])
         ss2 = np.array([1.1, 2.4])
         newprior = np.array([0.,0.])
@@ -104,7 +104,7 @@ class EvaluateLikelihood(unittest.TestCase):
         self.assertTrue(alpha1 < alpha2)
         
     def test_likelihood_goes_down(self):
-        MA = MetropolisAlgorithm()
+        MA = Metropolis()
         ss1 = np.array([1., 2.])
         ss2 = np.array([1.1, 2.4])
         newprior = np.array([0.,0.])
@@ -119,28 +119,27 @@ class EvaluateLikelihood(unittest.TestCase):
 class Acceptance(unittest.TestCase):
     
     def test_accept_alpha_gt_1(self):
-        MA = MetropolisAlgorithm()
+        MA = Metropolis()
         self.assertEqual(MA.acceptance_test(alpha = 1.1), 1, msg = 'accept alpha >= 1')
         
     def test_accept_alpha_eq_1(self):
-        MA = MetropolisAlgorithm()
+        MA = Metropolis()
         self.assertEqual(MA.acceptance_test(alpha = 1), 1, msg = 'accept alpha >= 1')
         
     def test_not_accept_alpha_lt_0(self):
-        MA = MetropolisAlgorithm()
+        MA = Metropolis()
         self.assertEqual(MA.acceptance_test(alpha = -0.1), 0, msg = 'Reject alpha <= 0')
         
     def test_not_accept_alpha_eq_0(self):
-        MA = MetropolisAlgorithm()
+        MA = Metropolis()
         self.assertEqual(MA.acceptance_test(alpha = 0), 0, msg = 'Reject alpha <= 0')
         
     def test_not_accept_alpha_based_on_rand(self):
-        MA = MetropolisAlgorithm()
+        MA = Metropolis()
         np.random.seed(0)
         self.assertEqual(MA.acceptance_test(alpha = 0.4), 0, msg = 'Reject alpha < u (0.4 < 0.5488135)')
         
     def test_accept_alpha_based_on_rand(self):
-        MA = MetropolisAlgorithm()
+        MA = Metropolis()
         np.random.seed(0)
         self.assertEqual(MA.acceptance_test(alpha = 0.6), 1, msg = 'Accept alpha > u (0.6 > 0.5488135)')
-        
