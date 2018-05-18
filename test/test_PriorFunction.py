@@ -8,7 +8,7 @@ features in the 'PriorFunction.py" class of the pymcmcstat module.
 
 @author: prmiles
 """
-from pymcmcstat.PriorFunction import PriorFunction
+from pymcmcstat.procedures.PriorFunction import PriorFunction
 import unittest
 #import numpy as np
 

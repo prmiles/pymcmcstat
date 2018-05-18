@@ -9,7 +9,7 @@ features in the 'ModelSettings.py" package of the pymcmcstat module.
 @author: prmiles
 """
 
-from pymcmcstat import ModelSettings, SimulationOptions, DataStructure
+from pymcmcstat.settings import ModelSettings, SimulationOptions, DataStructure
 import unittest
 import numpy as np
 

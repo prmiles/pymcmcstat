@@ -8,7 +8,7 @@ features in the 'ParameterSet.py" class of the pymcmcstat module.
 
 @author: prmiles
 """
-from pymcmcstat.ParameterSet import ParameterSet
+from pymcmcstat.structures.ParameterSet import ParameterSet
 import unittest
 #import numpy as np
 

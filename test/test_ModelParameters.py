@@ -10,8 +10,8 @@ functions tested include:
 
 @author: prmiles
 """
-from pymcmcstat.ModelParameters import ModelParameters
-from pymcmcstat.SimulationOptions import SimulationOptions
+from pymcmcstat.settings.ModelParameters import ModelParameters
+from pymcmcstat.settings.SimulationOptions import SimulationOptions
 import unittest
 import numpy as np
 
