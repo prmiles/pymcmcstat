@@ -11,19 +11,92 @@ import math
 import sys
 
 class ModelParameters:
+    '''
+    MCMC Model Parameters.
+    
+    Example:
+    ::
+        
+        mcstat = MCMC()
+
+        mcstat.parameters.add_model_parameter(name = 'm', theta0 = 1., minimum = -10, maximum = 10)
+        mcstat.parameters.add_model_parameter(name = 'b', theta0 = -5., minimum = -10, maximum = 100)
+        
+        mcstat.parameters.display_model_parameter_settings()
+        
+    This will display to screen:
+    ::
+        
+        Sampling these parameters:
+        name         start [   min,    max] N(  mu, sigma^2)
+        m         :   1.00 [-10.00,  10.00] N(0.00, inf)
+        b         :  -5.00 [-10.00, 100.00] N(0.00, inf)
+    
+    **Attributes:**
+        * :meth:`~add_model_parameter`
+        * :meth:`~display_parameter_settings`
+        * :meth:`~generate_default_name`
+        
+    '''
     def __init__(self):
         self.parameters = [] # initialize list
         self.description = 'MCMC model parameters'
         
-    def add_model_parameter(self, name, theta0, minimum = -np.inf,
+    def add_model_parameter(self, name = None, theta0 = None, minimum = -np.inf,
                       maximum = np.inf, prior_mu = np.zeros([1]), prior_sigma = np.inf,
-                      sample = 1, local = 0):
+                      sample = True, local = 0):
+        '''
+        Add model parameter to MCMC simulation.
+        
+        **Args:**
+            * name (:py:class:`str`): Parameter name
+            * theta0 (:py:class:`float`): Initial value
+            * minimum (:py:class:`float`): Lower parameter bound
+            * maximum (:py:class:`float`): Upper parameter bound
+            * prior_mu (:py:class:`float`): Mean value of prior distribution
+            * prior_sigma (:py:class:`float`): Standard deviation of prior distribution
+            * sample (:py:class:`bool`): Flag to turn sampling on (True) or off (False)
+            * local (:py:class:`int`): Local flag - still testing.
+            
+        The default prior is a uniform distribution from minimum to maximum parameter value.
+        
+        '''
+        
+        if name is None:
+            name = self.generate_default_name(len(self.parameters))
+            
+        if theta0 is None:
+            theta0 = 1.0
         
         # append dictionary element
         self.parameters.append({'name': name, 'theta0': theta0, 'minimum': minimum,
                                 'maximum': maximum, 'prior_mu': prior_mu, 'prior_sigma': prior_sigma,
                                 'sample': sample, 'local': local})
     
+#    def default_parameter_settings(self):
+#        
+#        settings = {'name': self.generate_default_name(len(self.parameters)),
+#                    'theta0': 1.0, 'minimum': -np.inf, 'maximum': np.inf, 'prior_mu': np.zeros([1]),
+#                    'prior_sigma': np.inf, 'sample': True, 'local': 0}
+#        
+#        return settings
+    
+    def generate_default_name(self, nparam):
+        '''
+        Generate generic parameter name.
+        For example, if :code:`nparam = 4`, then the generated name are::
+        
+            names = 'p_{3}'
+        
+        **Args:**
+            * **nparam** (:py:class:`int`): Number of parameter names to generate
+
+        **Returns:**
+            * **name** (:py:class:`str`): Name based on size of parameter list
+            
+        '''
+        return (str('$p_{{{}}}$'.format(nparam)))
+
     def _openparameterstructure(self, nbatch):
         
         # unpack input object
@@ -52,7 +125,6 @@ class ModelParameters:
 
             ii += 1 # update counter
             
-         
         ii = 0
         for kk in range(npar):
             if self._local[ii] == 0:
@@ -132,8 +204,15 @@ class ModelParameters:
             printed = True
         return printed
     
-    def display_parameter_settings(self, options):
-        # display parameter settings
+    def display_parameter_settings(self, verbosity = None, noadaptind = None):
+        '''
+        Display parameter settings
+        
+        **Args:**
+            * **verbosity** (:py:class:`int`): Verbosity of display output. :code:`0`
+            * **noadaptind** (:py:class:`int`): Indices not to be adapted in covariance matrix. :code:`[]`
+            
+        '''
         parind = self._parind
         names = self._names
         value = self._initial_value
@@ -142,13 +221,19 @@ class ModelParameters:
         theta_mu = self._thetamu
         theta_sigma = self._thetasigma
         
-        if options.verbosity > 0:
+        if verbosity is None:
+            verbosity = 0
+            
+        if noadaptind is None:
+            noadaptind = []
+        
+        if verbosity > 0:
             print('\nSampling these parameters:')
             print('{:10s} {:>7s} [{:>6s}, {:>6s}] N({:>4s}, {:>4s})'.format('name',
                   'start', 'min', 'max', 'mu', 'sigma^2'))
             nprint = len(parind)
             for ii in range(nprint):
-                if ii in options.noadaptind: # THIS PARAMETER IS FIXED
+                if ii in noadaptind: # THIS PARAMETER IS FIXED
                     st = ' (*)'
                 else:
                     st = ''

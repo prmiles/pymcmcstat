@@ -38,7 +38,7 @@ class ModelSettings:
             * **prior_pars**: Pending...
             * **model_function**: Handle for model function (needed if :code:`sos_function` not specified)
             * **sigma2** (:py:class:`float`): List of initial error observations.
-            * **N** (:py:class:`int`): Total number of observations - see :meth:`~.get_number_of_observations`.
+            * **N** (:py:class:`int`): Number of observations - see :class:`~.DataStructure`.
             * **S20** (:py:class:`float`): List of scaling parameter in observation error estimate.
             * **N0** (:py:class:`float`): List of scaling parameter in observation error estimate. 
             * **nbatch** (:py:class:`int`): Number of batch data sets - see :meth:`~.get_number_of_batches`.
@@ -88,7 +88,14 @@ class ModelSettings:
         return x
     
     def _check_dependent_model_settings(self, data, options):
-        # check dependent parameters
+        '''
+        Check dependent parameters.
+        
+        **Args:**
+            * **data** (:class:`~.DataStructure`): MCMC data structure
+            * **options** (:class:`.SimulationOptions`): MCMC simulation options
+            
+        '''
         if self.nbatch is None:
             self.nbatch = data.get_number_of_batches()
             
@@ -138,6 +145,17 @@ class ModelSettings:
             self.S20 = self.sigma2  # prior parameters for the error variance
         
     def _check_dependent_model_settings_wrt_nsos(self, nsos):
+        '''
+        Check dependent model settings with respect to number of sum-of-square elements.
+        
+        A different observation error can be set up for different data sets, so these
+        settings must be updated with respect to the length of the output from the 
+        sum-of-squares function evaluation.
+        
+        **Args:**
+            * **nsos** (:py:class:`int`): Length of output from sum-of-squares function
+        
+        '''
         # in matlab version, ny = length(sos) where sos is the output from the sos evaluation
         self.S20 = self.__check_size_of_setting_wrt_nsos(self.S20, nsos)
         self.N0 = self.__check_size_of_setting_wrt_nsos(self.N0, nsos)
@@ -152,6 +170,20 @@ class ModelSettings:
         self.nsos = nsos
         
     def __check_size_of_setting_wrt_nsos(self, x, nsos):
+        '''
+        Check size of setting with respect number of observation errors.
+        
+        **Args:**
+            * **x** (:class:`~numpy.ndarray`): Array to be checked
+            * **nsos** (:py:class:`int`): Length of output from sum-of-squares function
+            
+        **Returns:**
+            * **x** (:class:`~numpy.ndarray`): Array returned with shape = :code:`(nsos,1)`
+            
+        **Raises:**
+            * Dimension mismatch if :code:`len(x) > nsos` or :code:`len(x) < nsos and len(x) != 1`.
+            
+        '''
         if len(x) == 1:
             x = np.ones(nsos)*x
         elif len(x) > nsos: # more x elements than sos elements
