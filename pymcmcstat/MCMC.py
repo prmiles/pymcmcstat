@@ -127,7 +127,7 @@ class MCMC:
         # add check that prior standard deviation > 0
         self.parameters._check_prior_sigma(self.simulation_options.verbosity)
         # display parameter settings
-        self.parameters.display_parameter_settings(self.simulation_options)
+        self.parameters.display_parameter_settings(self.simulation_options.verbosity, self.simulation_options.noadaptind)
         # setup covariance matrix and initial Cholesky decomposition
         self._covariance._initialize_covariance_settings(self.parameters, self.simulation_options)
         # ---------------------

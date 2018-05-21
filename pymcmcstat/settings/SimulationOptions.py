@@ -1,65 +1,30 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
-"""
+'''
 Created on Wed Jan 17 09:08:13 2018
-    # general settings
-    nsimu - number of chain interates
-    method - sampling method ('mh', 'am', 'dr', 'dram')
-    waitbar - flag to display progress bar
-    debug - display certain features to assist in code debugging
-    noadaptind - do not adapt these indices
-    stats - convergence statistics
-    verbosity - verbosity of display output
-    printint - printing interval
-    nbatch - number of batches
-    rndseq - random numbers for testing
-        
-    # settings for adaptation
-    adaptint - number of iterates between adaptation
-    qcov - proposal covariance
-    qcov_adjust -
-    initqcovn - proposal covariance weight in update
-    adascale - user defined covariance scale
-    lastadapt - last adapt (i.e., no more adaptation beyond this iteration)
-    burnintime -
-    burnin_scale - scale in burn-in down/up
     
-    # settings for updating error variance estimator
-    updatesigma - flag saying whether or not to update the measurement variance estimate
-    
-    # settings associated with saving to bin files
-    savesize - rows of the chain in memory
-    maxmem - memory available in mega bytes
-    chainfile - chain file name
-    s2chainfile - s2chain file name
-    sschainfile - sschain file name
-    savedir - directory files saved to
-    skip -
-    label -
-    
-    # settings for delayed rejection
-    ntry - number of stages in delayed rejection algorithm
-    RDR - R matrix for each stage of delayed rejection
-    drscale - scale sampling distribution for delayed rejection
-    alphatarget - acceptance ratio target
-   
 @author: prmiles
-"""
-
+'''
 # import required packages
 import numpy as np
 from datetime import datetime
-#import os
 
 class SimulationOptions:
+    """
+    MCMC simulation options.
     
+   **Attributes:**
+       * :meth:`~define_simulation_options`
+       * :meth:`~display_simulation_options`
+
+    """
     def __init__(self):
         # initialize simulation option variables
 #        self.options = BaseSimulationOptions()
         self.description = 'simulation_options'
         self.__options_set = False
         
-    def define_simulation_options(self, nsimu=10000, adaptint = None, ntry = None, method='dram',
+    def define_simulation_options(self, nsimu=int(1e4), adaptint = None, ntry = None, method='dram',
                  printint=np.nan, adaptend = 0, lastadapt = 0, burnintime = 0,
                  waitbar = 1, debug = 0, qcov = None, updatesigma = 0, 
                  noadaptind = [], stats = 0, drscale = np.array([5, 4, 3], dtype = float),
@@ -70,13 +35,60 @@ class SimulationOptions:
                  alphatarget = 0.234, etaparam = 0.7, initqcovn = None,
                  doram = None, rndseq = None, results_filename = None, save_to_json = False, save_to_txt = False,
                  json_restart_file = None):
+        '''
+        Define simulation options.
+        
+        **Args:**
+            * **nsimu** (:py:class:`int`): Number of parameter samples to simulate.  Default is 1e4.
+            * **adaptint** (:py:class:`int`): Number of interates between adaptation. Default is method dependent.
+            * **ntry** (:py:class:`int`): Number of tries to take before rejection. Default is method dependent.
+            * **method** (:py:class:`str`): Sampling method (:code:`'mh', 'am', 'dr', 'dram'`).  Default is :code:`'dram'`.
+            * **printint** (): Printing interval.
+            * **adaptend** (:py:class:`int`): Obsolete.
+            * **lastadapt** (:py:class`int`): Last adaptation iteration (i.e., no more adaptation beyond this point).
+            * **burnintime** (:py:class:`int`):
+            * **waitbar** (:py:class:`int`): Flag to use progress bar. Default is 1 -> on (otherwise -> off).
+            * **debug** (:py:class:`int`): Flag to perform debug.  Default is 0 -> off.
+            * **qcov** (:class:`~numpy.ndarray`): Proposal parameter covariance matrix.
+            * **updatesigma** (:py:class:`int`): Flag for updating measurement error variance. Default is 0 -> off (1 -> on).
+            * **noadaptind** (:py:class:`int`): Indices not to be adapted in covariance matrix. Default is [] (untested).
+            * **stats** (:py:class:`int`): Calculate convergence statistics. Default is 0 -> off (1 -> on).
+            * **drscale** (:class:`~numpy.ndarray`): Reduced scale for sampling in DR algorithm. Default is [5,4,3].
+            * **adascale** (:py:class:`float`): User defined covariance scale.  Default is method dependent (untested).
+            * **savesize** (:py:class:`int`): Size of chain segments when saving to log files.  Default is 0.
+            * **maxmem** (:py:class:`int`): Maximum memory available in mega bytes (Obsolete).
+            * **chainfile** (:py:class:`str`): File name for :code:`chain` log file.
+            * **sschainfile** (:py:class:`str`): File name for :code:`sschain` log file.
+            * **s2chainfile** (:py:class:`str`): File name for :code:`s2chain` log file.
+            * **covchainfile** (:py:class:`str`): File name for :code:`qcov` log file.
+            * **savedir** (:py:class:`str`): Output directory of log files.  Default is current directory.
+            * **save_to_bin** (:py:class:`bool`): Save log files to binary.  Default is False.
+            * **save_to_txt** (:py:class:`bool`): Save log files to text.  Default is False.
+            * **skip** (:py:class:`int`):
+            * **label** (:py:class:`str`):
+            * **RDR** (:class:`~numpy.ndarray`): R matrix for each stage of DR.
+            * **verbosity** (:py:class:`int`): Verbosity of display output.
+            * **maxiter** (:py:class:`int`): Obsolete.
+            * **priorupdatestart**
+            * **qcov_adjust** (:py:class:`float`): Adjustment scale for covariance matrix.
+            * **burnin_scale** (:py:class:`float`): Scale for burnin.
+            * **alphatarget** (:py:class:`float`): Acceptance ratio target.
+            * **etaparam** (:py:class:`float`): 
+            * **initqcovn** (:py:class:`float`): Proposal covariance weight in update.
+            * **doram** (:py:class:`int`): Flag to perform :code:`'ram'` algorithm (Obsolete).
+            * **rndseq** (:class:`~numpy.ndarray`): Random number sequence (Obsolete).
+            * **results_filename** (:py:class:`str`): Output file name when saving results structure with json.
+            * **save_to_json** (:py:class:`bool`): Save results structure to json file.  Default is False.
+            * **json_restart_file** (:py:class:`str`): Extract parameter covariance and last sample value from saved json file.
+        
+        '''
         
         method_dictionary = {
             'mh': {'adaptint': 0, 'ntry': 1, 'doram': 0, 'adascale': adascale}, 
             'am': {'adaptint': 100, 'ntry': 1, 'doram': 0, 'adascale': adascale},
             'dr': {'adaptint': 0, 'ntry': 2, 'doram': 0, 'adascale': adascale},
             'dram': {'adaptint': 100, 'ntry': 2, 'doram': 0, 'adascale': adascale},
-            'ram': {'adaptint': 1, 'ntry': 1, 'doram': 1, 'adascale': 1},
+            'ram': {'adaptint': 1, 'ntry': 1, 'doram': 1, 'adascale': 1.},
             }
         
         # define items from dictionary
@@ -162,8 +174,18 @@ class SimulationOptions:
         self.__options_set = True # options have been defined
         
     def _check_dependent_simulation_options(self, data, model):
-        # check dependent parameters
-                
+        '''
+        Check dependent parameters.
+        - Checks that :code:`savesize` is between 0 and :code:`nsimu`.
+        - If :code:`ntry` greater than 1, then assume delayed rejection was wanted.
+        - If :code:`lastadapt` less than 1, then set equal to :code:`nsimu`.
+        - Update :code:`printint` based on size of :code:`adaptint`.
+        - If :code:`N0` not None, turn on :code:`updatesigma`.
+        
+        **Args:**
+            * **data**: (:class:`~.DataStructure`): MCMC data structure.
+            * **model**: (:class:`~.ModelSettings`): MCMC model settings.
+        '''     
         # save options
         if self.savesize <= 0 or self.savesize > self.nsimu:
             self.savesize = self.nsimu
@@ -184,8 +206,21 @@ class SimulationOptions:
         if model.N0 is not None:
             self.updatesigma = 1  
             
-    def display_simulation_options(self):
-        print_these = ['nsimu', 'adaptint', 'ntry', 'method', 'printint', 'lastadapt', 'drscale', 'qcov']
+    def display_simulation_options(self, print_these = None):
+        '''
+        Display subset of the simulation options.
+        
+        **Args:**
+            * **print_these** (:py:class:`list`): List of strings corresponding to keywords.  Default below.
+        
+        ::
+            
+            print_these = ['nsimu', 'adaptint', 'ntry', 'method', 'printint', 'lastadapt', 'drscale', 'qcov']
+        
+        '''
+        if print_these is None:
+            print_these = ['nsimu', 'adaptint', 'ntry', 'method', 'printint', 'lastadapt', 'drscale', 'qcov']
+            
         print('simulation options:')
         for ii in range(len(print_these)):
             print('\t{} = {}'.format(print_these[ii], getattr(self, print_these[ii])))
