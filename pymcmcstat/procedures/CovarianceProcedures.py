@@ -14,11 +14,24 @@ import numpy as np
 import math
 
 class CovarianceProcedures:
+    '''
+    Covariance matrix variables and methods.
+    
+    **Attributes:**
+        * :meth:`~display_covariance_settings`
+        * :meth:`~setup_covariance_matrix`
+    '''
     def __init__(self):
         self.description = 'Covariance Variables and Methods'
         
     def _initialize_covariance_settings(self, parameters, options):
+        '''
+        Initialize covariance settings.
         
+        **Args:**
+            * **parameters** (:class:`~.ModelParameters`): MCMC model parameters
+            * **options** (:class:`~.SimulationOptions`): MCMC simulation options
+        '''
         self._qcov = None
         self._qcov_scale = None
         self._R = None
@@ -36,7 +49,7 @@ class CovarianceProcedures:
         
         # ----------------
         # setup covariance matrix
-        self.__setup_covariance_matrix(options.qcov, parameters._thetasigma, parameters._initial_value)
+        self.setup_covariance_matrix(options.qcov, parameters._thetasigma, parameters._initial_value)
             
         # ----------------
         # check adascale
@@ -57,6 +70,17 @@ class CovarianceProcedures:
             
     def _update_covariance_from_adaptation(self, R, covchain, meanchain, wsum, 
                                           last_index_since_adaptation, iiadapt):
+        '''
+        Update covariance from adaptation algorithm.
+        
+        **Args:**
+            * **R** (:class:`~numpy.ndarray`): Cholesky decomposition of covariance matrix.
+            * **covchain** (:class:`~numpy.ndarray`): Covariance matrix history.
+            * **meanchain** (:class:`~numpy.ndarray`): Current mean chain values.
+            * **wsum** (:class:`~numpy.ndarray`): Weights
+            * **last_index_since_adaptation** (:py:class:`int`): Last index since adaptation occured.
+            * **iiadapt** (:py:class:`int`): Adaptation counter.
+        '''
         self._R = R
         self._covchain = covchain
         self._meanchain = meanchain
@@ -65,15 +89,46 @@ class CovarianceProcedures:
         self._iiadapt = iiadapt
         
     def _update_covariance_for_delayed_rejection_from_adaptation(self, RDR = None, invR = None):
+        '''
+        Update covariance variables for delayed rejection based on adaptation.
+        
+        **Args:**
+            * **RDR** (:class:`~numpy.ndarray`): Cholesky decomposition of covariance matrix based on DR.
+            * **invR** (:class:`~numpy.ndarray`): Inverse of Cholesky decomposition matrix.
+        '''
         self._RDR = RDR
         self._invR = invR
         
     def _update_covariance_settings(self, parameter_set):
+        '''
+        Update covariance settings based on parameter set
+        
+        **Args:**
+            * **parameter_set** (:class:`~numpy.ndarray`): Mean parameter values
+        '''
         if self._wsum is not None:
             self._covchain = self._qcov
             self._meanchain = parameter_set
         
-    def __setup_covariance_matrix(self, qcov, thetasig, value):
+    def setup_covariance_matrix(self, qcov, thetasig, value):
+        '''
+        Initialize covariance matrix.
+        
+        If no proposal covariance matrix is provided, then the default is generated
+        by squaring 5% of the initial value.  This yields a diagonal covariance matrix.
+        
+        .. math::
+            
+            V = diag([(0.05\\theta_i)^2])
+            
+        If the initial value was one, this would lead to zero variance.  In those
+        instances the variance is set equal to :code:`qcov[qcov==0] = 1.0`.
+        
+        **Args:**
+            * **qcov** (:class:`~numpy.ndarray`): Parameter covariance matrix.
+            * **thetasig** (:class:`~numpy.ndarray`): Prior variance.
+            * **value** (:class:`~numpy.ndarray`): Current parameter value.
+        '''
         # check qcov
         if qcov is None: # i.e., qcov is None (not defined)
             qcov = thetasig**2 # variance
@@ -81,7 +136,7 @@ class CovarianceProcedures:
             ii2 = np.isnan(qcov)
             ii = ii1 + ii2
             qcov[ii] = (np.abs(value[ii])*0.05)**2 # default is 5% stdev
-            qcov[qcov==0] = 1 # if initial value was zero, use 1 as stdev
+            qcov[qcov==0] = 1.0 # if initial value was zero, use 1 as stdev
             qcov = np.diagflat(qcov) # create covariance matrix
     
         self._qcov = np.atleast_2d(qcov[:])
@@ -143,8 +198,20 @@ class CovarianceProcedures:
                     else:
                         self._no_adapt_index[jj] = np.zeros([1],dtype=bool)
     
-    def display_covariance_settings(self):
-        print_these = ['qcov', 'R', 'RDR', 'invR', 'last_index_since_adaptation', 'covchain']
+    def display_covariance_settings(self, print_these = None):
+        '''
+        Display subset of the covariance settings.
+        
+        **Args:**
+            * **print_these** (:py:class:`list`): List of strings corresponding to keywords.  Default below.
+        
+        ::
+            
+            print_these = ['qcov', 'R', 'RDR', 'invR', 'last_index_since_adaptation', 'covchain']
+        
+        '''
+        if print_these is None:
+            print_these = ['qcov', 'R', 'RDR', 'invR', 'last_index_since_adaptation', 'covchain']
         print('covariance:')
         for ii in range(len(print_these)):
             print('\t{} = {}'.format(print_these[ii], getattr(self, str('_{}'.format(print_these[ii])))))
