@@ -17,11 +17,12 @@ def generate_default_names(nparam):
     
         names = ['p_{0}', 'p_{1}', 'p_{2}', 'p_{3}']
     
-    :param nparam: Number of parameter names to generate
-    :type nparam: :py:class:`int`
+    **Args:**
+        * **nparam** (:py:class:`int`): Number of parameter names to generate
+
+    **Returns:**
+        * **names** (:py:class:`list`): List of strings - parameter names
     
-    :returns: Parameter names
-    :rtype: :py:class:`list`
     '''
     names = []
     for ii in range(nparam):
@@ -38,13 +39,12 @@ def extend_names_to_match_nparam(names, nparam):
         
         names = ['name_1', 'name_2', 'p_{2}', 'p_{3}']
     
-    :param names: Names of parameters provided by user
-    :type names: :py:class:`list`
-    :param nparam: Number of parameters requiring a name
-    :type nparam: :py:class:`int`
+    **Args:**
+        * **names** (:py:class:`list`): Names of parameters provided by user
+        * **nparam** (:py:class:`int`): Number of parameter names to generate
     
-    :returns: Extended list of parameter names
-    :rtype: :py:class:`list`
+    **Returns:**
+        * **names** (:py:class:`list`): List of strings - extended list of parameter names
     '''
     n0 = len(names)
     for ii in range(n0,nparam):
@@ -62,13 +62,12 @@ def make_x_grid(x, npts = 100):
     2. Otherwise, the grid is defined with respect to the array
     mean plus or minus four standard deviations.
     
-    :param x: Array of points
-    :type x: :class:`~numpy.ndarray`
-    :param npts: Number of points to use in generated grid
-    :type npts: :py:class:`int`
-    
-    :returns: Uniformly spaced array of points with shape (npts,1)
-    :rtype: :class:`~numpy.ndarray`
+    **Args:**
+        * **x** (:class:`~numpy.ndarray`): Array of points
+        * **npts** (:py:class:`int`): Number of points to use in generated grid
+
+    **Returns:**
+        * Uniformly spaced array of points with shape :code:`=(npts,1)`. (:class:`~numpy.ndarray`) 
     '''
     xmin = min(x)
     xmax = max(x)
@@ -121,12 +120,17 @@ def __scale_bandwidth(x):
 # -------------------------------------------- 
 def generate_ellipse(mu, cmat, ndp = 100):
     '''
-    % Generates points for a probability contour ellipse
+    Generates points for a probability contour ellipse
     
-    % Marko Laine <Marko.Laine@Helsinki.FI>
-    % $Revision: 1.6 $  $Date: 2007/08/10 08:50:40 $
+    **Args:**
+        * **mu** (:class:`~numpy.ndarray`): Mean values
+        * **cmat** (:class:`~numpy.ndarray`): Covariance matrix
+        * **npd** (:py:class:`int`): Number of points to generate
+        
+    **Returns:**
+        * **x** (:class:`~numpy.ndarray`): x-points
+        * **y** (:class:`~numpy.ndarray`): y-points
     
-    Modified for Python by Paul Miles
     '''
     
     # check shape of covariance matrix
@@ -153,6 +157,16 @@ def check_symmetric(a, tol=1e-8):
     return np.allclose(a, a.T, atol = tol)
 
 def is_semi_pos_def_chol(x):
+    '''
+    Check if matrix is semi positive definite by calculating Cholesky decomposition.
+    
+    **Args:**
+        * x (:class:`~numpy.ndarray`): Matrix to check
+    
+    **Returns:**
+        * If matrix is `not` semi positive definite return :code:`False, None`
+        * If matrix is semi positive definite return :code:`True` and the Upper triangular form of the Cholesky decomposition matrix.
+    '''
     c = None
     try:
         c = np.linalg.cholesky(x)
