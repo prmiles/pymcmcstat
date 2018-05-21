@@ -12,15 +12,40 @@ import sys
 #import warnings
 
 class ModelSettings:
+    '''
+    MCMC Model Settings
+    
+    **Attributes:**
+        * :meth:`~define_model_settings`
+        * :meth:`~display_model_settings`
+    
+    '''
     def __init__(self):
         # Initialize all variables to default values
-#        self.model = BaseModelSettings()
         self.description = 'Model Settings'
         
     def define_model_settings(self, sos_function = None, prior_function = None, prior_type = 1, 
                  prior_update_function = None, prior_pars = None, model_function = None, 
-                 sigma2 = None, N = None, 
-                 S20 = np.nan, N0 = None, nbatch = None):
+                 sigma2 = None, N = None, S20 = np.nan, N0 = None, nbatch = None):
+        '''
+        Define model settings.
+        
+        **Args:**
+            * **sos_function**: Handle for sum-of-squares function
+            * **prior_function**: Handle for prior function
+            * **prior_type**: Pending...
+            * **prior_update_function**: Pending...
+            * **prior_pars**: Pending...
+            * **model_function**: Handle for model function (needed if :code:`sos_function` not specified)
+            * **sigma2** (:py:class:`float`): List of initial error observations.
+            * **N** (:py:class:`int`): Total number of observations - see :meth:`~.get_number_of_observations`.
+            * **S20** (:py:class:`float`): List of scaling parameter in observation error estimate.
+            * **N0** (:py:class:`float`): List of scaling parameter in observation error estimate. 
+            * **nbatch** (:py:class:`int`): Number of batch data sets - see :meth:`~.get_number_of_batches`.
+            
+        .. note:: Variables :code:`sigma2, N, S20, N0`, and :code:`nbatch` converted to :class:`~numpy.ndarray` for subsequent processing.
+        
+        '''
     
         self.sos_function = sos_function
         self.prior_function = prior_function
@@ -145,8 +170,21 @@ class ModelSettings:
             
         return N
             
-    def display_model_settings(self):
-        print_these = ['sos_function', 'model_function', 'sigma2', 'N', 'N0', 'S20', 'nsos', 'nbatch']
+    def display_model_settings(self, print_these = None):
+        '''
+        Display subset of the simulation options.
+        
+        **Args:**
+            * **print_these** (:py:class:`list`): List of strings corresponding to keywords.  Default below.
+        
+        ::
+            
+            print_these = ['sos_function', 'model_function', 'sigma2', 'N', 'N0', 'S20', 'nsos', 'nbatch']
+        
+        '''
+        if print_these is None:
+            print_these = ['sos_function', 'model_function', 'sigma2', 'N', 'N0', 'S20', 'nsos', 'nbatch']
+            
         print('model settings:')
         for ii in range(len(print_these)):
             print('\t{} = {}'.format(print_these[ii], getattr(self, print_these[ii])))
