@@ -3,20 +3,6 @@
 """
 Created on Wed Nov  8 12:00:11 2017
 
-function out=mcmcpred(results,chain,s2chain,data,modelfun,nsample,varargin)
-%MCMCPRED predictive calculations from the mcmcrun chain
-% out = mcmcpred(results,chain,s2chain,data,modelfun,nsample,varargin)
-% Calls modelfun(data,theta,varargin{:})
-% or modelfun(data{ibatch},theta(local),varargin{:}) in case the
-% data has batches. 
-% It samples theta from the chain and optionally sigma2 from s2chain.
-% If s2chain is not empty, it calculates predictive limits for
-% new observations assuming Gaussian error model.
-% The output contains information that can be given to mcmcpredplot.
-
-% $Revision: 1.4 $  $Date: 2007/09/11 11:55:59 $
-
-Adapted for Python by Paul miles
 @author: prmiles
 """
 
@@ -29,9 +15,25 @@ from ..utilities.progressbar import progress_bar
 import matplotlib.pyplot as plt
 
 class PredictionIntervals:
+    '''
+    Prediction/Credible interval methods.
+    
+    **Attributes:**
+        - :meth:`~setup_prediction_interval_calculation`
+        - :meth:`~generate_prediction_intervals`
+        - :meth:`~plot_prediction_intervals`
+    '''
     
     def setup_prediction_interval_calculation(self, results, data, modelfunction):
+        '''
+        Setup calculation for prediction interval generation
         
+        **Args:**
+            * results (:class:`~.ResultsStructure`): MCMC results structure
+            * data (:class:`~.DataStructure`): MCMC data structure
+            * modelfunction: Model function handle
+            
+        '''
         # Analyze data structure
         dshapes = data.shape
         self.__ndatabatches = len(dshapes)
@@ -98,8 +100,9 @@ class PredictionIntervals:
             self._analyze_s2chain()
         
     def _analyze_s2chain(self):
-        """
-        Analysis s2chain 
+        '''
+        Analysis of s2chain.
+        
         Depending on the nature of the data structure, there are a couple ways 
         to interpret the shape of the s2chain.  If s2chain = [nsimu, ns2], then
         ns2 could correspond to len(data.ydata) or the number of columns in
@@ -107,7 +110,7 @@ class PredictionIntervals:
         similar sized vectors in a matrix; or, creates distinct list elements for 
         equal or different size vectors.  Creating distinct list elements of matrices
         will generate an error when trying to plot prediction intervals.
-        """
+        '''
         # shape of s2chain
         m,n = self.__s2chain.shape
         
@@ -145,11 +148,21 @@ class PredictionIntervals:
                 sys.exit('Unclear data structure: error variances do not match size of model output')
         
         
-    def generate_prediction_intervals(self, sstype = None, nsample = 500, calc_pred_int = 'on', waitbar = False):
+    def generate_prediction_intervals(self, sstype = None, nsample = 500, calc_pred_int = True, waitbar = False):
+        '''
+        Generate prediction/credible interval.
         
+        **Args:**
+            * **sstype** (:py:class:`int`): Sum-of-squares type
+            * **nsample** (:py:class:`int`): Number of samples to use in generating intervals.
+            * **calc_pred_int** (:py:class:`bool`): Flag to turn on prediction interval calculation.
+            * **waitbar** (:py:class:`bool`): Flag to turn on progress bar.
+        '''
         # extract chain & s2chain from results
         chain = self.__chain
-        if calc_pred_int is not 'on':
+        
+        calc_pred_int = self.__convert_pred_int_flag(calc_pred_int)
+        if calc_pred_int is True:
             s2chain = None
         else:
             s2chain = self.__s2chain
@@ -248,7 +261,18 @@ class PredictionIntervals:
                'prediction_intervals': prediction_intervals}
     
         print('\nInterval generation complete\n')
-        
+       
+    def __convert_pred_int_flag(self, calc_pred_int):
+        '''
+        Convert flag to boolean for backwards compatibility.
+        '''
+        if calc_pred_int is 'on':
+            calc_pred_int = True
+        elif calc_pred_int is 'off':
+            calc_pred_int = False
+            
+        return calc_pred_int
+    
     def _observation_sample(self, s2elem, ypred, sstype):
         # check shape of s2elem and ypred
         my, ny = ypred.shape
@@ -273,14 +297,10 @@ class PredictionIntervals:
         return opred
     
     def _empirical_quantiles(self, x, p = np.array([0.25, 0.5, 0.75])):
-        """
-        function y=plims(x,p)
-        %PLIMS Empirical quantiles
-        % plims(x,p)  calculates p quantiles from columns of x
-        % Marko Laine <Marko.Laine@Helsinki.FI>
-        % $Revision: 1.4 $  $Date: 2007/05/21 11:19:12 $
-        Adapted for Python by Paul Miles on 2017/11/08
-        """
+        '''
+        Calculate empirical quantiles
+        
+        '''
     
         # extract number of rows/cols from np.array
         n, m = x.shape 
@@ -295,8 +315,16 @@ class PredictionIntervals:
         
         return interpfun(itpoints)
     
-    def plot_prediction_intervals(self, plot_pred_int = 'on', adddata = False, addlegend = True, figsizeinches = None):
+    def plot_prediction_intervals(self, plot_pred_int = True, adddata = False, addlegend = True, figsizeinches = None):
+        '''
+        Plot prediction/credible intervals.
         
+        **Args:**
+            * **plot_pred_int** (:py:class:`bool`): Flag to include PI on plot.
+            * **adddata** (:py:class:`bool`): Flag to include data on plot.
+            * **addlegend** (:py:class:`bool`): Flag to include legend on plot.
+            * **figsizeinches** (:py:class:`list`): Specify figure size in inches [Width, Height].
+        '''
         # unpack out dictionary
         credible_intervals = self.intervals['credible_intervals']
         prediction_intervals = self.intervals['prediction_intervals']
@@ -311,7 +339,8 @@ class PredictionIntervals:
         plabels = ['95% PI']
         
         # check if prediction intervals exist and if user wants to plot them
-        if plot_pred_int is not 'on' or prediction_intervals is None:
+        plot_pred_int = self.__convert_pred_int_flag(plot_pred_int)
+        if plot_pred_int is False or prediction_intervals is None:
             prediction_intervals = None # turn off prediction intervals
             clabels = ['99% CI', '95% CI', '90% CI', '50% CI']
             
