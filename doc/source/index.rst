@@ -30,7 +30,11 @@ Contents:
    pymcmcstat.samplers
    pymcmcstat.chain
    pymcmcstat.utilities
+
+References
+==========
    
+.. bibliography:: references.bib
 
 Indices and tables
 ==================
