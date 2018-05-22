@@ -3,10 +3,6 @@
 """
 Created on Wed Jan 17 16:21:48 2018
 
-Description: Sum-of-squares (sos) class intended for used in MCMC simulator.  Each instance
-will contain the sos function.  If the user did not specify a sos-function,
-then the user supplied model function will be used in the default mcmc sos-function.
-
 @author: prmiles
 """
 
@@ -15,6 +11,17 @@ import numpy as np
 import sys
 
 class SumOfSquares:
+    '''
+    Sum-of-squares function evaluation.
+    
+    **Description:** Sum-of-squares (sos) class intended for used in MCMC simulator.  Each instance
+    will contain the sos function.  If the user did not specify a sos-function,
+    then the user supplied model function will be used in the default mcmc sos-function.
+    
+    **Attributes:**
+        * :meth:`evaluate_sos_function`
+        * :meth:`mcmc_sos_function`
+    '''
     def __init__(self, model, data, parameters):
                 
         # check if sos function and model function are defined
@@ -35,6 +42,15 @@ class SumOfSquares:
         self.nbatch = model.nbatch
         
     def evaluate_sos_function(self, theta):
+        '''
+        Evaluate sum-of-squares function.
+        
+        **Args:**
+            * **theta** (:class:`~numpy.ndarray`): Parameter values.
+            
+        **Returns:**
+            * **ss** (:class:`~numpy.ndarray`): Sum-of-squares error(s)
+        '''
         # evaluate sum-of-squares function
         self.value[self.parind] = theta
         if self.sos_style == 1:
@@ -51,6 +67,26 @@ class SumOfSquares:
         return ss
                      
     def mcmc_sos_function(self, theta):
+        '''
+        Default sum-of-squares function.
+        
+        .. note::
+            
+            This method requires specifying a model function instead of a
+            sum of squares function.  Not recommended for most applications.
+        
+        Basic formulation:
+            
+        .. math::
+            
+            SS_{q,i} = \sum [w_i(y^{data}_i-y^{model}_i)^2]
+            
+        where :math:`w_i` is the weight of a particular data set, and :math:`SS_{q,i}` 
+        is the sum-of-squares error for the `i`-th data set.
+        
+        **Args:**
+            * **theta** (:class:`~numpy.ndarray`): Parameter values.
+        '''
         # initialize
         ss = np.zeros(self.nbatch)
 

@@ -12,15 +12,13 @@ from ..structures.ParameterSet import ParameterSet
 
 class DelayedRejection:
     """
-    Delayed Rejection (DR) algorithm based on [haario2006dram]_
+    Delayed Rejection (DR) algorithm based on :cite:`haario2006dram` (`URL <https://link.springer.com/article/10.1007/s11222-006-9438-0>`_)
     
     **Attributes:**
         * :meth:`~acceptance_test`
         * :meth:`~initialize_next_metropolis_step`
         * :meth:`~run_delayed_rejection`
-        
-    .. [haario2006dram] `Haario, Heikki, Marko Laine, Antonietta Mira, and Eero Saksman. "DRAM: efficient adaptive MCMC." Statistics and Computing 16, no. 4 (2006): 339-354. <https://link.springer.com/article/10.1007/s11222-006-9438-0>`_
-        
+         
     """
         # -------------------------------------------
     def run_delayed_rejection(self, old_set, new_set, RDR, ntry, parameters, invR, sosobj, priorobj):

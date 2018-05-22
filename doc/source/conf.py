@@ -51,6 +51,7 @@ extensions = [
     'sphinx.ext.ifconfig',
     'sphinx.ext.viewcode',
     'sphinx.ext.intersphinx',
+    'sphinxcontrib.bibtex',
 ]
 
 intersphinx_mapping = {'numpy': ('http://docs.scipy.org/doc/numpy/', None),
