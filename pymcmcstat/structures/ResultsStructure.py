@@ -3,8 +3,6 @@
 """
 Created on Wed Jan 17 09:18:19 2018
 
-Description: Class used to organize results of MCMC simulation.
-
 @author: prmiles
 """
 
@@ -15,32 +13,82 @@ from ..utilities.NumpyEncoder import NumpyEncoder
 import os
 
 class ResultsStructure:
+    '''
+    Results from MCMC simulation.
+    
+    **Description:** Class used to organize results of MCMC simulation.
+    '''
     def __init__(self):
         self.results = {} # initialize empty dictionary
         self.basic = False # basic structure not add yet
      
     # --------------------------------------------------------
-    def export_simulation_results_to_json_file(self, results, options):
-        savedir = options.savedir
-        if options.results_filename is None:
-            dtstr = options.datestr
+    def export_simulation_results_to_json_file(self, results):
+        '''
+        Export simulation results to a json file.
+        
+        :Args:
+            * **results** (:class:`~.ResultsStructure`): Dictionary of MCMC simulation results/settings.
+        '''
+        savedir = results['simulation_options']['savedir']
+        results_filename = results['simulation_options']['results_filename']
+        if results_filename is None:
+            dtstr = results['simulation_options']['datestr']
             filename = str('{}{}{}'.format(dtstr,'_','mcmc_simulation.json'))
         else:
-            filename = options.results_filename
+            filename = results_filename
             
         self.save_json_object(results, os.path.join(savedir, filename))
     
     def save_json_object(self, results, filename):
+        '''
+        Save object to json file.
+        
+        .. note::
+            
+            Filename should include extension.
+        
+        :Args:
+            * **results** (:py:class:`dict`): Object to save.
+            * **filename** (:py:class:`str`): Write object into file with this name.
+        '''
         with open(filename, 'w') as out:
             json.dump(results, out, sort_keys=True, indent=4, cls=NumpyEncoder)
             
     def load_json_object(self, filename):
+        '''
+        Load object stored in json file.
+        
+        .. note::
+            
+            Filename should include extension.
+        
+        :Args:
+            * **filename** (:py:class:`str`): Load object from file with this name.
+            
+        \\
+        
+        :Returns:
+            * **results** (:py:class:`dict`): Object loaded from file.
+        '''
         with open(filename, 'r') as obj:
             results = json.load(obj)
         return results
     
     # --------------------------------------------------------
     def add_basic(self, options, model, covariance, parameters, rejected, simutime, theta):
+        '''
+        Add basic results from MCMC simulation to structure.
+        
+        :Args:
+            * **options** (:class:`.SimulationOptions`): MCMC simulation options.
+            * **model** (:class:`.ModelSettings`): MCMC model settings.
+            * **covariance** (:class:`.CovarianceProcedures`): Covariance variables.
+            * **parameters** (:class:`.ModelParameters`): Model parameters.
+            * **rejected** (:py:class:`dict`): Dictionary of rejection stats.
+            * **simutime** (:py:class:`float`): Simulation run time in seconds.
+            * **theta** (:class:`~numpy.ndarray`): Last sampled values.
+        '''
         
         self.results['theta'] = theta
         
@@ -63,6 +111,32 @@ class ResultsStructure:
         self.basic = True # add_basic has been execute
         
     def add_updatesigma(self, updatesigma, sigma2, S20, N0):
+        '''
+        Add information to results structure related to observation error.
+        
+        :Args:
+            * **updatesigma** (:py:class:`bool`): Flag to update error variance(s).
+            * **sigma2** (:class:`~numpy.ndarray`): Latest estimate of error variance(s).
+            * **S20** (:class:`~numpy.ndarray`): Scaling parameter(s).
+            * **N0** (:class:`~numpy.ndarray`): Shape parameter(s).
+            
+        If :code:`updatesigma is True`, then
+        
+        ::
+            
+            results['sigma2'] = np.nan
+            results['S20'] = S20
+            results['N0'] = N0
+            
+        Otherwise
+        
+        ::
+            
+            results['sigma2'] = sigma2
+            results['S20'] = np.nan
+            results['N0'] = np.nan
+        
+        '''
         self.results['updatesigma'] = updatesigma
         if updatesigma:
             self.results['sigma2'] = np.nan
@@ -74,6 +148,16 @@ class ResultsStructure:
             self.results['N0'] = np.nan
     
     def add_dram(self, options, covariance, rejected, drsettings):
+        '''
+        Add results specific to performing DR algorithm.
+        
+        :Args:
+            * **options** (:class:`.SimulationOptions`): MCMC simulation options.
+            * **covariance** (:class:`.CovarianceProcedures`): Covariance variables.
+            * **rejected** (:py:class:`dict`): Dictionary of rejection stats.
+            * **drsettings** (:class:`~.DelayedRejection`): Need access to counters within DR class.
+            
+        '''
         # extract results from basic structure
         if self.basic is True:
             nsimu = self.results['nsimu']
@@ -92,12 +176,32 @@ class ResultsStructure:
             pass
     
     def add_prior(self, mu, sig, priorfun, priortype, priorpars):
+        '''
+        Add results specific to prior function.
+        
+        :Args:
+            * **mu** (:py:class:`float`): Prior mean.
+            * **sig** (:py:class:`float`): Prior standard deviation.
+            * **priorfun**: Handle for prior function.
+            * **priortype** (:py:class:`int`): Flag identifying type of prior.
+            * **priorpars** (:py:class:`float`): Prior parameter for prior update function.
+            
+        .. note::
+            
+            This feature is not currently implemented.
+        '''
         self.results['prior'] = [mu, sig]
         self.results['priorfun'] = priorfun
         self.results['priortype'] = priortype
         self.results['priorpars'] = priorpars
         
     def add_options(self, options = None):
+        '''
+        Saves subset of features of the simulation options in a nested dictionary.
+        
+        :Args:
+            * **options** (:class:`.SimulationOptions`): MCMC simulation options.
+        '''
         # Return options as dictionary
         opt = options.__dict__
         # define list of keywords to NOT add to results structure
@@ -109,6 +213,12 @@ class ResultsStructure:
         self.results['simulation_options'] = opt
 
     def add_model(self, model = None):
+        '''
+        Saves subset of features of the model settings in a nested dictionary.
+        
+        :Args:
+            * **model** (:class:`.ModelSettings`): MCMC model settings.
+        '''
         # Return model as dictionary
         mod = model.__dict__
         # define list of keywords to NOT add to results structure
@@ -119,21 +229,73 @@ class ResultsStructure:
         self.results['model_settings'] = mod
         
     def add_chain(self, chain = None):
+        '''
+        Add chain to results structure.
+        
+        :Args:
+            * **chain** (:class:`~numpy.ndarray`): Model parameter sampling chain.
+        '''
         self.results['chain'] = chain
         
     def add_s2chain(self, s2chain = None):
+        '''
+        Add observiation error chain to results structure.
+        
+        :Args:
+            * **s2chain** (:class:`~numpy.ndarray`): Sampling chain of observation errors.
+        '''
         self.results['s2chain'] = s2chain
         
     def add_sschain(self, sschain = None):
+        '''
+        Add sum-of-squares chain to results structure.
+        
+        :Args:
+            * **sschain** (:class:`~numpy.ndarray`): Calculated sum-of-squares error for each parameter chains set.
+        '''
         self.results['sschain'] = sschain
         
     def add_time_stats(self, mtime, drtime, adtime):
+        '''
+        Add time spend using each sampling algorithm.
+        
+        :Args:
+            * **mtime** (:py:class:`float`): Time spent performing standard Metropolis.
+            * **drtime** (:py:class:`float`): Time spent performing Delayed Rejection.
+            * **adtime** (:py:class:`float`): Time spent performing Adaptation.
+            
+        .. note::
+            
+            This feature is not currently implemented.
+        '''
         self.results['time [mh, dr, am]'] = [mtime, drtime, adtime]
         
     def add_random_number_sequence(self, rndseq):
+        '''
+        Add random number sequence to results structure.
+        
+        :Args:
+            * **rndseq** (:class:`~numpy.ndarray`): Sequence of sampled random numbers.
+            
+        .. note::
+            
+            This feature is not currently implemented.
+        '''
         self.results['rndseq'] = rndseq
     
     def removekey(self, d, key):
+        '''
+        Removed elements from dictionary and return the remainder.
+        
+        :Args:
+            * **d** (:py:class:`dict`): Original dictionary.
+            * **key** (:py:class:`str`): Keyword to be removed.
+         
+        \\
+        
+        :Returns:
+            * **r** (:py:class:`dict`): Updated dictionary without the keywork, value pair.
+        '''
         r = dict(d)
         del r[key]
         return r

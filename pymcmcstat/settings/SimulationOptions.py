@@ -26,7 +26,7 @@ class SimulationOptions:
         
     def define_simulation_options(self, nsimu=int(1e4), adaptint = None, ntry = None, method='dram',
                  printint=np.nan, adaptend = 0, lastadapt = 0, burnintime = 0,
-                 waitbar = 1, debug = 0, qcov = None, updatesigma = 0, 
+                 waitbar = 1, debug = 0, qcov = None, updatesigma = False, 
                  noadaptind = [], stats = 0, drscale = np.array([5, 4, 3], dtype = float),
                  adascale = None, savesize = 0, maxmem = 0, chainfile = 'chainfile',
                  s2chainfile = 's2chainfile', sschainfile = 'sschainfile', covchainfile = 'covchainfile', savedir = None, 
@@ -50,7 +50,7 @@ class SimulationOptions:
             * **waitbar** (:py:class:`int`): Flag to use progress bar. Default is 1 -> on (otherwise -> off).
             * **debug** (:py:class:`int`): Flag to perform debug.  Default is 0 -> off.
             * **qcov** (:class:`~numpy.ndarray`): Proposal parameter covariance matrix.
-            * **updatesigma** (:py:class:`int`): Flag for updating measurement error variance. Default is 0 -> off (1 -> on).
+            * **updatesigma** (:py:class:`bool`): Flag for updating measurement error variance. Default is 0 -> off (1 -> on).
             * **noadaptind** (:py:class:`int`): Indices not to be adapted in covariance matrix. Default is [] (untested).
             * **stats** (:py:class:`int`): Calculate convergence statistics. Default is 0 -> off (1 -> on).
             * **drscale** (:class:`~numpy.ndarray`): Reduced scale for sampling in DR algorithm. Default is [5,4,3].
@@ -81,6 +81,10 @@ class SimulationOptions:
             * **save_to_json** (:py:class:`bool`): Save results structure to json file.  Default is False.
             * **json_restart_file** (:py:class:`str`): Extract parameter covariance and last sample value from saved json file.
         
+        .. note::
+            
+            For the log file names :code:`chainfile, sschainfile, s2chainfile` and :code:`covchainfile` do not include the extension.
+            By specifying whether to save to text or to binary, the appropriate extension will be added.
         '''
         
         method_dictionary = {

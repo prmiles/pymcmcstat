@@ -111,7 +111,7 @@ class MCMC:
         self.__generate_simulation_results()
         if self.simulation_options.save_to_json == True:
             if self.simulation_results.basic == True: # check that results structure has been created
-                self.simulation_results.export_simulation_results_to_json_file(results = self.simulation_results.results, options = self.simulation_options)
+                self.simulation_results.export_simulation_results_to_json_file(results = self.simulation_results.results)
         self.mcmcplot = MCMCPlotting.Plot()
         self.PI = PredictionIntervals()
         self.chainstats = self._chain_statistics.chainstats
