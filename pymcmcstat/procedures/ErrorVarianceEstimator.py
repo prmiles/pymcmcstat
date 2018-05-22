@@ -12,7 +12,7 @@ class ErrorVarianceEstimator:
     '''
     Estimate observation errors.
     
-    **Attributes:**
+    :Attributes:
         * :meth:`~update_error_variance`
         * :meth:`~gammar`
         * :meth:`~gammar_mt`
@@ -41,7 +41,7 @@ class ErrorVarianceEstimator:
             The variables :math:`N_s` and :math:`\\sigma_{s}^2` correspond
             to :code:`N0` and :code:`S20` in the :class:`~.ModelSettings` class, respectively.
         
-        **Args:**
+        :Args:
             * **sos** (:class:`~numpy.ndarray`): Return argument from evaluation of sum-of-squares function.
             * **model** (:class:`~.ModelSettings`): MCMC model settings.
         '''
@@ -68,7 +68,7 @@ class ErrorVarianceEstimator:
             
             p(x|A,B) = \\frac{B^{-A}}{\\Gamma(A)}*x^{A-1}*\\exp(-x/B)
             
-        **Args:**
+        :Args:
             * **m** (:py:class:`int`): Number of rows in return
             * **n** (:py:class:`int`): Number of columns in return
             * **a** (:py:class:`float`): Shape parameter
@@ -85,9 +85,9 @@ class ErrorVarianceEstimator:
     def gammar_mt(self, m, n, a, b = 1):
         '''
         Wrapper routine for calculating random deviates from gamma distribution
-        using method of Marsaglia and Tsang (2000) :cite:`marsaglia2000simple` (`URL <https://dl.acm.org/citation.cfm?id=358414>`_)
+        using method of Marsaglia and Tsang (2000) :cite:`marsaglia2000simple`.
         
-        **Args:**
+        :Args:
             * **m** (:py:class:`int`): Number of rows in return
             * **n** (:py:class:`int`): Number of columns in return
             * **a** (:py:class:`float`): Shape parameter
@@ -106,7 +106,7 @@ class ErrorVarianceEstimator:
         Calculates random deviate from gamma distribution using method of
         Marsaglia and Tsang (2000).
         
-        **Args:**
+        :Args:
             * **a** (:py:class:`float`): Shape parameter
             * **b** (:py:class:`float`): Scaling parameter
         '''

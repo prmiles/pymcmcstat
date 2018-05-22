@@ -23,7 +23,7 @@ class DataStructure:
         x2 = np.random.random_sample(size = (10, 1))
         y2 = np.random.random_sample(size = (10, 3))
     
-    **Attributes:**
+    :Attributes:
         * :meth:`~add_data_set`
         * :meth:`~get_number_of_batches`
         * :meth:`~get_number_of_data_sets`
@@ -62,17 +62,18 @@ class DataStructure:
         * `user_defined_object` (:py:class:`list`): List of objects. :code:`user_defined_object = [0,0]`
             
             
-        **Args:**
+        :Args:
             * **x** (:class:`~numpy.ndarray`): Independent data
             * **y** (:class:`~numpy.ndarray`): Dependent data
             * **n** (:py:class:`list`): List of integers denoting number of data points
             * **weight** (:py:class:`list`): Weight of each data set 
             * **user_defined_object** (`User Defined`): Any object can be stored in this variable
             
-        In general, it is recommended that user's format their data as a column
-        vector.  So, if you have `nds` independent data points, `x` and `y` should be
-        `[nds,1]` or `[nds,]` numpy arrays.  Note if a list is sent, the code will 
-        convert it to a numpy array.
+        .. note::
+            In general, it is recommended that user's format their data as a column
+            vector.  So, if you have `nds` independent data points, `x` and `y` should be
+            `[nds,1]` or `[nds,]` numpy arrays.  Note if a list is sent, the code will 
+            convert it to a numpy array.
         '''
         
         # check that x and y are numpy arrays
@@ -105,10 +106,12 @@ class DataStructure:
         '''
         Convert variable to numpy array.
         
-        **Args:**
+        :Args:
             * **xy** (`Unknown`): Variable to be converted
-            
-        **Returns:**
+        
+        \\
+        
+        :Returns:
             * **xy** (:class:`~numpy.ndarray`): Variable as numpy array
         '''
         if isinstance(xy, np.ndarray) is False:
@@ -120,10 +123,12 @@ class DataStructure:
         '''
         Convert numpy array to at least 2d numpy array.
         
-        **Args:**
+        :Args:
             * **xy** (:class:`~numpy.ndarray`): Variable to be checked/converted
-            
-        **Returns:**
+         
+        \\
+        
+        :Returns:
             * **xy** (:class:`~numpy.ndarray`): Variable as at least 2d numpy array
         '''
         if xy.ndim != 2: # numpy array is (xy.size,) -> Convert to (xy.size,1)
@@ -158,7 +163,7 @@ class DataStructure:
             
         should return :code:`nb = 2` because :code:`len(mcstat.data.ydata) = 2`.
         
-        **Returns:**
+        :Returns:
             * **nbatch** (:py:class:`int`): Number of batches.
         '''
         self.nbatch = len(self.shape)
@@ -203,7 +208,7 @@ class DataStructure:
         should return :code:`nobs = 5 + 10 = 15` because the number of rows in `y1` is
         5 and the number of rows in `y2` is 10.
         
-        **Returns:**
+        :Returns:
             * Number of rows in `ydata` (:class:`~numpy.ndarray`)
         
         '''

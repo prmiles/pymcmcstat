@@ -18,7 +18,7 @@ class PredictionIntervals:
     '''
     Prediction/Credible interval methods.
     
-    **Attributes:**
+    :Attributes:
         - :meth:`~setup_prediction_interval_calculation`
         - :meth:`~generate_prediction_intervals`
         - :meth:`~plot_prediction_intervals`
@@ -28,7 +28,7 @@ class PredictionIntervals:
         '''
         Setup calculation for prediction interval generation
         
-        **Args:**
+        :Args:
             * results (:class:`~.ResultsStructure`): MCMC results structure
             * data (:class:`~.DataStructure`): MCMC data structure
             * modelfunction: Model function handle
@@ -152,7 +152,7 @@ class PredictionIntervals:
         '''
         Generate prediction/credible interval.
         
-        **Args:**
+        :Args:
             * **sstype** (:py:class:`int`): Sum-of-squares type
             * **nsample** (:py:class:`int`): Number of samples to use in generating intervals.
             * **calc_pred_int** (:py:class:`bool`): Flag to turn on prediction interval calculation.
@@ -319,7 +319,7 @@ class PredictionIntervals:
         '''
         Plot prediction/credible intervals.
         
-        **Args:**
+        :Args:
             * **plot_pred_int** (:py:class:`bool`): Flag to include PI on plot.
             * **adddata** (:py:class:`bool`): Flag to include data on plot.
             * **addlegend** (:py:class:`bool`): Flag to include legend on plot.

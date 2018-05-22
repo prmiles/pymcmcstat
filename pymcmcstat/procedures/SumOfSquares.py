@@ -18,7 +18,7 @@ class SumOfSquares:
     will contain the sos function.  If the user did not specify a sos-function,
     then the user supplied model function will be used in the default mcmc sos-function.
     
-    **Attributes:**
+    :Attributes:
         * :meth:`evaluate_sos_function`
         * :meth:`mcmc_sos_function`
     '''
@@ -45,10 +45,12 @@ class SumOfSquares:
         '''
         Evaluate sum-of-squares function.
         
-        **Args:**
+        :Args:
             * **theta** (:class:`~numpy.ndarray`): Parameter values.
             
-        **Returns:**
+        \\
+        
+        :Returns:
             * **ss** (:class:`~numpy.ndarray`): Sum-of-squares error(s)
         '''
         # evaluate sum-of-squares function
@@ -84,7 +86,7 @@ class SumOfSquares:
         where :math:`w_i` is the weight of a particular data set, and :math:`SS_{q,i}` 
         is the sum-of-squares error for the `i`-th data set.
         
-        **Args:**
+        :Args:
             * **theta** (:class:`~numpy.ndarray`): Parameter values.
         '''
         # initialize

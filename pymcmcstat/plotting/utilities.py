@@ -17,10 +17,12 @@ def generate_default_names(nparam):
     
         names = ['p_{0}', 'p_{1}', 'p_{2}', 'p_{3}']
     
-    **Args:**
+    :Args:
         * **nparam** (:py:class:`int`): Number of parameter names to generate
 
-    **Returns:**
+    \\
+        
+    :Returns:
         * **names** (:py:class:`list`): List of strings - parameter names
     
     '''
@@ -39,11 +41,13 @@ def extend_names_to_match_nparam(names, nparam):
         
         names = ['name_1', 'name_2', 'p_{2}', 'p_{3}']
     
-    **Args:**
+    :Args:
         * **names** (:py:class:`list`): Names of parameters provided by user
         * **nparam** (:py:class:`int`): Number of parameter names to generate
     
-    **Returns:**
+    \\
+        
+    :Returns:
         * **names** (:py:class:`list`): List of strings - extended list of parameter names
     '''
     n0 = len(names)
@@ -62,11 +66,13 @@ def make_x_grid(x, npts = 100):
     2. Otherwise, the grid is defined with respect to the array
     mean plus or minus four standard deviations.
     
-    **Args:**
+    :Args:
         * **x** (:class:`~numpy.ndarray`): Array of points
         * **npts** (:py:class:`int`): Number of points to use in generated grid
 
-    **Returns:**
+    \\
+        
+    :Returns:
         * Uniformly spaced array of points with shape :code:`=(npts,1)`. (:class:`~numpy.ndarray`) 
     '''
     xmin = min(x)
@@ -122,12 +128,14 @@ def generate_ellipse(mu, cmat, ndp = 100):
     '''
     Generates points for a probability contour ellipse
     
-    **Args:**
+    :Args:
         * **mu** (:class:`~numpy.ndarray`): Mean values
         * **cmat** (:class:`~numpy.ndarray`): Covariance matrix
         * **npd** (:py:class:`int`): Number of points to generate
         
-    **Returns:**
+    \\
+        
+    :Returns:
         * **x** (:class:`~numpy.ndarray`): x-points
         * **y** (:class:`~numpy.ndarray`): y-points
     
@@ -160,10 +168,12 @@ def is_semi_pos_def_chol(x):
     '''
     Check if matrix is semi positive definite by calculating Cholesky decomposition.
     
-    **Args:**
+    :Args:
         * x (:class:`~numpy.ndarray`): Matrix to check
     
-    **Returns:**
+    \\
+        
+    :Returns:
         * If matrix is `not` semi positive definite return :code:`False, None`
         * If matrix is semi positive definite return :code:`True` and the Upper triangular form of the Cholesky decomposition matrix.
     '''

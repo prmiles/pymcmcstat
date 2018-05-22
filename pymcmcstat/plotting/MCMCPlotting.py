@@ -25,7 +25,7 @@ def plot_density_panel(chains, names = None, hist_on = False, figsizeinches = No
     """
     Plot marginal posterior densities
     
-    **Args:**
+    :Args:
         * **chains** (:class:`~numpy.ndarray`): Sampling chain for each parameter
         * **names** (:py:class:`list`): List of strings - name of each parameter
         * **hist_on** (:py:class:`bool`): Flag to include histogram on density plot
@@ -78,7 +78,7 @@ def plot_histogram_panel(chains, names = None, figsizeinches = None):
     """
     Plot histogram from each parameter's sampling history
     
-    **Args:**
+    :Args:
         * **chains** (:class:`~numpy.ndarray`): Sampling chain for each parameter
         * **names** (:py:class:`list`): List of strings - name of each parameter
         * **hist_on** (:py:class:`bool`): Flag to include histogram on density plot
@@ -122,7 +122,7 @@ def plot_chain_panel(chains, names = None, figsizeinches = None):
     """
     Plot sampling chain for each parameter
     
-    **Args:**
+    :Args:
         * **chains** (:class:`~numpy.ndarray`): Sampling chain for each parameter
         * **names** (:py:class:`list`): List of strings - name of each parameter
         * **figsizeinches** (:py:class:`list`): Specify figure size in inches [Width, Height]
@@ -172,7 +172,7 @@ def plot_pairwise_correlation_panel(chains, names = None, figsizeinches = None, 
     """
     Plot pairwise correlation for each parameter
     
-    **Args:**
+    :Args:
         * **chains** (:class:`~numpy.ndarray`): Sampling chain for each parameter
         * **names** (:py:class:`list`): List of strings - name of each parameter
         * **figsizeinches** (:py:class:`list`): Specify figure size in inches [Width, Height]
@@ -231,7 +231,7 @@ def plot_chain_metrics(chain, name, figsizeinches = None):
     - Scatter plot of chain
     - Histogram of chain
     
-    **Args:**
+    :Args:
         * **chains** (:class:`~numpy.ndarray`): Sampling chain for specific parameter
         * **names** (:py:class:`str`): Name of each parameter
         * **figsizeinches** (:py:class:`list`): Specify figure size in inches [Width, Height]
@@ -260,7 +260,7 @@ class Plot:
     """
     Plotting routines for analyzing sampling chains from MCMC process.
     
-    **Attributes:**
+    :Attributes:
         - :meth:`~plot_density_panel`
         - :meth:`~plot_chain_panel`
         - :meth:`~plot_pairwise_correlation_panel`
