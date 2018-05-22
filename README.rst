@@ -45,8 +45,7 @@ Contributors
 
 See the `GitHub contributor
 page <https://github.com/prmiles/pymcmcstat/graphs/contributors>`_
-
-.. |docs| image:: https://readthedocs.org/projects/docs/badge/?version=latest
-    :alt: Documentation Status
+   
+.. |docs| image:: https://readthedocs.org/projects/pymcmcstat/badge/?version=latest
+    :target: https://pymcmcstat.readthedocs.io/en/latest/?badge=latest
     :scale: 100%
-    :target: https://docs.readthedocs.io/en/latest/?badge=latest
