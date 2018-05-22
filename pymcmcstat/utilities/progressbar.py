@@ -1,7 +1,3 @@
-"""
-A simple progress bar to monitor MCMC sampling progress.
-Modified from original code by Corey Goldberg (2010)
-"""
 from __future__ import print_function
 
 import sys
@@ -119,6 +115,27 @@ def run_from_ipython():
 
 
 def progress_bar(iters):
+    '''
+    Simulation progress bar.
+    
+    A simple progress bar to monitor MCMC sampling progress.
+    Modified from original code by Corey Goldberg (2010).
+    
+    :Args:
+        * **iters** (:py:class:`int`): Number of iterations in simulation.
+        
+    Example display:
+        
+    ::
+        
+        [--------         21%                  ] 2109 of 10000 complete in 0.5 sec
+        
+    .. note::
+        
+        Will display a progress bar as simulation runs, providing
+        feedback as to the status of the simulation.  Depending on the available 
+        resources, the appearance of the progress bar may differ.
+    '''
     if run_from_ipython():
         if None:
             return NotebookProgressBar(iters)

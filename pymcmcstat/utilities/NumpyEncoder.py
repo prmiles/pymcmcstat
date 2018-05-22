@@ -10,6 +10,9 @@ import numpy as np
 import json
 
 class NumpyEncoder(json.JSONEncoder):
+    '''
+    Encoder used for storing numpy arrays in json files.
+    '''
     def default(self, obj):
         if isinstance(obj, np.ndarray):
             return obj.tolist()
