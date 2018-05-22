@@ -14,12 +14,34 @@ from scipy.fftpack import fft
 #from scipy.stats import norm
 
 class ChainStatistics:
+    '''
+    Methods for calculating chain statistics.
+    
+    :Attributes:
+        * :meth:`~chainstats`
+        * :meth:`~print_chain_statistics`
+        * :meth:`~batch_mean_standard_deviation`
+        * :meth:`~geweke`
+        * :meth:`~integrated_autocorrelation_time`    
+    '''
     
 #    def __init__(self):
 #        self.description = 'Chain Statistics'
         
     # display chain statistics
-    def chainstats(self, chain = None, results = None, returnstats = None):
+    def chainstats(self, chain = None, results = None, returnstats = False):
+        '''
+        Calculate chain statistics.
+        
+        :Args:
+            * **chain** (:class:`~numpy.ndarray`): Sampling chain.
+            * **results** (:py:class:`dict`): Results from MCMC simulation.
+            * **returnstats** (:py:class:`bool`): Flag to return statistics.
+            
+        :Returns:
+            * **stats** (:py:class:`dict`): Statistical measures of chain convergence.
+            
+        '''
         # 
         if chain is None:
             print('No chain reported - run simulation first.')
@@ -55,10 +77,31 @@ class ChainStatistics:
                     'geweke': list(p),
                     'tau': list(tau)}
             
-            if returnstats is not None:
+            if returnstats is True:
                 return stats
           
     def print_chain_statistics(self, names, meanii, stdii, mcerr, tau, p):
+        '''
+        Print chain statistics to terminal window.
+        
+        :Args:
+            * **names** (:py:class:`list`): List of parameter names.
+            * **meanii** (:py:class:`list`): Parameter mean values.
+            * **stdii** (:py:class:`list`): Parameter standard deviation.
+            * **mcerr** (:class:`~numpy.ndarray`): Normalized batch mean standard deviation.
+            * **tau** (:class:`~numpy.ndarray`): Integrated autocorrelation time.
+            * **p** (:class:`~numpy.ndarray`): Geweke's convergence diagnostic.
+            
+        Example display:
+        
+        ::
+            
+            ---------------------
+            name      :       mean        std     MC_err        tau     geweke
+            $p_{0}$   :     1.9680     0.0319     0.0013    36.3279     0.9979
+            $p_{1}$   :     3.0818     0.0803     0.0035    37.1669     0.9961
+            ---------------------
+        '''
         npar = len(names)
         # print statistics
         print('\n---------------------')
@@ -72,18 +115,19 @@ class ChainStatistics:
         
     # ----------------------------------------------------              
     def batch_mean_standard_deviation(self, chain, b = None):
-        """
-        %BMSTD standard deviation calculated from batch means
-        % s = bmstd(x,b) - x matrix - b length of the batch
-        % bmstd(x) gives an estimate of the Monte Carlo std of the 
-        % estimates calculated from x
+        '''
+        Standard deviation calculated from batch means
         
-        Input:
-            chain: [nsimu, npar]
-            b: length of batch
+        :Args:
+            * **chain** (:class:`~numpy.ndarray`): Sampling chain.
+            * **b** (:py:class:`int`): Step size.
+            
+        \\
         
-        Adapted for Python by prmiles
-        """
+        :Returns:
+            * **s** (:class:`~numpy.ndarray`): Batch mean standard deviation.
+        
+        '''
         
         nsimu, npar = chain.shape
         
@@ -110,21 +154,30 @@ class ChainStatistics:
         return s
     # ----------------------------------------------------
     def geweke(self, chain, a = 0.1, b = 0.5):
-        """
-        %GEWEKE Geweke's MCMC convergence diagnostic
-        % [z,p] = geweke(chain,a,b)
-        % Test for equality of the means of the first a% (default 10%) and
-        % last b% (50%) of a Markov chain.
-        % See:
-        % Stephen P. Brooks and Gareth O. Roberts.
-        % Assessing convergence of Markov chain Monte Carlo algorithms.
-        % Statistics and Computing, 8:319--335, 1998.
+        '''
+        Geweke's MCMC convergence diagnostic
         
-        Input:
-            chain: [nsimu, npar]
-            a: first a% of chain
-            b: last b% of chain
-        """
+        Test for equality of the means of the first a% (default 10%) and
+        last b% (50%) of a Markov chain - see :cite:`brooks1998assessing`.
+        
+        :Args:
+            * **chain** (:class:`~numpy.ndarray`): Sampling chain.
+            * **a** (:py:class:`float`): First a% of chain.
+            * **b** (:py:class:`float`): Last b% of chain.
+            
+        \\
+        
+        :Returns:
+            * **z** (:class:`~numpy.ndarray`): Convergence diagnostic prior to CDF.
+            * **p** (:class:`~numpy.ndarray`): Geweke's MCMC convergence diagnostic.
+
+        .. note::
+            
+            The percentage of the chain should be given as a decimal between zero and one.
+            So, for the first 10% of the chain, define :code:`a = 0.1`.  Likewise,
+            for the last 50% of the chain, define :code:`b = 0.5`.
+            
+        '''
         
         nsimu, npar = chain.shape
         
@@ -151,9 +204,9 @@ class ChainStatistics:
         
     def _spectral_estimate_for_variance(self, x):
         '''
-        Spectral density at frequency zero
+        Spectral density at frequency zero.
         
-        Input:
+        :Args:
             x: portion of chain
         '''
         m,n = x.shape
@@ -208,8 +261,14 @@ class ChainStatistics:
         Estimates the integrated autocorrelation time using Sokal's
         adaptive truncated periodogram estimator.
         
-        Input:
-            chain: [nsimu, npar]
+        :Args:
+            * **chain** (:class:`~numpy.ndarray`): Sampling chain.
+            
+        \\
+        
+        :Returns:
+            * **tau** (:class:`~numpy.ndarray`): Autocorrelation time.
+            * **m** (:class:`~numpy.ndarray`): Counter.
         '''
         # get shape of chain
         nsimu, npar = chain.shape

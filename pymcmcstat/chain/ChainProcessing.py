@@ -12,11 +12,42 @@ import os
 import warnings
 
 class ChainProcessing:
+    '''
+    Methods for processing chain log files.
+    
+    :Attributes:
+        * :meth:`~print_log_files`
+        * :meth:`~read_in_savedir_files`
+        * :meth:`~read_in_parallel_savedir_files`
+        * :meth:`~read_in_bin_file`
+        * :meth:`~read_in_txt_file`
+    '''
     
     def __init__(self):
         self.description = 'Chain Processing'
         
     def print_log_files(self, savedir):
+        '''
+        Print log files to screen.
+        
+        :Args:
+            * **savedir** (:py:class:`str`): Directory where log files are saved.
+            
+        The output display will include a date/time stamp, as well as indices of
+        the chain that were saved during that export sequence.
+        
+        Example display:
+        ::
+            
+            --------------------------
+            Display log file: <savedir>/binlogfile.txt
+            2018-05-03 14:15:54     0       999
+            2018-05-03 14:15:54     1000    1999
+            2018-05-03 14:15:55     2000    2999
+            2018-05-03 14:15:55     3000    3999
+            2018-05-03 14:15:55     4000    4999
+            --------------------------
+        '''
         # file files in savedir with h5 extension
         bf = []
         for file in os.listdir(savedir):
@@ -38,6 +69,17 @@ class ChainProcessing:
                 
       
     def read_in_savedir_files(self, savedir, extension = 'h5', chainfile = 'chainfile', sschainfile = 'sschainfile', s2chainfile = 's2chainfile', covchainfile = 'covchainfile'):
+        '''
+        Read in log files from directory.
+        
+        :Args:
+            * **savedir** (:py:class:`str`): Directory where log files are saved.
+            * **extension** (:py:class:`str`): Extension of files being loaded.
+            * **chainfile** (:py:class:`str`): Name of chain log file.
+            * **sschainfile** (:py:class:`str`): Name of sschain log file.
+            * **s2chainfile** (:py:class:`str`): Name of s2chain log file.
+            * **covchainfile** (:py:class:`str`): Name of covchain log file.
+        '''
         # file files in savedir with h5 extension
         bf = []
         for file in os.listdir(savedir):
@@ -72,6 +114,17 @@ class ChainProcessing:
         return out
     
     def read_in_parallel_savedir_files(self, parallel_dir, extension = 'h5', chainfile = 'chainfile', sschainfile = 'sschainfile', s2chainfile = 's2chainfile', covchainfile = 'covchainfile'):
+        '''
+        Read in log files from directory containing results from parallel MCMC simulation.
+        
+        :Args:
+            * **parallel_dir** (:py:class:`str`): Directory where parallel log files are saved.
+            * **extension** (:py:class:`str`): Extension of files being loaded.
+            * **chainfile** (:py:class:`str`): Name of chain log file.
+            * **sschainfile** (:py:class:`str`): Name of sschain log file.
+            * **s2chainfile** (:py:class:`str`): Name of s2chain log file.
+            * **covchainfile** (:py:class:`str`): Name of covchain log file.
+        '''
         # find folders in parallel_dir with name 'chain_#'
         chainfolders = os.listdir(parallel_dir)
         out = []
@@ -83,6 +136,12 @@ class ChainProcessing:
         return out
     
     def read_in_bin_file(self, filename):
+        '''
+        Read in information from file containing binary data.
+        
+        :Args:
+            * **filename** (:py:class:`str`): Name of file to read.
+        '''
         try:
             hf = h5py.File(filename, 'r')
             ds = list(hf.keys()) # data sets
@@ -113,6 +172,12 @@ class ChainProcessing:
         return out
     
     def read_in_txt_file(self, filename):
+        '''
+        Read in information from file containing text data.
+        
+        :Args:
+            * **filename** (:py:class:`str`): Name of file to read.
+        '''
         try:
             out = np.loadtxt(filename)
         except:
