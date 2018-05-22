@@ -14,7 +14,7 @@ class PriorFunction:
     '''
     Prior distribution functions.
     
-    **Attributes:**
+    :Attributes:
         * :meth:`default_priorfun`
         * :meth:`evaluate_prior`
         
@@ -38,7 +38,7 @@ class PriorFunction:
             
             \\pi_0(q) = \sum_{i=1}^N \\Big(\\frac{\\theta_i - \\mu_i}{\\sigma_i^2}\\Big)^2
         
-        **Args:**
+        :Args:
             * **theta** (:class:`~numpy.ndarray`): Current parameter values.
             * **mu** (:class:`~numpy.ndarray`): Prior mean.
             * **sigma** (:class:`~numpy.ndarray`): Prior standard deviation.
@@ -58,7 +58,7 @@ class PriorFunction:
         '''
         Evaluate the prior function.
         
-        **Args:**
+        :Args:
             * **theta** (:class:`~numpy.ndarray`): Current parameter values.
         '''
         return self.priorfun(theta, self.mu, self.sigma)

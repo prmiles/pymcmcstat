@@ -17,7 +17,7 @@ class CovarianceProcedures:
     '''
     Covariance matrix variables and methods.
     
-    **Attributes:**
+    :Attributes:
         * :meth:`~display_covariance_settings`
         * :meth:`~setup_covariance_matrix`
     '''
@@ -28,7 +28,7 @@ class CovarianceProcedures:
         '''
         Initialize covariance settings.
         
-        **Args:**
+        :Args:
             * **parameters** (:class:`~.ModelParameters`): MCMC model parameters
             * **options** (:class:`~.SimulationOptions`): MCMC simulation options
         '''
@@ -73,7 +73,7 @@ class CovarianceProcedures:
         '''
         Update covariance from adaptation algorithm.
         
-        **Args:**
+        :Args:
             * **R** (:class:`~numpy.ndarray`): Cholesky decomposition of covariance matrix.
             * **covchain** (:class:`~numpy.ndarray`): Covariance matrix history.
             * **meanchain** (:class:`~numpy.ndarray`): Current mean chain values.
@@ -92,7 +92,7 @@ class CovarianceProcedures:
         '''
         Update covariance variables for delayed rejection based on adaptation.
         
-        **Args:**
+        :Args:
             * **RDR** (:class:`~numpy.ndarray`): Cholesky decomposition of covariance matrix based on DR.
             * **invR** (:class:`~numpy.ndarray`): Inverse of Cholesky decomposition matrix.
         '''
@@ -103,7 +103,7 @@ class CovarianceProcedures:
         '''
         Update covariance settings based on parameter set
         
-        **Args:**
+        :Args:
             * **parameter_set** (:class:`~numpy.ndarray`): Mean parameter values
         '''
         if self._wsum is not None:
@@ -124,7 +124,7 @@ class CovarianceProcedures:
         If the initial value was one, this would lead to zero variance.  In those
         instances the variance is set equal to :code:`qcov[qcov==0] = 1.0`.
         
-        **Args:**
+        :Args:
             * **qcov** (:class:`~numpy.ndarray`): Parameter covariance matrix.
             * **thetasig** (:class:`~numpy.ndarray`): Prior variance.
             * **value** (:class:`~numpy.ndarray`): Current parameter value.
@@ -202,7 +202,7 @@ class CovarianceProcedures:
         '''
         Display subset of the covariance settings.
         
-        **Args:**
+        :Args:
             * **print_these** (:py:class:`list`): List of strings corresponding to keywords.  Default below.
         
         ::

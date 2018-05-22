@@ -12,9 +12,9 @@ from ..structures.ParameterSet import ParameterSet
 
 class DelayedRejection:
     """
-    Delayed Rejection (DR) algorithm based on :cite:`haario2006dram` (`URL <https://link.springer.com/article/10.1007/s11222-006-9438-0>`_)
+    Delayed Rejection (DR) algorithm based on :cite:`haario2006dram`.
     
-    **Attributes:**
+    :Attributes:
         * :meth:`~acceptance_test`
         * :meth:`~initialize_next_metropolis_step`
         * :meth:`~run_delayed_rejection`
@@ -25,7 +25,7 @@ class DelayedRejection:
         """
         Perform delayed rejection step - occurs in standard metropolis is not accepted.
         
-        **Args:**
+        :Args:
             * **old_set** (:class:`~.ParameterSet`): Features of :math:`q^{k-1}`
             * **new_set** (:class:`~.ParameterSet`): Features of :math:`q^*`
             * **RDR** (:class:`~numpy.ndarray`): Cholesky decomposition of parameter covariance matrix for DR steps
@@ -35,7 +35,9 @@ class DelayedRejection:
             * **sosobj** (:class:`~.SumOfSquares`): Sum-of-Squares function
             * **priorobj** (:class:`~.PriorFunction`): Prior function
 
-        **Returns:**
+        \\
+
+        :Returns:
             * **accept** (:py:class:`int`): 0 - reject, 1 - accept
             * **out_set** (:class:`~.ParameterSet`): If accept == 1, then latest DR set; Else, :math:`q^k=q^{k-1}`
             * **outbound** (:py:class:`int`): 1 - rejected due to sampling outside of parameter bounds
@@ -73,14 +75,16 @@ class DelayedRejection:
         '''
         Take metropolis step according to DR
         
-        **Args:**
+        :Args:
             * **npar** (:py:class:`int`): Number of parameters
             * **old_set** (:class:`~.ParameterSet`): Features of :math:`q^{k-1}`
             * **new_set** (:class:`~.ParameterSet`): Features of :math:`q^*`
             * **RDR** (:class:`~numpy.ndarray`): Cholesky decomposition of parameter covariance matrix for DR steps
             * **itry** (:py:class:`int`): DR step counter
             
-        **Returns:**
+        \\
+        
+        :Returns:
             * **next_set** (:class:`~.ParameterSet`): New proposal set
             * **u** (:class:`numpy.ndarray`): Numbers sampled from standard normal distributions (:code:`u.shape = (1,npar)`)
         
@@ -106,13 +110,15 @@ class DelayedRejection:
             
             & \\quad \\text{Set}~q^k = q^{k-1},~SS_{q^k} = SS_{q^{k-1}}
         
-        **Args:**
+        :Args:
             * **alpha** (:py:class:`float`): Result of likelihood function according to delayed rejection
             * **old_set** (:class:`~.ParameterSet`): Features of :math:`q^{k-1}`
             * **next_set** (:class:`~.ParameterSet`): New proposal set
             * **itry** (:py:class:`int`): DR step counter
-            
-        **Returns:**
+           
+        \\
+        
+        :Returns:
             * **accept** (:py:class:`int`): 0 - reject, 1 - accept
             * **out_set** (:class:`~.ParameterSet`): If accept == 1, then latest DR set; Else, :math:`q^k=q^{k-1}`
         '''
@@ -150,11 +156,13 @@ class DelayedRejection:
         '''
         Calculate likelihood according to DR
         
-        **Args:**
+        :Args:
             * **trypath** (:py:class:`list`): Sequence of DR steps
             * **invR** (:class:`~numpy.ndarray`): Inverse Cholesky decomposition matrix
-            
-        **Returns:**
+          
+        \\
+        
+        :Returns:
             * **alpha** (:py:class:`float`): Result of likelihood function according to delayed rejection
         '''
         self.dr_step_counter = self.dr_step_counter + 1

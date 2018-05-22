@@ -66,6 +66,9 @@ class MCMC:
             
     # --------------------------------------------------------
     def run_simulation(self, use_previous_results = False):
+        '''
+        
+        '''
         start_time = time.time()
         
         if use_previous_results == True:

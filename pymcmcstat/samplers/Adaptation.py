@@ -11,9 +11,9 @@ import math
 
 class Adaptation:
     """
-    Adaptive Metropolis (AM) algorithm based on :cite:`haario2001adaptive` (`URL <https://projecteuclid.org/euclid.bj/1080222083>`_)
+    Adaptive Metropolis (AM) algorithm based on :cite:`haario2001adaptive`.
     
-    **Attributes:**
+    :Attributes:
         * :meth:`~cholupdate`
         * :meth:`~covupd`
         * :meth:`~is_semi_pos_def_chol`
@@ -39,7 +39,7 @@ class Adaptation:
         """
         Run adaptation step
         
-        **Args:**
+        :Args:
             * **covariance** (:class:`~.CovarianceProcedures`): Covariance methods and variables
             * **options** (:class:`~.SimulationOptions`): Options for MCMC simulation
             * **isimu** (:py:class:`int`): Simulation counter
@@ -51,7 +51,9 @@ class Adaptation:
             * **npar** (:py:class:`int`): Number of parameters being sampled
             * **new_set** (:class:`~.ParameterSet`): Features of newest parameter set
 
-        **Returns:**
+        \\
+        
+        :Returns:
             * **covariance** (:class:`~.CovarianceProcedures`): Updated covariance object
         """
         # unpack input arguments
@@ -153,7 +155,7 @@ class Adaptation:
         """
         Update covariance chain, local mean, local sum
         
-        **Args:**
+        :Args:
             * **x** (:class:`~numpy.ndarray`): Chain segment
             * **w** (:class:`~numpy.ndarray`): Weights
             * **oldcov** (:class:`~numpy.ndarray` or `None`): Previous covariance matrix
@@ -161,7 +163,9 @@ class Adaptation:
             * **oldwsum** (:class:`~numpy.ndarray`): Previous weighted sum
             * **oldR** (:class:`~numpy.ndarray`): Previous Cholesky decomposition matrix
             
-        **Returns:**
+        \\
+        
+        :Returns:
             * **xcov** (:class:`~numpy.ndarray`): Updated covariance matrix
             * **xmean** (:class:`~numpy.ndarray`): Updated mean chain values
             * **wsum** (:class:`~numpy.ndarray`): Updated weighted sum
@@ -228,11 +232,13 @@ class Adaptation:
         """
         Update Cholesky decomposition
         
-        **Args:**
+        :Args:
             * **R** (:class:`~numpy.ndarray`): Weighted Cholesky decomposition
             * **x** (:class:`~numpy.ndarray`): Weighted sum based on local chain update
             
-        **Returns:**
+        \\
+        
+        :Returns:
             * **R1** (:class:`~numpy.ndarray`): Updated Cholesky decomposition
         """
         n = len(x)
@@ -253,10 +259,12 @@ class Adaptation:
         """
         Check if matrix is semi-positive definite using Cholesky Decomposition
         
-        **Args:**
+        :Args:
             * **x** (:class:`~numpy.ndarray`): Covariance matrix
-            
-        **Returns:**
+        
+        \\
+        
+        :Returns:
             * `Boolean`
             * **c** (:class:`~numpy.ndarray`): Cholesky decomposition (upper triangular form) or `None`
         """

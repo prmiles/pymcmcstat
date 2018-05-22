@@ -15,7 +15,7 @@ class ModelSettings:
     '''
     MCMC Model Settings
     
-    **Attributes:**
+    :Attributes:
         * :meth:`~define_model_settings`
         * :meth:`~display_model_settings`
     
@@ -30,7 +30,7 @@ class ModelSettings:
         '''
         Define model settings.
         
-        **Args:**
+        :Args:
             * **sos_function**: Handle for sum-of-squares function
             * **prior_function**: Handle for prior function
             * **prior_type**: Pending...
@@ -91,7 +91,7 @@ class ModelSettings:
         '''
         Check dependent parameters.
         
-        **Args:**
+        :Args:
             * **data** (:class:`~.DataStructure`): MCMC data structure
             * **options** (:class:`.SimulationOptions`): MCMC simulation options
             
@@ -152,7 +152,7 @@ class ModelSettings:
         settings must be updated with respect to the length of the output from the 
         sum-of-squares function evaluation.
         
-        **Args:**
+        :Args:
             * **nsos** (:py:class:`int`): Length of output from sum-of-squares function
         
         '''
@@ -173,14 +173,18 @@ class ModelSettings:
         '''
         Check size of setting with respect number of observation errors.
         
-        **Args:**
+        :Args:
             * **x** (:class:`~numpy.ndarray`): Array to be checked
             * **nsos** (:py:class:`int`): Length of output from sum-of-squares function
-            
-        **Returns:**
+        
+        \\
+        
+        :Returns:
             * **x** (:class:`~numpy.ndarray`): Array returned with shape = :code:`(nsos,1)`
             
-        **Raises:**
+        \\
+        
+        :Raises:
             * Dimension mismatch if :code:`len(x) > nsos` or :code:`len(x) < nsos and len(x) != 1`.
             
         '''
@@ -206,7 +210,7 @@ class ModelSettings:
         '''
         Display subset of the simulation options.
         
-        **Args:**
+        :Args:
             * **print_these** (:py:class:`list`): List of strings corresponding to keywords.  Default below.
         
         ::

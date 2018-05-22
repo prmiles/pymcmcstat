@@ -32,7 +32,7 @@ class ModelParameters:
         m         :   1.00 [-10.00,  10.00] N(0.00, inf)
         b         :  -5.00 [-10.00, 100.00] N(0.00, inf)
     
-    **Attributes:**
+    :Attributes:
         * :meth:`~add_model_parameter`
         * :meth:`~display_parameter_settings`
         * :meth:`~generate_default_name`
@@ -48,7 +48,7 @@ class ModelParameters:
         '''
         Add model parameter to MCMC simulation.
         
-        **Args:**
+        :Args:
             * name (:py:class:`str`): Parameter name
             * theta0 (:py:class:`float`): Initial value
             * minimum (:py:class:`float`): Lower parameter bound
@@ -88,10 +88,12 @@ class ModelParameters:
         
             names = 'p_{3}'
         
-        **Args:**
+        :Args:
             * **nparam** (:py:class:`int`): Number of parameter names to generate
 
-        **Returns:**
+        \\
+        
+        :Returns:
             * **name** (:py:class:`str`): Name based on size of parameter list
             
         '''
@@ -208,7 +210,7 @@ class ModelParameters:
         '''
         Display parameter settings
         
-        **Args:**
+        :Args:
             * **verbosity** (:py:class:`int`): Verbosity of display output. :code:`0`
             * **noadaptind** (:py:class:`int`): Indices not to be adapted in covariance matrix. :code:`[]`
             
