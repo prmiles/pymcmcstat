@@ -1,10 +1,14 @@
 language: python
+sudo: false
 python:
   - 2.7
   - 3.6
 cache: pip
 install:
   - pip install -r requirements.txt
+  - python setup.py
 script:
   - python test/test_DataStructure.py
-  
+notifications:
+  email: 
+    - prmiles@ncsu.edu
