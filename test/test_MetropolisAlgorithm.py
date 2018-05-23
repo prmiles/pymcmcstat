@@ -15,7 +15,6 @@ from pymcmcstat.samplers.Metropolis import Metropolis
 
 import unittest
 import numpy as np
-import unittest.mock as mock
 
 # --------------------------
 # Evaluation
