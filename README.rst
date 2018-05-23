@@ -1,6 +1,8 @@
 `pymcmcstat`
 ============
 
+|docs|
+
 The `pymcmcstat` package is a Python program for running Markov Chain Monte Carlo (MCMC) simulations.
 Included in this package is the abilitity to use different Metropolis based sampling techniques:
 
@@ -43,3 +45,7 @@ Contributors
 
 See the `GitHub contributor
 page <https://github.com/prmiles/pymcmcstat/graphs/contributors>`_
+   
+.. |docs| image:: https://readthedocs.org/projects/pymcmcstat/badge/?version=prmiles_v1.4.0
+    :target: https://pymcmcstat.readthedocs.io/en/latest/?badge=latest
+    :scale: 100%
