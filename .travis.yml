@@ -6,7 +6,7 @@ python:
 cache: pip
 install:
   - pip install -r requirements.txt
-  - python setup.py
+  - python setup.py install
 script:
   - python test/test_DataStructure.py
 notifications:
