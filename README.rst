@@ -4,7 +4,7 @@
 |docs| |build|
 
 The `pymcmcstat` package is a Python program for running Markov Chain Monte Carlo (MCMC) simulations.
-Included in this package is the abilitity to use different Metropolis based sampling techniques:
+Included in this package is the ability to use different Metropolis based sampling techniques:
 
 * Metropolis-Hastings (MH): Primary sampling method.
 * Adaptive-Metropolis (AM): Adapts covariance matrix at specified intervals.
