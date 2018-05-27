@@ -12,3 +12,5 @@ script:
 notifications:
   email: 
     - prmiles@ncsu.edu
+after_success:
+  - coveralls
