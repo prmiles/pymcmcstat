@@ -8,8 +8,10 @@ Created on Thu Apr 26 10:23:51 2018
 
 # import required packages
 import numpy as np
+import numpy.matlib as npm
 import sys
 import scipy
+import scipy.stats
 from scipy.fftpack import fft
 #from scipy.stats import norm
 
@@ -149,7 +151,7 @@ class ChainStatistics:
             y[ii,:] = np.mean(chain[inds[ii]:inds[ii+1],:],0)
             
         # calculate estimated standard deviation of MC estimate
-        s = np.sqrt(sum((y - np.matlib.repmat(np.mean(chain,0),nb,1))**2)/(nb-1)*b)
+        s = np.sqrt(sum((y - npm.repmat(np.mean(chain,0),nb,1))**2)/(nb-1)*b)
         
         return s
     # ----------------------------------------------------
