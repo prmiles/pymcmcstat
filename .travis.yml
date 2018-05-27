@@ -9,7 +9,7 @@ install:
   - python setup.py install
 script:
   - python -m unittest discover -s "test" -p "test*.py"
-  - coverage run --source=pymcmcstat setup.py test
+#  - coverage run --source=pymcmcstat setup.py -p "test*.py"
 notifications:
   email: 
     - prmiles@ncsu.edu
