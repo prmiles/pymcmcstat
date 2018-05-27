@@ -20,60 +20,71 @@ as well as several types of predictive tests.
 import os
 import time
 import numpy as np
-import json
 import datetime
+import sys
 
-from pymcmcstat import DataStructure, ModelSettings, ModelParameters, SimulationOptions
-from pymcmcstat import CovarianceProcedures, ResultsStructure, SumOfSquares, PriorFunction
-from pymcmcstat import ParameterSet, SamplingMethods, ErrorVarianceEstimator
-from pymcmcstat import MCMCPlotting, PredictionIntervals, NumpyEncoder
-#from DataStructure import DataStructure
-#import pymcmcstat.DataStructure
-#from ModelSettings import ModelSettings
-#from ModelParameters import ModelParameters
-#from SimulationOptions import SimulationOptions
-#from CovarianceProcedures import CovarianceProcedures
-#from ResultsStructure import ResultsStructure
-#from SumOfSquares import SumOfSquares
-#from PriorFunction import PriorFunction
-#from ParameterSet import ParameterSet
-#from SamplingMethods import SamplingMethods
-#from ErrorVarianceEstimator import ErrorVarianceEstimator
-#from MCMCPlotting import MCMCPlotting
-#from PredictionIntervals import PredictionIntervals
-#from NumpyEncoder import NumpyEncoder
-##import parameterfunctions as parfun
-#import generalfunctions as genfun
-#import mcmcfunctions as mcfun
-#import selection_algorithms as selalg
-from pymcmcstat.progressbar import progress_bar
+from .settings.DataStructure import DataStructure
+from .settings.ModelSettings import ModelSettings
+from .settings.ModelParameters import ModelParameters
+from .settings.SimulationOptions import SimulationOptions
+
+from .procedures.CovarianceProcedures import CovarianceProcedures
+from .procedures.SumOfSquares import SumOfSquares
+from .procedures.PriorFunction import PriorFunction
+from .procedures.ErrorVarianceEstimator import ErrorVarianceEstimator
+
+from .structures.ParameterSet import ParameterSet
+from .structures.ResultsStructure import ResultsStructure
+
+from .samplers.SamplingMethods import SamplingMethods
+
+from .plotting import MCMCPlotting
+from .plotting.PredictionIntervals import PredictionIntervals
+
+from .chain.ChainStatistics import ChainStatistics
+from .chain.ChainProcessing import ChainProcessing
+
+from .utilities.progressbar import progress_bar
 
 class MCMC:
     def __init__(self):
         
         # public variables
-        self.data = DataStructure.DataStructure()
-        self.model_settings = ModelSettings.ModelSettings()
-        self.simulation_options = SimulationOptions.SimulationOptions()
-        self.parameters = ModelParameters.ModelParameters()
+        self.data = DataStructure()
+        self.model_settings = ModelSettings()
+        self.simulation_options = SimulationOptions()
+        self.parameters = ModelParameters()
         
         # private variables
-        self._error_variance = ErrorVarianceEstimator.ErrorVarianceEstimator()
-        self._covariance = CovarianceProcedures.CovarianceProcedures()
-        self._sampling_methods = SamplingMethods.SamplingMethods()
+        self._error_variance = ErrorVarianceEstimator()
+        self._covariance = CovarianceProcedures()
+        self._sampling_methods = SamplingMethods()
+        self._chain_statistics = ChainStatistics()
+        self._chain_processing = ChainProcessing()
         
         self._mcmc_status = False
             
-
+    # --------------------------------------------------------
     def run_simulation(self, use_previous_results = False):
-        start_time = time.clock()
+        '''
+        
+        '''
+        start_time = time.time()
         
         if use_previous_results == True:
             if self._mcmc_status == True:
                 self.parameters._results_to_params(self.simulation_results.results, 1)
                 self.__initialize_simulation()
                 self.__expand_chains()
+            else:
+                sys.exit('No previous results found.  Set ''use_previous_results'' to ''False''')
         else:
+            if self.simulation_options.json_restart_file is not None:
+                RS = ResultsStructure()
+                res = RS.load_json_object(self.simulation_options.json_restart_file)
+                self.parameters._results_to_params(res, 1)
+                self.simulation_options.qcov = np.array(res['qcov'])
+                
             self.__chain_index = 0 # start index at zero
             self.__initialize_simulation()
             self.__initialize_chains(chainind = self.__chain_index)
@@ -93,55 +104,25 @@ class MCMC:
         """
         self.__execute_simulator()
         
-        end_time = time.clock()
+        end_time = time.time()
         self.__simulation_time = end_time - start_time
-
         # --------------------
         # Generate Results
         self.__generate_simulation_results()
         if self.simulation_options.save_to_json == True:
-            self.__export_simulation_results_to_json_file(self.simulation_results.results)
-        self.mcmcplot = MCMCPlotting.MCMCPlotting()
-        self.PI = PredictionIntervals.PredictionIntervals()
-        
+            if self.simulation_results.basic == True: # check that results structure has been created
+                self.simulation_results.export_simulation_results_to_json_file(results = self.simulation_results.results)
+        self.mcmcplot = MCMCPlotting.Plot()
+        self.PI = PredictionIntervals()
+        self.chainstats = self._chain_statistics.chainstats
         self._mcmc_status = True # simulation has been performed
-        
-    # display chain statistics
-    def chainstats(self, chain = None, results = []):
-        # 
-        if chain is None:
-            print('No chain reported - run simulation first.')
-            pass
-        else:
-            m,n = chain.shape
-            
-            if results == []: # results is dictionary
-                names = []
-                for ii in range(n):
-                    names.append(str('P{}'.format(ii)))
-            else:
-                names = results['names']
-            
-            meanii = []
-            stdii = []
-            for ii in range(n):
-                meanii.append(np.mean(chain[:,ii]))
-                stdii.append(np.std(chain[:,ii]))
-                
-            print('\n---------------------')
-            print('{:10s}: {:>10s} {:>10s}'.format('name','mean','std'))
-            for ii in range(n):
-                if meanii[ii] > 1e4:
-                    print('{:10s}: {:10.4g} {:10.4g}'.format(names[ii],meanii[ii],stdii[ii]))
-                else:
-                    print('{:10s}: {:10.4f} {:10.4f}'.format(names[ii],meanii[ii],stdii[ii]))
-                    
+     
+    # --------------------------------------------------------               
     def __initialize_simulation(self):
         # ---------------------------------
         # check dependent parameters
         self.simulation_options._check_dependent_simulation_options(self.data, self.model_settings)
         self.model_settings._check_dependent_model_settings(self.data, self.simulation_options)
-        
         # open and parse the parameter structure
         self.parameters._openparameterstructure(self.model_settings.nbatch)
         # check initial parameter values are inside range
@@ -149,38 +130,27 @@ class MCMC:
         # add check that prior standard deviation > 0
         self.parameters._check_prior_sigma(self.simulation_options.verbosity)
         # display parameter settings
-        self.parameters.display_parameter_settings(self.simulation_options)
-        
+        self.parameters.display_parameter_settings(self.simulation_options.verbosity, self.simulation_options.noadaptind)
         # setup covariance matrix and initial Cholesky decomposition
         self._covariance._initialize_covariance_settings(self.parameters, self.simulation_options)
-        
         # ---------------------
         # define sum-of-squares object
-        self.__sos_object = SumOfSquares.SumOfSquares(self.model_settings, self.data, self.parameters)
-
+        self.__sos_object = SumOfSquares(self.model_settings, self.data, self.parameters)
         # ---------------------
         # define prior object
-        self.__prior_object = PriorFunction.PriorFunction(priorfun = self.model_settings.prior_function, 
-                                       mu = self.parameters._thetamu, 
-                                       sigma = self.parameters._thetasigma)
-        
+        self.__prior_object = PriorFunction(priorfun = self.model_settings.prior_function, mu = self.parameters._thetamu, sigma = self.parameters._thetasigma)
         # ---------------------
         # Define initial parameter set
-        self.__initial_set = ParameterSet.ParameterSet(theta = self.parameters._initial_value[self.parameters._parind[:]])
-        
+        self.__initial_set = ParameterSet(theta = self.parameters._initial_value[self.parameters._parind[:]])
         # calculate sos with initial parameter set
         self.__initial_set.ss = self.__sos_object.evaluate_sos_function(self.__initial_set.theta)
         nsos = len(self.__initial_set.ss)
-        
         # evaluate prior with initial parameter set
         self.__initial_set.prior = self.__prior_object.evaluate_prior(self.__initial_set.theta)
-        
         # add initial error variance to initial parameter set
         self.__initial_set.sigma2 = self.model_settings.sigma2
-
         # recheck certain values in model settings that are dependent on the output of the sos function
         self.model_settings._check_dependent_model_settings_wrt_nsos(nsos)
-        
         # ---------------------
         # Update variables covariance adaptation
         self._covariance._update_covariance_settings(self.__initial_set.theta)
@@ -188,6 +158,7 @@ class MCMC:
         if self.simulation_options.ntry > 1:
             self._sampling_methods.delayed_rejection._initialize_dr_metrics(self.simulation_options)    
 
+    # --------------------------------------------------------
     def __initialize_chains(self, chainind):
         # Initialize chain, error variance, and SS
         self.__chain = np.zeros([self.simulation_options.nsimu, self.parameters.npar])
@@ -219,7 +190,8 @@ class MCMC:
             self.__s2chain = np.concatenate((self.__s2chain, zero_s2chain), axis = 0)
         else:
             self.__s2chain = None
-        
+     
+    # --------------------------------------------------------
     def __execute_simulator(self):
         iiadapt = 0 # adaptation counter
         iiprint = 0 # print counter
@@ -256,7 +228,7 @@ class MCMC:
                         sosobj = self.__sos_object, priorobj = self.__prior_object)
 
             # UPDATE CHAIN
-            self.__update_chain(accept = accept, new_set = new_set, outbound = outbound)
+            self.__update_chain(accept = accept, new_set = new_set, outsidebounds = outbound)
 
             # PRINT REJECTION STATISTICS    
             if self.simulation_options.printint and iiprint + 1 == self.simulation_options.printint:
@@ -283,48 +255,41 @@ class MCMC:
                 iiadapt = 0 # reset local adaptation index
                 self.__rejected['in_adaptation_interval'] = 0 # reset local rejection index
                 
-            # SAVE TO BIN FILE
-            if self.simulation_options.save_to_bin is True and savecount == self.simulation_options.savesize:
+            # SAVE TO LOG FILE
+            if savecount == self.simulation_options.savesize:
                 savesize = self.simulation_options.savesize
                 start = isimu - savesize
                 end = isimu
-                self.__save_chains_to_bin(start, end)
+                if self.simulation_options.save_to_bin is True:
+                    self.__save_chains_to_bin(start, end)
+                if self.simulation_options.save_to_txt is True:
+                    self.__save_chains_to_txt(start, end)
+                    
                 # reset counter
                 savecount = 0
                 lastbin = isimu
        
         # SAVE REMAINING ELEMENTS TO BIN FILE
+        start = lastbin
+        end = isimu + 1
         if self.simulation_options.save_to_bin is True:
-            start = lastbin
-            end = isimu + 1
             self.__save_chains_to_bin(start, end)
+        if self.simulation_options.save_to_txt is True:
+            self.__save_chains_to_txt(start, end)            
            
         # update value to end value
         self.parameters._value[self.parameters._parind] = self.__old_set.theta
-           
+    
+    # --------------------------------------------------------       
     def __generate_simulation_results(self):
         # --------------------------------------------
         # BUILD RESULTS OBJECT
-        self.simulation_results = ResultsStructure.ResultsStructure() # inititialize
-            
-        self.simulation_results.add_basic(options = self.simulation_options,
-                                          model = self.model_settings,
-                                          covariance = self._covariance,
-                                          parameters = self.parameters,
-                                          rejected = self.__rejected, simutime = self.__simulation_time, 
-                                          theta = self.parameters._value)
-                
-#        self.simulation_results.add_updatesigma(updatesigma = updatesigma, sigma2 = sigma2,
-#                                S20 = S20, N0 = N0)
-#        
-#        self.simulation_results.add_prior(mu = thetamu[parind[:]], sig = thetasig[parind[:]], 
-#                          priorfun = priorfun, priortype = priortype, 
-#                          priorpars = priorpars)
-#        
-#        if dodram == 1:
-#            self.simulation_results.add_dram(dodram = dodram, drscale = drscale, iacce = iacce,
-#                         alpha_count = A_count, RDR = RDR, nsimu = nsimu, rej = rej)
-#        
+        self.simulation_results = ResultsStructure() # inititialize
+        self.simulation_results.add_basic(options = self.simulation_options, model = self.model_settings, covariance = self._covariance, parameters = self.parameters, rejected = self.__rejected, simutime = self.__simulation_time, theta = self.parameters._value)
+
+        if self.simulation_options.ntry > 1:
+            self.simulation_results.add_dram(options = self.simulation_options, covariance = self._covariance, rejected = self.__rejected, drsettings = self._sampling_methods.delayed_rejection)
+        
         self.simulation_results.add_options(options = self.simulation_options)
         self.simulation_results.add_model(model = self.model_settings)
         
@@ -335,63 +300,47 @@ class MCMC:
         
         self.simulation_results.results # assign dictionary
     
+    # --------------------------------------------------------
     def __save_chains_to_bin(self, start, end):
-#        print('start = {}, end = {}'.format(start, end))
-        
         savedir = self.simulation_options.savedir
+        self._chain_processing._check_directory(savedir)
         
-        if not os.path.exists(savedir):
-            os.makedirs(savedir)
-        
-        chainfile = os.path.join(savedir, self.simulation_options.chainfile)
-        s2chainfile = os.path.join(savedir, self.simulation_options.s2chainfile)
-        sschainfile = os.path.join(savedir, self.simulation_options.sschainfile)
-        covchainfile = os.path.join(savedir, self.simulation_options.covchainfile)
+        chainfile, s2chainfile, sschainfile, covchainfile = self._chain_processing._create_path_with_extension_for_all_logs(self.simulation_options, extension = 'h5')
         
         binlogfile = os.path.join(savedir, 'binlogfile.txt')
         binstr = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        self.__add_to_bin_log(binlogfile, str('{}\t{}\t{}\n'.format(binstr, start, end-1)))
-        
-        self.__save_to_bin_file(chainfile, self.__chain[start:end,:]) 
-        self.__save_to_bin_file(sschainfile, self.__sschain[start:end,:]) 
-        self.__save_to_bin_file(covchainfile, np.dot(self._covariance._R.transpose(),self._covariance._R), True)
-        if self.simulation_options.updatesigma == 1:
-            self.__save_to_bin_file(s2chainfile, self.__s2chain[start:end,:]) 
+        self._chain_processing._add_to_log(binlogfile, str('{}\t{}\t{}\n'.format(binstr, start, end-1)))
 
-    def __add_to_bin_log(self, filename, binstr):
-        with open(filename, 'a') as binfile:
-            binfile.write(binstr)
-    
-    def __save_to_bin_file(self, filename, mtx, separate_set = False):
-        if separate_set:
-            with open(filename, "a") as text_file:
-                text_file.write('--------------------------\n')
-                
-        handle = open(filename, 'a')
-        np.savetxt(handle,mtx)
-        handle.close()
-    
-    def __export_simulation_results_to_json_file(self, results = None):
-                       
-        if self.simulation_options.results_filename is None:
-            dtstr = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
-            filename = str('{}{}{}'.format(dtstr,'_','mcmc_simulation.json'))
-        else:
-            filename = self.simulation_options.results_filename
+        # define set name based in start/end
+        datasetname = str('{}_{}_{}'.format('nsimu',start,end-1))
+        
+        self._chain_processing._save_to_bin_file(chainfile, datasetname = datasetname, mtx = self.__chain[start:end,:]) 
+        self._chain_processing._save_to_bin_file(sschainfile, datasetname = datasetname, mtx = self.__sschain[start:end,:]) 
+        self._chain_processing._save_to_bin_file(covchainfile, datasetname = datasetname, mtx = np.dot(self._covariance._R.transpose(),self._covariance._R))
+        
+        if self.simulation_options.updatesigma == 1:
+            self._chain_processing._save_to_bin_file(s2chainfile, datasetname = datasetname, mtx = self.__s2chain[start:end,:]) 
             
-        #save_dill_object(mcstat, filename)
-        self.__save_json_object(results, filename)
+    # --------------------------------------------------------
+    def __save_chains_to_txt(self, start, end):
+        savedir = self.simulation_options.savedir
+        self._chain_processing._check_directory(savedir)
+        
+        chainfile, s2chainfile, sschainfile, covchainfile = self._chain_processing._create_path_with_extension_for_all_logs(self.simulation_options, extension = 'txt')
+       
+        txtlogfile = os.path.join(savedir, 'txtlogfile.txt')
+        txtstr = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        self._chain_processing._add_to_log(txtlogfile, str('{}\t{}\t{}\n'.format(txtstr, start, end-1)))
+        
+        self._chain_processing._save_to_txt_file(chainfile, self.__chain[start:end,:]) 
+        self._chain_processing._save_to_txt_file(sschainfile, self.__sschain[start:end,:]) 
+        self._chain_processing._save_to_txt_file(covchainfile, np.dot(self._covariance._R.transpose(),self._covariance._R))
+        
+        if self.simulation_options.updatesigma == 1:
+            self._chain_processing._save_to_txt_file(s2chainfile, self.__s2chain[start:end,:]) 
     
-    def __save_json_object(self, obj, filename):
-        with open(filename, 'w') as out:
-            json.dump(obj, out, sort_keys=True, indent=4, cls=NumpyEncoder)
-            
-    def load_json_object(self, filename):
-        with open(filename, 'r') as obj:
-            results = json.load(obj)
-        return results
-    
-    def __update_chain(self, accept, new_set, outbound):
+    # --------------------------------------------------------
+    def __update_chain(self, accept, new_set, outsidebounds):
         if accept:
             # accept
             self.__chain[self.__chain_index,:] = new_set.theta
@@ -399,7 +348,7 @@ class MCMC:
         else:
             # reject
             self.__chain[self.__chain_index,:] = self.__old_set.theta
-            self.__update_rejected(outbound)
+            self.__update_rejected(outsidebounds)
             
     def __print_rejection_statistics(self, isimu, iiadapt, verbosity):
         self.__message(verbosity, 2, str('i:{} ({},{},{})\n'.format(
@@ -418,8 +367,8 @@ class MCMC:
         self.simulation_options.display_simulation_options()
         self.covariance.display_covariance_settings()
 
-    def __update_rejected(self, outbound):
+    def __update_rejected(self, outsidebounds):
         self.__rejected['total'] += 1
         self.__rejected['in_adaptation_interval'] += 1
-        if outbound:
+        if outsidebounds:
             self.__rejected['outside_bounds'] += 1

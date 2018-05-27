@@ -10,8 +10,8 @@ functions tested include:
 
 @author: prmiles
 """
-from pymcmcstat.ModelParameters import ModelParameters
-from pymcmcstat.SimulationOptions import SimulationOptions
+from pymcmcstat.settings.ModelParameters import ModelParameters
+from pymcmcstat.settings.SimulationOptions import SimulationOptions
 import unittest
 import numpy as np
 
@@ -44,10 +44,10 @@ class Add_Model_Parameter_Test(unittest.TestCase):
         # initialize default options
         SO = SimulationOptions()
         SO.define_simulation_options()
-        MP.display_parameter_settings(SO)
+        MP.display_parameter_settings(verbosity = SO.verbosity, noadaptind = SO.noadaptind)
         MP._results_to_params(results, 1)
         MP._openparameterstructure(nbatch=1)
-        MP.display_parameter_settings(SO)
+        MP.display_parameter_settings(verbosity = SO.verbosity, noadaptind = SO.noadaptind)
         self.assertEqual(MP.parameters[0]['theta0'], results['theta'][0])
         
 #    def test_does_non_square_matrix_return_error(self):

@@ -8,7 +8,7 @@ features in the 'DataStructure.py" package of the pymcmcstat module.
 
 @author: prmiles
 """
-from pymcmcstat import DataStructure
+from pymcmcstat.settings import DataStructure
 import unittest
 import numpy as np
 
