@@ -131,7 +131,6 @@ class PredictionIntervals:
                 else:
                     self.__s2chain_index[ii,:] = np.array([self.__s2chain_index[ii-1,1], 
                                                           self.__s2chain_index[ii-1,1] + self.__ncol[ii]])
-    
         elif n != 1 and total_columns != n: 
             if n == self.__ndatabatches: # assume separate obs. error for each batch
                 self.__s2chain_index = np.zeros([self.__ndatabatches,2], dtype = int)
@@ -329,12 +328,6 @@ class PredictionIntervals:
         credible_intervals = self.intervals['credible_intervals']
         prediction_intervals = self.intervals['prediction_intervals']
         
-#        # Print length of elements to string for debugging        
-#        print('len(credible_intervals) = {}'.format(len(credible_intervals)))
-#        print('len(credible_intervals[0]) = {}'.format(len(credible_intervals[0])))
-#        print('len(credible_intervals[0][0]) = {}'.format(len(credible_intervals[0][0])))
-#        print('len(credible_intervals[0][0][0]) = {}'.format(len(credible_intervals[0][0][0])))
-        
         clabels = ['95% CI']
         plabels = ['95% PI']
         
@@ -376,7 +369,7 @@ class PredictionIntervals:
             
             for jj in range(ny):
                 fighandcolumn = str('Column # {}'.format(jj))
-                fighand = str('{} | {}'.format(fighandbatch, fighandcolumn))                 
+                fighand = str('{} | {}'.format(fighandbatch, fighandcolumn))
                 htmp = plt.figure(fighand, figsize=(figsizeinches)) # create new figure
                 fighandle.append(htmp)
                 
@@ -389,8 +382,8 @@ class PredictionIntervals:
                 
                 # add prediction intervals - if applicable
                 if prediction_intervals is not None:
-                    ax.fill_between(time, prediction_intervals[ii][jj][0], 
-                                    prediction_intervals[ii][jj][-1], 
+                    ax.fill_between(time, prediction_intervals[ii][jj][0],
+                                    prediction_intervals[ii][jj][-1],
                                     facecolor = intcol, alpha = 0.5,
                                     label = plabels[0])
                     intcol = [0.75, 0.75, 0.75]

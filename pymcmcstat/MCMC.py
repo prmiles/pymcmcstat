@@ -48,7 +48,6 @@ from .utilities.progressbar import progress_bar
 
 class MCMC:
     def __init__(self):
-        
         # public variables
         self.data = DataStructure()
         self.model_settings = ModelSettings()
@@ -99,9 +98,7 @@ class MCMC:
             self.__display_current_mcmc_settings()        
         
         # ---------------------
-        """
-        Execute main simulator
-        """
+        # Execute main simulator
         self.__execute_simulator()
         
         end_time = time.time()
@@ -116,7 +113,6 @@ class MCMC:
         self.PI = PredictionIntervals()
         self.chainstats = self._chain_statistics.chainstats
         self._mcmc_status = True # simulation has been performed
-     
     # --------------------------------------------------------               
     def __initialize_simulation(self):
         # ---------------------------------
@@ -220,8 +216,8 @@ class MCMC:
                     prior_object = self.__prior_object, sos_object = self.__sos_object)
 
             # DELAYED REJECTION
+            # perform a new try according to delayed rejection
             if self.simulation_options.ntry > 1 and accept == 0:
-                # perform a new try according to delayed rejection 
                 accept, new_set, outbound = self._sampling_methods.delayed_rejection.run_delayed_rejection(
                         old_set = self.__old_set, new_set = new_set, RDR = self._covariance._RDR, ntry = self.simulation_options.ntry,
                         parameters = self.parameters, invR = self._covariance._invR, 
@@ -229,7 +225,7 @@ class MCMC:
 
             # UPDATE CHAIN
             self.__update_chain(accept = accept, new_set = new_set, outsidebounds = outbound)
-
+            
             # PRINT REJECTION STATISTICS    
             if self.simulation_options.printint and iiprint + 1 == self.simulation_options.printint:
                 self.__print_rejection_statistics(isimu = isimu, iiadapt = iiadapt, verbosity = self.simulation_options.verbosity)
@@ -298,7 +294,7 @@ class MCMC:
         self.simulation_results.add_s2chain(s2chain = self.__s2chain)
         self.simulation_results.add_sschain(sschain = self.__sschain)
         
-        self.simulation_results.results # assign dictionary
+#        self.simulation_results.results # assign dictionary
     
     # --------------------------------------------------------
     def __save_chains_to_bin(self, start, end):
@@ -314,8 +310,8 @@ class MCMC:
         # define set name based in start/end
         datasetname = str('{}_{}_{}'.format('nsimu',start,end-1))
         
-        self._chain_processing._save_to_bin_file(chainfile, datasetname = datasetname, mtx = self.__chain[start:end,:]) 
-        self._chain_processing._save_to_bin_file(sschainfile, datasetname = datasetname, mtx = self.__sschain[start:end,:]) 
+        self._chain_processing._save_to_bin_file(chainfile, datasetname = datasetname, mtx = self.__chain[start:end,:])
+        self._chain_processing._save_to_bin_file(sschainfile, datasetname = datasetname, mtx = self.__sschain[start:end,:])
         self._chain_processing._save_to_bin_file(covchainfile, datasetname = datasetname, mtx = np.dot(self._covariance._R.transpose(),self._covariance._R))
         
         if self.simulation_options.updatesigma == 1:
@@ -332,8 +328,8 @@ class MCMC:
         txtstr = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         self._chain_processing._add_to_log(txtlogfile, str('{}\t{}\t{}\n'.format(txtstr, start, end-1)))
         
-        self._chain_processing._save_to_txt_file(chainfile, self.__chain[start:end,:]) 
-        self._chain_processing._save_to_txt_file(sschainfile, self.__sschain[start:end,:]) 
+        self._chain_processing._save_to_txt_file(chainfile, self.__chain[start:end,:])
+        self._chain_processing._save_to_txt_file(sschainfile, self.__sschain[start:end,:])
         self._chain_processing._save_to_txt_file(covchainfile, np.dot(self._covariance._R.transpose(),self._covariance._R))
         
         if self.simulation_options.updatesigma == 1:
