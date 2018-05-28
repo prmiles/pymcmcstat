@@ -14,7 +14,7 @@ def generate_default_names(nparam):
     '''
     Generate generic parameter name set.
     For example, if `nparam` = 4, then the generated names are::
-    
+        
         names = ['p_{0}', 'p_{1}', 'p_{2}', 'p_{3}']
     
     :Args:
@@ -55,7 +55,7 @@ def extend_names_to_match_nparam(names, nparam):
         names.append(str('$p_{{{}}}$'.format(ii)))
     return names
 
-# --------------------------------------------    
+# --------------------------------------------
 def make_x_grid(x, npts = 100):
     '''
     Generate x grid based on extrema.
@@ -73,7 +73,7 @@ def make_x_grid(x, npts = 100):
     \\
         
     :Returns:
-        * Uniformly spaced array of points with shape :code:`=(npts,1)`. (:class:`~numpy.ndarray`) 
+        * Uniformly spaced array of points with shape :code:`=(npts,1)`. (:class:`~numpy.ndarray`)
     '''
     xmin = min(x)
     xmax = max(x)
@@ -92,7 +92,7 @@ def make_x_grid(x, npts = 100):
 #
 
 # --------------------------------------------    
-"""see MASS 2nd ed page 181."""
+# see MASS 2nd ed page 181.
 def __iqrange(x):
     nr, nc = x.shape
     if nr == 1: # make sure it is a column vector

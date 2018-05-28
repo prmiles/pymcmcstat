@@ -245,10 +245,10 @@ class ModelParameters:
                     h2 = '^2'
                     
                 if value[parind[ii]] > 1e4:
-                    print('{:10}: {:6.2g} [{:6.2g}, {:6.2g}] N({:4.2g},{:4.2f}{:s}){:s}'.format(names[parind[ii]], 
+                    print('{:10}: {:6.2g} [{:6.2g}, {:6.2g}] N({:4.2g},{:4.2f}{:s}){:s}'.format(names[parind[ii]],
                       value[parind[ii]], lower_limits[parind[ii]], upper_limits[parind[ii]],
                       theta_mu[parind[ii]], theta_sigma[parind[ii]], h2, st))
                 else:
-                    print('{:10}: {:6.2f} [{:6.2f}, {:6.2f}] N({:4.2f},{:4.2f}{:s}){:s}'.format(names[parind[ii]], 
+                    print('{:10}: {:6.2f} [{:6.2f}, {:6.2f}] N({:4.2f},{:4.2f}{:s}){:s}'.format(names[parind[ii]],
                       value[parind[ii]], lower_limits[parind[ii]], upper_limits[parind[ii]],
                       theta_mu[parind[ii]], theta_sigma[parind[ii]], h2, st))

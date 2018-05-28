@@ -53,7 +53,6 @@ class MCMC:
         self.model_settings = ModelSettings()
         self.simulation_options = SimulationOptions()
         self.parameters = ModelParameters()
-        
         # private variables
         self._error_variance = ErrorVarianceEstimator()
         self._covariance = CovarianceProcedures()
@@ -95,8 +94,8 @@ class MCMC:
         # ---------------------
         # displacy current settings
         if self.simulation_options.verbosity >= 2:
-            self.__display_current_mcmc_settings()        
-        
+            self.__display_current_mcmc_settings()
+            
         # ---------------------
         # Execute main simulator
         self.__execute_simulator()
@@ -113,7 +112,7 @@ class MCMC:
         self.PI = PredictionIntervals()
         self.chainstats = self._chain_statistics.chainstats
         self._mcmc_status = True # simulation has been performed
-    # --------------------------------------------------------               
+    # --------------------------------------------------------
     def __initialize_simulation(self):
         # ---------------------------------
         # check dependent parameters
@@ -152,7 +151,7 @@ class MCMC:
         self._covariance._update_covariance_settings(self.__initial_set.theta)
         
         if self.simulation_options.ntry > 1:
-            self._sampling_methods.delayed_rejection._initialize_dr_metrics(self.simulation_options)    
+            self._sampling_methods.delayed_rejection._initialize_dr_metrics(self.simulation_options)
 
     # --------------------------------------------------------
     def __initialize_chains(self, chainind):
@@ -165,7 +164,7 @@ class MCMC:
             self.__s2chain = None
             
         # Save initialized values to chain, s2chain, sschain
-        self.__chain[chainind,:] = self.__initial_set.theta       
+        self.__chain[chainind,:] = self.__initial_set.theta
         self.__sschain[chainind,:] = self.__initial_set.ss
         if self.simulation_options.updatesigma:
             self.__s2chain[chainind,:] = self.model_settings.sigma2
@@ -212,7 +211,7 @@ class MCMC:
 
             # METROPOLIS ALGORITHM
             accept, new_set, outbound, npar_sample_from_normal = self._sampling_methods.metropolis.run_metropolis_step(
-                    old_set = self.__old_set, parameters = self.parameters, R = self._covariance._R, 
+                    old_set = self.__old_set, parameters = self.parameters, R = self._covariance._R,
                     prior_object = self.__prior_object, sos_object = self.__sos_object)
 
             # DELAYED REJECTION
@@ -220,13 +219,13 @@ class MCMC:
             if self.simulation_options.ntry > 1 and accept == 0:
                 accept, new_set, outbound = self._sampling_methods.delayed_rejection.run_delayed_rejection(
                         old_set = self.__old_set, new_set = new_set, RDR = self._covariance._RDR, ntry = self.simulation_options.ntry,
-                        parameters = self.parameters, invR = self._covariance._invR, 
+                        parameters = self.parameters, invR = self._covariance._invR,
                         sosobj = self.__sos_object, priorobj = self.__prior_object)
 
             # UPDATE CHAIN
             self.__update_chain(accept = accept, new_set = new_set, outsidebounds = outbound)
             
-            # PRINT REJECTION STATISTICS    
+            # PRINT REJECTION STATISTICS
             if self.simulation_options.printint and iiprint + 1 == self.simulation_options.printint:
                 self.__print_rejection_statistics(isimu = isimu, iiadapt = iiadapt, verbosity = self.simulation_options.verbosity)
                 iiprint = 0 # reset print counter
@@ -243,9 +242,9 @@ class MCMC:
             # ADAPTATION
             if self.simulation_options.adaptint > 0 and iiadapt == self.simulation_options.adaptint:
                 self._covariance = self._sampling_methods.adaptation.run_adaptation(
-                        covariance = self._covariance, options = self.simulation_options, 
-                        isimu = isimu, iiadapt = iiadapt, rejected = self.__rejected, 
-                        chain = self.__chain, chainind = self.__chain_index, u = npar_sample_from_normal, 
+                        covariance = self._covariance, options = self.simulation_options,
+                        isimu = isimu, iiadapt = iiadapt, rejected = self.__rejected,
+                        chain = self.__chain, chainind = self.__chain_index, u = npar_sample_from_normal,
                         npar = self.parameters.npar, new_set = new_set)
                 
                 iiadapt = 0 # reset local adaptation index
@@ -271,7 +270,7 @@ class MCMC:
         if self.simulation_options.save_to_bin is True:
             self.__save_chains_to_bin(start, end)
         if self.simulation_options.save_to_txt is True:
-            self.__save_chains_to_txt(start, end)            
+            self.__save_chains_to_txt(start, end)
            
         # update value to end value
         self.parameters._value[self.parameters._parind] = self.__old_set.theta
@@ -315,7 +314,7 @@ class MCMC:
         self._chain_processing._save_to_bin_file(covchainfile, datasetname = datasetname, mtx = np.dot(self._covariance._R.transpose(),self._covariance._R))
         
         if self.simulation_options.updatesigma == 1:
-            self._chain_processing._save_to_bin_file(s2chainfile, datasetname = datasetname, mtx = self.__s2chain[start:end,:]) 
+            self._chain_processing._save_to_bin_file(s2chainfile, datasetname = datasetname, mtx = self.__s2chain[start:end,:])
             
     # --------------------------------------------------------
     def __save_chains_to_txt(self, start, end):
@@ -333,7 +332,7 @@ class MCMC:
         self._chain_processing._save_to_txt_file(covchainfile, np.dot(self._covariance._R.transpose(),self._covariance._R))
         
         if self.simulation_options.updatesigma == 1:
-            self._chain_processing._save_to_txt_file(s2chainfile, self.__s2chain[start:end,:]) 
+            self._chain_processing._save_to_txt_file(s2chainfile, self.__s2chain[start:end,:])
     
     # --------------------------------------------------------
     def __update_chain(self, accept, new_set, outsidebounds):
@@ -348,7 +347,7 @@ class MCMC:
             
     def __print_rejection_statistics(self, isimu, iiadapt, verbosity):
         self.__message(verbosity, 2, str('i:{} ({},{},{})\n'.format(
-                isimu, self.__rejected['total']*isimu**(-1)*100, self.__rejected['in_adaptation_interval']*iiadapt**(-1)*100, 
+                isimu, self.__rejected['total']*isimu**(-1)*100, self.__rejected['in_adaptation_interval']*iiadapt**(-1)*100,
                 self.__rejected['outside_bounds']*isimu**(-1)*100)))
                         
     def __message(self, verbosity, level, printthis):

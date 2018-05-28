@@ -64,11 +64,11 @@ class CovarianceProcedures:
         # setup RDR matrix (RDR used in DR)
         if options.method == 'dram' or options.method == 'dr':
             self._invR = []
-            self.__setup_RDR_matrix(npar = parameters.npar, 
+            self.__setup_RDR_matrix(npar = parameters.npar,
                     drscale = options.drscale, ntry = options.ntry,
                     RDR = options.RDR)
             
-    def _update_covariance_from_adaptation(self, R, covchain, meanchain, wsum, 
+    def _update_covariance_from_adaptation(self, R, covchain, meanchain, wsum,
                                           last_index_since_adaptation, iiadapt):
         '''
         Update covariance from adaptation algorithm.

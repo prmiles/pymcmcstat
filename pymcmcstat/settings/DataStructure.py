@@ -13,7 +13,7 @@ import numpy as np
 # -------------------------
 class DataStructure:
     '''
-    Structure for storing data in MCMC object.  The following random data sets 
+    Structure for storing data in MCMC object.  The following random data sets
     will be referenced in examples for the different class methods:
     ::
         
@@ -50,10 +50,10 @@ class DataStructure:
             
         This yields the following variables in the data structure.
         
-        * `xdata` (:py:class:`list`): List of numpy arrays 
+        * `xdata` (:py:class:`list`): List of numpy arrays
             - :code:`xdata[0] = x1, xdata[0].shape = (5,1)`
             - :code:`xdata[1] = x2, xdata[1].shape = (10,1)`
-        * `ydata` (:py:class:`list`): List of numpy arrays 
+        * `ydata` (:py:class:`list`): List of numpy arrays
             - :code:`ydata[0] = y1, ydata[0].shape = (5,2)`
             - :code:`ydata[1] = y2, ydata[1].shape = (10,3)`
         * `n` (:py:class:`list`): List of integers. :code:`n = [5, 10]`
@@ -66,13 +66,13 @@ class DataStructure:
             * **x** (:class:`~numpy.ndarray`): Independent data
             * **y** (:class:`~numpy.ndarray`): Dependent data
             * **n** (:py:class:`list`): List of integers denoting number of data points
-            * **weight** (:py:class:`list`): Weight of each data set 
+            * **weight** (:py:class:`list`): Weight of each data set
             * **user_defined_object** (`User Defined`): Any object can be stored in this variable
             
         .. note::
             In general, it is recommended that user's format their data as a column
             vector.  So, if you have `nds` independent data points, `x` and `y` should be
-            `[nds,1]` or `[nds,]` numpy arrays.  Note if a list is sent, the code will 
+            `[nds,1]` or `[nds,]` numpy arrays.  Note if a list is sent, the code will
             convert it to a numpy array.
         '''
         
@@ -93,7 +93,7 @@ class DataStructure:
                 self.n.append(len(y))
             elif isinstance(y, np.ndarray) and y.size == 1:
                 self.n.append(y.size)
-            else: # should 
+            else: # should
                 self.n.append(y.shape[0]) # assume y is a numpy array - nrows is n
         
         self.shape.append(y.shape)
@@ -156,7 +156,7 @@ class DataStructure:
         Get number of batches in data structure.  Essentially, each time you call
         the :meth:`~add_data_set` method you are adding another batch. It is
         also equivalent to say the number of batches is equal to the length of the
-        list `ydata`.  For example, 
+        list `ydata`.  For example,
         ::
             
             nb = mcstat.data.get_number_of_batches()
@@ -173,7 +173,7 @@ class DataStructure:
         '''
         Get number of data sets in data structure.  A data set is strictly
         speaking defined as the total number of columns in each element of
-        the `ydata` list. For example, 
+        the `ydata` list. For example,
         ::
             
             nds = mcstat.data.get_number_of_data_sets()
@@ -198,9 +198,9 @@ class DataStructure:
         return self.ndatasets
     
     def get_number_of_observations(self):
-        ''' 
+        '''
         Get number of observations in data structure.  An observation is essentially
-        the total number of rows from each element of the `ydata` list. For example, 
+        the total number of rows from each element of the `ydata` list. For example,
         ::
             
             nobs = mcstat.data.get_number_of_observations()

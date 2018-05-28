@@ -133,7 +133,7 @@ def progress_bar(iters):
     .. note::
         
         Will display a progress bar as simulation runs, providing
-        feedback as to the status of the simulation.  Depending on the available 
+        feedback as to the status of the simulation.  Depending on the available
         resources, the appearance of the progress bar may differ.
     '''
     if run_from_ipython():

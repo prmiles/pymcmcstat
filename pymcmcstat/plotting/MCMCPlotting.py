@@ -10,7 +10,7 @@ Created on Wed Jan 31 12:54:16 2018
 from __future__ import division
 import math
 import matplotlib.pyplot as pyplot
-from pylab import hist 
+from pylab import hist
 from .utilities import generate_default_names, extend_names_to_match_nparam, make_x_grid
 
 import warnings
@@ -56,8 +56,8 @@ def plot_density_panel(chains, names = None, hist_on = False, figsizeinches = No
         chain = chain.reshape(nrow,1)
         
         # define x grid
-        chain_grid = make_x_grid(chain)        
-
+        chain_grid = make_x_grid(chain)
+        
         # Compuate kernel density estimate
         kde = KDEMultivariate(chain, bw = 'normal_reference', var_type = 'c')
 
@@ -105,7 +105,7 @@ def plot_histogram_panel(chains, names = None, figsizeinches = None):
     for ii in range(nparam):
         # define chain
         chain = chains[:,ii] # check indexing
-        chain = chain.reshape(nrow,1) 
+        chain = chain.reshape(nrow,1)
         
         # plot density on subplot
         ax = pyplot.subplot(ns1,ns2,ii+1)
@@ -199,7 +199,7 @@ def plot_pairwise_correlation_panel(chains, names = None, figsizeinches = None, 
             chain1 = chains[inds,ii-1]
             chain1 = chain1.reshape(nsimu,1)
             chain2 = chains[inds,jj-1]
-            chain2 = chain2.reshape(nsimu,1)                    
+            chain2 = chain2.reshape(nsimu,1)
             
             # plot density on subplot
             ax = pyplot.subplot(nparam-1,nparam-1,(jj-2)*(nparam-1)+ii)
@@ -212,7 +212,7 @@ def plot_pairwise_correlation_panel(chains, names = None, figsizeinches = None, 
                 ax.set_yticklabels([])
             if ii == 1: # add ylabels
                 pyplot.ylabel(str('{}'.format(names[jj-1])))
-            if ii == jj - 1: 
+            if ii == jj - 1:
                 if nparam == 2: # add xlabels
                     pyplot.xlabel(str('{}'.format(names[ii-1])))
                 else: # add title

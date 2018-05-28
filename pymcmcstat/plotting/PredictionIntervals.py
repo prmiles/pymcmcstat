@@ -51,8 +51,8 @@ class PredictionIntervals:
             # setup data structure for prediction
             # this is required to allow user to send objects other than xdata to model function
             self.datapred.append(DataStructure())
-            self.datapred[ii].add_data_set(x = data.xdata[ii], y = data.ydata[ii], 
-                                  user_defined_object = data.user_defined_object[ii])
+            self.datapred[ii].add_data_set(x = data.xdata[ii], y = data.ydata[ii],
+                         user_defined_object = data.user_defined_object[ii])
             
         # assign model function
         self.modelfunction = modelfunction
@@ -103,18 +103,18 @@ class PredictionIntervals:
         '''
         Analysis of s2chain.
         
-        Depending on the nature of the data structure, there are a couple ways 
+        Depending on the nature of the data structure, there are a couple ways
         to interpret the shape of the s2chain.  If s2chain = [nsimu, ns2], then
         ns2 could correspond to len(data.ydata) or the number of columns in
         data.ydata[0].  We will assume in this code that the user either stores
-        similar sized vectors in a matrix; or, creates distinct list elements for 
+        similar sized vectors in a matrix; or, creates distinct list elements for
         equal or different size vectors.  Creating distinct list elements of matrices
         will generate an error when trying to plot prediction intervals.
         '''
         # shape of s2chain
         m,n = self.__s2chain.shape
         
-        # compare shape of s2chain with the number of data batches and the 
+        # compare shape of s2chain with the number of data batches and the
         # number of columns in each batch.
         total_columns = sum(self.__ncol)
         
@@ -129,9 +129,9 @@ class PredictionIntervals:
                 if ii == 1:
                     self.__s2chain_index[ii,:] = np.array([0, self.__ncol[ii]])
                 else:
-                    self.__s2chain_index[ii,:] = np.array([self.__s2chain_index[ii-1,1], 
+                    self.__s2chain_index[ii,:] = np.array([self.__s2chain_index[ii-1,1],
                                                           self.__s2chain_index[ii-1,1] + self.__ncol[ii]])
-        elif n != 1 and total_columns != n: 
+        elif n != 1 and total_columns != n:
             if n == self.__ndatabatches: # assume separate obs. error for each batch
                 self.__s2chain_index = np.zeros([self.__ndatabatches,2], dtype = int)
                 for ii in range(self.__ndatabatches):
@@ -256,7 +256,7 @@ class PredictionIntervals:
             prediction_intervals = None
             
         # generate output dictionary
-        self.intervals = {'credible_intervals': credible_intervals, 
+        self.intervals = {'credible_intervals': credible_intervals,
                'prediction_intervals': prediction_intervals}
     
         print('\nInterval generation complete\n')
@@ -302,15 +302,13 @@ class PredictionIntervals:
         '''
     
         # extract number of rows/cols from np.array
-        n, m = x.shape 
+        n, m = x.shape
         # define vector valued interpolation function
         xpoints = range(n)
         interpfun = interp1d(xpoints, np.sort(x, 0), axis = 0)
         
         # evaluation points
-        itpoints = (n-1)*p   
-#        print('xpoints = {}'.format(xpoints))
-#        print('itpoints = {}'.format(itpoints))
+        itpoints = (n-1)*p
         
         return interpfun(itpoints)
     

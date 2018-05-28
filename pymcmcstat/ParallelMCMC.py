@@ -16,7 +16,11 @@ import copy
 import time
 
 class ParallelMCMC:
+    '''
+    Run Parallel MCMC Simulations.
     
+    
+    '''
     def __init__(self):
         self.description = 'Run MCMC simulations in parallel'
         

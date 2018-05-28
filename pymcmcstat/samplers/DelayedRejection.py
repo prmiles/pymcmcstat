@@ -192,7 +192,7 @@ class DelayedRejection:
         # Gaussian nth stage log proposal ratio
         # log of q_i(y_n,...,y_{n-j})/q_i(x,y_1,...,y_j)
             
-        stage = len(trypath) - 1 - 1 # - 1, iq; 
+        stage = len(trypath) - 1 - 1 # - 1, iq;
         if stage == iq: # shift index due to 0-indexing
             zq = np.zeros(1) # we are symmetric
         else:
@@ -203,7 +203,7 @@ class DelayedRejection:
             y4 = trypath[stage - iq].theta
             zq = -0.5*((np.linalg.norm(np.dot(y4-y3, iR)))**2 - (np.linalg.norm(np.dot(y2-y1, iR)))**2)
             
-        return zq 
+        return zq
         
     def __logposteriorratio(self, x1, x2):
         zq = -0.5*(sum((x2.ss*(x2.sigma2**(-1.0)) - x1.ss*(x1.sigma2**(-1.0)))) + x2.prior - x1.prior)

@@ -24,7 +24,7 @@ class ChainStatistics:
         * :meth:`~print_chain_statistics`
         * :meth:`~batch_mean_standard_deviation`
         * :meth:`~geweke`
-        * :meth:`~integrated_autocorrelation_time`    
+        * :meth:`~integrated_autocorrelation_time`
     '''
     
 #    def __init__(self):
@@ -44,10 +44,8 @@ class ChainStatistics:
             * **stats** (:py:class:`dict`): Statistical measures of chain convergence.
             
         '''
-        # 
         if chain is None:
             print('No chain reported - run simulation first.')
-            pass
         else:
             nsimu, npar = chain.shape
             names = self.__get_parameter_names(npar, results)
@@ -115,7 +113,7 @@ class ChainStatistics:
                 print('{:10s}: {:10.4f} {:10.4f} {:10.4f} {:10.4f} {:10.4f}'.format(names[ii],meanii[ii],stdii[ii],mcerr[ii],tau[ii],p[ii]))
         print('---------------------')
         
-    # ----------------------------------------------------              
+    # ----------------------------------------------------
     def batch_mean_standard_deviation(self, chain, b = None):
         '''
         Standard deviation calculated from batch means

@@ -166,14 +166,13 @@ class ResultsStructure:
             
             rejected = rejected['total']
             drsettings.iacce[0] = nsimu - rejected - sum(drsettings.iacce[1:])
-            # 1 - number accepted without DR, 2 - number accepted via DR try 1, 
+            # 1 - number accepted without DR, 2 - number accepted via DR try 1,
             # 3 - number accepted via DR try 2, etc.
-            self.results['iacce'] = drsettings.iacce 
+            self.results['iacce'] = drsettings.iacce
             self.results['alpha_count'] = drsettings.dr_step_counter
             self.results['RDR'] = covariance._RDR
         else:
             print('Cannot add DRAM settings to results structure before running ''add_basic''')
-            pass
     
     def add_prior(self, mu, sig, priorfun, priortype, priorpars):
         '''
