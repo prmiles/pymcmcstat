@@ -83,7 +83,7 @@ class SumOfSquares:
             
             SS_{q,i} = \sum [w_i(y^{data}_i-y^{model}_i)^2]
             
-        where :math:`w_i` is the weight of a particular data set, and :math:`SS_{q,i}` 
+        where :math:`w_i` is the weight of a particular data set, and :math:`SS_{q,i}`
         is the sum-of-squares error for the `i`-th data set.
         
         :Args:
@@ -100,7 +100,7 @@ class SumOfSquares:
                 # evaluate model
                 ymodel = self.model_function(xdata, theta)
     
-                # calculate sum-of-squares error    
+                # calculate sum-of-squares error
                 ss[ibatch] += sum(weight*(ydata-ymodel)**2)
         
         return ss
