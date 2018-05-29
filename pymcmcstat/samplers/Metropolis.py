@@ -91,7 +91,8 @@ class Metropolis:
         
         return accept, newset, outbound, npar_sample_from_normal
     
-    def unpack_set(self, parset):
+    @classmethod
+    def unpack_set(cls, parset):
         '''
         Unpack parameter set
         
@@ -112,7 +113,8 @@ class Metropolis:
         sigma2 = parset.sigma2
         return theta, ss, prior, sigma2
     
-    def is_sample_outside_bounds(self, theta, lower_limits, upper_limits):
+    @classmethod
+    def is_sample_outside_bounds(cls, theta, lower_limits, upper_limits):
         '''
         Check whether proposal value is outside parameter limits
         
@@ -132,7 +134,8 @@ class Metropolis:
             outsidebounds = False
         return outsidebounds
     
-    def evaluate_likelihood_function(self, ss1, ss2, sigma2, newprior, oldprior):
+    @classmethod
+    def evaluate_likelihood_function(cls, ss1, ss2, sigma2, newprior, oldprior):
         '''
         Evaluate likelihood function:
             
@@ -155,7 +158,8 @@ class Metropolis:
         alpha = expit(-0.5*(sum((ss1 - ss2)*(sigma2**(-1))) + newprior - oldprior))
         return sum(alpha)
     
-    def acceptance_test(self, alpha):
+    @classmethod
+    def acceptance_test(cls, alpha):
         '''
         Run standard acceptance test
         
