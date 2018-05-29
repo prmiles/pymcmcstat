@@ -29,10 +29,12 @@ def chainstats(chain = None, results = None, returnstats = False):
         
     '''
     if chain is None:
-        print('No chain reported - run simulation first.')
+        prst = str('No chain reported - run simulation first.')
+        print(prst)
+        return prst
     else:
         nsimu, npar = chain.shape
-        names = __get_parameter_names(npar, results)
+        names = get_parameter_names(npar, results)
         
         # calculate mean and standard deviation of entire chain
         meanii = []
@@ -180,15 +182,15 @@ def geweke(chain, a = 0.1, b = 0.5):
     m2 = np.mean(chain[nb:nsimu+1,:],0)
     
     # calculate spectral estimates for variance
-    sa = _spectral_estimate_for_variance(chain[0:na,:])
-    sb = _spectral_estimate_for_variance(chain[nb:nsimu+1,:])
+    sa = spectral_estimate_for_variance(chain[0:na,:])
+    sb = spectral_estimate_for_variance(chain[nb:nsimu+1,:])
     
     z = (m1 - m2)/(np.sqrt(sa/na + sb/(nsimu - nb)))
     p = 2*(1-scipy.stats.norm.cdf(np.abs(z)))
     return z, p
         
         
-def _spectral_estimate_for_variance(x):
+def spectral_estimate_for_variance(x):
     '''
     Spectral density at frequency zero.
     
@@ -198,12 +200,12 @@ def _spectral_estimate_for_variance(x):
     m,n = x.shape
     s = np.zeros([n,])
     for ii in range(n):
-        y = __power_spectral_density_using_hanning_window(x[:,ii],m)
+        y = power_spectral_density_using_hanning_window(x[:,ii],m)
         s[ii] = y[0]
         
     return s
             
-def __power_spectral_density_using_hanning_window(x, nfft = None, nw = None):
+def power_spectral_density_using_hanning_window(x, nfft = None, nw = None):
     '''
     Power spectral density using Hanning window
     '''
@@ -286,23 +288,23 @@ def integrated_autocorrelation_time(chain):
     return tau, m
                 
 # ----------------------------------------------------
-def __get_parameter_names(n, results):
+def get_parameter_names(n, results):
     if results is None: # results not specified
-        names = __generate_default_names(n)
+        names = generate_default_names(n)
     else:
         names = results['names']
-        names = __extend_names_to_match_nparam(names, n)
+        names = extend_names_to_match_nparam(names, n)
             
     return names
     
-def __generate_default_names(nparam):
+def generate_default_names(nparam):
     # generate generic parameter name set
     names = []
     for ii in range(nparam):
         names.append(str('$p_{{{}}}$'.format(ii)))
     return names
     
-def __extend_names_to_match_nparam(names, nparam):
+def extend_names_to_match_nparam(names, nparam):
     # generate generic parameter name set
     n0 = len(names)
     for ii in range(n0,nparam):
