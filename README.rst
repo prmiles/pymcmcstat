@@ -61,5 +61,5 @@ page <https://github.com/prmiles/pymcmcstat/graphs/contributors>`_
     :target: https://coveralls.io/github/prmiles/pymcmcstat?branch=master
 
 .. |codacy| image:: https://api.codacy.com/project/badge/Grade/b1a33340c57a47648f993e124c75e93a    
-    :target: https://www.codacy.com/app/prmiles/pymcmcstatutm_source=github.com&amp;utm_medium=referral&amp;utm_content=prmiles/pymcmcstat&amp;utm_campaign=Badge_Grade
+    :target: https://www.codacy.com/app/prmiles/pymcmcstat?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=prmiles/pymcmcstat&amp;utm_campaign=Badge_Grade
 
