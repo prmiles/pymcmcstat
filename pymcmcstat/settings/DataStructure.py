@@ -101,8 +101,9 @@ class DataStructure:
         self.weight.append(weight)
         # add user defined objects option
         self.user_defined_object.append(user_defined_object)
-        
-    def _convert_to_numpy_array(self, xy):
+     
+    @classmethod
+    def _convert_to_numpy_array(cls, xy):
         '''
         Convert variable to numpy array.
         
@@ -119,7 +120,8 @@ class DataStructure:
             
         return xy
     
-    def _convert_numpy_array_to_2d(self, xy):
+    @classmethod
+    def _convert_numpy_array_to_2d(cls, xy):
         '''
         Convert numpy array to at least 2d numpy array.
         
@@ -135,21 +137,6 @@ class DataStructure:
             xy = xy.reshape(xy.size,1)
             
         return xy
-        
-#    def check_data_type(self, xy):
-#        '''
-#        Check if variable is a numpy array
-#        
-#        **Args:**
-#            * **xy** (`Unknown`): Some variable
-#            
-#        **Returns:**
-#            * `True`
-#        '''
-#        if isinstance(xy, np.ndarray):
-#            str('all is well')
-#            
-#        return True
     
     def get_number_of_batches(self):
         '''
