@@ -69,7 +69,8 @@ class ModelSettings:
         # S20 - prior for sigma2
         self.S20 = self.__array_type(S20)
     
-    def __array_type(self, x):
+    @classmethod
+    def __array_type(cls, x):
         # All settings in this class should be converted to numpy ndarray
         if x is None:
             x = x
@@ -169,7 +170,8 @@ class ModelSettings:
             
         self.nsos = nsos
         
-    def __check_size_of_setting_wrt_nsos(self, x, nsos):
+    @classmethod
+    def __check_size_of_setting_wrt_nsos(cls, x, nsos):
         '''
         Check size of setting with respect number of observation errors.
         
@@ -196,7 +198,8 @@ class ModelSettings:
             sys.exit('SOS function returns nsos = {} elements.  Length of S20, N0, or sigma2 is {}.  These settings must have one element or nsos elements.'.format(nsos, len(x)))
         return x
      
-    def __check_size_of_observations_wrt_nsos(self, N, nsos, Nshape):
+    @classmethod
+    def __check_size_of_observations_wrt_nsos(cls, N, nsos, Nshape):
         if len(N) == 1:
             N = np.ones(nsos)*N
         elif len(N) < nsos and len(N) > 1:
@@ -222,5 +225,5 @@ class ModelSettings:
             print_these = ['sos_function', 'model_function', 'sigma2', 'N', 'N0', 'S20', 'nsos', 'nbatch']
             
         print('model settings:')
-        for ii in range(len(print_these)):
-            print('\t{} = {}'.format(print_these[ii], getattr(self, print_these[ii])))
+        for ptii in print_these:
+            print('\t{} = {}'.format(ptii, getattr(self, ptii)))
