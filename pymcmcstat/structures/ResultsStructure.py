@@ -56,7 +56,7 @@ class ResultsStructure:
         with open(filename, 'w') as out:
             json.dump(results, out, sort_keys=True, indent=4, cls=NumpyEncoder)
     
-    @classmethod        
+    @classmethod
     def load_json_object(cls, filename):
         '''
         Load object stored in json file.
@@ -224,8 +224,8 @@ class ResultsStructure:
         mod = model.__dict__
         # define list of keywords to NOT add to results structure
         do_not_save_these_keys = ['sos_function','prior_function','model_function','prior_update_function','prior_pars']
-        for ii in range(len(do_not_save_these_keys)):
-            mod = self.removekey(mod, do_not_save_these_keys[ii])
+        for keyii in do_not_save_these_keys:
+            mod = self.removekey(mod, keyii)
         # must convert 'model' object to a dictionary
         self.results['model_settings'] = mod
         

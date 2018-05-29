@@ -379,7 +379,7 @@ class PredictionIntervals:
                 
             return calc_pred_int
     
-    @classmethod    
+    @classmethod
     def _observation_sample(cls, s2elem, ypred, sstype):
         # check shape of s2elem and ypred
         ny = ypred.shape[1]
@@ -403,7 +403,7 @@ class PredictionIntervals:
             
         return opred
     
-    @classmethod    
+    @classmethod
     def _empirical_quantiles(cls, x, p = np.array([0.25, 0.5, 0.75])):
         '''
         Calculate empirical quantiles

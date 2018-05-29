@@ -10,7 +10,7 @@ import numpy as np
 import os
 #import fnmatch
 import warnings
-        
+
 def print_log_files(savedir):
     '''
     Print log files to screen.
@@ -139,7 +139,7 @@ def read_in_bin_file(filename):
         # initialize array for merged datasets
         # assume all have same number of columns
         out = np.zeros([sum(sh[:,0]),sh[0,1]])
-        for ii in range(len(ds)):
+        for ii, dsii in enumerate(ds):
             if ii == 0:
                 a = 0;
                 b = sh[ii,0]
@@ -147,7 +147,7 @@ def read_in_bin_file(filename):
                 a = a + sh[ii-1,0]
                 b = b + sh[ii-1,0]
                 
-            out[a:b,:] = np.array(hf.get(ds[ii]))
+            out[a:b,:] = np.array(hf.get(dsii))
             
         hf.close()
     except:

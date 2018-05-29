@@ -73,7 +73,8 @@ class ModelParameters:
                                 'maximum': maximum, 'prior_mu': prior_mu, 'prior_sigma': prior_sigma,
                                 'sample': sample, 'local': local})
     
-    def generate_default_name(self, nparam):
+    @classmethod
+    def generate_default_name(cls, nparam):
         '''
         Generate generic parameter name.
         For example, if :code:`nparam = 4`, then the generated name are::
@@ -240,7 +241,7 @@ class ModelParameters:
                 x[ii] = value
         return x
     
-    @classmethod    
+    @classmethod
     def __message(cls, verbosity, level, printthis):
         printed = False
         if verbosity >= level:

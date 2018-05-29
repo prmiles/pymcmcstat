@@ -58,7 +58,7 @@ class MCMC:
         self._covariance = CovarianceProcedures()
         self._sampling_methods = SamplingMethods()
         self._mcmc_status = False
-            
+        
     # --------------------------------------------------------
     def run_simulation(self, use_previous_results = False):
         '''
@@ -347,7 +347,7 @@ class MCMC:
                 isimu, self.__rejected['total']*isimu**(-1)*100, self.__rejected['in_adaptation_interval']*iiadapt**(-1)*100,
                 self.__rejected['outside_bounds']*isimu**(-1)*100)))
      
-    @classmethod                   
+    @classmethod
     def __message(cls, verbosity, level, printthis):
         printed = False
         if verbosity >= level:

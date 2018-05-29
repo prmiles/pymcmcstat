@@ -121,7 +121,7 @@ class ParallelMCMC:
                 self.upp_lim[jj] = self.__theta0[jj] + 100*(np.abs(self.__theta0[jj]))
                 print('Finite upper limit required - setting upp_lim[{}] = {}'.format(jj,self.upp_lim[jj]))
      
-    @classmethod    
+    @classmethod
     def __check_options_output(cls, options):
         if options.save_to_txt == False and options.save_to_bin == False:
             options.save_to_bin = True
