@@ -25,7 +25,7 @@ class ErrorVarianceEstimator:
         **Strategy:** Treat error variance :math:`\\sigma^2` as parameter to be sampled.
         
         **Definition:** The property that the prior and posterior distributions have the
-        same parametric form is termed conjugacy. 
+        same parametric form is termed conjugacy.
         
         Starting from the likelihood function, it can be shown
         
@@ -33,10 +33,10 @@ class ErrorVarianceEstimator:
             
             \\sigma^2|(\\nu, q) \sim \\text{Inv-Gamma}\\Big(\\frac{N_s + N}{2}, \\frac{N_s\\sigma_{s}^2+ SS_q}{2}\\Big)
         
-        where :math:`N_s` and :math:`\\sigma_{s}^2` are shape and scaling parameters, 
+        where :math:`N_s` and :math:`\\sigma_{s}^2` are shape and scaling parameters,
         :math:`N` is the number of observations, and :math:`SS_q` is the sum-of-squares error.
         
-        .. note:: 
+        .. note::
             
             The variables :math:`N_s` and :math:`\\sigma_{s}^2` correspond
             to :code:`N0` and :code:`S20` in the :class:`~.ModelSettings` class, respectively.

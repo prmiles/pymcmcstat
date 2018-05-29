@@ -40,7 +40,8 @@ class ResultsStructure:
             
         self.save_json_object(results, os.path.join(savedir, filename))
     
-    def save_json_object(self, results, filename):
+    @classmethod
+    def save_json_object(cls, results, filename):
         '''
         Save object to json file.
         
@@ -54,8 +55,9 @@ class ResultsStructure:
         '''
         with open(filename, 'w') as out:
             json.dump(results, out, sort_keys=True, indent=4, cls=NumpyEncoder)
-            
-    def load_json_object(self, filename):
+    
+    @classmethod
+    def load_json_object(cls, filename):
         '''
         Load object stored in json file.
         
@@ -166,14 +168,13 @@ class ResultsStructure:
             
             rejected = rejected['total']
             drsettings.iacce[0] = nsimu - rejected - sum(drsettings.iacce[1:])
-            # 1 - number accepted without DR, 2 - number accepted via DR try 1, 
+            # 1 - number accepted without DR, 2 - number accepted via DR try 1,
             # 3 - number accepted via DR try 2, etc.
-            self.results['iacce'] = drsettings.iacce 
+            self.results['iacce'] = drsettings.iacce
             self.results['alpha_count'] = drsettings.dr_step_counter
             self.results['RDR'] = covariance._RDR
         else:
             print('Cannot add DRAM settings to results structure before running ''add_basic''')
-            pass
     
     def add_prior(self, mu, sig, priorfun, priortype, priorpars):
         '''
@@ -206,8 +207,8 @@ class ResultsStructure:
         opt = options.__dict__
         # define list of keywords to NOT add to results structure
         do_not_save_these_keys = ['doram', 'waitbar', 'debug', 'dodram', 'maxmem', 'verbosity', 'RDR', 'stats','initqcovn','drscale','maxiter','_SimulationOptions__options_set', 'skip']
-        for ii in range(len(do_not_save_these_keys)):
-            opt = self.removekey(opt, do_not_save_these_keys[ii])
+        for keyii in do_not_save_these_keys:
+            opt = self.removekey(opt, keyii)
             
         # must convert 'options' object to a dictionary
         self.results['simulation_options'] = opt
@@ -223,8 +224,8 @@ class ResultsStructure:
         mod = model.__dict__
         # define list of keywords to NOT add to results structure
         do_not_save_these_keys = ['sos_function','prior_function','model_function','prior_update_function','prior_pars']
-        for ii in range(len(do_not_save_these_keys)):
-            mod = self.removekey(mod, do_not_save_these_keys[ii])
+        for keyii in do_not_save_these_keys:
+            mod = self.removekey(mod, keyii)
         # must convert 'model' object to a dictionary
         self.results['model_settings'] = mod
         
@@ -283,7 +284,8 @@ class ResultsStructure:
         '''
         self.results['rndseq'] = rndseq
     
-    def removekey(self, d, key):
+    @classmethod
+    def removekey(cls, d, key):
         '''
         Removed elements from dictionary and return the remainder.
         

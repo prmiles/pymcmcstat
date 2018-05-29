@@ -61,7 +61,7 @@ class Metropolis:
         
         # Sample new candidate from Gaussian proposal
         npar_sample_from_normal = np.random.randn(1, parameters.npar)
-        newpar = oldpar + np.dot(npar_sample_from_normal,R)   
+        newpar = oldpar + np.dot(npar_sample_from_normal,R)
         newpar = newpar.reshape(parameters.npar)
            
         # Reject points outside boundaries
@@ -77,7 +77,7 @@ class Metropolis:
         else:
             outbound = 0
             # prior SS for the new theta
-            newprior = prior_object.evaluate_prior(newpar) 
+            newprior = prior_object.evaluate_prior(newpar)
             # calculate sum-of-squares
             ss2 = ss # old ss
             ss1 = sos_object.evaluate_sos_function(newpar)
@@ -86,12 +86,13 @@ class Metropolis:
             # make acceptance decision
             accept = self.acceptance_test(alpha)
                     
-        # store parameter sets in objects    
+        # store parameter sets in objects
         newset = ParameterSet(theta = newpar, ss = ss1, prior = newprior, sigma2 = sigma2, alpha = alpha)
         
         return accept, newset, outbound, npar_sample_from_normal
     
-    def unpack_set(self, parset):
+    @classmethod
+    def unpack_set(cls, parset):
         '''
         Unpack parameter set
         
@@ -112,7 +113,8 @@ class Metropolis:
         sigma2 = parset.sigma2
         return theta, ss, prior, sigma2
     
-    def is_sample_outside_bounds(self, theta, lower_limits, upper_limits):
+    @classmethod
+    def is_sample_outside_bounds(cls, theta, lower_limits, upper_limits):
         '''
         Check whether proposal value is outside parameter limits
         
@@ -132,7 +134,8 @@ class Metropolis:
             outsidebounds = False
         return outsidebounds
     
-    def evaluate_likelihood_function(self, ss1, ss2, sigma2, newprior, oldprior):
+    @classmethod
+    def evaluate_likelihood_function(cls, ss1, ss2, sigma2, newprior, oldprior):
         '''
         Evaluate likelihood function:
             
@@ -155,7 +158,8 @@ class Metropolis:
         alpha = expit(-0.5*(sum((ss1 - ss2)*(sigma2**(-1))) + newprior - oldprior))
         return sum(alpha)
     
-    def acceptance_test(self, alpha):
+    @classmethod
+    def acceptance_test(cls, alpha):
         '''
         Run standard acceptance test
         
@@ -170,7 +174,7 @@ class Metropolis:
             & \\quad \\text{Set}~q^k = q^{k-1},~SS_{q^k} = SS_{q^{k-1}}
             
         :Args:
-            * **alpha** (:py:class:`float`): Result of likelihood function            
+            * **alpha** (:py:class:`float`): Result of likelihood function
         
         \\
         

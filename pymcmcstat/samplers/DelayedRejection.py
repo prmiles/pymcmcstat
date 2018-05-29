@@ -50,7 +50,7 @@ class DelayedRejection:
         while accept == 0 and itry < ntry:
             itry = itry + 1 # update dr step index
             # initialize next step parameter set
-            next_set, u = self.initialize_next_metropolis_step(parameters.npar, old_set, new_set, RDR, itry)
+            next_set = self.initialize_next_metropolis_step(parameters.npar, old_set, new_set, RDR, itry)
                     
             # Reject points outside boundaries
             outsidebounds = self._is_sample_outside_bounds(next_set.theta, parameters._lower_limits[parameters._parind[:]], parameters._upper_limits[parameters._parind[:]])
@@ -71,7 +71,8 @@ class DelayedRejection:
                 
         return accept, out_set, outbound
     
-    def initialize_next_metropolis_step(self, npar, old_set, new_set, RDR, itry):
+    @classmethod
+    def initialize_next_metropolis_step(cls, npar, old_set, new_set, RDR, itry):
         '''
         Take metropolis step according to DR
         
@@ -94,7 +95,7 @@ class DelayedRejection:
         next_set.theta = old_set.theta + np.dot(u,RDR[itry-1])
         next_set.theta = next_set.theta.reshape(npar)
         next_set.sigma2 = new_set.sigma2
-        return next_set, u
+        return next_set
     
     def acceptance_test(self, alpha, old_set, next_set, itry):
         '''
@@ -135,14 +136,16 @@ class DelayedRejection:
         self.iacce = np.zeros(options.ntry, dtype = int)
         self.dr_step_counter = 0
     
-    def _is_sample_outside_bounds(self, theta, lower_limits, upper_limits):
+    @classmethod
+    def _is_sample_outside_bounds(cls, theta, lower_limits, upper_limits):
         if (theta < lower_limits).any() or (theta > upper_limits).any():
             outsidebounds = True
         else:
             outsidebounds = False
         return outsidebounds
     
-    def _outside_bounds(self, old_set, next_set, trypath):
+    @classmethod
+    def _outside_bounds(cls, old_set, next_set, trypath):
         next_set.alpha = 0
         next_set.prior = 0
         next_set.ss = np.inf
@@ -187,12 +190,13 @@ class DelayedRejection:
         alpha = min(np.ones(1), expit(y)*a2*(a1**(-1)))
         
         return alpha
-        
-    def __qfun(self, iq, trypath, invR):
+       
+    @classmethod
+    def __qfun(cls, iq, trypath, invR):
         # Gaussian nth stage log proposal ratio
         # log of q_i(y_n,...,y_{n-j})/q_i(x,y_1,...,y_j)
             
-        stage = len(trypath) - 1 - 1 # - 1, iq; 
+        stage = len(trypath) - 1 - 1 # - 1, iq;
         if stage == iq: # shift index due to 0-indexing
             zq = np.zeros(1) # we are symmetric
         else:
@@ -203,8 +207,9 @@ class DelayedRejection:
             y4 = trypath[stage - iq].theta
             zq = -0.5*((np.linalg.norm(np.dot(y4-y3, iR)))**2 - (np.linalg.norm(np.dot(y2-y1, iR)))**2)
             
-        return zq 
-        
-    def __logposteriorratio(self, x1, x2):
+        return zq
+       
+    @classmethod
+    def __logposteriorratio(cls, x1, x2):
         zq = -0.5*(sum((x2.ss*(x2.sigma2**(-1.0)) - x1.ss*(x1.sigma2**(-1.0)))) + x2.prior - x1.prior)
         return sum(zq)

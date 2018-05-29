@@ -66,7 +66,7 @@ class Adaptation:
         qcov_adjust = options.qcov_adjust
         doram = options.doram
         
-        # covariance 
+        # covariance
         last_index_since_adaptation = covariance._last_index_since_adaptation
         R = covariance._R
         oldcovchain = covariance._covchain
@@ -90,7 +90,7 @@ class Adaptation:
                     
         else:
             self.__message(options.verbosity, 2, str('i:{} adapting ({}, {}, {})'.format(
-                    isimu, rejected['total']*(isimu**(-1))*100, rejected['in_adaptation_interval']*(iiadapt**(-1))*100, 
+                    isimu, rejected['total']*(isimu**(-1))*100, rejected['in_adaptation_interval']*(iiadapt**(-1))*100,
                     rejected['outside_bounds']*(isimu**(-1))*100)))
     
             # UPDATE COVARIANCE MATRIX - CHOLESKY
@@ -139,12 +139,12 @@ class Adaptation:
                 RDR.append(R)
                 invR.append(np.linalg.solve(RDR[0], np.eye(npar)))
                 for ii in range(1,ntry):
-                    RDR.append(RDR[ii-1]*((drscale[min(ii,len(drscale)) - 1])**(-1))) 
+                    RDR.append(RDR[ii-1]*((drscale[min(ii,len(drscale)) - 1])**(-1)))
                     invR.append(invR[ii-1]*(drscale[min(ii,len(drscale)) - 1]))
           
         
         
-        covariance._update_covariance_from_adaptation(R, covchain, meanchain, wsum, 
+        covariance._update_covariance_from_adaptation(R, covchain, meanchain, wsum,
                                           last_index_since_adaptation, iiadapt)
 
         covariance._update_covariance_for_delayed_rejection_from_adaptation(RDR = RDR, invR = invR)
@@ -212,12 +212,12 @@ class Adaptation:
                     print('R = \n{}\n'.format(R))
                     print('np.sqrt((oldwsum-1)*((wsum+oldwsum-1)**(-1))) = {}\n'.format(np.sqrt((oldwsum-1)*((wsum+oldwsum-1)**(-1)))))
                 
-                    R = self.cholupdate(np.sqrt((oldwsum-1)*((wsum+oldwsum-1)**(-1)))*R, np.dot((xi - oldmean).transpose(), 
+                    R = self.cholupdate(np.sqrt((oldwsum-1)*((wsum+oldwsum-1)**(-1)))*R, np.dot((xi - oldmean).transpose(),
                                           np.sqrt(((wsum*oldwsum)*((wsum+oldwsum-1)**(-1))*((wsum+oldwsum)**(-1))))))
             
                 
-                xcov = (((oldwsum-1)*((wsum + oldwsum - 1)**(-1)))*oldcov 
-                        + (wsum*oldwsum*((wsum+oldwsum-1)**(-1)))*((wsum 
+                xcov = (((oldwsum-1)*((wsum + oldwsum - 1)**(-1)))*oldcov
+                        + (wsum*oldwsum*((wsum+oldwsum-1)**(-1)))*((wsum
                                + oldwsum)**(-1))*(np.dot((xi-oldmean).reshape(p,1),(xi-oldmean).reshape(1,p))))
             
                 wsum = wsum + oldwsum
@@ -228,7 +228,8 @@ class Adaptation:
         return xcov, xmean, wsum
     
     # Cholesky Update
-    def cholupdate(self, R, x):
+    @classmethod
+    def cholupdate(cls, R, x):
         """
         Update Cholesky decomposition
         
@@ -255,7 +256,8 @@ class Adaptation:
     
         return R1
     
-    def is_semi_pos_def_chol(self, x):
+    @classmethod
+    def is_semi_pos_def_chol(cls, x):
         """
         Check if matrix is semi-positive definite using Cholesky Decomposition
         
@@ -275,8 +277,9 @@ class Adaptation:
             return True, c.transpose()
         except np.linalg.linalg.LinAlgError:
             return False, c
-        
-    def __message(self, verbosity, level, printthis):
+     
+    @classmethod
+    def __message(cls, verbosity, level, printthis):
         printed = False
         if verbosity >= level:
             print(printthis)

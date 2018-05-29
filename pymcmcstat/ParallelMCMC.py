@@ -7,7 +7,7 @@ Created on Tue May  1 15:58:22 2018
 """
 
 from .MCMC import MCMC
-from .chain.ChainStatistics import ChainStatistics
+from .chain import ChainStatistics
 from multiprocessing import Pool, cpu_count
 import numpy as np
 import sys
@@ -16,7 +16,14 @@ import copy
 import time
 
 class ParallelMCMC:
+    '''
+    Run Parallel MCMC Simulations.
     
+    :Attributes:
+        * :meth:`~setup_parallel_simulation`
+        * :meth:`~run_parallel_simulation`
+        * :meth:`~display_individual_chain_statistics`
+    '''
     def __init__(self):
         self.description = 'Run MCMC simulations in parallel'
         
@@ -77,13 +84,14 @@ class ParallelMCMC:
         for ii in range(self.num_chain):
             self.parmc[ii].simulation_results = res[ii]
     
-    def _run_serial_simulation(self, mcstat):
+    @classmethod
+    def _run_serial_simulation(cls, mcstat):
         print('Processing: {}'.format(mcstat.simulation_options.savedir))
         mcstat.run_simulation()
         return mcstat.simulation_results
         
     def display_individual_chain_statistics(self):
-        CS = ChainStatistics()
+        CS = ChainStatistics
         dividestr = '*********************'
         for ii in range(self.num_chain):
             print('\n{}\nDisplaying results for chain {}\nFiles: {}'.format(dividestr,ii,self.parmc[ii].simulation_options.savedir))
@@ -91,7 +99,8 @@ class ParallelMCMC:
             chain = res['chain']
             CS.chainstats(chain,res)
 
-    def __check_directory(self, directory):
+    @classmethod
+    def __check_directory(cls, directory):
         if not os.path.exists(directory):
             os.makedirs(directory)
             
@@ -112,8 +121,8 @@ class ParallelMCMC:
                 self.upp_lim[jj] = self.__theta0[jj] + 100*(np.abs(self.__theta0[jj]))
                 print('Finite upper limit required - setting upp_lim[{}] = {}'.format(jj,self.upp_lim[jj]))
      
-        
-    def __check_options_output(self, options):
+    @classmethod
+    def __check_options_output(cls, options):
         if options.save_to_txt == False and options.save_to_bin == False:
             options.save_to_bin = True
         return options
@@ -143,8 +152,9 @@ class ParallelMCMC:
                 sys.exit(str('Initial values are not within parameter limits.  Make sure they are within the following limits:\n\tLower: {}\n\tUpper: {}\nThe initial_values tested were:\n{}'.format(self.low_lim, self.upp_lim, initial_values)))
             else:
                 self.initial_values = initial_values
-            
-    def __is_sample_outside_bounds(self, theta, lower_limits, upper_limits):
+     
+    @classmethod
+    def __is_sample_outside_bounds(cls, theta, lower_limits, upper_limits):
         if (theta < lower_limits).any() or (theta > upper_limits).any():
             outsidebounds = True
         else:

@@ -24,8 +24,8 @@ class ModelSettings:
         # Initialize all variables to default values
         self.description = 'Model Settings'
         
-    def define_model_settings(self, sos_function = None, prior_function = None, prior_type = 1, 
-                 prior_update_function = None, prior_pars = None, model_function = None, 
+    def define_model_settings(self, sos_function = None, prior_function = None, prior_type = 1,
+                 prior_update_function = None, prior_pars = None, model_function = None,
                  sigma2 = None, N = None, S20 = np.nan, N0 = None, nbatch = None):
         '''
         Define model settings.
@@ -40,7 +40,7 @@ class ModelSettings:
             * **sigma2** (:py:class:`float`): List of initial error observations.
             * **N** (:py:class:`int`): Number of observations - see :class:`~.DataStructure`.
             * **S20** (:py:class:`float`): List of scaling parameter in observation error estimate.
-            * **N0** (:py:class:`float`): List of scaling parameter in observation error estimate. 
+            * **N0** (:py:class:`float`): List of scaling parameter in observation error estimate.
             * **nbatch** (:py:class:`int`): Number of batch data sets - see :meth:`~.get_number_of_batches`.
             
         .. note:: Variables :code:`sigma2, N, S20, N0`, and :code:`nbatch` converted to :class:`~numpy.ndarray` for subsequent processing.
@@ -61,7 +61,7 @@ class ModelSettings:
         self.N = self.__array_type(N)
         
         # check value of N0 - prior accuracy for S20
-        self.N0 = self.__array_type(N0)       
+        self.N0 = self.__array_type(N0)
         
         # check nbatch - number of data sets
         self.nbatch = self.__array_type(nbatch)
@@ -69,7 +69,8 @@ class ModelSettings:
         # S20 - prior for sigma2
         self.S20 = self.__array_type(S20)
     
-    def __array_type(self, x):
+    @classmethod
+    def __array_type(cls, x):
         # All settings in this class should be converted to numpy ndarray
         if x is None:
             x = x
@@ -80,7 +81,7 @@ class ModelSettings:
                 x = np.array([np.array(x)])
             elif isinstance(x, list): # [...] -> ndarray[...]
                 x = np.array(x)
-            elif isinstance(x, np.ndarray): 
+            elif isinstance(x, np.ndarray):
                 x = x
             else:
                 sys.exit('Unknown data type - Please use int, ndarray, or list')
@@ -133,7 +134,7 @@ class ModelSettings:
             else:
                 self.N0 = np.ones([1])
             
-        # set default value for sigma2    
+        # set default value for sigma2
         # default for sigma2 is S20 or 1
         if self.sigma2 is None:
             if not(np.isnan(self.S20)).any:
@@ -149,7 +150,7 @@ class ModelSettings:
         Check dependent model settings with respect to number of sum-of-square elements.
         
         A different observation error can be set up for different data sets, so these
-        settings must be updated with respect to the length of the output from the 
+        settings must be updated with respect to the length of the output from the
         sum-of-squares function evaluation.
         
         :Args:
@@ -160,7 +161,7 @@ class ModelSettings:
         self.S20 = self.__check_size_of_setting_wrt_nsos(self.S20, nsos)
         self.N0 = self.__check_size_of_setting_wrt_nsos(self.N0, nsos)
         self.sigma2 = self.__check_size_of_setting_wrt_nsos(self.sigma2, nsos)
-        self.N = self.__check_size_of_observations_wrt_nsos(self.N, nsos, self.Nshape)    
+        self.N = self.__check_size_of_observations_wrt_nsos(self.N, nsos, self.Nshape)
 #        if len(self.N) == 1:
 #            self.N = np.ones(nsos)*self.N
             
@@ -169,7 +170,8 @@ class ModelSettings:
             
         self.nsos = nsos
         
-    def __check_size_of_setting_wrt_nsos(self, x, nsos):
+    @classmethod
+    def __check_size_of_setting_wrt_nsos(cls, x, nsos):
         '''
         Check size of setting with respect number of observation errors.
         
@@ -196,7 +198,8 @@ class ModelSettings:
             sys.exit('SOS function returns nsos = {} elements.  Length of S20, N0, or sigma2 is {}.  These settings must have one element or nsos elements.'.format(nsos, len(x)))
         return x
      
-    def __check_size_of_observations_wrt_nsos(self, N, nsos, Nshape):
+    @classmethod
+    def __check_size_of_observations_wrt_nsos(cls, N, nsos, Nshape):
         if len(N) == 1:
             N = np.ones(nsos)*N
         elif len(N) < nsos and len(N) > 1:
@@ -222,5 +225,5 @@ class ModelSettings:
             print_these = ['sos_function', 'model_function', 'sigma2', 'N', 'N0', 'S20', 'nsos', 'nbatch']
             
         print('model settings:')
-        for ii in range(len(print_these)):
-            print('\t{} = {}'.format(print_these[ii], getattr(self, print_these[ii])))
+        for ptii in print_these:
+            print('\t{} = {}'.format(ptii, getattr(self, ptii)))

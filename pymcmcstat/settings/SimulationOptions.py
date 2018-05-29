@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 '''
 Created on Wed Jan 17 09:08:13 2018
-    
+
 @author: prmiles
 '''
 # import required packages
@@ -13,7 +13,7 @@ class SimulationOptions:
     """
     MCMC simulation options.
     
-   :Attributes:
+    :Attributes:
        * :meth:`~define_simulation_options`
        * :meth:`~display_simulation_options`
 
@@ -26,12 +26,12 @@ class SimulationOptions:
         
     def define_simulation_options(self, nsimu=int(1e4), adaptint = None, ntry = None, method='dram',
                  printint=np.nan, adaptend = 0, lastadapt = 0, burnintime = 0,
-                 waitbar = 1, debug = 0, qcov = None, updatesigma = False, 
-                 noadaptind = [], stats = 0, drscale = np.array([5, 4, 3], dtype = float),
+                 waitbar = 1, debug = 0, qcov = None, updatesigma = False,
+                 noadaptind = None, stats = 0, drscale = np.array([5, 4, 3], dtype = float),
                  adascale = None, savesize = 0, maxmem = 0, chainfile = 'chainfile',
-                 s2chainfile = 's2chainfile', sschainfile = 'sschainfile', covchainfile = 'covchainfile', savedir = None, 
-                 save_to_bin = False, skip = 1, label = None, RDR = None, verbosity = 1, maxiter = None, 
-                 priorupdatestart = 0, qcov_adjust = 1e-8, burnin_scale = 10, 
+                 s2chainfile = 's2chainfile', sschainfile = 'sschainfile', covchainfile = 'covchainfile', savedir = None,
+                 save_to_bin = False, skip = 1, label = None, RDR = None, verbosity = 1, maxiter = None,
+                 priorupdatestart = 0, qcov_adjust = 1e-8, burnin_scale = 10,
                  alphatarget = 0.234, etaparam = 0.7, initqcovn = None,
                  doram = None, rndseq = None, results_filename = None, save_to_json = False, save_to_txt = False,
                  json_restart_file = None):
@@ -73,7 +73,7 @@ class SimulationOptions:
             * **qcov_adjust** (:py:class:`float`): Adjustment scale for covariance matrix.
             * **burnin_scale** (:py:class:`float`): Scale for burnin.
             * **alphatarget** (:py:class:`float`): Acceptance ratio target.
-            * **etaparam** (:py:class:`float`): 
+            * **etaparam** (:py:class:`float`):
             * **initqcovn** (:py:class:`float`): Proposal covariance weight in update.
             * **doram** (:py:class:`int`): Flag to perform :code:`'ram'` algorithm (Obsolete).
             * **rndseq** (:class:`~numpy.ndarray`): Random number sequence (Obsolete).
@@ -88,7 +88,7 @@ class SimulationOptions:
         '''
         
         method_dictionary = {
-            'mh': {'adaptint': 0, 'ntry': 1, 'doram': 0, 'adascale': adascale}, 
+            'mh': {'adaptint': 0, 'ntry': 1, 'doram': 0, 'adascale': adascale},
             'am': {'adaptint': 100, 'ntry': 1, 'doram': 0, 'adascale': adascale},
             'dr': {'adaptint': 0, 'ntry': 2, 'doram': 0, 'adascale': adascale},
             'dram': {'adaptint': 100, 'ntry': 2, 'doram': 0, 'adascale': adascale},
@@ -130,8 +130,9 @@ class SimulationOptions:
         self.debug = debug  # show some debug information
         self.qcov = qcov  # proposal covariance
         self.initqcovn = initqcovn  # proposal covariance weight in update
-        self.updatesigma = updatesigma  # 
-        self.noadaptind = noadaptind  # do not adapt these indices
+        self.updatesigma = updatesigma  #
+        if noadaptind is None:
+            self.noadaptind = [] # do not adapt these indices
         self.priorupdatestart = priorupdatestart
         self.qcov_adjust = qcov_adjust  # eps adjustment
         self.burnin_scale = burnin_scale
@@ -189,7 +190,7 @@ class SimulationOptions:
         :Args:
             * **data**: (:class:`~.DataStructure`): MCMC data structure.
             * **model**: (:class:`~.ModelSettings`): MCMC model settings.
-        '''     
+        '''
         # save options
         if self.savesize <= 0 or self.savesize > self.nsimu:
             self.savesize = self.nsimu
@@ -208,7 +209,7 @@ class SimulationOptions:
             
         # if N0 given, then also turn on updatesigma
         if model.N0 is not None:
-            self.updatesigma = 1  
+            self.updatesigma = 1
             
     def display_simulation_options(self, print_these = None):
         '''
@@ -226,35 +227,5 @@ class SimulationOptions:
             print_these = ['nsimu', 'adaptint', 'ntry', 'method', 'printint', 'lastadapt', 'drscale', 'qcov']
             
         print('simulation options:')
-        for ii in range(len(print_these)):
-            print('\t{} = {}'.format(print_these[ii], getattr(self, print_these[ii])))
-            
-#class BaseSimulationOptions:
-#    def __init__(self):
-#        self.nsimu = 10000
-#        self.adaptint = None
-#        self.ntry = None
-#        self.method = 'dram'
-#        self.printint = np.nan
-#        self.adaptend = 0
-#        self.lastadapt = 0
-#        self.burnintime = 0
-#        self.noadaptind = []
-#        self.stats = 0
-#        self.drscale = np.array([5,4,3], dtype = float)
-#        self.adascale = None
-#        self.savesize = 0
-#        self.maxmem = 0
-#        self.chainfile = None
-#        self.s2chainfile = None
-#        self.sschainfile = None
-#        self.savedir = None
-#        self.skip = 1
-#        self.priorupdatestart = 0
-#        self.qcov_adjust = 1e-8
-#        self.burnin_scale = 10
-#        self.alphatarget = 0.234
-#        self.etaparam = 0.7
-#        self.initqcovn = None
-#        self.doram = None
-#        self.rndseq = None
+        for ptii in print_these:
+            print('\t{} = {}'.format(ptii, getattr(self, ptii)))

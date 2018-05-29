@@ -51,8 +51,8 @@ class PredictionIntervals:
             # setup data structure for prediction
             # this is required to allow user to send objects other than xdata to model function
             self.datapred.append(DataStructure())
-            self.datapred[ii].add_data_set(x = data.xdata[ii], y = data.ydata[ii], 
-                                  user_defined_object = data.user_defined_object[ii])
+            self.datapred[ii].add_data_set(x = data.xdata[ii], y = data.ydata[ii],
+                         user_defined_object = data.user_defined_object[ii])
             
         # assign model function
         self.modelfunction = modelfunction
@@ -63,10 +63,10 @@ class PredictionIntervals:
         self.__parind = results['parind']
         self.__local = results['local']
         # Check how 'model' object was saved in results structure
-        if isinstance(results['model'], ModelSettings):
+        if isinstance(results['model_settings'], ModelSettings):
             self.__nbatch = results['model'].nbatch
         else:
-            self.__nbatch = results['model']['nbatch']
+            self.__nbatch = results['model_settings']['nbatch']
             
         self.__theta = results['theta']
         
@@ -103,18 +103,18 @@ class PredictionIntervals:
         '''
         Analysis of s2chain.
         
-        Depending on the nature of the data structure, there are a couple ways 
+        Depending on the nature of the data structure, there are a couple ways
         to interpret the shape of the s2chain.  If s2chain = [nsimu, ns2], then
         ns2 could correspond to len(data.ydata) or the number of columns in
         data.ydata[0].  We will assume in this code that the user either stores
-        similar sized vectors in a matrix; or, creates distinct list elements for 
+        similar sized vectors in a matrix; or, creates distinct list elements for
         equal or different size vectors.  Creating distinct list elements of matrices
         will generate an error when trying to plot prediction intervals.
         '''
         # shape of s2chain
-        m,n = self.__s2chain.shape
+        n = self.__s2chain.shape[1]
         
-        # compare shape of s2chain with the number of data batches and the 
+        # compare shape of s2chain with the number of data batches and the
         # number of columns in each batch.
         total_columns = sum(self.__ncol)
         
@@ -129,17 +129,16 @@ class PredictionIntervals:
                 if ii == 1:
                     self.__s2chain_index[ii,:] = np.array([0, self.__ncol[ii]])
                 else:
-                    self.__s2chain_index[ii,:] = np.array([self.__s2chain_index[ii-1,1], 
+                    self.__s2chain_index[ii,:] = np.array([self.__s2chain_index[ii-1,1],
                                                           self.__s2chain_index[ii-1,1] + self.__ncol[ii]])
-    
-        elif n != 1 and total_columns != n: 
+        elif n != 1 and total_columns != n:
             if n == self.__ndatabatches: # assume separate obs. error for each batch
                 self.__s2chain_index = np.zeros([self.__ndatabatches,2], dtype = int)
                 for ii in range(self.__ndatabatches):
                     if ii == 0: # 1?
                         self.__s2chain_index[ii,:] = np.array([0, 1])
                     else:
-                        self.__s2chain_index[ii,:] = np.array([self.__s2chain_index[ii-1,1], 
+                        self.__s2chain_index[ii,:] = np.array([self.__s2chain_index[ii-1,1],
                                                               self.__s2chain_index[ii-1,1] + 1])
             else:
                 print('s2chain.shape = {}'.format(self.__s2chain.shape))
@@ -162,13 +161,13 @@ class PredictionIntervals:
         chain = self.__chain
         
         calc_pred_int = self.__convert_pred_int_flag(calc_pred_int)
-        if calc_pred_int is True:
+        if calc_pred_int is False:
             s2chain = None
         else:
             s2chain = self.__s2chain
         
         # define number of simulations by the size of the chain array
-        nsimu, npar = chain.shape
+        nsimu = chain.shape[0]
         
         # define interval limits
         if s2chain is None:
@@ -257,63 +256,10 @@ class PredictionIntervals:
             prediction_intervals = None
             
         # generate output dictionary
-        self.intervals = {'credible_intervals': credible_intervals, 
+        self.intervals = {'credible_intervals': credible_intervals,
                'prediction_intervals': prediction_intervals}
     
         print('\nInterval generation complete\n')
-       
-    def __convert_pred_int_flag(self, calc_pred_int):
-        '''
-        Convert flag to boolean for backwards compatibility.
-        '''
-        if calc_pred_int is 'on':
-            calc_pred_int = True
-        elif calc_pred_int is 'off':
-            calc_pred_int = False
-            
-        return calc_pred_int
-    
-    def _observation_sample(self, s2elem, ypred, sstype):
-        # check shape of s2elem and ypred
-        my, ny = ypred.shape
-        ms, ns = s2elem.shape
-        if ns != ny and ns == 1:
-            s2elem = s2elem*np.ones([ny,1])
-        elif ns != ny and ns != 1:
-            sys.exit('Unclear data structure: error variances do not match size of model output')
-            
-        if sstype == 0:
-            opred = ypred + np.matmul(np.random.standard_normal(ypred.shape),np.diagflat(
-                    np.sqrt(s2elem))).reshape(ypred.shape)
-        elif sstype == 1: # sqrt
-            opred = (np.sqrt(ypred) + np.matmul(np.random.standard_normal(ypred.shape),np.diagflat(
-                np.sqrt(s2elem))).reshape(ypred.shape))**2
-        elif sstype == 2: # log
-            opred = ypred*np.exp(np.matmul(np.random.standard_normal(ypred.shape),np.diagflat(
-                np.sqrt(s2elem))).reshape(ypred.shape))
-        else:
-            sys.exit('Unknown sstype')
-            
-        return opred
-    
-    def _empirical_quantiles(self, x, p = np.array([0.25, 0.5, 0.75])):
-        '''
-        Calculate empirical quantiles
-        
-        '''
-    
-        # extract number of rows/cols from np.array
-        n, m = x.shape 
-        # define vector valued interpolation function
-        xpoints = range(n)
-        interpfun = interp1d(xpoints, np.sort(x, 0), axis = 0)
-        
-        # evaluation points
-        itpoints = (n-1)*p   
-#        print('xpoints = {}'.format(xpoints))
-#        print('itpoints = {}'.format(itpoints))
-        
-        return interpfun(itpoints)
     
     def plot_prediction_intervals(self, plot_pred_int = True, adddata = False, addlegend = True, figsizeinches = None):
         '''
@@ -328,12 +274,6 @@ class PredictionIntervals:
         # unpack out dictionary
         credible_intervals = self.intervals['credible_intervals']
         prediction_intervals = self.intervals['prediction_intervals']
-        
-#        # Print length of elements to string for debugging        
-#        print('len(credible_intervals) = {}'.format(len(credible_intervals)))
-#        print('len(credible_intervals[0]) = {}'.format(len(credible_intervals[0])))
-#        print('len(credible_intervals[0][0]) = {}'.format(len(credible_intervals[0][0])))
-#        print('len(credible_intervals[0][0][0]) = {}'.format(len(credible_intervals[0][0][0])))
         
         clabels = ['95% CI']
         plabels = ['95% PI']
@@ -376,7 +316,7 @@ class PredictionIntervals:
             
             for jj in range(ny):
                 fighandcolumn = str('Column # {}'.format(jj))
-                fighand = str('{} | {}'.format(fighandbatch, fighandcolumn))                 
+                fighand = str('{} | {}'.format(fighandbatch, fighandcolumn))
                 htmp = plt.figure(fighand, figsize=(figsizeinches)) # create new figure
                 fighandle.append(htmp)
                 
@@ -389,8 +329,8 @@ class PredictionIntervals:
                 
                 # add prediction intervals - if applicable
                 if prediction_intervals is not None:
-                    ax.fill_between(time, prediction_intervals[ii][jj][0], 
-                                    prediction_intervals[ii][jj][-1], 
+                    ax.fill_between(time, prediction_intervals[ii][jj][0],
+                                    prediction_intervals[ii][jj][-1],
                                     facecolor = intcol, alpha = 0.5,
                                     label = plabels[0])
                     intcol = [0.75, 0.75, 0.75]
@@ -426,3 +366,57 @@ class PredictionIntervals:
                     ax.legend(handles, labels, loc='upper left')
     
         return fighandle, axhandle
+    
+    @classmethod
+    def __convert_pred_int_flag(cls, calc_pred_int):
+            '''
+            Convert flag to boolean for backwards compatibility.
+            '''
+            if calc_pred_int is 'on':
+                calc_pred_int = True
+            elif calc_pred_int is 'off':
+                calc_pred_int = False
+                
+            return calc_pred_int
+    
+    @classmethod
+    def _observation_sample(cls, s2elem, ypred, sstype):
+        # check shape of s2elem and ypred
+        ny = ypred.shape[1]
+        ns = s2elem.shape[1]
+        if ns != ny and ns == 1:
+            s2elem = s2elem*np.ones([ny,1])
+        elif ns != ny and ns != 1:
+            sys.exit('Unclear data structure: error variances do not match size of model output')
+            
+        if sstype == 0:
+            opred = ypred + np.matmul(np.random.standard_normal(ypred.shape),np.diagflat(
+                    np.sqrt(s2elem))).reshape(ypred.shape)
+        elif sstype == 1: # sqrt
+            opred = (np.sqrt(ypred) + np.matmul(np.random.standard_normal(ypred.shape),np.diagflat(
+                np.sqrt(s2elem))).reshape(ypred.shape))**2
+        elif sstype == 2: # log
+            opred = ypred*np.exp(np.matmul(np.random.standard_normal(ypred.shape),np.diagflat(
+                np.sqrt(s2elem))).reshape(ypred.shape))
+        else:
+            sys.exit('Unknown sstype')
+            
+        return opred
+    
+    @classmethod
+    def _empirical_quantiles(cls, x, p = np.array([0.25, 0.5, 0.75])):
+        '''
+        Calculate empirical quantiles
+        
+        '''
+    
+        # extract number of rows/cols from np.array
+        n = x.shape[0]
+        # define vector valued interpolation function
+        xpoints = range(n)
+        interpfun = interp1d(xpoints, np.sort(x, 0), axis = 0)
+        
+        # evaluation points
+        itpoints = (n-1)*p
+        
+        return interpfun(itpoints)
