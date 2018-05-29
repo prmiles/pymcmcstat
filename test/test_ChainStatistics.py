@@ -6,7 +6,7 @@ Created on Fri May  4 10:22:54 2018
 @author: prmiles
 """
 
-from pymcmcstat.chain.ChainStatistics import ChainStatistics
+from pymcmcstat.chain import ChainStatistics
 import unittest
 import numpy as np
 
@@ -21,8 +21,8 @@ def removekey(d, key):
 class Chainstats_Eval(unittest.TestCase):
     
     def test_cs_eval_with_return(self):
-        CS = ChainStatistics()
+        CS = ChainStatistics
         chain = np.random.random_sample(size = (1000,2))
-#        stats = CS.chainstats(chain = chain, returnstats = True)
-#        self.assertTrue(isinstance(stats,dict))
+        stats = CS.chainstats(chain = chain, returnstats = True)
+        self.assertTrue(isinstance(stats,dict))
         
