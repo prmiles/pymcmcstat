@@ -7,7 +7,7 @@ Created on Tue May  1 15:58:22 2018
 """
 
 from .MCMC import MCMC
-from .chain.ChainStatistics import ChainStatistics
+from .chain import ChainStatistics
 from multiprocessing import Pool, cpu_count
 import numpy as np
 import sys
@@ -87,7 +87,7 @@ class ParallelMCMC:
         return mcstat.simulation_results
         
     def display_individual_chain_statistics(self):
-        CS = ChainStatistics()
+        CS = ChainStatistics
         dividestr = '*********************'
         for ii in range(self.num_chain):
             print('\n{}\nDisplaying results for chain {}\nFiles: {}'.format(dividestr,ii,self.parmc[ii].simulation_options.savedir))

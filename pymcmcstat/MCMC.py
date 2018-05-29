@@ -41,8 +41,8 @@ from .samplers.SamplingMethods import SamplingMethods
 from .plotting import MCMCPlotting
 from .plotting.PredictionIntervals import PredictionIntervals
 
-from .chain.ChainStatistics import ChainStatistics
-from .chain.ChainProcessing import ChainProcessing
+from .chain import ChainStatistics
+from .chain import ChainProcessing
 
 from .utilities.progressbar import progress_bar
 
@@ -57,8 +57,6 @@ class MCMC:
         self._error_variance = ErrorVarianceEstimator()
         self._covariance = CovarianceProcedures()
         self._sampling_methods = SamplingMethods()
-        self._chain_statistics = ChainStatistics()
-        self._chain_processing = ChainProcessing()
         
         self._mcmc_status = False
             
@@ -110,7 +108,7 @@ class MCMC:
                 self.simulation_results.export_simulation_results_to_json_file(results = self.simulation_results.results)
         self.mcmcplot = MCMCPlotting.Plot()
         self.PI = PredictionIntervals()
-        self.chainstats = self._chain_statistics.chainstats
+        self.chainstats = ChainStatistics.chainstats
         self._mcmc_status = True # simulation has been performed
     # --------------------------------------------------------
     def __initialize_simulation(self):
@@ -298,41 +296,41 @@ class MCMC:
     # --------------------------------------------------------
     def __save_chains_to_bin(self, start, end):
         savedir = self.simulation_options.savedir
-        self._chain_processing._check_directory(savedir)
+        ChainProcessing._check_directory(savedir)
         
-        chainfile, s2chainfile, sschainfile, covchainfile = self._chain_processing._create_path_with_extension_for_all_logs(self.simulation_options, extension = 'h5')
+        chainfile, s2chainfile, sschainfile, covchainfile = ChainProcessing._create_path_with_extension_for_all_logs(self.simulation_options, extension = 'h5')
         
         binlogfile = os.path.join(savedir, 'binlogfile.txt')
         binstr = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        self._chain_processing._add_to_log(binlogfile, str('{}\t{}\t{}\n'.format(binstr, start, end-1)))
+        ChainProcessing._add_to_log(binlogfile, str('{}\t{}\t{}\n'.format(binstr, start, end-1)))
 
         # define set name based in start/end
         datasetname = str('{}_{}_{}'.format('nsimu',start,end-1))
         
-        self._chain_processing._save_to_bin_file(chainfile, datasetname = datasetname, mtx = self.__chain[start:end,:])
-        self._chain_processing._save_to_bin_file(sschainfile, datasetname = datasetname, mtx = self.__sschain[start:end,:])
-        self._chain_processing._save_to_bin_file(covchainfile, datasetname = datasetname, mtx = np.dot(self._covariance._R.transpose(),self._covariance._R))
+        ChainProcessing._save_to_bin_file(chainfile, datasetname = datasetname, mtx = self.__chain[start:end,:])
+        ChainProcessing._save_to_bin_file(sschainfile, datasetname = datasetname, mtx = self.__sschain[start:end,:])
+        ChainProcessing._save_to_bin_file(covchainfile, datasetname = datasetname, mtx = np.dot(self._covariance._R.transpose(),self._covariance._R))
         
         if self.simulation_options.updatesigma == 1:
-            self._chain_processing._save_to_bin_file(s2chainfile, datasetname = datasetname, mtx = self.__s2chain[start:end,:])
+            ChainProcessing._save_to_bin_file(s2chainfile, datasetname = datasetname, mtx = self.__s2chain[start:end,:])
             
     # --------------------------------------------------------
     def __save_chains_to_txt(self, start, end):
         savedir = self.simulation_options.savedir
-        self._chain_processing._check_directory(savedir)
+        ChainProcessing._check_directory(savedir)
         
-        chainfile, s2chainfile, sschainfile, covchainfile = self._chain_processing._create_path_with_extension_for_all_logs(self.simulation_options, extension = 'txt')
+        chainfile, s2chainfile, sschainfile, covchainfile = ChainProcessing._create_path_with_extension_for_all_logs(self.simulation_options, extension = 'txt')
        
         txtlogfile = os.path.join(savedir, 'txtlogfile.txt')
         txtstr = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        self._chain_processing._add_to_log(txtlogfile, str('{}\t{}\t{}\n'.format(txtstr, start, end-1)))
+        ChainProcessing._add_to_log(txtlogfile, str('{}\t{}\t{}\n'.format(txtstr, start, end-1)))
         
-        self._chain_processing._save_to_txt_file(chainfile, self.__chain[start:end,:])
-        self._chain_processing._save_to_txt_file(sschainfile, self.__sschain[start:end,:])
-        self._chain_processing._save_to_txt_file(covchainfile, np.dot(self._covariance._R.transpose(),self._covariance._R))
+        ChainProcessing._save_to_txt_file(chainfile, self.__chain[start:end,:])
+        ChainProcessing._save_to_txt_file(sschainfile, self.__sschain[start:end,:])
+        ChainProcessing._save_to_txt_file(covchainfile, np.dot(self._covariance._R.transpose(),self._covariance._R))
         
         if self.simulation_options.updatesigma == 1:
-            self._chain_processing._save_to_txt_file(s2chainfile, self.__s2chain[start:end,:])
+            ChainProcessing._save_to_txt_file(s2chainfile, self.__s2chain[start:end,:])
     
     # --------------------------------------------------------
     def __update_chain(self, accept, new_set, outsidebounds):
