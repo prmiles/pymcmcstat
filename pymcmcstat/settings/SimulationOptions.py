@@ -13,7 +13,7 @@ class SimulationOptions:
     """
     MCMC simulation options.
     
-   :Attributes:
+    :Attributes:
        * :meth:`~define_simulation_options`
        * :meth:`~display_simulation_options`
 
@@ -27,7 +27,7 @@ class SimulationOptions:
     def define_simulation_options(self, nsimu=int(1e4), adaptint = None, ntry = None, method='dram',
                  printint=np.nan, adaptend = 0, lastadapt = 0, burnintime = 0,
                  waitbar = 1, debug = 0, qcov = None, updatesigma = False,
-                 noadaptind = [], stats = 0, drscale = np.array([5, 4, 3], dtype = float),
+                 noadaptind = None, stats = 0, drscale = np.array([5, 4, 3], dtype = float),
                  adascale = None, savesize = 0, maxmem = 0, chainfile = 'chainfile',
                  s2chainfile = 's2chainfile', sschainfile = 'sschainfile', covchainfile = 'covchainfile', savedir = None,
                  save_to_bin = False, skip = 1, label = None, RDR = None, verbosity = 1, maxiter = None,
@@ -131,7 +131,8 @@ class SimulationOptions:
         self.qcov = qcov  # proposal covariance
         self.initqcovn = initqcovn  # proposal covariance weight in update
         self.updatesigma = updatesigma  #
-        self.noadaptind = noadaptind  # do not adapt these indices
+        if noadaptind is None:
+            self.noadaptind = [] # do not adapt these indices
         self.priorupdatestart = priorupdatestart
         self.qcov_adjust = qcov_adjust  # eps adjustment
         self.burnin_scale = burnin_scale
@@ -226,5 +227,5 @@ class SimulationOptions:
             print_these = ['nsimu', 'adaptint', 'ntry', 'method', 'printint', 'lastadapt', 'drscale', 'qcov']
             
         print('simulation options:')
-        for ii in range(len(print_these)):
-            print('\t{} = {}'.format(print_these[ii], getattr(self, print_these[ii])))
+        for ptii in print_these:
+            print('\t{} = {}'.format(ptii, getattr(self, ptii)))
