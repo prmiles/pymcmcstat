@@ -57,7 +57,6 @@ class MCMC:
         self._error_variance = ErrorVarianceEstimator()
         self._covariance = CovarianceProcedures()
         self._sampling_methods = SamplingMethods()
-        
         self._mcmc_status = False
             
     # --------------------------------------------------------
@@ -205,7 +204,7 @@ class MCMC:
             if self.simulation_options.waitbar:
                 self.__wbarstatus.update(isimu)
                 
-            self.__message(self.simulation_options.verbosity, 100, str('i:%d/%d\n'.format(isimu,nsimu)));
+            self.__message(self.simulation_options.verbosity, 100, str('i: {:d}/{:d}\n'.format(isimu,nsimu)));
 
             # METROPOLIS ALGORITHM
             accept, new_set, outbound, npar_sample_from_normal = self._sampling_methods.metropolis.run_metropolis_step(
@@ -273,7 +272,7 @@ class MCMC:
         # update value to end value
         self.parameters._value[self.parameters._parind] = self.__old_set.theta
     
-    # --------------------------------------------------------       
+    # ------------------------------------------------
     def __generate_simulation_results(self):
         # --------------------------------------------
         # BUILD RESULTS OBJECT
@@ -347,8 +346,9 @@ class MCMC:
         self.__message(verbosity, 2, str('i:{} ({},{},{})\n'.format(
                 isimu, self.__rejected['total']*isimu**(-1)*100, self.__rejected['in_adaptation_interval']*iiadapt**(-1)*100,
                 self.__rejected['outside_bounds']*isimu**(-1)*100)))
-                        
-    def __message(self, verbosity, level, printthis):
+     
+    @classmethod                   
+    def __message(cls, verbosity, level, printthis):
         printed = False
         if verbosity >= level:
             print(printthis)
