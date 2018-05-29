@@ -228,7 +228,8 @@ class Adaptation:
         return xcov, xmean, wsum
     
     # Cholesky Update
-    def cholupdate(self, R, x):
+    @classmethod
+    def cholupdate(cls, R, x):
         """
         Update Cholesky decomposition
         
@@ -255,7 +256,8 @@ class Adaptation:
     
         return R1
     
-    def is_semi_pos_def_chol(self, x):
+    @classmethod
+    def is_semi_pos_def_chol(cls, x):
         """
         Check if matrix is semi-positive definite using Cholesky Decomposition
         
@@ -275,8 +277,9 @@ class Adaptation:
             return True, c.transpose()
         except np.linalg.linalg.LinAlgError:
             return False, c
-        
-    def __message(self, verbosity, level, printthis):
+     
+    @classmethod
+    def __message(cls, verbosity, level, printthis):
         printed = False
         if verbosity >= level:
             print(printthis)
