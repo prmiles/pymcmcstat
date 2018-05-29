@@ -14,6 +14,9 @@ def removekey(d, key):
         r = dict(d)
         del r[key]
         return r
+
+CS = ChainStatistics
+chain = np.random.random_sample(size = (1000,2))
     
 # --------------------------
 # chainstats
@@ -21,8 +24,9 @@ def removekey(d, key):
 class Chainstats_Eval(unittest.TestCase):
     
     def test_cs_eval_with_return(self):
-        CS = ChainStatistics
-        chain = np.random.random_sample(size = (1000,2))
         stats = CS.chainstats(chain = chain, returnstats = True)
         self.assertTrue(isinstance(stats,dict))
         
+    def test_cs_eval_with_no_return(self):
+        stats = CS.chainstats(chain = chain, returnstats = False)
+        self.assertEqual(stats, None)
