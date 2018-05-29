@@ -191,9 +191,9 @@ class CovarianceProcedures:
         if len(noadaptind) == 0:
             self._no_adapt_index = np.zeros([len(parind)],dtype=bool)
         else:
-            for jj in range(len(noadaptind)):
-                for ii in range(len(parind)):
-                    if noadaptind[jj] == parind[ii]:
+            for jj, noadjj in enumerate(noadaptind):
+                for parii in parind:
+                    if noadjj == parii:
                         self._no_adapt_index[jj] = np.ones([1],dtype=bool)
                     else:
                         self._no_adapt_index[jj] = np.zeros([1],dtype=bool)
@@ -213,5 +213,5 @@ class CovarianceProcedures:
         if print_these is None:
             print_these = ['qcov', 'R', 'RDR', 'invR', 'last_index_since_adaptation', 'covchain']
         print('covariance:')
-        for ii in range(len(print_these)):
-            print('\t{} = {}'.format(print_these[ii], getattr(self, str('_{}'.format(print_these[ii])))))
+        for ptii in print_these:
+            print('\t{} = {}'.format(ptii, getattr(self, str('_{}'.format(ptii)))))
