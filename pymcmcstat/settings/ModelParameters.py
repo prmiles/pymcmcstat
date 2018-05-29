@@ -73,14 +73,6 @@ class ModelParameters:
                                 'maximum': maximum, 'prior_mu': prior_mu, 'prior_sigma': prior_sigma,
                                 'sample': sample, 'local': local})
     
-#    def default_parameter_settings(self):
-#        
-#        settings = {'name': self.generate_default_name(len(self.parameters)),
-#                    'theta0': 1.0, 'minimum': -np.inf, 'maximum': np.inf, 'prior_mu': np.zeros([1]),
-#                    'prior_sigma': np.inf, 'sample': True, 'local': 0}
-#        
-#        return settings
-    
     def generate_default_name(self, nparam):
         '''
         Generate generic parameter name.
@@ -163,8 +155,8 @@ class ModelParameters:
         local = results['local']
         theta = results['theta']
 
-        for ii in range(len(parind)):
-            if use_local == 1 and local[parind[ii]] == 1:
+        for ii, parii in enumerate(parind):
+            if use_local == 1 and local[parii] == 1:
                 name = names[ii] # unclear usage
             else:
                 name = names[ii]
@@ -177,7 +169,7 @@ class ModelParameters:
                         
                     # only change if parind = 1 in params (1 is the default)
                     if self.parameters[kk]['sample'] == 1 or self.parameters[kk]['sample'] is None:
-                        self.parameters[kk]['theta0'] = theta[parind[ii]]
+                        self.parameters[kk]['theta0'] = theta[parii]
                         
     
     def _check_initial_values_wrt_parameter_limits(self):
@@ -189,22 +181,6 @@ class ModelParameters:
     def _check_prior_sigma(self, verbosity):
         self.__message(verbosity, 2, 'If prior variance <= 0, setting to Inf\n')
         self._thetasigma = self.__replace_list_elements(self._thetasigma, self.__less_than_or_equal_to_zero, float('Inf'))
-        
-    def __less_than_or_equal_to_zero(self, x):
-        return (x<=0)
-
-    def __replace_list_elements(self, x, testfunction, value):
-        for ii in range(len(x)):
-            if testfunction(x[ii]):
-                x[ii] = value
-        return x
-    
-    def __message(self, verbosity, level, printthis):
-        printed = False
-        if verbosity >= level:
-            print(printthis)
-            printed = True
-        return printed
     
     def display_parameter_settings(self, verbosity = None, noadaptind = None):
         '''
@@ -252,3 +228,22 @@ class ModelParameters:
                     print('{:10}: {:6.2f} [{:6.2f}, {:6.2f}] N({:4.2f},{:4.2f}{:s}){:s}'.format(names[parind[ii]],
                       value[parind[ii]], lower_limits[parind[ii]], upper_limits[parind[ii]],
                       theta_mu[parind[ii]], theta_sigma[parind[ii]], h2, st))
+           
+    @classmethod
+    def __less_than_or_equal_to_zero(cls, x):
+            return (x<=0)
+    
+    @classmethod
+    def __replace_list_elements(cls, x, testfunction, value):
+        for ii, xii in enumerate(x):
+            if testfunction(xii):
+                x[ii] = value
+        return x
+    
+    @classmethod    
+    def __message(cls, verbosity, level, printthis):
+        printed = False
+        if verbosity >= level:
+            print(printthis)
+            printed = True
+        return printed
