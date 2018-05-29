@@ -13,8 +13,7 @@ import sys
 import scipy
 import scipy.stats
 from scipy.fftpack import fft
-#from scipy.stats import norm
-        
+
 # display chain statistics
 def chainstats(chain = None, results = None, returnstats = False):
     '''
@@ -258,7 +257,7 @@ def integrated_autocorrelation_time(chain):
         * **m** (:class:`~numpy.ndarray`): Counter.
     '''
     # get shape of chain
-    nsimu, npar = chain.shape
+    npar = chain.shape[1]
     
     # initialize arrays
     tau = np.zeros([npar,])
