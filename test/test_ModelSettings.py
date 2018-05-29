@@ -13,6 +13,8 @@ from pymcmcstat.settings import ModelSettings, SimulationOptions, DataStructure
 import unittest
 import numpy as np
 
+MS = ModelSettings.ModelSettings()
+
 # --------------------------
 # initialization
 # --------------------------
@@ -273,7 +275,7 @@ class Check_Dependent_Model_Settings(unittest.TestCase):
         # create settings        
         ms = ModelSettings.ModelSettings()
         ms.define_model_settings(N = 1)
-        
+                
         # calculate dependencies
         with self.assertRaises(SystemExit, msg = 'Conflicting N'):
             ms._check_dependent_model_settings(data, options)
@@ -838,4 +840,111 @@ class Check_Dependent_Model_Settings_WRT_Nsos(unittest.TestCase):
         ms._check_dependent_model_settings_wrt_nsos(nsos = nsos)
         
         self.assertEqual(ms.N, 6, msg = 'length of N should equal number of elements returned from sos function')
+
+# -------------------------------------------
+class ArrayType(unittest.TestCase):
     
+    def test_none(self):
+        self.assertTrue(MS._array_type(x = None) is None)
+    
+    def test_int(self):
+        self.assertTrue(np.array_equal(MS._array_type(x = 3), np.array([3])))
+        
+    def test_float(self):
+        self.assertTrue(np.array_equal(MS._array_type(x = 3.), np.array([3.])))
+        
+    def test_list(self):
+        self.assertTrue(np.array_equal(MS._array_type(x = [3., 2.]), np.array([3., 2.])))
+    
+    def test_nparray(self):
+        self.assertTrue(np.array_equal(MS._array_type(x = np.array([3., 2.])), np.array([3., 2.])))
+        
+    def test_dict(self):
+        with self.assertRaises(SystemExit, msg = 'Dictionary not expected.'):
+            MS._array_type(x = {'hello': 'world'})
+            
+# -------------------------------------------
+class NumberOfObservations(unittest.TestCase):
+    
+    def test_array_equal(self):
+        ms = ModelSettings.ModelSettings()
+        
+        udN = np.ones([1,2])
+        dsN = np.ones([1,2])
+        
+        N = ms._check_number_of_observations(udN = udN, dsN = dsN)
+        
+        self.assertTrue((N == udN).all() and (N == dsN).all())
+        
+    def test_len_dsN_gt_udN_case_1(self):
+        ms = ModelSettings.ModelSettings()
+        udN = np.ones([1])
+        dsN = np.ones([1,2])
+        N = ms._check_number_of_observations(udN = udN, dsN = dsN)
+        
+        self.assertTrue((N == dsN).all())
+        
+    def test_len_dsN_gt_udN_case_2(self):
+        ms = ModelSettings.ModelSettings()
+        udN = np.ones([1,2])
+        dsN = np.ones([1,3])
+        with self.assertRaises(SystemExit, msg = 'Mismatching dimensions'):
+            ms._check_number_of_observations(udN = udN, dsN = dsN)
+            
+    def test_len_udN_gt_dsN_case_1(self):
+        ms = ModelSettings.ModelSettings()
+        udN = np.ones([1,2])
+        dsN = np.ones([1])
+        N = ms._check_number_of_observations(udN = udN, dsN = dsN)
+        
+        self.assertTrue((N == dsN).all())
+        
+    def test_len_udN_gt_dsN_case_2(self):
+        ms = ModelSettings.ModelSettings()
+        udN = np.ones([1,3])
+        dsN = np.ones([1,2])
+        with self.assertRaises(SystemExit, msg = 'Mismatching dimensions'):
+            ms._check_number_of_observations(udN = udN, dsN = dsN)
+            
+    def test_len_udN_dsN_gt_1(self):
+        ms = ModelSettings.ModelSettings()
+        udN = np.ones([1,3])
+        dsN = np.zeros([1,3])
+        with self.assertRaises(SystemExit, msg = 'Dimensions match, but values differ.'):
+            ms._check_number_of_observations(udN = udN, dsN = dsN)
+        
+# -------------------------------------------
+class DisplayModelSettings(unittest.TestCase):
+    
+    def test_print_these_none(self):
+        data = DataStructure.DataStructure()
+        x = np.zeros([2])
+        y = np.zeros([2])
+        data.add_data_set(x,y)
+        
+        options = SimulationOptions.SimulationOptions()
+        
+        ms = ModelSettings.ModelSettings()
+        ms.define_model_settings()
+        ms._check_dependent_model_settings(data, options)
+        ms._check_dependent_model_settings_wrt_nsos(nsos = 1)
+        
+        print_these = ms.display_model_settings(print_these = None)
+        self.assertEqual(print_these, ['sos_function', 'model_function', 'sigma2', 'N', 'N0', 'S20', 'nsos', 'nbatch'], msg = 'Default print keys')
+        
+    def test_print_these_not_none(self):
+        data = DataStructure.DataStructure()
+        x = np.zeros([2])
+        y = np.zeros([2])
+        data.add_data_set(x,y)
+        
+        options = SimulationOptions.SimulationOptions()
+        
+        ms = ModelSettings.ModelSettings()
+        ms.define_model_settings()
+        ms._check_dependent_model_settings(data, options)
+        ms._check_dependent_model_settings_wrt_nsos(nsos = 1)
+        
+        print_these = ms.display_model_settings(print_these = ['model_function'])
+        self.assertEqual(print_these, ['model_function'], msg = 'Specified print keys')
+# -------------------------------------------
