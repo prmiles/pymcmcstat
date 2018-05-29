@@ -180,8 +180,8 @@ class ModelParameters:
             sys.exit('Proposed value outside parameter limits - select new initial parameter values')
             
     def _check_prior_sigma(self, verbosity):
-        self.__message(verbosity, 2, 'If prior variance <= 0, setting to Inf\n')
-        self._thetasigma = self.__replace_list_elements(self._thetasigma, self.__less_than_or_equal_to_zero, float('Inf'))
+        self.message(verbosity, 2, 'If prior variance <= 0, setting to Inf\n')
+        self._thetasigma = self.replace_list_elements(self._thetasigma, self.less_than_or_equal_to_zero, float('Inf'))
     
     def display_parameter_settings(self, verbosity = None, noadaptind = None):
         '''
@@ -222,29 +222,29 @@ class ModelParameters:
                     h2 = '^2'
                     
                 if value[parind[ii]] > 1e4:
-                    print('{:10}: {:6.2g} [{:6.2g}, {:6.2g}] N({:4.2g},{:4.2f}{:s}){:s}'.format(names[parind[ii]],
+                    print('{:10s}: {:6.2g} [{:6.2g}, {:6.2g}] N({:4.2g},{:4.2f}{:s}){:s}'.format(names[parind[ii]],
                       value[parind[ii]], lower_limits[parind[ii]], upper_limits[parind[ii]],
                       theta_mu[parind[ii]], theta_sigma[parind[ii]], h2, st))
                 else:
-                    print('{:10}: {:6.2f} [{:6.2f}, {:6.2f}] N({:4.2f},{:4.2f}{:s}){:s}'.format(names[parind[ii]],
+                    print('{:10s}: {:6.2f} [{:6.2f}, {:6.2f}] N({:4.2f},{:4.2f}{:s}){:s}'.format(names[parind[ii]],
                       value[parind[ii]], lower_limits[parind[ii]], upper_limits[parind[ii]],
                       theta_mu[parind[ii]], theta_sigma[parind[ii]], h2, st))
            
     @classmethod
-    def __less_than_or_equal_to_zero(cls, x):
+    def less_than_or_equal_to_zero(cls, x):
             return (x<=0)
     
     @classmethod
-    def __replace_list_elements(cls, x, testfunction, value):
+    def replace_list_elements(cls, x, testfunction, value):
         for ii, xii in enumerate(x):
             if testfunction(xii):
                 x[ii] = value
         return x
     
     @classmethod
-    def __message(cls, verbosity, level, printthis):
-        printed = False
+    def message(cls, verbosity, level, printthis):
         if verbosity >= level:
             print(printthis)
-            printed = True
-        return printed
+            return True
+        else:
+            return False

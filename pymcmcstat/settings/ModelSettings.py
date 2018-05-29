@@ -85,7 +85,6 @@ class ModelSettings:
                 return x
             else:
                 sys.exit('Unknown data type - Please use int, ndarray, or list')
-                return None
     
     def _check_dependent_model_settings(self, data, options):
         '''
@@ -133,12 +132,12 @@ class ModelSettings:
         if np.array_equal(udN, dsN):
             N = dsN
         elif dsN.size > udN.size and udN.size == 1:
-            if np.all(dsN == udN):
+            if np.all(dsN == udN[0]):
                 N = dsN
             else:
                 sys.exit('User defined N = {}.  Estimate based on data structure is N = {}.  Possible error?'.format(udN, dsN))
         elif udN.size > dsN.size and dsN.size == 1:
-            if np.all(dsN == udN):
+            if np.all(dsN[0] == udN):
                 N = udN
             else:
                 sys.exit('User defined N = {}.  Estimate based on data structure is N = {}.  Possible error?'.format(udN, dsN))

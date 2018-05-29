@@ -16,8 +16,6 @@ import unittest
 import numpy as np
 
 # --------------------------
-# Model Parameters 
-# --------------------------
 class Add_Model_Parameter_Test(unittest.TestCase):
 
     def test_does_parameter_assignment_match(self):
@@ -50,33 +48,60 @@ class Add_Model_Parameter_Test(unittest.TestCase):
         MP.display_parameter_settings(verbosity = SO.verbosity, noadaptind = SO.noadaptind)
         self.assertEqual(MP.parameters[0]['theta0'], results['theta'][0])
         
-#    def test_does_non_square_matrix_return_error(self):
-#        cmat = np.zeros([3,2])
-#        mu = np.zeros([2,1])
-#        with self.assertRaises(SystemExit):
-#            EC.generate_ellipse(mu, cmat)
-#            
-#    def test_does_non_symmetric_matrix_return_error(self):
-#        cmat = np.array([[3,2],[1,3]])
-#        mu = np.zeros([2,1])
-#        with self.assertRaises(SystemExit):
-#            EC.generate_ellipse(mu, cmat)
-#            
-#    def test_does_non_positive_definite_matrix_return_error(self):
-#        cmat = np.zeros([2,2])
-#        mu = np.zeros([2,1])
-#        with self.assertRaises(SystemExit):
-#            EC.generate_ellipse(mu, cmat)
-#            
-#    def test_does_good_matrix_return_equal_sized_xy_arrays(self):
-#        cmat = np.eye(2)
-#        mu = np.zeros([2,1])
-#        x,y = EC.generate_ellipse(mu, cmat)
-#        self.assertEqual(x.shape,y.shape)
-#        
-#    def test_does_good_matrix_return_correct_size_array(self):
-#        cmat = np.eye(2)
-#        mu = np.zeros([2,1])
-#        ndp = 50 # number of oints to generate ellipse shape
-#        x,y = EC.generate_ellipse(mu, cmat, ndp)
-#        self.assertEqual(x.size,ndp)
+# --------------------------
+MP = ModelParameters()
+class Message(unittest.TestCase):
+    
+    def test_verbosity_0_level_0(self):
+        self.assertTrue(MP.message(verbosity = 0, level = 0, printthis = 'hello world'))
+        
+    def test_verbosity_1_level_0(self):
+        self.assertTrue(MP.message(verbosity = 1, level = 0, printthis = 'hello world'))
+        
+    def test_verbosity_0_level_1(self):
+        self.assertFalse(MP.message(verbosity = 0, level = 1, printthis = 'hello world'))
+        
+# --------------------------
+MP = ModelParameters()
+class LessThanOrEqualToZero(unittest.TestCase):
+    
+    def test_x_lt_0(self):
+        self.assertTrue(MP.less_than_or_equal_to_zero(x = -1))
+        
+    def test_x_eq_0(self):
+        self.assertTrue(MP.less_than_or_equal_to_zero(x = 0))
+        
+    def test_x_gt_0(self):
+        self.assertFalse(MP.less_than_or_equal_to_zero(x = 1))
+
+# --------------------------
+MP = ModelParameters()
+class ReplaceListElements(unittest.TestCase):
+    
+    def test_list_of_0s(self):
+        x = [0, 0, 0]
+        self.assertEqual(MP.replace_list_elements(x = x, testfunction = MP.less_than_or_equal_to_zero, value = 10), [10, 10, 10])
+        
+    def test_list_of_neg(self):
+        x = [-1, -1, -1]
+        self.assertEqual(MP.replace_list_elements(x = x, testfunction = MP.less_than_or_equal_to_zero, value = 10), [10, 10, 10])
+        
+    def test_list_of_pos(self):
+        x = [1, 1, 1]
+        self.assertEqual(MP.replace_list_elements(x = x, testfunction = MP.less_than_or_equal_to_zero, value = 10), x)
+        
+    def test_list_of_mixed(self):
+        x = [1, 0, -1]
+        self.assertEqual(MP.replace_list_elements(x = x, testfunction = MP.less_than_or_equal_to_zero, value = 10), [1, 10, 10])
+        
+# --------------------------
+MP = ModelParameters()
+class DisplayParametersSettings(unittest.TestCase):
+    
+    def test_parameter_display_set_1(self):
+        MP.add_model_parameter(name = 'm', theta0 = 2., minimum = -10, maximum = np.inf, sample = 1)
+        MP.add_model_parameter(name = 'b', theta0 = -5., minimum = -10, maximum = 100, sample = 0)
+        MP.add_model_parameter(name = 'b2', theta0 = -5.3e6, minimum = -1e7, maximum = 1e6, sample = 1)
+        MP._openparameterstructure(nbatch = 1)
+        
+        MP.display_parameter_settings(verbosity = 1, noadaptind = None)
