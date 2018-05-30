@@ -45,6 +45,13 @@ class PriorFunction:
         '''
         # consider converting everything to numpy array - should allow for optimized performance
         n = len(theta)
+        
+        if mu is None:
+            mu = np.zeros([n,1])
+        
+        if sigma is None:
+            sigma = np.ones([n,1])
+        
         pf = np.zeros(1)
         for ii in range(n):
             pf = pf + ((theta[ii]-mu[ii])*(sigma[ii]**(-1)))**2
