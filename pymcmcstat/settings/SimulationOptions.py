@@ -121,6 +121,7 @@ class SimulationOptions:
         
         self.nsimu = nsimu  # length of chain to simulate
         self.method = method
+        self.dodram = 0
         
         self.printint = printint  # print interval
         self.adaptend = adaptend  # last adapt
