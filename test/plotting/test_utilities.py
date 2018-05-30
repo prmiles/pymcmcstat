@@ -76,7 +76,7 @@ class MakeXGrid(unittest.TestCase):
         self.assertEqual(xgrid.shape, (100, 1), msg = 'Expected return dimension of (100, 1)')
     
 # --------------------------
-class Generate_Ellipse_Test(unittest.TestCase):
+class GenerateEllipse(unittest.TestCase):
 
     def test_does_non_square_matrix_return_error(self):
         cmat = np.zeros([3,2])
@@ -108,3 +108,45 @@ class Generate_Ellipse_Test(unittest.TestCase):
         ndp = 50 # number of oints to generate ellipse shape
         x,y = utilities.generate_ellipse(mu, cmat, ndp)
         self.assertEqual(x.size,ndp)
+        
+# --------------------------
+class GaussianDensityFunction(unittest.TestCase):
+    
+    def test_float_return_with_float_input(self):
+        self.assertTrue(isinstance(utilities.gaussian_density_function(x = 0.), float), 
+                             msg = 'Expected float return')
+        
+    def test_float_return_with_int_input(self):
+        self.assertTrue(isinstance(utilities.gaussian_density_function(x = 0), float), 
+                             msg = 'Expected float return')
+        
+    def test_float_return_with_float_input_at_nondefault_mean(self):
+        self.assertTrue(isinstance(utilities.gaussian_density_function(x = 0., mu = 100), float), 
+                             msg = 'Expected float return')
+        
+# --------------------------
+class IQrange(unittest.TestCase):
+    
+    def test_array_return_with_column_vector_input(self):
+        x = np.random.random_sample(size = (100,1))
+        q = utilities.iqrange(x = x)
+        self.assertTrue(isinstance(q, np.ndarray), msg = 'Expected array return')
+        
+    def test_array_return_with_row_vector_input(self):
+        x = np.random.random_sample(size = (1,100))
+        q = utilities.iqrange(x = x)
+        self.assertTrue(isinstance(q, np.ndarray), msg = 'Expected array return')
+        
+# --------------------------
+class ScaleBandWidth(unittest.TestCase):
+    
+    def test_float_return_with_column_vector_input(self):
+        x = np.random.random_sample(size = (100,1))
+        s = utilities.scale_bandwidth(x = x)
+        self.assertTrue(isinstance(s, np.ndarray), msg = 'Expected array return')
+        
+    def test_array_return_with_row_vector_input(self):
+        x = np.random.random_sample(size = (1,100))
+        s = utilities.scale_bandwidth(x = x)
+        self.assertTrue(isinstance(s, np.ndarray), msg = 'Expected array return')
+        
