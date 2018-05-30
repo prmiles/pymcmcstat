@@ -140,7 +140,7 @@ class IQrange(unittest.TestCase):
 # --------------------------
 class ScaleBandWidth(unittest.TestCase):
     
-    def test_float_return_with_column_vector_input(self):
+    def test_array_return_with_column_vector_input(self):
         x = np.random.random_sample(size = (100,1))
         s = utilities.scale_bandwidth(x = x)
         self.assertTrue(isinstance(s, np.ndarray), msg = 'Expected array return')
