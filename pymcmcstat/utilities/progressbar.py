@@ -2,11 +2,10 @@ from __future__ import print_function
 
 import sys
 import time
-import uuid
-try:
-    from IPython.core.display import HTML, Javascript, display
-except ImportError:
-    pass
+#try:
+#    from IPython.core.display import HTML, Javascript, display
+#except ImportError:
+#    pass
 
 __all__ = ['progress_bar']
 
@@ -62,8 +61,8 @@ class TextProgressBar(ProgressBar):
         return replace_at(bar, info, loc, loc + len(info))
 
 
-def replace_at(str, new, start, stop):
-    return str[:start] + new + str[stop:]
+def replace_at(dstr, new, start, stop):
+    return dstr[:start] + new + dstr[stop:]
 
 
 def consoleprint(s):
@@ -72,39 +71,9 @@ def consoleprint(s):
     else:
         print(s)
 
-
 def ipythonprint(s):
     print('\r', s, end='')
     sys.stdout.flush()
-
-
-class IPythonNotebookPB(ProgressBar):
-
-    def __init__(self, iterations):
-        self.divid = str(uuid.uuid4())
-        self.sec_id = str(uuid.uuid4())
-
-        pb = HTML(
-            """
-            <div style="float: left; border: 1px solid black; width:500px">
-              <div id="%s" style="background-color:blue; width:0%%">&nbsp;</div>
-            </div>
-            <label id="%s" style="padding-left: 10px;" text = ""/>
-            """ % (self.divid, self.sec_id))
-        display(pb)
-
-        ProgressBar.__init__(self, iterations)
-
-    def animate(self, i, elapsed):
-        percentage = int(self.fraction(i))
-
-        display(
-            Javascript("$('div#%s').width('%i%%')" %
-                       (self.divid, percentage)))
-        display(
-            Javascript("$('label#%s').text('%i%% in %.1f sec')" %
-                       (self.sec_id, fraction, round(elapsed, 1))))
-
 
 def run_from_ipython():
     try:
@@ -137,9 +106,6 @@ def progress_bar(iters):
         resources, the appearance of the progress bar may differ.
     '''
     if run_from_ipython():
-        if None:
-            return NotebookProgressBar(iters)
-        else:
-            return TextProgressBar(iters, ipythonprint)
+        return TextProgressBar(iters, ipythonprint)
     else:
         return TextProgressBar(iters, consoleprint)
