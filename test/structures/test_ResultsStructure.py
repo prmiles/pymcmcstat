@@ -72,7 +72,7 @@ class AddArrays(unittest.TestCase):
         key = 'rndseq'
         RS = ResultsStructure()
         RS.add_random_number_sequence(rndseq = rnd)
-        self.assertTrue(np.array_equal(RS.results[key], rnd), 
+        self.assertTrue(np.array_equal(RS.results[key], rnd),
                         msg = str('Expect equal arrays: {} != {}'.format(RS.results[key], rnd)))
         
     def test_add_chain(self):
@@ -80,7 +80,7 @@ class AddArrays(unittest.TestCase):
         key = 'chain'
         RS = ResultsStructure()
         RS.add_chain(chain = rnd)
-        self.assertTrue(np.array_equal(RS.results[key], rnd), 
+        self.assertTrue(np.array_equal(RS.results[key], rnd),
                         msg = str('Expect equal arrays: {} != {}'.format(RS.results[key], rnd)))
         
     def test_add_sschain(self):
@@ -88,7 +88,7 @@ class AddArrays(unittest.TestCase):
         key = 'sschain'
         RS = ResultsStructure()
         RS.add_sschain(sschain = rnd)
-        self.assertTrue(np.array_equal(RS.results[key], rnd), 
+        self.assertTrue(np.array_equal(RS.results[key], rnd),
                         msg = str('Expect equal arrays: {} != {}'.format(RS.results[key], rnd)))
         
     def test_add_s2chain(self):
@@ -96,7 +96,7 @@ class AddArrays(unittest.TestCase):
         key = 's2chain'
         RS = ResultsStructure()
         RS.add_s2chain(s2chain = rnd)
-        self.assertTrue(np.array_equal(RS.results[key], rnd), 
+        self.assertTrue(np.array_equal(RS.results[key], rnd),
                         msg = str('Expect equal arrays: {} != {}'.format(RS.results[key], rnd)))
     
 # -------------------
