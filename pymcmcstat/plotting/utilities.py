@@ -50,6 +50,9 @@ def extend_names_to_match_nparam(names, nparam):
     :Returns:
         * **names** (:py:class:`list`): List of strings - extended list of parameter names
     '''
+    if names is None:
+        names = []
+        
     n0 = len(names)
     for ii in range(n0,nparam):
         names.append(str('$p_{{{}}}$'.format(ii)))
