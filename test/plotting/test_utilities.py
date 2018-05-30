@@ -130,12 +130,12 @@ class IQrange(unittest.TestCase):
     def test_array_return_with_column_vector_input(self):
         x = np.random.random_sample(size = (100,1))
         q = utilities.iqrange(x = x)
-        self.assertTrue(isinstance(q, np.ndarray), msg = 'Expected array return')
+        self.assertTrue(isinstance(q, np.ndarray), msg = 'Expected array return - received {}'.format(type(q)))
         
     def test_array_return_with_row_vector_input(self):
         x = np.random.random_sample(size = (1,100))
         q = utilities.iqrange(x = x)
-        self.assertTrue(isinstance(q, np.ndarray), msg = 'Expected array return')
+        self.assertTrue(isinstance(q, np.ndarray), msg = 'Expected array return - received {}'.format(type(q)))
         
 # --------------------------
 class ScaleBandWidth(unittest.TestCase):
@@ -143,10 +143,10 @@ class ScaleBandWidth(unittest.TestCase):
     def test_array_return_with_column_vector_input(self):
         x = np.random.random_sample(size = (100,1))
         s = utilities.scale_bandwidth(x = x)
-        self.assertTrue(isinstance(s, np.ndarray), msg = 'Expected array return')
+        self.assertTrue(isinstance(s, np.ndarray), msg = 'Expected array return - received {}'.format(type(s)))
         
     def test_array_return_with_row_vector_input(self):
         x = np.random.random_sample(size = (1,100))
         s = utilities.scale_bandwidth(x = x)
-        self.assertTrue(isinstance(s, np.ndarray), msg = 'Expected array return')
+        self.assertTrue(isinstance(s, np.ndarray), msg = 'Expected array return - received {}'.format(type(s)))
         
