@@ -113,7 +113,7 @@ class MCMC:
     def _initialize_simulation(self):
         # ---------------------------------
         # check dependent parameters
-        self.simulation_options._check_dependent_simulation_options(self.data, self.model_settings)
+        self.simulation_options._check_dependent_simulation_options(self.model_settings)
         self.model_settings._check_dependent_model_settings(self.data, self.simulation_options)
         # open and parse the parameter structure
         self.parameters._openparameterstructure(self.model_settings.nbatch)

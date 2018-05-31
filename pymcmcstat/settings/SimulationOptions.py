@@ -25,7 +25,7 @@ class SimulationOptions:
         self.__options_set = False
         
     def define_simulation_options(self, nsimu=int(1e4), adaptint = None, ntry = None, method='dram',
-                 printint=np.nan, adaptend = 0, lastadapt = 0, burnintime = 0,
+                 printint=None, adaptend = 0, lastadapt = 0, burnintime = 0,
                  waitbar = 1, debug = 0, qcov = None, updatesigma = False,
                  noadaptind = None, stats = 0, drscale = np.array([5, 4, 3], dtype = float),
                  adascale = None, savesize = 0, maxmem = 0, chainfile = 'chainfile',
@@ -43,7 +43,7 @@ class SimulationOptions:
             * **adaptint** (:py:class:`int`): Number of interates between adaptation. Default is method dependent.
             * **ntry** (:py:class:`int`): Number of tries to take before rejection. Default is method dependent.
             * **method** (:py:class:`str`): Sampling method (:code:`'mh', 'am', 'dr', 'dram'`).  Default is :code:`'dram'`.
-            * **printint** (): Printing interval.
+            * **printint** (:py:class:`int`): Printing interval.
             * **adaptend** (:py:class:`int`): Obsolete.
             * **lastadapt** (:py:class`int`): Last adaptation iteration (i.e., no more adaptation beyond this point).
             * **burnintime** (:py:class:`int`):
@@ -179,7 +179,7 @@ class SimulationOptions:
         
         self.__options_set = True # options have been defined
         
-    def _check_dependent_simulation_options(self, data, model):
+    def _check_dependent_simulation_options(self, model):
         '''
         Check dependent parameters.
         - Checks that :code:`savesize` is between 0 and :code:`nsimu`.
@@ -189,7 +189,6 @@ class SimulationOptions:
         - If :code:`N0` not None, turn on :code:`updatesigma`.
         
         :Args:
-            * **data**: (:class:`~.DataStructure`): MCMC data structure.
             * **model**: (:class:`~.ModelSettings`): MCMC model settings.
         '''
         # save options
@@ -205,12 +204,12 @@ class SimulationOptions:
         if self.lastadapt < 1:
             self.lastadapt = self.nsimu
             
-        if np.isnan(self.printint):
+        if self.printint is None:
             self.printint = max(100,min(1000,self.adaptint))
             
         # if N0 given, then also turn on updatesigma
         if model.N0 is not None:
-            self.updatesigma = 1
+            self.updatesigma = True
             
     def display_simulation_options(self, print_these = None):
         '''
@@ -230,3 +229,5 @@ class SimulationOptions:
         print('simulation options:')
         for ptii in print_these:
             print('\t{} = {}'.format(ptii, getattr(self, ptii)))
+            
+        return print_these
