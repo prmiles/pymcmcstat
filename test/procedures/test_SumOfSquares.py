@@ -20,7 +20,7 @@ def removekey(d, key):
 def modelfun(xdata, theta):
     m = theta[0]
     b = theta[1]
-    nrow, ncol = xdata.shape
+    nrow = xdata.shape[0]
     y = np.zeros([nrow,1])
     y[:,0] = m*xdata.reshape(nrow,) + b
     return y
@@ -37,7 +37,6 @@ def ssfun(theta, data, local = None):
 def setup_mcmc():
     # Initialize MCMC object
     mcstat = MCMC()
-    
     # Add data
     nds = 100
     x = np.linspace(2, 3, num=nds)
