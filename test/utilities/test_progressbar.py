@@ -5,6 +5,8 @@ Created on Wed May 30 07:34:40 2018
 
 @author: prmiles
 """
+from __future__ import print_function
+
 from pymcmcstat.utilities import progressbar as pbar
 import unittest
 from mock import Mock, patch
