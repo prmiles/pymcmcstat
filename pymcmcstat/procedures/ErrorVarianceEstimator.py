@@ -60,7 +60,7 @@ class ErrorVarianceEstimator:
 
         return sigma2
             
-    def gammar(self, m,n,a,b = 1):
+    def gammar(self, m, n, a, b = 1):
         '''
         Random deviates from gamma distribution.
         
@@ -100,11 +100,11 @@ class ErrorVarianceEstimator:
         y = np.zeros([m,n])
         for jj in range(0,n):
             for ii in range(0,m):
-                y[ii,jj] = self.__gammar_mt1(a,b)
+                y[ii,jj] = self._gammar_mt1(a = a, b = b)
                 
         return y
         
-    def __gammar_mt1(self, a,b):
+    def _gammar_mt1(self, a, b = 1):
         '''
         Calculates random deviate from gamma distribution using method of
         Marsaglia and Tsang (2000).
@@ -114,7 +114,7 @@ class ErrorVarianceEstimator:
             * **b** (:py:class:`float`): Scaling parameter
         '''
         if a < 1:
-            y = self.__gammar_mt1(1+a,b)*np.random.rand(1)**(a**(-1))
+            y = self._gammar_mt1(1+a,b)*np.random.rand(1)**(a**(-1))
             return y
         else:
             d = a - 3**(-1)
@@ -122,15 +122,15 @@ class ErrorVarianceEstimator:
             while 1:
                 while 1:
                     x = np.random.randn(1)
-                    v = 1 + c*x
+                    v = 1.0 + c*x
                     if v > 0:
                         break
                     
                 v = v**(3)
                 u = np.random.rand(1)
-                if u < 1-0.0331*x**(4):
+                if u < 1.0 - 0.0331*x**(4):
                     break
-                if np.log(u) < 0.5*x**2 + d*(1-v+np.log(v)):
+                if np.log(u) < 0.5*x**2 + d*(1.0 - v + np.log(v)):
                     break
             
             y = b*d*v

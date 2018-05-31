@@ -110,3 +110,18 @@ class Gammar(unittest.TestCase):
         n = 3
         ret = EVE.gammar(m = m, n = 3, a = -10.)
         self.assertTrue(np.array_equal(ret, np.zeros([m,n])), msg = 'Expect equal array return.')
+        
+# --------------------------
+class Gammar_MT1(unittest.TestCase):
+    
+    def test_gammar_for_a_lt_1(self):
+        EVE = ErrorVarianceEstimator()
+        y = EVE._gammar_mt1(a = 0.1, b = 1)
+        self.assertTrue(isinstance(y, np.ndarray), msg = 'Expect equal array return.')
+        
+#    def test_gammar_for_a_lt_0(self):
+#        EVE = ErrorVarianceEstimator()
+#        m = 4
+#        n = 3
+#        ret = EVE.gammar_mt1(a = -10.)
+#        self.assertTrue(np.array_equal(ret, np.zeros([m,n])), msg = 'Expect equal array return.')
