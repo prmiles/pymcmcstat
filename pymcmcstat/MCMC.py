@@ -69,7 +69,7 @@ class MCMC:
         if use_previous_results == True:
             if self._mcmc_status == True:
                 self.parameters._results_to_params(self.simulation_results.results, 1)
-                self.__initialize_simulation()
+                self._initialize_simulation()
                 self.__expand_chains()
             else:
                 sys.exit('No previous results found.  Set ''use_previous_results'' to ''False''')
@@ -81,7 +81,7 @@ class MCMC:
                 self.simulation_options.qcov = np.array(res['qcov'])
                 
             self.__chain_index = 0 # start index at zero
-            self.__initialize_simulation()
+            self._initialize_simulation()
             self.__initialize_chains(chainind = self.__chain_index)
         # ---------------------
         # setup progress bar
@@ -110,7 +110,7 @@ class MCMC:
         self.chainstats = ChainStatistics.chainstats
         self._mcmc_status = True # simulation has been performed
     # --------------------------------------------------------
-    def __initialize_simulation(self):
+    def _initialize_simulation(self):
         # ---------------------------------
         # check dependent parameters
         self.simulation_options._check_dependent_simulation_options(self.data, self.model_settings)

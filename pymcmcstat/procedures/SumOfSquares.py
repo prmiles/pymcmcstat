@@ -58,7 +58,7 @@ class SumOfSquares:
         if self.sos_style == 1:
             ss = self.sos_function(self.value, self.data)
         elif self.sos_style == 4:
-            ss = self.mcmc_sos_function(self.value, self.data, self.local, self.model_function)
+            ss = self.mcmc_sos_function(self.value, self.data, self.nbatch, self.model_function)
         else:
             ss = self.sos_function(self.value, self.data, self.local)
         
@@ -67,8 +67,9 @@ class SumOfSquares:
             ss = np.array([ss])
             
         return ss
-                     
-    def mcmc_sos_function(self, theta):
+     
+    @classmethod                
+    def mcmc_sos_function(cls, theta, data, nbatch, model_function):
         '''
         Default sum-of-squares function.
         
@@ -90,15 +91,15 @@ class SumOfSquares:
             * **theta** (:class:`~numpy.ndarray`): Parameter values.
         '''
         # initialize
-        ss = np.zeros(self.nbatch)
+        ss = np.zeros(nbatch)
 
-        for ibatch in range(self.nbatch):
-                xdata = self.data.xdata[ibatch]
-                ydata = self.data.ydata[ibatch]
-                weight = self.data.weight[ibatch]
+        for ibatch in range(nbatch):
+                xdata = data.xdata[ibatch]
+                ydata = data.ydata[ibatch]
+                weight = data.weight[ibatch]
             
                 # evaluate model
-                ymodel = self.model_function(xdata, theta)
+                ymodel = model_function(xdata, theta)
     
                 # calculate sum-of-squares error
                 ss[ibatch] += sum(weight*(ydata-ymodel)**2)
