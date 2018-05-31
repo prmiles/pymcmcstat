@@ -76,31 +76,31 @@ class IpythonProgressBarMock(unittest.TestCase):
         PB = pbar.progress_bar(iters = 100)
         self.assertEqual(PB.printer, pbar.ipythonprint, msg = 'ipythonprint')
         
-# --------------------------
-class IpythonPrint(unittest.TestCase): 
-    
-    def test_ipythonprint(self):
-        capturedOutput = io.StringIO()                  # Create StringIO object
-        sys.stdout = capturedOutput                     #  and redirect stdout.
-        pbar.ipythonprint('test')                                     # Call function.
-        sys.stdout = sys.__stdout__                     # Reset redirect.
-        self.assertEqual(capturedOutput.getvalue(), '\r test', msg = 'Expected string')
-
-# --------------------------        
-class ConsolePrint(unittest.TestCase):
-    
-    def test_standard_print(self):
-        capturedOutput = io.StringIO()                  # Create StringIO object
-        sys.stdout = capturedOutput                     #  and redirect stdout.
-        pbar.consoleprint('test')                                     # Call function.
-        sys.stdout = sys.__stdout__                     # Reset redirect.
-        self.assertEqual(capturedOutput.getvalue(), 'test\n', msg = 'Expected string')
-       
-    @patch('pymcmcstat.utilities.progressbar.check_windows_platform')
-    def test_windows_print(self, mock_simple_func):
-        mock_simple_func.return_value = True
-        capturedOutput = io.StringIO()                  # Create StringIO object
-        sys.stdout = capturedOutput                     #  and redirect stdout.
-        pbar.consoleprint('test')                                     # Call function.
-        sys.stdout = sys.__stdout__                     # Reset redirect.
-        self.assertEqual(capturedOutput.getvalue(), 'test \r', msg = 'Expected string')
+## --------------------------
+#class IpythonPrint(unittest.TestCase): 
+#    
+#    def test_ipythonprint(self):
+#        capturedOutput = io.StringIO()                  # Create StringIO object
+#        sys.stdout = capturedOutput                     #  and redirect stdout.
+#        pbar.ipythonprint('test')                                     # Call function.
+#        sys.stdout = sys.__stdout__                     # Reset redirect.
+#        self.assertEqual(capturedOutput.getvalue(), '\r test', msg = 'Expected string')
+#
+## --------------------------        
+#class ConsolePrint(unittest.TestCase):
+#    
+#    def test_standard_print(self):
+#        capturedOutput = io.StringIO()                  # Create StringIO object
+#        sys.stdout = capturedOutput                     #  and redirect stdout.
+#        pbar.consoleprint('test')                                     # Call function.
+#        sys.stdout = sys.__stdout__                     # Reset redirect.
+#        self.assertEqual(capturedOutput.getvalue(), 'test\n', msg = 'Expected string')
+#       
+#    @patch('pymcmcstat.utilities.progressbar.check_windows_platform')
+#    def test_windows_print(self, mock_simple_func):
+#        mock_simple_func.return_value = True
+#        capturedOutput = io.StringIO()                  # Create StringIO object
+#        sys.stdout = capturedOutput                     #  and redirect stdout.
+#        pbar.consoleprint('test')                                     # Call function.
+#        sys.stdout = sys.__stdout__                     # Reset redirect.
+#        self.assertEqual(capturedOutput.getvalue(), 'test \r', msg = 'Expected string')
