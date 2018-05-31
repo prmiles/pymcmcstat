@@ -18,6 +18,9 @@ class ErrorVarianceEstimator:
         * :meth:`~gammar_mt`
     '''
     
+    def __init__(self):
+        self.description = 'Estimate error variance.'
+    
     def update_error_variance(self, sos, model):
         '''
         Update observation error variance.
