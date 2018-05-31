@@ -1,3 +1,4 @@
 sphinxcontrib-bibtex
 matplotlib
 coveralls
+h5py
