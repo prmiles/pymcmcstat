@@ -40,7 +40,12 @@ class BaseProgressBar(unittest.TestCase):
     def test_return_percentage(self):
         PB = pbar.ProgressBar(iterations=100)
         i = 37
-        self.assertEqual(PB.percentage(i = 37), 100 * i / float(100), msg = 'Percentage = 37%')
+        self.assertEqual(PB.percentage(i = i), 100 * i / float(100), msg = 'Percentage = 37%')
+        
+#    def test_update(self):
+#        PB = pbar.progress_bar(iters=100)
+#        i = 37
+#        self.assertEqual(PB.update(i = i), 1, msg = 'None')
         
 # --------------------------
 class TextProgressBar(unittest.TestCase): 
