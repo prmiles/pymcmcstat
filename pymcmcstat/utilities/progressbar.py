@@ -66,10 +66,13 @@ def replace_at(dstr, new, start, stop):
 
 
 def consoleprint(s):
-    if sys.platform.lower().startswith('win'):
+    if check_windows_platform():
         print(s, '\r', end='')
     else:
         print(s)
+
+def check_windows_platform():
+    return sys.platform.lower().startswith('win')
 
 def ipythonprint(s):
     print('\r', s, end='')
