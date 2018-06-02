@@ -21,10 +21,10 @@ class GenerateDefaultNames(unittest.TestCase):
     def test_value_of_default_names(self):
         names = utilities.generate_default_names(nparam = 3)
         expected_names = ['$p_{0}$','$p_{1}$','$p_{2}$']
-        self.assertEqual(names, expected_names, 
+        self.assertEqual(names, expected_names,
                          msg = str('Names do not match: Expected - {}, Received - {}'.format(expected_names, names)))
 
-# --------------------------        
+# --------------------------
 class ExtendNamesToMatchNparam(unittest.TestCase):
     
     def test_initially_empty_name_set(self):
@@ -105,23 +105,24 @@ class GenerateEllipse(unittest.TestCase):
     def test_does_good_matrix_return_correct_size_array(self):
         cmat = np.eye(2)
         mu = np.zeros([2,1])
-        ndp = 50 # number of oints to generate ellipse shape
+        ndp = 50 # number of points to generate ellipse shape
         x,y = utilities.generate_ellipse(mu, cmat, ndp)
-        self.assertEqual(x.size,ndp)
+        self.assertEqual(x.size, ndp)
+        self.assertEqual(y.size, ndp)
         
 # --------------------------
 class GaussianDensityFunction(unittest.TestCase):
     
     def test_float_return_with_float_input(self):
-        self.assertTrue(isinstance(utilities.gaussian_density_function(x = 0.), float), 
+        self.assertTrue(isinstance(utilities.gaussian_density_function(x = 0.), float),
                              msg = 'Expected float return')
         
     def test_float_return_with_int_input(self):
-        self.assertTrue(isinstance(utilities.gaussian_density_function(x = 0), float), 
+        self.assertTrue(isinstance(utilities.gaussian_density_function(x = 0), float),
                              msg = 'Expected float return')
         
     def test_float_return_with_float_input_at_nondefault_mean(self):
-        self.assertTrue(isinstance(utilities.gaussian_density_function(x = 0., mu = 100), float), 
+        self.assertTrue(isinstance(utilities.gaussian_density_function(x = 0., mu = 100), float),
                              msg = 'Expected float return')
         
 # --------------------------

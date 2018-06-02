@@ -9,22 +9,9 @@ from __future__ import print_function
 
 from pymcmcstat.utilities import progressbar as pbar
 import unittest
-from mock import Mock, patch
+from mock import patch
 import io
 import sys
-
-class MyOutput(object):
-    def __init__(self):
-        self.data = []
- 
-    def write(self, s):
-        self.data.append(s)
-        
-    def flush(self):
-        return True
- 
-    def __str__(self):
-        return "".join(self.data)
     
 # --------------------------
 class InitializeProgress_Bar(unittest.TestCase):
@@ -38,7 +25,7 @@ class InitializeProgress_Bar(unittest.TestCase):
         self.assertEqual(PB.animation_interval, 0.5, msg = 'Animation interval should be 0.5')
         
 # --------------------------
-class BaseProgressBar(unittest.TestCase):   
+class BaseProgressBar(unittest.TestCase):
 
     def test_initialize_progress_bar(self):
         PB = pbar.ProgressBar(iterations=100)
@@ -63,7 +50,7 @@ class BaseProgressBar(unittest.TestCase):
 #        self.assertEqual(PB.update(i = i), 1, msg = 'None')
         
 # --------------------------
-class TextProgressBar(unittest.TestCase): 
+class TextProgressBar(unittest.TestCase):
     
     def test_initialization_text(self):
         TPB = pbar.TextProgressBar(iterations = 100, printer=pbar.consoleprint)
@@ -81,7 +68,7 @@ class TextProgressBar(unittest.TestCase):
         TPB = pbar.TextProgressBar(iterations = 100, printer=pbar.consoleprint)
         self.assertTrue(isinstance(TPB.progbar(i = 50, elapsed=50),str), msg = 'Expected string return')
 
-# -------------------------- 
+# --------------------------
 class IpythonProgressBarMock(unittest.TestCase):
     @patch('pymcmcstat.utilities.progressbar.run_from_ipython')
     def test_ipython_console(self, mock_simple_func):
@@ -90,7 +77,7 @@ class IpythonProgressBarMock(unittest.TestCase):
         self.assertEqual(PB.printer, pbar.ipythonprint, msg = 'ipythonprint')
 
 # --------------------------
-class IpythonPrint(unittest.TestCase): 
+class IpythonPrint(unittest.TestCase):
     
     def test_ipythonprint(self):
         capturedOutput = io.StringIO()                  # Create StringIO object

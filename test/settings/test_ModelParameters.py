@@ -4,7 +4,7 @@
 Created on Mon Jan. 15, 2018
 
 Description: This file contains a series of utilities designed to test the
-features in the 'PredictionIntervals.py" package of the pymcmcstat module.  The 
+features in the 'PredictionIntervals.py" package of the pymcmcstat module. The
 functions tested include:
     - empirical_quantiles(x, p = np.array([0.25, 0.5, 0.75])):
 
@@ -123,7 +123,7 @@ class DisplayParametersSettings(unittest.TestCase):
         
         MP.display_parameter_settings(verbosity = None, noadaptind = None)
 
-# --------------------------        
+# --------------------------
 class NoadaptindDisplaySetting(unittest.TestCase):
     
     def test_noadaptind_is_empty(self):
