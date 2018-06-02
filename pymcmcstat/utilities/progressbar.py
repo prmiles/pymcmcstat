@@ -74,8 +74,12 @@ def consoleprint(s):
 def check_windows_platform():
     return sys.platform.lower().startswith('win')
 
-def ipythonprint(s):
+def ipythonprint(s, flush = True):
     print('\r', s, end='')
+    if flush is True:
+        flush_print()
+    
+def flush_print():
     sys.stdout.flush()
 
 def run_from_ipython():
