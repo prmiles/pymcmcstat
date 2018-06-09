@@ -30,7 +30,7 @@ class Add_Model_Parameter_Test(unittest.TestCase):
         self.assertEqual(MP.parameters[0]['prior_sigma'],np.inf)
         self.assertEqual(MP.parameters[0]['sample'],1)
         self.assertEqual(MP.parameters[0]['local'],0)
-        
+
     def test_does_parameter_assignment_match_with_no_name_or_initial_value(self):
         MP = ModelParameters()
         MP.add_model_parameter(name = None, theta0 = None)

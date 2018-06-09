@@ -29,8 +29,9 @@ class PriorFunction:
             priorfun = self.default_priorfun
         
         self.priorfun = priorfun # function handle
-            
-    def default_priorfun(self, theta, mu, sigma):
+        
+    @classmethod
+    def default_priorfun(cls, theta, mu, sigma):
         '''
         Default prior function.
         

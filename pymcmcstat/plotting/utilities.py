@@ -87,7 +87,7 @@ def make_x_grid(x, npts = 100):
         x_grid=np.linspace(np.mean(x)-4*np.std(x, ddof=1),np.mean(x)+4*np.std(x, ddof=1),npts)
     return x_grid.reshape(x_grid.shape[0],1) # returns 1d column vector
 
-# --------------------------------------------    
+# --------------------------------------------
 # see MASS 2nd ed page 181.
 def iqrange(x):
     nr, nc = x.shape

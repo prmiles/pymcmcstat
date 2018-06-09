@@ -101,7 +101,7 @@ class InitializeSOS(unittest.TestCase):
         model.sos_function = None
         model.model_function = None
         with self.assertRaises(SystemExit):
-            SumOfSquares(model = model, data = data, parameters = parameters)        
+            SumOfSquares(model = model, data = data, parameters = parameters)
             
 class EvaluateSOS(unittest.TestCase):
 

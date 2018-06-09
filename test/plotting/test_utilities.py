@@ -31,7 +31,7 @@ class ExtendNamesToMatchNparam(unittest.TestCase):
         nparam = 3
         names = utilities.extend_names_to_match_nparam(names = None, nparam = nparam)
         expected_names = ['$p_{0}$','$p_{1}$','$p_{2}$']
-        self.assertEqual(names, expected_names, 
+        self.assertEqual(names, expected_names,
                          msg = str('Names do not match: Expected - {}, Received - {}'.format(expected_names, names)))
         
     def test_single_entry_name_set(self):
@@ -50,7 +50,7 @@ class ExtendNamesToMatchNparam(unittest.TestCase):
         self.assertEqual(names, expected_names, 
                          msg = str('Names do not match: Expected - {}, Received - {}'.format(expected_names, names)))
     
-# --------------------------    
+# --------------------------
 class MakeXGrid(unittest.TestCase):
     
     def test_shape_of_output(self):

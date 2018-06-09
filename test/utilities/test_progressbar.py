@@ -86,7 +86,7 @@ class IpythonPrint(unittest.TestCase):
         sys.stdout = sys.__stdout__                     # Reset redirect.
         self.assertEqual(capturedOutput.getvalue(), '\r test', msg = 'Expected string')
 
-# --------------------------        
+# --------------------------
 class ConsolePrint(unittest.TestCase):
     
     def test_standard_print(self):

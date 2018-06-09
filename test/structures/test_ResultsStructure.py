@@ -13,24 +13,24 @@ import unittest
 import numpy as np
 import os
 
+def generate_temp_file():
+    tmpfile = 'temp0.json'
+    count = 0
+    flag = True
+    while flag is True:
+        if os.path.isfile(str('{}'.format(tmpfile))):
+            count += 1
+            tmpfile = str('{}{}.json'.format('temp',count))
+        else:
+            flag = False
+    return tmpfile
+    
 # -------------------
 class SaveLoadJSONObject(unittest.TestCase):
     
-    def generate_temp_file(self):
-        tmpfile = 'temp0.json'
-        count = 0
-        flag = True
-        while flag is True:
-            if os.path.isfile(str('{}'.format(tmpfile))):
-                count += 1
-                tmpfile = str('{}{}.json'.format('temp',count))
-            else:
-                flag = False
-        return tmpfile
-    
     def test_dump_to_json_file(self):
         RS = ResultsStructure()
-        tmpfile = self.generate_temp_file()
+        tmpfile = generate_temp_file()
         results = {'model': 4, 'data': np.random.random_sample(size = (1000,2))}
         RS.save_json_object(results = results, filename = tmpfile)
         retres = RS.load_json_object(filename = tmpfile)

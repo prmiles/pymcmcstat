@@ -252,8 +252,8 @@ class ModelParameters:
             h2 = ''
         else:
             h2 = '^2'
-        return h2        
-        
+        return h2
+    
     @classmethod
     def less_than_or_equal_to_zero(cls, x):
             return (x<=0)
