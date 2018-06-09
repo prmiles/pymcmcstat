@@ -213,7 +213,7 @@ class Check_Dependent_Model_Settings(unittest.TestCase):
         x = np.zeros([2])
         y = np.zeros([2,2])
         data.add_data_set(x,y)
-        y = np.zeros([3,3])        
+        y = np.zeros([3,3])
         data.add_data_set(x,y)
         y = np.zeros([4,7])
         data.add_data_set(x,y)
@@ -541,7 +541,7 @@ class Check_Dependent_Model_Settings_WRT_Nsos(unittest.TestCase):
         options = SimulationOptions()
         options.define_simulation_options(nsimu = int(1000))
         
-        # create settings        
+        # create settings
         ms = setup_model_settings(S20 = [1,2])
         # calculate dependencies
         ms._check_dependent_model_settings(data, options)

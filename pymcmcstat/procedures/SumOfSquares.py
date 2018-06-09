@@ -68,7 +68,7 @@ class SumOfSquares:
             
         return ss
      
-    @classmethod                
+    @classmethod
     def mcmc_sos_function(cls, theta, data, nbatch, model_function):
         '''
         Default sum-of-squares function.

@@ -20,7 +20,7 @@ observation_sample = PI._observation_sample
 analyze_s2chain = PI._analyze_s2chain
 
 # --------------------------
-# empirical_quantiles 
+# empirical_quantiles
 # --------------------------
 class Empirical_Quantiles_Test(unittest.TestCase):
 
