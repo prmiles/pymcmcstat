@@ -45,7 +45,7 @@ class SimulationOptions:
             * **method** (:py:class:`str`): Sampling method (:code:`'mh', 'am', 'dr', 'dram'`).  Default is :code:`'dram'`.
             * **printint** (:py:class:`int`): Printing interval.
             * **adaptend** (:py:class:`int`): Obsolete.
-            * **lastadapt** (:py:class`int`): Last adaptation iteration (i.e., no more adaptation beyond this point).
+            * **lastadapt** (:py:class:`int`): Last adaptation iteration (i.e., no more adaptation beyond this point).
             * **burnintime** (:py:class:`int`):
             * **waitbar** (:py:class:`int`): Flag to use progress bar. Default is 1 -> on (otherwise -> off).
             * **debug** (:py:class:`int`): Flag to perform debug.  Default is 0 -> off.

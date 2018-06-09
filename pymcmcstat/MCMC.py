@@ -62,7 +62,10 @@ class MCMC:
     # --------------------------------------------------------
     def run_simulation(self, use_previous_results = False):
         '''
+        Run MCMC Simulation
         
+        :Args:
+            * **use_previous_results** (:py:class:`bool`): Flag to indicate whether simulation is being restarted.
         '''
         start_time = time.time()
         
@@ -152,6 +155,13 @@ class MCMC:
 
     # --------------------------------------------------------
     def __initialize_chains(self, chainind):
+        '''
+        Initialize chains
+        
+        :Args:
+            * **chainind** (:py:class:`int`): Where to store initial parameter value
+
+        '''
         # Initialize chain, error variance, and SS
         self.__chain = np.zeros([self.simulation_options.nsimu, self.parameters.npar])
         self.__sschain = np.zeros([self.simulation_options.nsimu, self.model_settings.nsos])
@@ -294,6 +304,17 @@ class MCMC:
     
     # --------------------------------------------------------
     def __save_chains_to_bin(self, start, end):
+        '''
+        Save chain segment to binary file
+        
+        :Args:
+            * **start** (:py:class:`int`): Starting index of chain to save to file
+            * **end** (:py:class:`int`): Ending index of chain to save to file
+            
+        If you specify a `savesize` of 100, then every 100 simulations the last 100
+        chain sets will be appended to the file.  That is to say, if you are on
+        simulation 1000, the chain elements 900-999 will be appended to the file.
+        '''
         savedir = self.simulation_options.savedir
         ChainProcessing._check_directory(savedir)
         
@@ -315,6 +336,17 @@ class MCMC:
             
     # --------------------------------------------------------
     def __save_chains_to_txt(self, start, end):
+        '''
+        Save chain segment to text file
+        
+        :Args:
+            * **start** (:py:class:`int`): Starting index of chain to save to file
+            * **end** (:py:class:`int`): Ending index of chain to save to file
+            
+        If you specify a `savesize` of 100, then every 100 simulations the last 100
+        chain sets will be appended to the file.  That is to say, if you are on
+        simulation 1000, the chain elements 900-999 will be appended to the file.
+        '''
         savedir = self.simulation_options.savedir
         ChainProcessing._check_directory(savedir)
         
@@ -333,6 +365,14 @@ class MCMC:
     
     # --------------------------------------------------------
     def __update_chain(self, accept, new_set, outsidebounds):
+        '''
+        Update chain
+        
+        :Args:
+            * **accept** (:py:class:`str`): Flag to indicate whether :math:`q^*` is accepted or rejected
+            * **new_set** (:class:`~.ParameterSet`): Features of :math:`q^*`
+            * **outsidebounds** (:py:class:`bool`): Flag to indicate whether rejection occured due to sampling outside limits
+        '''
         if accept:
             # accept
             self.__chain[self.__chain_index,:] = new_set.theta
@@ -343,12 +383,28 @@ class MCMC:
             self.__update_rejected(outsidebounds)
             
     def __print_rejection_statistics(self, isimu, iiadapt, verbosity):
+        '''
+        Print Rejection Statistics
+        
+        :Args:
+            * **isimu** (:py:class:`int`): Simulation counter
+            * **iiadapt** (:py:class:`int`): Adaptation counter
+            * **verbosity** (:py:class:`int`): Verbosity of display output.
+        '''
         self.__message(verbosity, 2, str('i:{} ({},{},{})\n'.format(
                 isimu, self.__rejected['total']*isimu**(-1)*100, self.__rejected['in_adaptation_interval']*iiadapt**(-1)*100,
                 self.__rejected['outside_bounds']*isimu**(-1)*100)))
      
     @classmethod
     def __message(cls, verbosity, level, printthis):
+        '''
+        Display message
+        
+        :Args:
+            * **verbosity** (:py:class:`int`): Verbosity of display output.
+            * **level** (:py:class:`int`): Print level relative to verbosity.
+            * **printthis** (:py:class:`str'): String to be printed.
+        '''
         printed = False
         if verbosity >= level:
             print(printthis)
@@ -361,6 +417,12 @@ class MCMC:
         self.covariance.display_covariance_settings()
 
     def __update_rejected(self, outsidebounds):
+        '''
+        Update rejection counters
+        
+        :Args:
+            * **outsidebounds** (:py:class:`bool`): Flag to indicate whether rejection occured due to sampling outside limits
+        '''
         self.__rejected['total'] += 1
         self.__rejected['in_adaptation_interval'] += 1
         if outsidebounds:
