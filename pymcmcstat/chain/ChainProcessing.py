@@ -132,7 +132,7 @@ def read_in_bin_file(filename):
         ds = list(hf.keys()) # data sets
         # check size of each set
         sh = np.zeros([len(ds),2], dtype=int)
-        for ii in range(len(ds)):
+        for ii, dsii in enumerate(ds):
             tmp = hf.get(ds[ii])
             sh[ii,:] = tmp.shape
             

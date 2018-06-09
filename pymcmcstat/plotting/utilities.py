@@ -50,6 +50,9 @@ def extend_names_to_match_nparam(names, nparam):
     :Returns:
         * **names** (:py:class:`list`): List of strings - extended list of parameter names
     '''
+    if names is None:
+        names = []
+        
     n0 = len(names)
     for ii in range(n0,nparam):
         names.append(str('$p_{{{}}}$'.format(ii)))
@@ -84,16 +87,9 @@ def make_x_grid(x, npts = 100):
         x_grid=np.linspace(np.mean(x)-4*np.std(x, ddof=1),np.mean(x)+4*np.std(x, ddof=1),npts)
     return x_grid.reshape(x_grid.shape[0],1) # returns 1d column vector
 
-#if iqrange(x)<=0
-#  s=1.06*std(x)*nx^(-1/5);
-#else
-#  s=1.06*min(std(x),iqrange(x)/1.34)*nx^(-1/5);
-#end
-#
-
-# --------------------------------------------    
+# --------------------------------------------
 # see MASS 2nd ed page 181.
-def __iqrange(x):
+def iqrange(x):
     nr, nc = x.shape
     if nr == 1: # make sure it is a column vector
         x = x.reshape(nc,nr)
@@ -111,16 +107,16 @@ def __iqrange(x):
     q3 = (1-f3)*x[int(i3),:] + f3*x[int(i3)+1,:]
     return q3-q1
     
-def __gaussian_density_function(x, mu, sigma2):
+def gaussian_density_function(x, mu = 0, sigma2 = 1):
     y = 1/math.sqrt(2*math.pi*sigma2)*math.exp(-0.5*(x-mu)**2/sigma2)
     return y
 
-def __scale_bandwidth(x):
+def scale_bandwidth(x):
     n = len(x)
-    if __iqrange(x) <=0:
-        s = 1.06*np.std(x, ddof=1)*n**(-1/5)
+    if iqrange(x) <=0:
+        s = 1.06*np.array([np.std(x, ddof=1)*n**(-1/5)])
     else:
-        s = 1.06*min(np.std(x, ddof=1),__iqrange(x)/1.34)*n**(-1/5)
+        s = 1.06*np.array([min(np.std(x, ddof=1),iqrange(x)/1.34)*n**(-1/5)])
     return s
 
 # -------------------------------------------- 

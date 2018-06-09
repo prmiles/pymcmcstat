@@ -160,5 +160,3 @@ class ParallelMCMC:
         else:
             outsidebounds = False
         return outsidebounds
-        
-                

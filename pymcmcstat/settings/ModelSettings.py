@@ -55,38 +55,36 @@ class ModelSettings:
         self.model_function = model_function
         
         # check value of sigma2 - initial error variance
-        self.sigma2 = self.__array_type(sigma2)
+        self.sigma2 = self._array_type(sigma2)
         
         # check value of N - total number of observations
-        self.N = self.__array_type(N)
+        self.N = self._array_type(N)
         
         # check value of N0 - prior accuracy for S20
-        self.N0 = self.__array_type(N0)
+        self.N0 = self._array_type(N0)
         
         # check nbatch - number of data sets
-        self.nbatch = self.__array_type(nbatch)
+        self.nbatch = self._array_type(nbatch)
             
         # S20 - prior for sigma2
-        self.S20 = self.__array_type(S20)
+        self.S20 = self._array_type(S20)
     
     @classmethod
-    def __array_type(cls, x):
+    def _array_type(cls, x):
         # All settings in this class should be converted to numpy ndarray
         if x is None:
-            x = x
+            return None
         else:
             if isinstance(x, int): # scalar -> ndarray[scalar]
-                x = np.array([np.array(x)])
+                return np.array([np.array(x)])
             elif isinstance(x, float): # scalar -> ndarray[scalar]
-                x = np.array([np.array(x)])
+                return np.array([np.array(x)])
             elif isinstance(x, list): # [...] -> ndarray[...]
-                x = np.array(x)
+                return np.array(x)
             elif isinstance(x, np.ndarray):
-                x = x
+                return x
             else:
                 sys.exit('Unknown data type - Please use int, ndarray, or list')
-        
-        return x
     
     def _check_dependent_model_settings(self, data, options):
         '''
@@ -101,24 +99,7 @@ class ModelSettings:
             self.nbatch = data.get_number_of_batches()
             
         if self.N is not None:
-#            N = data.get_number_of_observations()
-            N = data.n
-            # check if user defined N matches data structure
-            if np.array_equal(self.N, N):
-                self.N = N
-            elif len(N) > len(self.N) and len(self.N) == 1:
-                if np.all(N == self.N):
-                    self.N = N
-                else:
-                    sys.exit('User defined N = {}.  Estimate based on data structure is N = {}.  Possible error?'.format(self.N, N))
-            elif len(self.N) > len(N) and len(N) == 1:
-                if np.all(N == self.N):
-                    self.N = self.N
-                else:
-                    sys.exit('User defined N = {}.  Estimate based on data structure is N = {}.  Possible error?'.format(self.N, N))
-            else:
-#                warnings.warn('User defined N = {}.  Estimate based on data structure is N = {}.  Possible error?'.format(self.N, N))
-                sys.exit('User defined N = {}.  Estimate based on data structure is N = {}.  Possible error?'.format(self.N, N))
+            self.N = self._check_number_of_observations(udN = self.N, dsN = self._array_type(data.n))
         else:
 #            self.N = data.get_number_of_observations()
             self.N = data.n
@@ -144,7 +125,27 @@ class ModelSettings:
         
         if np.isnan(self.S20).any():
             self.S20 = self.sigma2  # prior parameters for the error variance
-        
+      
+    @classmethod
+    def _check_number_of_observations(cls, udN, dsN):
+        # check if user defined N matches data structure
+        if np.array_equal(udN, dsN):
+            N = dsN
+        elif dsN.size > udN.size and udN.size == 1:
+            if np.all(dsN == udN[0]):
+                N = dsN
+            else:
+                sys.exit('User defined N = {}.  Estimate based on data structure is N = {}.  Possible error?'.format(udN, dsN))
+        elif udN.size > dsN.size and dsN.size == 1:
+            if np.all(dsN[0] == udN):
+                N = udN
+            else:
+                sys.exit('User defined N = {}.  Estimate based on data structure is N = {}.  Possible error?'.format(udN, dsN))
+        else:
+            sys.exit('User defined N = {}.  Estimate based on data structure is N = {}.  Possible error?'.format(udN, dsN))
+                
+        return N
+    
     def _check_dependent_model_settings_wrt_nsos(self, nsos):
         '''
         Check dependent model settings with respect to number of sum-of-square elements.
@@ -227,3 +228,5 @@ class ModelSettings:
         print('model settings:')
         for ptii in print_these:
             print('\t{} = {}'.format(ptii, getattr(self, ptii)))
+            
+        return print_these

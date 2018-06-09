@@ -25,8 +25,9 @@ class Initialize_Prior_Function(unittest.TestCase):
         PF = PriorFunction()
         PFD = PF.__dict__
         PFD = removekey(PFD, 'priorfun')
+        defaults = {'mu': None, 'sigma': None}
         for (k,v) in PFD.items():
-            self.assertEqual(v, None, msg = str('Default {} is None'.format(k)))
+            self.assertEqual(v, defaults[k], msg = str('Default {} is {}'.format(k, defaults[k])))
             
     def test_PS_defaul_priorfun(self):
         key = 'priorfun'
@@ -63,3 +64,20 @@ class Evaluation_Default_Prior_Function(unittest.TestCase):
         mu = [45., 27.]
         sigma = [0.1, 16.]
         self.assertTrue(PF.default_priorfun(theta = theta, mu = mu, sigma=sigma) > 0, msg = 'Prior should be >=0')
+        
+class EvaluatePriorFunction(unittest.TestCase):
+    
+    def test_EPF_with_single_set(self):
+        PF = PriorFunction()
+        theta = [0.]
+        self.assertEqual(PF.evaluate_prior(theta = theta), 0, msg = 'Prior should be 0')
+        
+    def test_EPF_with_double_set(self):
+        PF = PriorFunction()
+        theta = [0., 0.]
+        self.assertEqual(PF.evaluate_prior(theta = theta), 0, msg = 'Prior should be 0')
+        
+    def test_EPF_with_single_set_and_nonzero_answer(self):
+        PF = PriorFunction()
+        theta = [1.]
+        self.assertTrue(PF.evaluate_prior(theta = theta) > 0, msg = 'Prior should be >=0')

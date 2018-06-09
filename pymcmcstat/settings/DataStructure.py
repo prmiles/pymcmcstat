@@ -168,7 +168,7 @@ class DataStructure:
         should return :code:`nds = 2 + 3 = 5` because the number of columns in `y1` is
         2 and the number of columns in `y2` is 3.
         
-        **Returns:**
+        :Returns:
             * Number of columns in `ydata` (:py:class:`int`)
         '''
         dshapes = self.shape

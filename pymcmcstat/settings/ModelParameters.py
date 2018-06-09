@@ -178,10 +178,12 @@ class ModelParameters:
         if (self._initial_value[np.ix_(self._parind)] < self._lower_limits[np.ix_(self._parind)]).any() or (self._initial_value[np.ix_(self._parind)] > self._upper_limits[np.ix_(self._parind)]).any():
             # proposed value outside parameter limits
             sys.exit('Proposed value outside parameter limits - select new initial parameter values')
-            
+        else:
+             return True
+         
     def _check_prior_sigma(self, verbosity):
-        self.__message(verbosity, 2, 'If prior variance <= 0, setting to Inf\n')
-        self._thetasigma = self.__replace_list_elements(self._thetasigma, self.__less_than_or_equal_to_zero, float('Inf'))
+        self.message(verbosity, 2, 'If prior variance <= 0, setting to Inf\n')
+        self._thetasigma = self.replace_list_elements(self._thetasigma, self.less_than_or_equal_to_zero, float('Inf'))
     
     def display_parameter_settings(self, verbosity = None, noadaptind = None):
         '''
@@ -200,8 +202,8 @@ class ModelParameters:
         theta_mu = self._thetamu
         theta_sigma = self._thetasigma
         
-        if verbosity is None:
-            verbosity = 0
+        verbosity = self.check_verbosity(verbosity)
+        noadaptind = self.check_noadaptind(noadaptind)
             
         if noadaptind is None:
             noadaptind = []
@@ -212,39 +214,61 @@ class ModelParameters:
                   'start', 'min', 'max', 'mu', 'sigma^2'))
             nprint = len(parind)
             for ii in range(nprint):
-                if ii in noadaptind: # THIS PARAMETER IS FIXED
-                    st = ' (*)'
-                else:
-                    st = ''
-                if math.isinf(theta_sigma[parind[ii]]):
-                    h2 = ''
-                else:
-                    h2 = '^2'
+                st = self.noadapt_display_setting(ii, noadaptind)
+                h2 = self.prior_display_setting(x = theta_sigma[parind[ii]])
                     
                 if value[parind[ii]] > 1e4:
-                    print('{:10}: {:6.2g} [{:6.2g}, {:6.2g}] N({:4.2g},{:4.2f}{:s}){:s}'.format(names[parind[ii]],
+                    print('{:10s}: {:6.2g} [{:6.2g}, {:6.2g}] N({:4.2g},{:4.2f}{:s}){:s}'.format(names[parind[ii]],
                       value[parind[ii]], lower_limits[parind[ii]], upper_limits[parind[ii]],
                       theta_mu[parind[ii]], theta_sigma[parind[ii]], h2, st))
                 else:
-                    print('{:10}: {:6.2f} [{:6.2f}, {:6.2f}] N({:4.2f},{:4.2f}{:s}){:s}'.format(names[parind[ii]],
+                    print('{:10s}: {:6.2f} [{:6.2f}, {:6.2f}] N({:4.2f},{:4.2f}{:s}){:s}'.format(names[parind[ii]],
                       value[parind[ii]], lower_limits[parind[ii]], upper_limits[parind[ii]],
                       theta_mu[parind[ii]], theta_sigma[parind[ii]], h2, st))
-           
+    
     @classmethod
-    def __less_than_or_equal_to_zero(cls, x):
+    def check_verbosity(cls, verbosity):
+        if verbosity is None:
+            verbosity = 0
+        return verbosity
+    
+    @classmethod
+    def check_noadaptind(cls, noadaptind):
+        if noadaptind is None:
+            noadaptind = []
+        return noadaptind
+    
+    @classmethod
+    def noadapt_display_setting(cls, ii, noadaptind):
+        if ii in noadaptind: # THIS PARAMETER IS FIXED
+            st = ' (*)'
+        else:
+            st = ''
+        return st
+
+    @classmethod
+    def prior_display_setting(clc, x):
+        if math.isinf(x):
+            h2 = ''
+        else:
+            h2 = '^2'
+        return h2
+    
+    @classmethod
+    def less_than_or_equal_to_zero(cls, x):
             return (x<=0)
     
     @classmethod
-    def __replace_list_elements(cls, x, testfunction, value):
+    def replace_list_elements(cls, x, testfunction, value):
         for ii, xii in enumerate(x):
             if testfunction(xii):
                 x[ii] = value
         return x
     
     @classmethod
-    def __message(cls, verbosity, level, printthis):
-        printed = False
+    def message(cls, verbosity, level, printthis):
         if verbosity >= level:
             print(printthis)
-            printed = True
-        return printed
+            return True
+        else:
+            return False
