@@ -53,7 +53,7 @@ class Add_Model_Parameter_Test(unittest.TestCase):
         results = {'parind': MP._parind, 'names': MP._names, 'local': MP._local, 'theta': [1.2]}
         # initialize default options
         SO = SimulationOptions()
-        SO.define_simulation_options()
+        SO.define_simulation_options(verbosity=0)
         MP.display_parameter_settings(verbosity = SO.verbosity, noadaptind = SO.noadaptind)
         MP._results_to_params(results, 1)
         MP._openparameterstructure(nbatch=1)
