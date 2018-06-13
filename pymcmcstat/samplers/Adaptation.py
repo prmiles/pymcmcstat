@@ -78,15 +78,7 @@ class Adaptation:
         qcov = covariance._qcov
         
         if isimu < burnintime:
-            # during burnin no adaptation, just scaling down
-            if rejected['in_adaptation_interval']*(iiadapt**(-1)) > 0.95:
-                self.__message(options.verbosity, 2, str(' (burnin/down) {3.2f}'.format(
-                        rejected['in_adaptation_interval']*(iiadapt**(-1))*100)))
-                R = R*(burnin_scale**(-1))
-            elif rejected['in_adaptation_interval']*(iiadapt**(-1)) < 0.05:
-                self.__message(options.verbosity, 2, str(' (burnin/up) {3.2f}'.format(
-                        rejected['in_adaptation_interval']*(iiadapt**(-1))*100)))
-                R = R*burnin_scale
+            R = self.below_burnin_threshhold(rejected = rejected, iiadapt = iiadapt, R = R, burnin_scale = burnin_scale, verbosity=options.verbosity)
                     
         else:
             self.__message(options.verbosity, 2, str('i:{} adapting ({}, {}, {})'.format(
@@ -101,47 +93,18 @@ class Adaptation:
                     
             # ram
             if doram:
-                uu = u*(np.linalg.norm(u)**(-1))
-                eta = (isimu**(etaparam))**(-1)
-                ram = np.eye(npar) + eta*(min(1, new_set.alpha) - alphatarget)*(
-                        np.dot(uu.transpose(), uu))
-                upcov = np.dot(np.dot(R.transpose(),ram),R)
+                upcov = self.update_cov_via_ram(u = u, isimu = isimu, etaparam=etaparam, npar = npar, alphatarget = alphatarget, alpha = new_set.alpha, R = R)
             else:
-                upcov = covchain
-                upcov[no_adapt_index, :] = qcov[no_adapt_index,:]
-                upcov[:,no_adapt_index] = qcov[:,no_adapt_index]
+                upcov = self.update_cov_from_covchain(covchain = covchain, qcov = qcov, no_adapt_index = no_adapt_index)
 
             # check if singular covariance matrix
-            pos_def, pRa = self.is_semi_pos_def_chol(upcov)
-            if pos_def == 1: # not singular!
-                Ra = pRa # np.linalg.cholesky(upcov)
-                R = Ra*qcov_scale
-                        
-            else: # singular covariance matrix
-                # try to blow it up
-                tmp = upcov + np.eye(npar)*qcov_adjust
-                pos_def_adjust, pRa = self.__is_semi_pos_def_chol(tmp)
-                if pos_def_adjust == 1: # not singular!
-                    Ra = pRa
-                    self.__message(options.verbosity, 1, 'adjusted covariance matrix')
-                    # scale R
-                    R = Ra*qcov_scale
-                else: # still singular...
-                    errstr = str('convariance matrix singular, no adaptation')
-                    self.__message(options.verbosity, 0, '{} {}'.format(errstr, rejected['in_adaptation_interval']*(iiadapt**(-1))*100))
-        
+            R = self.check_for_singular_cov_matrix(upcov = upcov, R = R, npar = npar, qcov_adjust = qcov_adjust, qcov_scale = qcov_scale, rejected = rejected, iiadapt = iiadapt, verbosity = options.verbosity)
+            
             # update dram covariance matrix
             RDR = None
             invR = None
             if ntry > 1: # delayed rejection
-                RDR = []
-                invR = []
-                RDR.append(R)
-                invR.append(np.linalg.solve(RDR[0], np.eye(npar)))
-                for ii in range(1,ntry):
-                    RDR.append(RDR[ii-1]*((drscale[min(ii,len(drscale)) - 1])**(-1)))
-                    invR.append(invR[ii-1]*(drscale[min(ii,len(drscale)) - 1]))
-          
+                RDR, invR = self.update_delayed_rejection(R = R, npar = npar, ntry = ntry, drscale = drscale)          
         
         
         covariance._update_covariance_from_adaptation(R, covchain, meanchain, wsum,
@@ -150,6 +113,70 @@ class Adaptation:
         covariance._update_covariance_for_delayed_rejection_from_adaptation(RDR = RDR, invR = invR)
         
         return covariance
+    
+    def below_burnin_threshhold(self, rejected, iiadapt, R, burnin_scale, verbosity):
+        # during burnin no adaptation, just scaling down
+        if rejected['in_adaptation_interval']*(iiadapt**(-1)) > 0.95:
+            self.__message(verbosity, 2, str(' (burnin/down) {3.2f}'.format(
+                    rejected['in_adaptation_interval']*(iiadapt**(-1))*100)))
+            R = R*(burnin_scale**(-1))
+        elif rejected['in_adaptation_interval']*(iiadapt**(-1)) < 0.05:
+            self.__message(verbosity, 2, str(' (burnin/up) {3.2f}'.format(
+                    rejected['in_adaptation_interval']*(iiadapt**(-1))*100)))
+            R = R*burnin_scale
+        return R
+     
+    def update_delayed_rejection(self, R, npar, ntry, drscale):
+        RDR = []
+        invR = []
+        RDR.append(R)
+        invR.append(np.linalg.solve(RDR[0], np.eye(npar)))
+        for ii in range(1,ntry):
+            RDR.append(RDR[ii-1]*((drscale[min(ii,len(drscale)) - 1])**(-1)))
+            invR.append(invR[ii-1]*(drscale[min(ii,len(drscale)) - 1]))
+            
+        return RDR, invR
+    
+    def update_cov_via_ram(self, u, isimu, etaparam, npar, alphatarget, alpha, R):
+        uu = u*(np.linalg.norm(u)**(-1))
+        eta = (isimu**(etaparam))**(-1)
+        ram = np.eye(npar) + eta*(min(1.0, alpha) - alphatarget)*(np.dot(uu.transpose(), uu))
+        upcov = np.dot(np.dot(R.transpose(),ram),R)
+        return upcov
+    
+    def check_for_singular_cov_matrix(self, upcov, R, npar, qcov_adjust, qcov_scale, rejected, iiadapt, verbosity):
+        # check if singular covariance matrix
+        pos_def, pRa = self.is_semi_pos_def_chol(upcov)
+        if pos_def == 1: # not singular!
+            return self.scale_cholesky_decomposition(Ra = pRa, qcov_scale = qcov_scale)      
+        else: # singular covariance matrix
+            return self.adjust_cov_matrix(upcov = upcov, R = R, npar = npar, qcov_adjust = qcov_adjust, qcov_scale = qcov_scale, Ra = pRa, rejected = rejected, iiadapt = iiadapt, verbosity = verbosity)
+    
+    @classmethod
+    def scale_cholesky_decomposition(cls, Ra, qcov_scale):
+        return Ra*qcov_scale
+    
+    def adjust_cov_matrix(self, upcov, R, npar, qcov_adjust, qcov_scale, Ra, rejected, iiadapt, verbosity):
+        # try to blow it up
+        tmp = upcov + np.eye(npar)*qcov_adjust
+        pos_def_adjust, pRa = self.is_semi_pos_def_chol(tmp)
+        if pos_def_adjust == 1: # not singular!
+            Ra = pRa
+            self.__message(verbosity, 1, 'adjusted covariance matrix')
+            # scale R
+            R = Ra*qcov_scale
+            return R
+        else: # still singular...
+            errstr = str('convariance matrix singular, no adaptation')
+            self.__message(verbosity, 0, '{} {}'.format(errstr, rejected['in_adaptation_interval']*(iiadapt**(-1))*100))
+            return R
+    
+    @classmethod
+    def update_cov_from_covchain(cls, covchain, qcov, no_adapt_index):
+        upcov = covchain
+        upcov[no_adapt_index, :] = qcov[no_adapt_index,:]
+        upcov[:,no_adapt_index] = qcov[:,no_adapt_index]
+        return upcov
     
     def covupd(self, x, w, oldcov, oldmean, oldwsum, oldR = None):
         """
