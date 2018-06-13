@@ -47,7 +47,7 @@ from .chain import ChainProcessing
 from .utilities.progressbar import progress_bar
 
 class MCMC:
-    def __init__(self):
+    def __init__(self, rngseed = None):
         # public variables
         self.data = DataStructure()
         self.model_settings = ModelSettings()
@@ -58,9 +58,10 @@ class MCMC:
         self._covariance = CovarianceProcedures()
         self._sampling_methods = SamplingMethods()
         self._mcmc_status = False
+        np.random.seed(seed = rngseed)
         
     # --------------------------------------------------------
-    def run_simulation(self, use_previous_results = False):
+    def run_simulation(self, use_previous_results = False, rngseed = None):
         '''
         Run MCMC Simulation
         
