@@ -288,10 +288,10 @@ class MCMC:
         # --------------------------------------------
         # BUILD RESULTS OBJECT
         self.simulation_results = ResultsStructure() # inititialize
-        self.simulation_results.add_basic(options = self.simulation_options, model = self.model_settings, covariance = self._covariance, parameters = self.parameters, rejected = self.__rejected, simutime = self.__simulation_time, theta = self.parameters._value)
+        self.simulation_results.add_basic(nsimu = self.simulation_options.nsimu, covariance = self._covariance, parameters = self.parameters, rejected = self.__rejected, simutime = self.__simulation_time, theta = self.parameters._value)
 
         if self.simulation_options.ntry > 1:
-            self.simulation_results.add_dram(options = self.simulation_options, covariance = self._covariance, rejected = self.__rejected, drsettings = self._sampling_methods.delayed_rejection)
+            self.simulation_results.add_dram(drscale = self.simulation_options.drscale, RDR = self._covariance._RDR, total_rejected = self.__rejected['total'], drsettings = self._sampling_methods.delayed_rejection)
         
         self.simulation_results.add_options(options = self.simulation_options)
         self.simulation_results.add_model(model = self.model_settings)

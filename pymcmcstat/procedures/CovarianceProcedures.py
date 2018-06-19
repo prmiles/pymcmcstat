@@ -215,3 +215,4 @@ class CovarianceProcedures:
         print('covariance:')
         for ptii in print_these:
             print('\t{} = {}'.format(ptii, getattr(self, str('_{}'.format(ptii)))))
+        return print_these

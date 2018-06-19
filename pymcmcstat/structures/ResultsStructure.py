@@ -31,14 +31,19 @@ class ResultsStructure:
             * **results** (:class:`~.ResultsStructure`): Dictionary of MCMC simulation results/settings.
         '''
         savedir = results['simulation_options']['savedir']
-        results_filename = results['simulation_options']['results_filename']
+        filename = self.determine_filename(options = results['simulation_options'])
+            
+        self.save_json_object(results, os.path.join(savedir, filename))
+    
+    @classmethod
+    def determine_filename(cls, options):
+        results_filename = options['results_filename']
         if results_filename is None:
-            dtstr = results['simulation_options']['datestr']
+            dtstr = options['datestr']
             filename = str('{}{}{}'.format(dtstr,'_','mcmc_simulation.json'))
         else:
             filename = results_filename
-            
-        self.save_json_object(results, os.path.join(savedir, filename))
+        return filename
     
     @classmethod
     def save_json_object(cls, results, filename):
@@ -78,12 +83,12 @@ class ResultsStructure:
         return results
     
     # --------------------------------------------------------
-    def add_basic(self, options, model, covariance, parameters, rejected, simutime, theta):
+    def add_basic(self, nsimu, covariance, parameters, rejected, simutime, theta):
         '''
         Add basic results from MCMC simulation to structure.
         
         :Args:
-            * **options** (:class:`.SimulationOptions`): MCMC simulation options.
+            * **nsimu** (:py:class:`int`): Number of MCMC simulations.
             * **model** (:class:`.ModelSettings`): MCMC model settings.
             * **covariance** (:class:`.CovarianceProcedures`): Covariance variables.
             * **parameters** (:class:`.ModelParameters`): Model parameters.
@@ -97,8 +102,8 @@ class ResultsStructure:
         self.results['parind'] = parameters._parind
         self.results['local'] = parameters._local
         
-        self.results['total_rejected'] = rejected['total']*(options.nsimu**(-1)) # total rejected
-        self.results['rejected_outside_bounds'] = rejected['outside_bounds']*(options.nsimu**(-1)) # rejected due to sampling outside limits
+        self.results['total_rejected'] = rejected['total']*(nsimu**(-1)) # total rejected
+        self.results['rejected_outside_bounds'] = rejected['outside_bounds']*(nsimu**(-1)) # rejected due to sampling outside limits
         self.results['R'] = covariance._R
         self.results['qcov'] = np.dot(covariance._R.transpose(),covariance._R)
         self.results['cov'] = covariance._covchain
@@ -106,7 +111,7 @@ class ResultsStructure:
         self.results['names'] = [parameters._names[ii] for ii in parameters._parind]
         self.results['limits'] = [parameters._lower_limits[parameters._parind[:]], parameters._upper_limits[parameters._parind[:]]]
              
-        self.results['nsimu'] = options.nsimu
+        self.results['nsimu'] = nsimu
         self.results['simutime'] = simutime
         covariance._qcovorig[np.ix_(parameters._parind,parameters._parind)] = self.results['qcov']
         self.results['qcovorig'] = covariance._qcovorig
@@ -149,14 +154,14 @@ class ResultsStructure:
             self.results['S20'] = np.nan
             self.results['N0'] = np.nan
     
-    def add_dram(self, options, covariance, rejected, drsettings):
+    def add_dram(self, drscale, RDR, total_rejected, drsettings):
         '''
         Add results specific to performing DR algorithm.
         
         :Args:
-            * **options** (:class:`.SimulationOptions`): MCMC simulation options.
-            * **covariance** (:class:`.CovarianceProcedures`): Covariance variables.
-            * **rejected** (:py:class:`dict`): Dictionary of rejection stats.
+            * **drscale** (:class:`~numpy.ndarray`): Reduced scale for sampling in DR algorithm. Default is [5,4,3].
+            * **RDR** (:class:`~numpy.ndarray`): Cholesky decomposition of covariance matrix based on DR.
+            * **total_rejected** (:py:class:`int`): Number of rejected samples.
             * **drsettings** (:class:`~.DelayedRejection`): Need access to counters within DR class.
             
         '''
@@ -164,17 +169,18 @@ class ResultsStructure:
         if self.basic is True:
             nsimu = self.results['nsimu']
             
-            self.results['drscale'] = options.drscale
+            self.results['drscale'] = drscale
             
-            rejected = rejected['total']
-            drsettings.iacce[0] = nsimu - rejected - sum(drsettings.iacce[1:])
+            drsettings.iacce[0] = nsimu - total_rejected - sum(drsettings.iacce[1:])
             # 1 - number accepted without DR, 2 - number accepted via DR try 1,
             # 3 - number accepted via DR try 2, etc.
             self.results['iacce'] = drsettings.iacce
             self.results['alpha_count'] = drsettings.dr_step_counter
-            self.results['RDR'] = covariance._RDR
+            self.results['RDR'] = RDR
+            return True
         else:
             print('Cannot add DRAM settings to results structure before running ''add_basic''')
+            return False
     
     def add_prior(self, mu, sig, priorfun, priortype, priorpars):
         '''
