@@ -9,9 +9,59 @@ Created on Wed May 30 08:02:45 2018
 from pymcmcstat.structures.ResultsStructure import ResultsStructure
 from pymcmcstat.settings.SimulationOptions import SimulationOptions
 from pymcmcstat.settings.ModelSettings import ModelSettings
+from pymcmcstat.samplers.DelayedRejection import DelayedRejection
+from pymcmcstat.MCMC import MCMC
 import unittest
 import numpy as np
 import os
+
+# define test model function
+def modelfun(xdata, theta):
+    m = theta[0]
+    b = theta[1]
+    nrow = xdata.shape[0]
+    y = np.zeros([nrow,1])
+    y[:,0] = m*xdata.reshape(nrow,) + b
+    return y
+
+def ssfun(theta, data, local = None):
+    xdata = data.xdata[0]
+    ydata = data.ydata[0]
+    # eval model
+    ymodel = modelfun(xdata, theta)
+    # calc sos
+    ss = sum((ymodel[:,0] - ydata[:,0])**2)
+    return ss
+
+def setup_mcmc():
+    # Initialize MCMC object
+    mcstat = MCMC()
+    # Add data
+    nds = 100
+    x = np.linspace(2, 3, num=nds)
+    y = 2.*x + 3. + 0.1*np.random.standard_normal(x.shape)
+    mcstat.data.add_data_set(x, y)
+
+    mcstat.simulation_options.define_simulation_options(nsimu = int(2.0e2), updatesigma = 1, method = 'dram', verbosity = 0)
+    
+    # update model settings
+    mcstat.model_settings.define_model_settings(sos_function = ssfun)
+    
+    mcstat.parameters.add_model_parameter(name = 'm', theta0 = 2., minimum = -10, maximum = np.inf, sample = 1)
+    mcstat.parameters.add_model_parameter(name = 'b', theta0 = -5., minimum = -10, maximum = 100, sample = 1)
+    mcstat._initialize_simulation()
+    
+    # extract components
+    model = mcstat.model_settings
+    options = mcstat.simulation_options
+    parameters = mcstat.parameters
+    data = mcstat.data
+    covariance = mcstat._covariance
+    rejected = {'total': 10, 'outside_bounds': 2}
+    chain = np.zeros([options.nsimu, 2])
+    s2chain = np.zeros([options.nsimu, 1])
+    sschain = np.zeros([options.nsimu, 1])
+    return model, options, parameters, data, covariance, rejected, chain, s2chain, sschain
 
 def generate_temp_file():
     tmpfile = 'temp0.json'
@@ -38,6 +88,74 @@ class SaveLoadJSONObject(unittest.TestCase):
         self.assertTrue(np.array_equal(retres['data'], results['data']), msg = 'Arrays should be equal')
         os.remove(tmpfile)
 
+# -------------------
+class DetermineFilename(unittest.TestCase):
+    def test_resfilename_is_none(self):
+        model, options, parameters, data, covariance, rejected, chain, s2chain, sschain = setup_mcmc()
+        RS = ResultsStructure()
+        RS.add_options(options = options)
+        RS.results['simulation_options']['results_filename'] = None
+        filename = RS.determine_filename(options = RS.results['simulation_options'])
+        self.assertEqual(filename, str('{}{}{}'.format(RS.results['simulation_options']['datestr'],'_','mcmc_simulation.json')), msg = 'Filename matches')
+        
+    def test_resfilename_is_not_none(self):
+        model, options, parameters, data, covariance, rejected, chain, s2chain, sschain = setup_mcmc()
+        RS = ResultsStructure()
+        RS.add_options(options = options)
+        RS.results['simulation_options']['results_filename'] = 'test'
+        filename = RS.determine_filename(options = RS.results['simulation_options'])
+        self.assertEqual(filename, 'test', msg = 'Filename matches')
+        
+# -------------------
+class AddBasic(unittest.TestCase):
+    def test_addbasic_false(self):
+        RS = ResultsStructure()
+        self.assertFalse(RS.basic, msg = 'basic features not added to result structure')
+        
+    def test_addbasic_true(self):
+        model, options, parameters, data, covariance, rejected, chain, s2chain, sschain = setup_mcmc()
+        RS = ResultsStructure()
+        RS.add_basic(nsimu = options.nsimu, covariance=covariance, parameters=parameters, rejected=rejected, simutime = 0.001, theta = chain[-1,:])
+        self.assertTrue(RS.basic, msg = 'basic features added to result structure')
+        self.assertTrue(np.array_equal(RS.results['theta'], np.array([0,0])), msg = 'Last elements of chain are zero')
+        
+    def test_addbasic_rejection(self):
+        model, options, parameters, data, covariance, rejected, chain, s2chain, sschain = setup_mcmc()
+        RS = ResultsStructure()
+        RS.add_basic(nsimu = options.nsimu, covariance=covariance, parameters=parameters, rejected=rejected, simutime = 0.001, theta = chain[-1,:])
+        self.assertEqual(RS.results['total_rejected'], 10*(options.nsimu**(-1)), msg = 'rejection reported as fraction of nsimu')
+        self.assertEqual(RS.results['rejected_outside_bounds'], 2*(options.nsimu**(-1)), msg = 'rejection reported as fraction of nsimu')
+        
+    def test_addbasic_covariance(self):
+        model, options, parameters, data, covariance, rejected, chain, s2chain, sschain = setup_mcmc()
+        covariance._R[0,0] = 1.1
+        covariance._R[0,1] = 2.3
+        RS = ResultsStructure()
+        RS.add_basic(nsimu = options.nsimu, covariance=covariance, parameters=parameters, rejected=rejected, simutime = 0.001, theta = chain[-1,:])
+        self.assertTrue(np.array_equal(RS.results['R'], covariance._R), msg = 'Cholesky matches')
+        self.assertTrue(np.array_equal(RS.results['qcov'], np.dot(covariance._R.transpose(),covariance._R)), msg = 'Covariance matches')
+
+# -------------------
+class AddDRAM(unittest.TestCase):
+    def test_addbasic_false(self):
+        model, options, parameters, data, covariance, rejected, chain, s2chain, sschain = setup_mcmc()
+        DR = DelayedRejection()
+        DR._initialize_dr_metrics(options)
+        RS = ResultsStructure()
+        self.assertFalse(RS.add_dram(drscale = options.drscale, RDR=covariance._RDR, total_rejected=rejected['total'], drsettings = DR), msg = 'basic features not added to result structure')
+        
+    def test_addbasic_true(self):
+        model, options, parameters, data, covariance, rejected, chain, s2chain, sschain = setup_mcmc()
+        covariance._RDR = np.random.random_sample(size = (2,2))
+        DR = DelayedRejection()
+        DR._initialize_dr_metrics(options)
+        DR.dr_step_counter = 12000
+        RS = ResultsStructure()
+        RS.add_basic(nsimu = options.nsimu, covariance=covariance, parameters=parameters, rejected=rejected, simutime = 0.001, theta = chain[-1,:])
+        self.assertTrue(RS.add_dram(drscale = options.drscale, RDR=covariance._RDR, total_rejected=rejected['total'], drsettings = DR), msg = 'basic features added to result structure')
+        self.assertTrue(np.array_equal(RS.results['RDR'], covariance._RDR), msg = 'RDR matches')
+        self.assertEqual(RS.results['alpha_count'], DR.dr_step_counter, msg = 'Alpha count matches dr step counter')
+        
 # -------------------
 class AddUpdateSigma(unittest.TestCase):
     

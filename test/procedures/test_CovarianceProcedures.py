@@ -148,3 +148,24 @@ class UpdateCovarianceSettings(unittest.TestCase):
         CPD = CP.__dict__
         self.assertEqual(CPD['_covchain'], 0, msg = '_covchain = _qcov.')
         self.assertTrue(np.array_equal(CPD['_meanchain'], theta), msg = '_meanchain = parameter_set.')
+        
+# -------------------------------------------
+class DisplayCovarianceSettings(unittest.TestCase):
+    
+    def test_print_these_none(self):
+        model, options, parameters, data = setup_mcmc()
+        CP = CovarianceProcedures()
+        CP._initialize_covariance_settings(parameters = parameters, options = options)
+        
+        print_these = CP.display_covariance_settings(print_these = None)
+        self.assertEqual(print_these, ['qcov', 'R', 'RDR', 'invR', 'last_index_since_adaptation', 'covchain'], msg = 'Default print keys')
+        
+    def test_print_these_not_none(self):
+        model, options, parameters, data = setup_mcmc()
+        CP = CovarianceProcedures()
+        CP._initialize_covariance_settings(parameters = parameters, options = options)
+        
+        print_these = ['qcov', 'R', 'RDR', 'invR', 'last_index_since_adaptation', 'covchain']
+        for ii, ptii in enumerate(print_these):
+            self.assertEqual(CP.display_covariance_settings(print_these=[ptii]), [ptii], msg = 'Specified print keys')
+# -------------------------------------------
