@@ -7,7 +7,6 @@ Created on Thu Jan 18 10:30:29 2018
 """
 # import required packages
 import numpy as np
-from scipy.special import expit
 from ..structures.ParameterSet import ParameterSet
 
 class Metropolis:
@@ -88,6 +87,8 @@ class Metropolis:
     @classmethod
     def sample_candidate_from_gaussian_proposal(cls, npar, oldpar, R):
         npar_sample_from_normal = np.random.randn(1, npar)
+#        print('u = {}\nR = {}\n'.format(npar_sample_from_normal, R))
+#        stop
         newpar = oldpar + np.dot(npar_sample_from_normal, R)
         newpar = newpar.reshape(npar)
         return newpar, npar_sample_from_normal
@@ -167,7 +168,7 @@ class Metropolis:
         :Returns:
             * **alpha** (:py:class:`float`): Result of likelihood function
         '''
-        alpha = expit(-0.5*(sum((ss1 - ss2)*(sigma2**(-1))) + newprior - oldprior))
+        alpha = np.exp(-0.5*(sum((ss1 - ss2)*(sigma2**(-1))) + newprior - oldprior))
         return sum(alpha)
     
     @classmethod
@@ -201,5 +202,3 @@ class Metropolis:
             accept = 0
             
         return accept
-    
-    
