@@ -235,7 +235,7 @@ class MCMC:
             
             # PRINT REJECTION STATISTICS
             if self.simulation_options.printint and iiprint + 1 == self.simulation_options.printint:
-                self.__print_rejection_statistics(isimu = isimu, iiadapt = iiadapt, verbosity = self.simulation_options.verbosity)
+                self.__print_rejection_statistics(rejected = self.__rejected, isimu = isimu, iiadapt = iiadapt, verbosity = self.simulation_options.verbosity)
                 iiprint = 0 # reset print counter
                 
             # UPDATE SUM-OF-SQUARES CHAIN
@@ -381,9 +381,9 @@ class MCMC:
         else:
             # reject
             self.__chain[self.__chain_index,:] = self.__old_set.theta
-            self.__update_rejected(outsidebounds)
+            self.__update_rejected(outsidebounds = outsidebounds)
             
-    def __print_rejection_statistics(self, isimu, iiadapt, verbosity):
+    def __print_rejection_statistics(self, rejected, isimu, iiadapt, verbosity):
         '''
         Print Rejection Statistics
         
@@ -393,8 +393,8 @@ class MCMC:
             * **verbosity** (:py:class:`int`): Verbosity of display output.
         '''
         self.__message(verbosity, 2, str('i:{} ({},{},{})\n'.format(
-                isimu, self.__rejected['total']*isimu**(-1)*100, self.__rejected['in_adaptation_interval']*iiadapt**(-1)*100,
-                self.__rejected['outside_bounds']*isimu**(-1)*100)))
+                isimu, rejected['total']*isimu**(-1)*100, rejected['in_adaptation_interval']*iiadapt**(-1)*100,
+                rejected['outside_bounds']*isimu**(-1)*100)))
      
     @classmethod
     def __message(cls, verbosity, level, printthis):
@@ -415,7 +415,7 @@ class MCMC:
     def __display_current_mcmc_settings(self):
         self.model_settings.display_model_settings()
         self.simulation_options.display_simulation_options()
-        self.covariance.display_covariance_settings()
+        self._covariance.display_covariance_settings()
 
     def __update_rejected(self, outsidebounds):
         '''
