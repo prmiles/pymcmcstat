@@ -50,7 +50,7 @@ class DelayedRejection:
         while accept == 0 and itry < ntry:
             itry = itry + 1 # update dr step index
             # initialize next step parameter set
-            next_set = self.initialize_next_metropolis_step(parameters.npar, old_set, new_set, RDR, itry)
+            next_set = self.initialize_next_metropolis_step(npar = parameters.npar, old_theta = old_set.theta, sigma2 = new_set.sigma2, RDR = RDR[itry-1])
                     
             # Reject points outside boundaries
             outsidebounds = self._is_sample_outside_bounds(next_set.theta, parameters._lower_limits[parameters._parind[:]], parameters._upper_limits[parameters._parind[:]])
@@ -72,14 +72,14 @@ class DelayedRejection:
         return accept, out_set, outbound
     
     @classmethod
-    def initialize_next_metropolis_step(cls, npar, old_set, new_set, RDR, itry):
+    def initialize_next_metropolis_step(cls, npar, old_theta, sigma2, RDR):
         '''
         Take metropolis step according to DR
         
         :Args:
             * **npar** (:py:class:`int`): Number of parameters
-            * **old_set** (:class:`~.ParameterSet`): Features of :math:`q^{k-1}`
-            * **new_set** (:class:`~.ParameterSet`): Features of :math:`q^*`
+            * **old_theta** (:class:`~numpy.ndarray`): `q^{k-1}`
+            * **sigma2** (:py:class:`float`): Observation error variance
             * **RDR** (:class:`~numpy.ndarray`): Cholesky decomposition of parameter covariance matrix for DR steps
             * **itry** (:py:class:`int`): DR step counter
             
@@ -92,9 +92,9 @@ class DelayedRejection:
         '''
         next_set = ParameterSet()
         u = np.random.randn(1,npar) # u
-        next_set.theta = old_set.theta + np.dot(u,RDR[itry-1])
+        next_set.theta = old_theta + np.dot(u,RDR)
         next_set.theta = next_set.theta.reshape(npar)
-        next_set.sigma2 = new_set.sigma2
+        next_set.sigma2 = sigma2
         return next_set
     
     def acceptance_test(self, alpha, old_set, next_set, itry):
