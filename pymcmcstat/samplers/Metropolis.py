@@ -60,20 +60,14 @@ class Metropolis:
         oldpar, ss, oldprior, sigma2 = self.unpack_set(old_set)
         
         # Sample new candidate from Gaussian proposal
-        npar_sample_from_normal = np.random.randn(1, parameters.npar)
-        newpar = oldpar + np.dot(npar_sample_from_normal,R)
-        newpar = newpar.reshape(parameters.npar)
+        newpar, npar_sample_from_normal = self.sample_candidate_from_gaussian_proposal(npar = parameters.npar, oldpar = oldpar, R = R)
            
         # Reject points outside boundaries
         outsidebounds = self.is_sample_outside_bounds(newpar, parameters._lower_limits[parameters._parind[:]], parameters._upper_limits[parameters._parind[:]])
         if outsidebounds is True:
             # proposed value outside parameter limits
-            accept = 0
-            newprior = 0
-            alpha = 0
-            ss1 = np.inf
-            ss2 = ss
-            outbound = 1
+            accept, newprior, alpha, ss1, ss2, outbound = self.values_for_outsidebounds(ss = ss)
+            
         else:
             outbound = 0
             # prior SS for the new theta
@@ -90,6 +84,24 @@ class Metropolis:
         newset = ParameterSet(theta = newpar, ss = ss1, prior = newprior, sigma2 = sigma2, alpha = alpha)
         
         return accept, newset, outbound, npar_sample_from_normal
+    
+    @classmethod
+    def sample_candidate_from_gaussian_proposal(cls, npar, oldpar, R):
+        npar_sample_from_normal = np.random.randn(1, npar)
+        newpar = oldpar + np.dot(npar_sample_from_normal, R)
+        newpar = newpar.reshape(npar)
+        return newpar, npar_sample_from_normal
+    
+    @classmethod
+    def values_for_outsidebounds(cls, ss):
+        # proposed value outside parameter limits
+        accept = 0
+        newprior = 0
+        alpha = 0
+        ss1 = np.inf
+        ss2 = ss
+        outbound = 1
+        return accept, newprior, alpha, ss1, ss2, outbound
     
     @classmethod
     def unpack_set(cls, parset):
