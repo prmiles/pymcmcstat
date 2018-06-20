@@ -151,23 +151,28 @@ class CovarianceProcedures:
         self._qcov_scale = qcov_scale
     
     def __setup_R_matrix(self, parind):
-#        print('qcov.shape = {}'.format(self._qcov.shape))
         cm, cn = self._qcov.shape # number of rows, number of columns
         if min([cm, cn]) == 1: # qcov contains variances!
-            s = np.sqrt(self._qcov[np.ix_(parind,parind)])
-            self._R = np.diagflat(s)
-            self._qcovorig = np.diagflat(self._qcov[:]) # save original qcov
-            self._qcov = np.diag(self._qcov[np.ix_(parind,parind)])
+            self.__setup_R_based_on_variances(parind)
         else: # qcov has covariance matrix in it
-            self._qcovorig = np.copy(self._qcov) # save qcov
-            self._qcov = self._qcov[np.ix_(parind,parind)] # this operation in matlab maintains matrix (debug)
-#            print('qcov.shape = {}, qcov = {}'.format(self._qcov.shape,self._qcov))
-            if self._qcov.size == 1:
-                self._R = np.sqrt(self._qcov)
-            else:
-                self._R = np.linalg.cholesky(self._qcov) # cholesky decomposition
-            self._R = self._R.transpose() # matches output of matlab function
+            self.__setup_R_based_on_covariance_matrix(parind)
     
+    def __setup_R_based_on_variances(self, parind):
+        qcov = np.copy(self._qcov)
+        qcov = np.diagflat(qcov)
+        self._R = np.sqrt(qcov[np.ix_(parind,parind)])
+        self._qcovorig = np.diagflat(self._qcov[:]) # save original qcov
+        self._qcov = qcov[np.ix_(parind,parind)]
+        
+    def __setup_R_based_on_covariance_matrix(self, parind):
+        self._qcovorig = np.copy(self._qcov) # save qcov
+        self._qcov = self._qcov[np.ix_(parind,parind)] # this operation in matlab maintains matrix (debug)
+        if self._qcov.size == 1:
+            self._R = np.sqrt(self._qcov)
+        else:
+            self._R = np.linalg.cholesky(self._qcov) # cholesky decomposition
+        self._R = self._R.transpose() # matches output of matlab function
+            
     def __setup_RDR_matrix(self, npar, drscale, ntry, RDR):
         # if not empty
         if RDR is None: # check implementation
@@ -187,17 +192,15 @@ class CovarianceProcedures:
         
     def __setup_no_adapt_index(self, noadaptind, parind):
         # define noadaptind as a boolean - inputted as list of index values not updated
-        self._no_adapt_index = []
+        no_adapt_index = np.zeros([len(parind)],dtype=bool)
         if len(noadaptind) == 0:
-            self._no_adapt_index = np.zeros([len(parind)],dtype=bool)
+            no_adapt_index = np.zeros([len(parind)],dtype=bool)
         else:
-            for jj, noadjj in enumerate(noadaptind):
-                for parii in parind:
-                    if noadjj == parii:
-                        self._no_adapt_index[jj] = np.ones([1],dtype=bool)
-                    else:
-                        self._no_adapt_index[jj] = np.zeros([1],dtype=bool)
+            c = list(set.intersection(set(noadaptind), set(parind)))
+            no_adapt_index[c] = np.ones([1], dtype = bool)
     
+        self._no_adapt_index = no_adapt_index
+        
     def display_covariance_settings(self, print_these = None):
         '''
         Display subset of the covariance settings.
