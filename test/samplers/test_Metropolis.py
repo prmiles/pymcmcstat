@@ -159,6 +159,17 @@ class EvaluateLikelihood(unittest.TestCase):
         ss3 = np.array([1.4, 2.5])
         alpha2 = MA.evaluate_likelihood_function(ss3, ss2, sigma2, newprior, oldprior)
         self.assertTrue(alpha2 < alpha1)
+        
+    def test_alpha_value(self):
+        MA = Metropolis()
+        ss1 = np.array([1., 2.])
+        ss2 = np.array([1.1, 2.4])
+        newprior = np.array([0.,0.])
+        oldprior = np.array([0.,0.])
+        sigma2 = np.array([1.,1.])
+        alpha1 = MA.evaluate_likelihood_function(ss1, ss2, sigma2, newprior, oldprior)
+        self.assertTrue(np.allclose(alpha1, np.array([2.568050833375483])), msg = str('alpha = {}'.format(alpha1)))
+        
 # --------------------------        
 class Acceptance(unittest.TestCase):
     

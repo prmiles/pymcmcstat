@@ -7,6 +7,7 @@ Created on Thu Apr 26 08:48:00 2018
 """
 
 from pymcmcstat.samplers.DelayedRejection import DelayedRejection
+from pymcmcstat.structures.ParameterSet import ParameterSet
 from pymcmcstat.MCMC import MCMC
 
 import unittest
@@ -162,3 +163,16 @@ class InitializeNextMetropolisStep(unittest.TestCase):
         next_set = DR.initialize_next_metropolis_step(npar = npar, old_theta = old_theta, sigma2 = sigma2, RDR = RDR)
         self.assertEqual(next_set.sigma2, sigma2, msg = 'sigma2 should be 0.24')
         self.assertTrue(np.array_equal(next_set.theta, (old_theta + np.dot(np.array([0.2,0.5]),RDR)).reshape(npar)), msg = 'Arrays should match')
+        
+# --------------------------        
+class SetOutsideBounds(unittest.TestCase):
+    def test_set_outsidebounds(self):
+        DR = DelayedRejection()
+        CL = {'theta':1.0, 'ss': 1.0, 'prior':0.0, 'sigma2': 0.0}
+        old_set = ParameterSet(theta = CL['theta'], ss = CL['ss'], prior = CL['prior'], sigma2 = CL['sigma2'])
+        next_set = ParameterSet()
+        out_set, next_set, trypath, outbound = DR._outside_bounds(old_set = old_set, next_set = next_set, trypath = [])
+        self.assertEqual(trypath[0], next_set, msg = 'next_set should be element of trypath')
+        self.assertEqual(outbound, 1, msg = 'outbound should be 1')
+        self.assertEqual(out_set, old_set, msg = 'out_set should equal old_set since outside of bounds')
+        
