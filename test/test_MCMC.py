@@ -125,7 +125,7 @@ class UpdateChain(unittest.TestCase):
         parset = ParameterSet(theta = CL['theta'], ss = CL['ss'], prior = CL['prior'], sigma2 = CL['sigma2'])
         
         mcstat._MCMC__chain_index = mcstat.simulation_options.nsimu - 1
-        mcstat._MCMC__initialize_chains(chainind = 0)
+        mcstat._MCMC__initialize_chains(chainind = 0, nsimu = mcstat.simulation_options.nsimu, npar = mcstat.parameters.npar, nsos = mcstat.model_settings.nsos, updatesigma = mcstat.simulation_options.updatesigma, sigma2 = mcstat.model_settings.sigma2)
         mcstat._MCMC__update_chain(accept = accept, new_set = parset, outsidebounds = outsidebounds)
         
         self.assertTrue(np.array_equal(mcstat._MCMC__chain[-1,:], parset.theta), msg = str('theta added to end of chain - {}'.format(mcstat._MCMC__chain[-1,:])))
@@ -140,7 +140,7 @@ class UpdateChain(unittest.TestCase):
         
         mcstat._MCMC__old_set = ParameterSet(theta = CL['theta'], ss = CL['ss'], prior = CL['prior'], sigma2 = CL['sigma2'])
         mcstat._MCMC__chain_index = mcstat.simulation_options.nsimu - 1
-        mcstat._MCMC__initialize_chains(chainind = 0)
+        mcstat._MCMC__initialize_chains(chainind = 0, nsimu = mcstat.simulation_options.nsimu, npar = mcstat.parameters.npar, nsos = mcstat.model_settings.nsos, updatesigma = mcstat.simulation_options.updatesigma, sigma2 = mcstat.model_settings.sigma2)
         mcstat._MCMC__rejected = {'total': 10, 'in_adaptation_interval': 4, 'outside_bounds': 1}
         mcstat._MCMC__update_chain(accept = accept, new_set = parset, outsidebounds = outsidebounds)
         
@@ -167,3 +167,75 @@ class UpdateRejected(unittest.TestCase):
         self.assertEqual(mcstat._MCMC__rejected['total'], rejectedin['total']+1, msg = 'Adds one to counter')
         self.assertEqual(mcstat._MCMC__rejected['in_adaptation_interval'], rejectedin['in_adaptation_interval']+1, msg = 'Adds one to counter')
         self.assertEqual(mcstat._MCMC__rejected['outside_bounds'], rejectedin['outside_bounds']+1, msg = 'Adds one to counter')
+        
+# --------------------------
+class InitializeChain(unittest.TestCase):
+    def test_initialize_chain_updatesigma_1(self):
+        mcstat = setup_mcmc()
+        CL = {'theta':np.array([1.0, 2.0]), 'ss': 1.0, 'prior':0.0, 'sigma2': 0.0}
+        mcstat._MCMC__old_set = ParameterSet(theta = CL['theta'], ss = CL['ss'], prior = CL['prior'], sigma2 = CL['sigma2'])
+        mcstat._MCMC__chain_index = mcstat.simulation_options.nsimu - 1
+        mcstat._MCMC__initialize_chains(chainind = 0, nsimu = mcstat.simulation_options.nsimu, npar = mcstat.parameters.npar, nsos = mcstat.model_settings.nsos, updatesigma = mcstat.simulation_options.updatesigma, sigma2 = mcstat.model_settings.sigma2)
+        self.assertEqual(mcstat._MCMC__chain.shape, (mcstat.simulation_options.nsimu, 2), msg = str('Shape should be (nsimu,2) -> {}'.format(mcstat._MCMC__chain.shape)))
+        self.assertEqual(mcstat._MCMC__sschain.shape, (mcstat.simulation_options.nsimu, 1), msg = str('Shape should be (nsimu,1) -> {}'.format(mcstat._MCMC__sschain.shape)))
+        self.assertEqual(mcstat._MCMC__s2chain.shape, (mcstat.simulation_options.nsimu, 1), msg = str('Shape should be (nsimu,1) -> {}'.format(mcstat._MCMC__s2chain.shape)))
+        
+    def test_initialize_chain_updatesigma_0(self):
+        mcstat = setup_mcmc()
+        mcstat.simulation_options.updatesigma = 0
+        CL = {'theta':np.array([1.0, 2.0]), 'ss': 1.0, 'prior':0.0, 'sigma2': 0.0}
+        mcstat._MCMC__old_set = ParameterSet(theta = CL['theta'], ss = CL['ss'], prior = CL['prior'], sigma2 = CL['sigma2'])
+        mcstat._MCMC__chain_index = mcstat.simulation_options.nsimu - 1
+        mcstat._MCMC__initialize_chains(chainind = 0, nsimu = mcstat.simulation_options.nsimu, npar = mcstat.parameters.npar, nsos = mcstat.model_settings.nsos, updatesigma = mcstat.simulation_options.updatesigma, sigma2 = mcstat.model_settings.sigma2)
+        self.assertEqual(mcstat._MCMC__chain.shape, (mcstat.simulation_options.nsimu, 2), msg = str('Shape should be (nsimu,2) -> {}'.format(mcstat._MCMC__chain.shape)))
+        self.assertEqual(mcstat._MCMC__sschain.shape, (mcstat.simulation_options.nsimu, 1), msg = str('Shape should be (nsimu,1) -> {}'.format(mcstat._MCMC__sschain.shape)))
+        self.assertEqual(mcstat._MCMC__s2chain, None, msg = str('s2chain should be None -> {}'.format(mcstat._MCMC__s2chain)))
+        
+    def test_initialize_chain_updatesigma_1_nsos_2(self):
+        mcstat = setup_mcmc()
+        mcstat.model_settings.nsos = 2
+        CL = {'theta':np.array([1.0, 2.0]), 'ss': 1.0, 'prior':0.0, 'sigma2': 0.0}
+        mcstat._MCMC__old_set = ParameterSet(theta = CL['theta'], ss = CL['ss'], prior = CL['prior'], sigma2 = CL['sigma2'])
+        mcstat._MCMC__chain_index = mcstat.simulation_options.nsimu - 1
+        mcstat._MCMC__initialize_chains(chainind = 0, nsimu = mcstat.simulation_options.nsimu, npar = mcstat.parameters.npar, nsos = mcstat.model_settings.nsos, updatesigma = mcstat.simulation_options.updatesigma, sigma2 = mcstat.model_settings.sigma2)
+        self.assertEqual(mcstat._MCMC__chain.shape, (mcstat.simulation_options.nsimu, 2), msg = str('Shape should be (nsimu,2) -> {}'.format(mcstat._MCMC__chain.shape)))
+        self.assertEqual(mcstat._MCMC__sschain.shape, (mcstat.simulation_options.nsimu, 2), msg = str('Shape should be (nsimu,2) -> {}'.format(mcstat._MCMC__sschain.shape)))
+        self.assertEqual(mcstat._MCMC__s2chain.shape, (mcstat.simulation_options.nsimu, 2), msg = str('Shape should be (nsimu,2) -> {}'.format(mcstat._MCMC__s2chain.shape)))
+     
+# --------------------------
+class ExpandChain(unittest.TestCase):
+    def test_expand_chain_updatesigma_1(self):
+        mcstat = setup_mcmc()
+        CL = {'theta':np.array([1.0, 2.0]), 'ss': 1.0, 'prior':0.0, 'sigma2': 0.0}
+        mcstat._MCMC__old_set = ParameterSet(theta = CL['theta'], ss = CL['ss'], prior = CL['prior'], sigma2 = CL['sigma2'])
+        mcstat._MCMC__chain_index = mcstat.simulation_options.nsimu - 1
+        mcstat._MCMC__initialize_chains(chainind = 0, nsimu = mcstat.simulation_options.nsimu, npar = mcstat.parameters.npar, nsos = mcstat.model_settings.nsos, updatesigma = mcstat.simulation_options.updatesigma, sigma2 = mcstat.model_settings.sigma2)
+        mcstat._MCMC__expand_chains(nsimu = mcstat.simulation_options.nsimu, npar = mcstat.parameters.npar, nsos = mcstat.model_settings.nsos, updatesigma = mcstat.simulation_options.updatesigma)
+        self.assertEqual(mcstat._MCMC__chain.shape, (mcstat.simulation_options.nsimu*2 - 1, 2), msg = str('Shape should be (nsimu,2) -> {}'.format(mcstat._MCMC__chain.shape)))
+        self.assertEqual(mcstat._MCMC__sschain.shape, (mcstat.simulation_options.nsimu*2 - 1, 1), msg = str('Shape should be (nsimu,1) -> {}'.format(mcstat._MCMC__sschain.shape)))
+        self.assertEqual(mcstat._MCMC__s2chain.shape, (mcstat.simulation_options.nsimu*2 - 1, 1), msg = str('Shape should be (nsimu,1) -> {}'.format(mcstat._MCMC__s2chain.shape)))
+        
+    def test_expand_chain_updatesigma_0(self):
+        mcstat = setup_mcmc()
+        mcstat.simulation_options.updatesigma = 0
+        CL = {'theta':np.array([1.0, 2.0]), 'ss': 1.0, 'prior':0.0, 'sigma2': 0.0}
+        mcstat._MCMC__old_set = ParameterSet(theta = CL['theta'], ss = CL['ss'], prior = CL['prior'], sigma2 = CL['sigma2'])
+        mcstat._MCMC__chain_index = mcstat.simulation_options.nsimu - 1
+        mcstat._MCMC__initialize_chains(chainind = 0, nsimu = mcstat.simulation_options.nsimu, npar = mcstat.parameters.npar, nsos = mcstat.model_settings.nsos, updatesigma = mcstat.simulation_options.updatesigma, sigma2 = mcstat.model_settings.sigma2)
+        mcstat._MCMC__expand_chains(nsimu = mcstat.simulation_options.nsimu, npar = mcstat.parameters.npar, nsos = mcstat.model_settings.nsos, updatesigma = mcstat.simulation_options.updatesigma)
+        self.assertEqual(mcstat._MCMC__chain.shape, (mcstat.simulation_options.nsimu*2 - 1, 2), msg = str('Shape should be (nsimu,2) -> {}'.format(mcstat._MCMC__chain.shape)))
+        self.assertEqual(mcstat._MCMC__sschain.shape, (mcstat.simulation_options.nsimu*2 - 1, 1), msg = str('Shape should be (nsimu,1) -> {}'.format(mcstat._MCMC__sschain.shape)))
+        self.assertEqual(mcstat._MCMC__s2chain, None, msg = str('s2chain should be None -> {}'.format(mcstat._MCMC__s2chain)))
+        
+    def test_expand_chain_updatesigma_1_nsos_2(self):
+        mcstat = setup_mcmc()
+        mcstat.model_settings.nsos = 2
+        CL = {'theta':np.array([1.0, 2.0]), 'ss': 1.0, 'prior':0.0, 'sigma2': 0.0}
+        mcstat._MCMC__old_set = ParameterSet(theta = CL['theta'], ss = CL['ss'], prior = CL['prior'], sigma2 = CL['sigma2'])
+        mcstat._MCMC__chain_index = mcstat.simulation_options.nsimu - 1
+        mcstat._MCMC__initialize_chains(chainind = 0, nsimu = mcstat.simulation_options.nsimu, npar = mcstat.parameters.npar, nsos = mcstat.model_settings.nsos, updatesigma = mcstat.simulation_options.updatesigma, sigma2 = mcstat.model_settings.sigma2)
+        mcstat._MCMC__expand_chains(nsimu = mcstat.simulation_options.nsimu, npar = mcstat.parameters.npar, nsos = mcstat.model_settings.nsos, updatesigma = mcstat.simulation_options.updatesigma)
+        self.assertEqual(mcstat._MCMC__chain.shape, (mcstat.simulation_options.nsimu*2 - 1, 2), msg = str('Shape should be (nsimu,2) -> {}'.format(mcstat._MCMC__chain.shape)))
+        self.assertEqual(mcstat._MCMC__sschain.shape, (mcstat.simulation_options.nsimu*2 - 1, 2), msg = str('Shape should be (nsimu,2) -> {}'.format(mcstat._MCMC__sschain.shape)))
+        self.assertEqual(mcstat._MCMC__s2chain.shape, (mcstat.simulation_options.nsimu*2 - 1, 2), msg = str('Shape should be (nsimu,2) -> {}'.format(mcstat._MCMC__s2chain.shape)))
+       

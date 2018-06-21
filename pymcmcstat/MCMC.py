@@ -74,7 +74,7 @@ class MCMC:
             if self._mcmc_status == True:
                 self.parameters._results_to_params(self.simulation_results.results, 1)
                 self._initialize_simulation()
-                self.__expand_chains()
+                self.__expand_chains(nsimu = self.simulation_options.nsimu, npar = self.parameters.npar, nsos = self.model_settings.nsos, updatesigma=self.simulation_options.updatesigma)
             else:
                 sys.exit('No previous results found.  Set ''use_previous_results'' to ''False''')
         else:
@@ -86,7 +86,7 @@ class MCMC:
                 
             self.__chain_index = 0 # start index at zero
             self._initialize_simulation()
-            self.__initialize_chains(chainind = self.__chain_index)
+            self.__initialize_chains(chainind = self.__chain_index, nsimu = self.simulation_options.nsimu, npar = self.parameters.npar, nsos = self.model_settings.nsos, updatesigma=self.simulation_options.updatesigma, sigma2 = self.model_settings.sigma2)
         # ---------------------
         # setup progress bar
         if self.simulation_options.waitbar:
@@ -155,41 +155,46 @@ class MCMC:
             self._sampling_methods.delayed_rejection._initialize_dr_metrics(self.simulation_options)
 
     # --------------------------------------------------------
-    def __initialize_chains(self, chainind):
+    def __initialize_chains(self, chainind, nsimu, npar, nsos, updatesigma, sigma2):
         '''
         Initialize chains
         
         :Args:
             * **chainind** (:py:class:`int`): Where to store initial parameter value
+            * **nsimu** (:py:class:`int`): Number of parameter samples to simulate.  Default is 1e4.
+            * **npar** (:py:class:`int`): Number of parameters being sampled.
+            * **nsos** (:py:class:`int`): Length of output from sum-of-squares function
+            * **updatesigma** (:py:class:`bool`): Flag for updating measurement error variance. Default is 0 -> off (1 -> on).
+            * **sigma2** (:class:`numpy.ndarray`): Initial error observations.
 
         '''
         # Initialize chain, error variance, and SS
-        self.__chain = np.zeros([self.simulation_options.nsimu, self.parameters.npar])
-        self.__sschain = np.zeros([self.simulation_options.nsimu, self.model_settings.nsos])
-        if self.simulation_options.updatesigma:
-            self.__s2chain = np.zeros([self.simulation_options.nsimu, self.model_settings.nsos])
+        self.__chain = np.zeros([nsimu, npar])
+        self.__sschain = np.zeros([nsimu, nsos])
+        if updatesigma:
+            self.__s2chain = np.zeros([nsimu, nsos])
         else:
             self.__s2chain = None
             
         # Save initialized values to chain, s2chain, sschain
         self.__chain[chainind,:] = self.__initial_set.theta
         self.__sschain[chainind,:] = self.__initial_set.ss
-        if self.simulation_options.updatesigma:
-            self.__s2chain[chainind,:] = self.model_settings.sigma2
+        if updatesigma:
+            self.__s2chain[chainind,:] = sigma2
         
-    def __expand_chains(self):
+    def __expand_chains(self, nsimu, npar, nsos, updatesigma):
         # continuing simulation, so we must expand storage arrays
-        zero_chain = np.zeros([self.simulation_options.nsimu-1, self.parameters.npar])
-        zero_sschain = np.zeros([self.simulation_options.nsimu-1, self.model_settings.nsos])
-        if self.simulation_options.updatesigma:
-            zero_s2chain = np.zeros([self.simulation_options.nsimu-1, self.model_settings.nsos])
+        zero_chain = np.zeros([nsimu-1, npar])
+        zero_sschain = np.zeros([nsimu-1, nsos])
+        if updatesigma:
+            zero_s2chain = np.zeros([nsimu-1, nsos])
         else:
             zero_s2chain = None
             
         # Concatenate with previous chains
         self.__chain = np.concatenate((self.__chain, zero_chain), axis = 0)
         self.__sschain = np.concatenate((self.__sschain, zero_sschain), axis = 0)
-        if self.simulation_options.updatesigma:
+        if updatesigma:
             self.__s2chain = np.concatenate((self.__s2chain, zero_s2chain), axis = 0)
         else:
             self.__s2chain = None
