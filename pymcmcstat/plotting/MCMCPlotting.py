@@ -9,7 +9,7 @@ Created on Wed Jan 31 12:54:16 2018
 # import required packages
 from __future__ import division
 import math
-import matplotlib.pyplot as pyplot
+import matplotlib.pyplot as plt
 from pylab import hist
 from .utilities import generate_names, setup_plot_features, make_x_grid
 
@@ -35,7 +35,7 @@ def plot_density_panel(chains, names = None, hist_on = False, figsizeinches = No
     nsimu, nparam = chains.shape # number of rows, number of columns
     ns1, ns2, names, figsizeinches = setup_plot_features(nparam = nparam, names = names, figsizeinches = figsizeinches)
         
-    pyplot.figure(dpi=100, figsize=(figsizeinches)) # initialize figure
+    f = plt.figure(dpi=100, figsize=(figsizeinches)) # initialize figure
     for ii in range(nparam):
         # define chain
         chain = chains[:,ii].reshape(nsimu,1) # check indexing
@@ -47,16 +47,18 @@ def plot_density_panel(chains, names = None, hist_on = False, figsizeinches = No
         kde = KDEMultivariate(chain, bw = 'normal_reference', var_type = 'c')
 
         # plot density on subplot
-        pyplot.subplot(ns1,ns2,ii+1)
+        plt.subplot(ns1,ns2,ii+1)
              
         if hist_on == True: # include histograms
             hist(chain, normed=True)
             
-        pyplot.plot(chain_grid, kde.pdf(chain_grid), 'k')
+        plt.plot(chain_grid, kde.pdf(chain_grid), 'k')
         # format figure
-        pyplot.xlabel(names[ii])
-        pyplot.ylabel(str('$\pi$({}$|M^{}$)'.format(names[ii], '{data}')))
-        pyplot.tight_layout(rect=[0, 0.03, 1, 0.95],h_pad=1.0) # adjust spacing
+        plt.xlabel(names[ii])
+        plt.ylabel(str('$\pi$({}$|M^{}$)'.format(names[ii], '{data}')))
+        plt.tight_layout(rect=[0, 0.03, 1, 0.95],h_pad=1.0) # adjust spacing
+
+    return f
 
 # --------------------------------------------
 def plot_histogram_panel(chains, names = None, figsizeinches = None):
@@ -72,18 +74,18 @@ def plot_histogram_panel(chains, names = None, figsizeinches = None):
     nsimu, nparam = chains.shape # number of rows, number of columns
     ns1, ns2, names, figsizeinches = setup_plot_features(nparam = nparam, names = names, figsizeinches = figsizeinches)
         
-    f = pyplot.figure(dpi=100, figsize=(figsizeinches)) # initialize figure
+    f = plt.figure(dpi=100, figsize=(figsizeinches)) # initialize figure
     for ii in range(nparam):
         # define chain
         chain = chains[:,ii].reshape(nsimu,1) # check indexing
         
         # plot density on subplot
-        ax = pyplot.subplot(ns1,ns2,ii+1)
+        ax = plt.subplot(ns1,ns2,ii+1)
         hist(chain, normed=True)
         # format figure
-        pyplot.xlabel(names[ii])
+        plt.xlabel(names[ii])
         ax.set_yticklabels([])
-        pyplot.tight_layout(rect=[0, 0.03, 1, 0.95],h_pad=1.0) # adjust spacing
+        plt.tight_layout(rect=[0, 0.03, 1, 0.95],h_pad=1.0) # adjust spacing
         
     return f
         
@@ -105,21 +107,21 @@ def plot_chain_panel(chains, names = None, figsizeinches = None, maxpoints = 500
     if nsimu > maxpoints:
         skip = int(math.floor(nsimu/maxpoints))
     
-    f = pyplot.figure(dpi=100, figsize=(figsizeinches)) # initialize figure
+    f = plt.figure(dpi=100, figsize=(figsizeinches)) # initialize figure
     for ii in range(nparam):
         # define chain
         chain = chains[:,ii].reshape(nsimu,1) # check indexing
         
         # plot chain on subplot
-        pyplot.subplot(ns1,ns2,ii+1)
-        pyplot.plot(range(0,nsimu,skip), chain[range(0,nsimu,skip),0], '.b')
+        plt.subplot(ns1,ns2,ii+1)
+        plt.plot(range(0,nsimu,skip), chain[range(0,nsimu,skip),0], '.b')
         # format figure
-        pyplot.xlabel('Iteration')
-        pyplot.ylabel(str('{}'.format(names[ii])))
+        plt.xlabel('Iteration')
+        plt.ylabel(str('{}'.format(names[ii])))
         if ii+1 <= ns1*ns2 - ns2:
-            pyplot.xlabel('')
+            plt.xlabel('')
             
-        pyplot.tight_layout(rect=[0, 0.03, 1, 0.95],h_pad=1.0) # adjust spacing
+        plt.tight_layout(rect=[0, 0.03, 1, 0.95],h_pad=1.0) # adjust spacing
         
     return f
         
@@ -143,7 +145,7 @@ def plot_pairwise_correlation_panel(chains, names = None, figsizeinches = None, 
     if figsizeinches is None:
         figsizeinches = [7,5]
         
-    f = pyplot.figure(dpi=100, figsize=(figsizeinches)) # initialize figure
+    f = plt.figure(dpi=100, figsize=(figsizeinches)) # initialize figure
     for jj in range(2,nparam+1):
         for ii in range(1,jj):
             chain1 = chains[inds,ii-1]
@@ -152,8 +154,8 @@ def plot_pairwise_correlation_panel(chains, names = None, figsizeinches = None, 
             chain2 = chain2.reshape(nsimu,1)
             
             # plot density on subplot
-            ax = pyplot.subplot(nparam-1,nparam-1,(jj-2)*(nparam-1)+ii)
-            pyplot.plot(chain1, chain2, '.b')
+            ax = plt.subplot(nparam-1,nparam-1,(jj-2)*(nparam-1)+ii)
+            plt.plot(chain1, chain2, '.b')
             
             # format figure
             if jj != nparam: # rm xticks
@@ -161,15 +163,15 @@ def plot_pairwise_correlation_panel(chains, names = None, figsizeinches = None, 
             if ii != 1: # rm yticks
                 ax.set_yticklabels([])
             if ii == 1: # add ylabels
-                pyplot.ylabel(str('{}'.format(names[jj-1])))
+                plt.ylabel(str('{}'.format(names[jj-1])))
             if ii == jj - 1:
                 if nparam == 2: # add xlabels
-                    pyplot.xlabel(str('{}'.format(names[ii-1])))
+                    plt.xlabel(str('{}'.format(names[ii-1])))
                 else: # add title
-                    pyplot.title(str('{}'.format(names[ii-1])))
+                    plt.title(str('{}'.format(names[ii-1])))
          
     # adjust figure margins
-    pyplot.tight_layout(rect=[0, 0.03, 1, 0.95],h_pad=1.0) # adjust spacing
+    plt.tight_layout(rect=[0, 0.03, 1, 0.95],h_pad=1.0) # adjust spacing
     
     return f
  
@@ -191,21 +193,21 @@ def plot_chain_metrics(chain, name, figsizeinches = None):
     if figsizeinches is None:
         figsizeinches = [7,5]
         
-    pyplot.figure(dpi=100, figsize=(figsizeinches)) # initialize figure
-    pyplot.suptitle('Chain metrics for {}'.format(name), fontsize='12')
-    pyplot.subplot(2,1,1)
-    pyplot.scatter(range(0,len(chain)),chain, marker='.')
+    plt.figure(dpi=100, figsize=(figsizeinches)) # initialize figure
+    plt.suptitle('Chain metrics for {}'.format(name), fontsize='12')
+    plt.subplot(2,1,1)
+    plt.scatter(range(0,len(chain)),chain, marker='.')
     # format figure
-    pyplot.xlabel('Iterations')
+    plt.xlabel('Iterations')
     ystr = str('{}-chain'.format(name))
-    pyplot.ylabel(ystr)
+    plt.ylabel(ystr)
     # Add histogram
-    pyplot.subplot(2,1,2)
+    plt.subplot(2,1,2)
     hist(chain)
     # format figure
-    pyplot.xlabel(name)
-    pyplot.ylabel(str('Histogram of {}-chain'.format(name)))
-    pyplot.tight_layout(rect=[0, 0.03, 1, 0.95],h_pad=1.0) # adjust spacing
+    plt.xlabel(name)
+    plt.ylabel(str('Histogram of {}-chain'.format(name)))
+    plt.tight_layout(rect=[0, 0.03, 1, 0.95],h_pad=1.0) # adjust spacing
     
 class Plot:
     """

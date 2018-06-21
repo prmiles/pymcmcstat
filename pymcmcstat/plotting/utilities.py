@@ -192,7 +192,7 @@ def scale_bandwidth(x):
         s = 1.06*np.array([min(np.std(x, ddof=1),iqrange(x)/1.34)*n**(-1/5)])
     return s
 
-# -------------------------------------------- 
+# --------------------------------------------
 def generate_ellipse(mu, cmat, ndp = 100):
     '''
     Generates points for a probability contour ellipse

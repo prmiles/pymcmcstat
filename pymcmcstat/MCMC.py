@@ -99,7 +99,7 @@ class MCMC:
         self.chainstats = ChainStatistics.chainstats
         self._mcmc_status = True # simulation has been performed
     
-    # --------------------------------------------------------    
+    # --------------------------------------------------------
     def __setup_simulator(self, use_previous_results):
         
         if use_previous_results == True:
