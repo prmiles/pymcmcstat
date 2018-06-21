@@ -9,7 +9,61 @@ Created on Wed May 30 05:57:34 2018
 from pymcmcstat.plotting import utilities
 import unittest
 import numpy as np
+import math
 
+# --------------------------
+class GenerateSubplotGrid(unittest.TestCase):
+    def test_generate_subplot_grid(self):
+        nparam = 5
+        ns1, ns2 = utilities.generate_subplot_grid(nparam = nparam)
+        self.assertEqual(ns1, math.ceil(math.sqrt(nparam)), msg = 'Expect 3')
+        self.assertEqual(ns2, round(math.sqrt(nparam)), msg = 'Expect 2')
+        
+    def test_generate_subplot_grid_1(self):
+        nparam = 1
+        ns1, ns2 = utilities.generate_subplot_grid(nparam = nparam)
+        self.assertEqual(ns1, math.ceil(math.sqrt(nparam)), msg = 'Expect 1')
+        self.assertEqual(ns2, round(math.sqrt(nparam)), msg = 'Expect 1')
+
+# --------------------------
+class GenerateNames(unittest.TestCase):
+    
+    def test_default_names(self):
+        nparam = 8
+        names = utilities.generate_names(nparam = nparam, names = None)
+        self.assertEqual(len(names), nparam, msg = 'Length of names should match number of parameters')
+        for ii in range(nparam):
+            self.assertEqual(names[ii], str('$p_{{{}}}$'.format(ii)))
+
+    def test_names_partial(self):
+        nparam = 8
+        names = ['hi']
+        names = utilities.generate_names(nparam = nparam, names = names)
+        self.assertEqual(names[0], 'hi', msg = 'First name is hi')
+        for ii in range(1, nparam):
+            self.assertEqual(names[ii], str('$p_{{{}}}$'.format(ii)))
+ 
+# --------------------------
+class SetupPlotFeatures(unittest.TestCase):
+    def test_default_features(self):
+        nparam = 2
+        ns1, ns2, names, figsizeinches = utilities.setup_plot_features(nparam = nparam, names = None, figsizeinches = None)
+        self.assertEqual(ns1, math.ceil(math.sqrt(nparam)), msg = 'Expect 3')
+        self.assertEqual(ns2, round(math.sqrt(nparam)), msg = 'Expect 2')
+        for ii in range(nparam):
+            self.assertEqual(names[ii], str('$p_{{{}}}$'.format(ii)))
+        self.assertEqual(figsizeinches, [5,4], msg = 'Default figure size is [5,4]')
+        
+    def test_nondefault_features(self):
+        nparam = 2
+        ns1, ns2, names, figsizeinches = utilities.setup_plot_features(nparam = nparam, names = ['hi'], figsizeinches = [7,2])
+        self.assertEqual(ns1, math.ceil(math.sqrt(nparam)), msg = 'Expect 3')
+        self.assertEqual(ns2, round(math.sqrt(nparam)), msg = 'Expect 2')
+        self.assertEqual(names[0], 'hi', msg = 'First name is hi')
+        for ii in range(1, nparam):
+            self.assertEqual(names[ii], str('$p_{{{}}}$'.format(ii)))
+        self.assertEqual(figsizeinches, [7,2], msg = 'Default figure size is [7,2]')
+        
 # --------------------------
 class GenerateDefaultNames(unittest.TestCase):
     

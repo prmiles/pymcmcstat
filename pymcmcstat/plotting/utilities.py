@@ -10,6 +10,79 @@ from scipy import pi,sin,cos
 import sys
 import math
 
+def generate_subplot_grid(nparam = 2):
+    '''
+    Generate subplot grid.
+    
+    For example, if `nparam` = 2, then the subplot will have 2 rows and 1 column.
+    
+    :Args:
+        * **nparam** (:py:class:`int`): Number of parameters
+
+    \\
+        
+    :Returns:
+        * **ns1** (:py:class:`int`): Number of rows in subplot
+        * **ns2** (:py:class:`int`): Number of columns in subplot
+    
+    '''
+    ns1 = math.ceil(math.sqrt(nparam))
+    ns2 = round(math.sqrt(nparam))
+    return ns1, ns2
+
+def generate_names(nparam, names):
+    '''
+    Generate parameter name set.
+    For example, if `nparam` = 4, then the generated names are::
+        
+        names = ['p_{0}', 'p_{1}', 'p_{2}', 'p_{3}']
+    
+    :Args:
+        * **nparam** (:py:class:`int`): Number of parameter names to generate
+        * **names** (:py:class:`list`): Names of parameters provided by user
+
+    \\
+        
+    :Returns:
+        * **names** (:py:class:`list`): List of strings - parameter names
+    
+    '''
+    # Check if names defined
+    if names == None:
+        names = generate_default_names(nparam)
+        
+    # Check if enough names defined
+    if len(names) != nparam:
+        names = extend_names_to_match_nparam(names, nparam)
+    return names
+
+def setup_plot_features(nparam, names, figsizeinches):
+    '''
+    Setup plot features.
+    
+    :Args:
+        * **nparam** (:py:class:`int`): Number of parameters
+        * **names** (:py:class:`list`): Names of parameters provided by user
+        * **figsizeinches** (:py:class:`list'): [Width, Height]
+
+    \\
+        
+    :Returns:
+        * **ns1** (:py:class:`int`): Number of rows in subplot
+        * **ns2** (:py:class:`int`): Number of columns in subplot
+        * **names** (:py:class:`list`): List of strings - parameter names
+        * **figsizeiches** (:py:class:`list`): [Width, Height]
+    
+    '''
+    ns1, ns2 = generate_subplot_grid(nparam = nparam)
+
+    names = generate_names(nparam = nparam, names = names)
+    
+    if figsizeinches is None:
+        figsizeinches = [5,4]
+        
+    return ns1, ns2, names, figsizeinches
+
 def generate_default_names(nparam):
     '''
     Generate generic parameter name set.
