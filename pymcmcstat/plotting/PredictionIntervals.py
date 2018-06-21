@@ -23,7 +23,7 @@ class PredictionIntervals:
         - :meth:`~generate_prediction_intervals`
         - :meth:`~plot_prediction_intervals`
     '''
-    
+    # --------------------------------------------
     def setup_prediction_interval_calculation(self, results, data, modelfunction):
         '''
         Setup calculation for prediction interval generation
@@ -35,28 +35,52 @@ class PredictionIntervals:
             
         '''
         # Analyze data structure
+        self.__ndatabatches, nrows, ncols = self._analyze_data_structure(data = data)
+            
+        # setup data structure for prediction
+        self.datapred = self._setup_data_structure_for_prediction(data = data, ndatabatches = self.__ndatabatches)
+            
+        # assign model function
+        self.modelfunction = modelfunction
+        
+        # assign required features from the results structure
+        self._assign_features_from_results_structure(results = results)
+        
+        # evaluate model function to determine shape of response
+        self._determine_shape_of_response(modelfunction = modelfunction)
+        
+        # analyze structure of s2chain with respect to model output
+        if self.__s2chain is not None:
+            self._analyze_s2chain(ndatabatches = self.__ndatabatches)
+    # -------------------------------------------- 
+    @classmethod
+    def _analyze_data_structure(cls, data):
+        # Analyze data structure
         dshapes = data.shape
-        self.__ndatabatches = len(dshapes)
+        ndatabatches = len(dshapes)
         nrows = []
         ncols = []
-        for ii in range(self.__ndatabatches):
+        for ii in range(ndatabatches):
             nrows.append(dshapes[ii][0])
             if len(dshapes[0]) != 1:
                 ncols.append(dshapes[ii][1])
             else:
                 ncols.append(1)
-                
-        self.datapred = []
-        for ii in range(self.__ndatabatches):
+        return ndatabatches, nrows, ncols
+    # -------------------------------------------- 
+    @classmethod
+    def _setup_data_structure_for_prediction(cls, data, ndatabatches):
+        datapred = []
+        for ii in range(ndatabatches):
             # setup data structure for prediction
             # this is required to allow user to send objects other than xdata to model function
-            self.datapred.append(DataStructure())
-            self.datapred[ii].add_data_set(x = data.xdata[ii], y = data.ydata[ii],
+            datapred.append(DataStructure())
+            datapred[ii].add_data_set(x = data.xdata[ii], y = data.ydata[ii],
                          user_defined_object = data.user_defined_object[ii])
             
-        # assign model function
-        self.modelfunction = modelfunction
-        
+        return datapred
+    # --------------------------------------------
+    def _assign_features_from_results_structure(self, results):
         # assign required features from the results structure
         self.__chain = results['chain']
         self.__s2chain = results['s2chain']
@@ -74,7 +98,8 @@ class PredictionIntervals:
             self.__sstype = results['sstype']
         else:
             self.__sstype = 0
-        
+    # --------------------------------------------        
+    def _determine_shape_of_response(self, modelfunction):
         # evaluate model function to determine shape of response
         self.__nrow = []
         self.__ncol = []
@@ -91,15 +116,8 @@ class PredictionIntervals:
             else:
                 self.__nrow.append(sh[0])
                 self.__ncol.append(sh[1])
-                
-#        print('nrow = {}, ncol = {}'.format(self.__nrow, self.__ncol))
-#        print('ndatabatches = {}'.format(self.__ndatabatches))
-        
-        # analyze structure of s2chain with respect to model output
-        if self.__s2chain is not None:
-            self._analyze_s2chain()
-        
-    def _analyze_s2chain(self):
+    # --------------------------------------------            
+    def _analyze_s2chain(self, ndatabatches):
         '''
         Analysis of s2chain.
         
@@ -119,22 +137,22 @@ class PredictionIntervals:
         total_columns = sum(self.__ncol)
         
         if n == 1: # only one obs. error for all data sets
-            self.__s2chain_index = np.zeros([self.__ndatabatches,2], dtype = int)
-            for ii in range(self.__ndatabatches):
+            self.__s2chain_index = np.zeros([ndatabatches,2], dtype = int)
+            for ii in range(ndatabatches):
                 self.__s2chain_index[ii,:] = np.array([0, 1])
             
         elif n != 1 and total_columns == n: # then different obs. error for each column
-            self.__s2chain_index = np.zeros([self.__ndatabatches,2], dtype = int)
-            for ii in range(self.__ndatabatches):
+            self.__s2chain_index = np.zeros([ndatabatches,2], dtype = int)
+            for ii in range(ndatabatches):
                 if ii == 1:
                     self.__s2chain_index[ii,:] = np.array([0, self.__ncol[ii]])
                 else:
                     self.__s2chain_index[ii,:] = np.array([self.__s2chain_index[ii-1,1],
                                                           self.__s2chain_index[ii-1,1] + self.__ncol[ii]])
         elif n != 1 and total_columns != n:
-            if n == self.__ndatabatches: # assume separate obs. error for each batch
-                self.__s2chain_index = np.zeros([self.__ndatabatches,2], dtype = int)
-                for ii in range(self.__ndatabatches):
+            if n == ndatabatches: # assume separate obs. error for each batch
+                self.__s2chain_index = np.zeros([ndatabatches,2], dtype = int)
+                for ii in range(ndatabatches):
                     if ii == 0: # 1?
                         self.__s2chain_index[ii,:] = np.array([0, 1])
                     else:
@@ -142,11 +160,11 @@ class PredictionIntervals:
                                                               self.__s2chain_index[ii-1,1] + 1])
             else:
                 print('s2chain.shape = {}'.format(self.__s2chain.shape))
-                print('ndatabatches = {}'.format(self.__ndatabatches))
+                print('ndatabatches = {}'.format(ndatabatches))
                 print('# of columns per batch = {}'.format(self.__ncol))
                 sys.exit('Unclear data structure: error variances do not match size of model output')
         
-        
+    # --------------------------------------------    
     def generate_prediction_intervals(self, sstype = None, nsample = 500, calc_pred_int = True, waitbar = False):
         '''
         Generate prediction/credible interval.
@@ -157,89 +175,30 @@ class PredictionIntervals:
             * **calc_pred_int** (:py:class:`bool`): Flag to turn on prediction interval calculation.
             * **waitbar** (:py:class:`bool`): Flag to turn on progress bar.
         '''
-        # extract chain & s2chain from results
-        chain = self.__chain
         
-        calc_pred_int = self.__convert_pred_int_flag(calc_pred_int)
-        if calc_pred_int is False:
-            s2chain = None
-        else:
-            s2chain = self.__s2chain
+        chain, s2chain, nsimu, lims, sstype, nsample, iisample = self._setup_generation_requirements(sstype = sstype, nsample = nsample, calc_pred_int = calc_pred_int)
         
-        # define number of simulations by the size of the chain array
-        nsimu = chain.shape[0]
-        
-        # define interval limits
-        if s2chain is None:
-            lims = np.array([0.005,0.025,0.05,0.25,0.5,0.75,0.9,0.975,0.995])
-        else:
-            lims = np.array([0.025, 0.5, 0.975])
-        
-        if sstype is None:
-            sstype = self.__sstype
-        else:
-            sstype = 0
-        
-        # check value of nsample
-        if nsample is None:
-            nsample = nsimu
-            
-        # define sample points
-        if nsample >= nsimu:
-            iisample = range(nsimu) # sample all points from chain
-            nsample = nsimu
-        else:
-            # randomly sample from chain
-            iisample = np.ceil(np.random.rand(nsample,1)*nsimu) - 1
-            iisample = iisample.astype(int)
-        
-        # ---------------------
         # setup progress bar
         print('Generating credible/prediction intervals:\n')
         if waitbar is True:
             self.__wbarstatus = progress_bar(iters = int(nsample))
             
+        # extract chain elements
+        testchain = chain[iisample,:]
+            
         # loop through data sets
-        theta = self.__theta
         credible_intervals = []
         prediction_intervals = []
         for ii in range(len(self.datapred)):
-            datapredii = self.datapred[ii]
+            datapredii, nrow, ncol, modelfun, test = self._setup_predii(ii = ii)
+            if s2chain is not None:
+                s2ci = [self.__s2chain_index[ii][0], self.__s2chain_index[ii][1]]
+                tests2chain = s2chain[iisample, s2ci[0]:s2ci[1]]
+            else:
+                tests2chain = None
             
-            ysave = np.zeros([nsample, self.__nrow[ii], self.__ncol[ii]])
-            osave = np.zeros([nsample, self.__nrow[ii], self.__ncol[ii]])
-            
-            for kk in range(nsample):
-                # progress bar
-                if waitbar is True:
-                    self.__wbarstatus.update(kk)
-                
-                theta[self.__parind[:]] = chain[iisample[kk],:]
-                # some parameters may only apply to certain batch sets
-                test1 = self.__local == 0
-                test2 = self.__local == ii
-                th = theta[test1 + test2]
-                if isinstance(self.modelfunction, list):
-                    ypred = self.modelfunction[ii](datapredii, th)
-                else:
-                    ypred = self.modelfunction(datapredii, th)
-                        
-                ypred = ypred.reshape(self.__nrow[ii], self.__ncol[ii])
-#                print('ypred.shape = {}'.format(ypred.shape))
-                if s2chain is not None:
-                    s2elem = s2chain[iisample[kk],self.__s2chain_index[ii][0]:self.__s2chain_index[ii][1]]
-                    if s2elem.shape != (1,s2elem.size):
-                        s2elem = s2elem.reshape(1,s2elem.shape[0]) # make row vector
-#                    print('s2elem = {}'.format(s2elem))
-#                    print('s2elem.shape={}'.format(s2elem.shape))
-#                    print('iisample[kk] = {}, s2chain_idx[ii][0] ={}:s2chain_idx[ii][1] = {}'.format(iisample[kk], self.__s2chain_index[ii][0], self.__s2chain_index[ii][1]))
-                    opred = self._observation_sample(s2elem, ypred, sstype)
-                else:
-                    opred = np.zeros([self.__nrow[ii], self.__ncol[ii]])
-                   
-                # store model prediction
-                ysave[kk,:,:] = ypred # store model output
-                osave[kk,:,:] = opred # store model output with observation errors
+            # Run interval generation on set ii
+            ysave, osave = self._run_predii(testchain, tests2chain, nrow, ncol, waitbar, sstype, test, modelfun, datapredii)
                 
             # generate quantiles
             plim = []
@@ -260,7 +219,116 @@ class PredictionIntervals:
                'prediction_intervals': prediction_intervals}
     
         print('\nInterval generation complete\n')
+    # -------------------------------------------- 
+    def _setup_predii(self, ii):
+        datapredii = self.datapred[ii]
+        nrow = self.__nrow[ii]
+        ncol = self.__ncol[ii]
+        if isinstance(self.modelfunction, list):
+            modelfun = self.modelfunction[ii]
+        else:
+            modelfun = self.modelfunction
+        
+        # some parameters may only apply to certain batch sets
+        test1 = self.__local == 0
+        test2 = self.__local == ii
+        test = test1 + test2
+        return datapredii, nrow, ncol, modelfun, test
+    # -------------------------------------------- 
+    def _run_predii(self, testchain, tests2chain, nrow, ncol, waitbar, sstype, test, modelfun, datapredii):
+        nsample, npar = testchain.shape
+        theta = self.__theta
+        ysave = np.zeros([nsample, nrow, ncol])
+        osave = np.zeros([nsample, nrow, ncol])
+        
+        for kk, isa in enumerate(testchain):
+            # progress bar
+            if waitbar is True:
+                self.__wbarstatus.update(kk)
+            
+            # extract chain set
+            theta[self.__parind[:]] = isa
+            th = theta[test]
+            # evaluate model
+            ypred = modelfun(datapredii, th)
+            ypred = ypred.reshape(nrow, ncol)
+            
+            if tests2chain is not None:
+                s2elem = tests2chain[kk]
+                if s2elem.shape != (1,s2elem.size):
+                    s2elem = s2elem.reshape(1,s2elem.shape[0]) # make row vector
+                opred = self._observation_sample(s2elem, ypred, sstype)
+            else:
+                opred = np.zeros([nrow, ncol])
+               
+            # store model prediction
+            ysave[kk,:,:] = ypred # store model output
+            osave[kk,:,:] = opred # store model output with observation errors
+        return ysave, osave
     
+    # -------------------------------------------- 
+    def _setup_generation_requirements(self, nsample, calc_pred_int, sstype):
+        # extract chain & s2chain from results
+        chain = self.__chain
+        
+        calc_pred_int = self.__convert_pred_int_flag(calc_pred_int)
+        if calc_pred_int is False:
+            s2chain = None
+        else:
+            s2chain = self.__s2chain
+        
+        # define number of simulations by the size of the chain array
+        nsimu = chain.shape[0]
+        
+        # define interval limits
+        lims = self._setup_interval_limits(s2chain)
+        
+        # define ss type
+        sstype = self._setup_sstype(sstype)
+        
+        # check value of nsample
+        nsample = self._check_nsample(nsample = nsample, nsimu = nsimu)
+            
+        # define sample points
+        iisample, nsample = self._define_sample_points(nsample = nsample, nsimu = nsimu)
+        
+        return chain, s2chain, nsimu, lims, sstype, nsample, iisample
+    # -------------------------------------------- 
+    @classmethod
+    def _setup_interval_limits(cls, s2chain):
+        if s2chain is None:
+            lims = np.array([0.005,0.025,0.05,0.25,0.5,0.75,0.9,0.975,0.995])
+        else:
+            lims = np.array([0.025, 0.5, 0.975])
+        return lims 
+    # -------------------------------------------- 
+    def _setup_sstype(self, sstype):
+        if sstype is None:
+            sstype = self.__sstype
+        else:
+            sstype = 0
+        return sstype
+    # -------------------------------------------- 
+    @classmethod
+    def _check_nsample(cls, nsample, nsimu):
+        # check value of nsample
+        if nsample is None:
+            nsample = nsimu
+        return nsample
+    # -------------------------------------------- 
+    @classmethod
+    def _define_sample_points(cls, nsample, nsimu):
+        # define sample points
+        if nsample >= nsimu:
+            iisample = range(nsimu) # sample all points from chain
+            nsample = nsimu
+        else:
+            # randomly sample from chain
+            iisample = np.ceil(np.random.rand(nsample)*nsimu) - 1
+            iisample = iisample.astype(int)
+        return iisample, nsample
+
+    # --------------------------------------------
     def plot_prediction_intervals(self, plot_pred_int = True, adddata = False, addlegend = True, figsizeinches = None):
         '''
         Plot prediction/credible intervals.
@@ -366,7 +434,7 @@ class PredictionIntervals:
                     ax.legend(handles, labels, loc='upper left')
     
         return fighandle, axhandle
-    
+    # --------------------------------------------
     @classmethod
     def __convert_pred_int_flag(cls, calc_pred_int):
             '''
@@ -378,7 +446,7 @@ class PredictionIntervals:
                 calc_pred_int = False
                 
             return calc_pred_int
-    
+    # --------------------------------------------
     @classmethod
     def _observation_sample(cls, s2elem, ypred, sstype):
         # check shape of s2elem and ypred
@@ -402,7 +470,7 @@ class PredictionIntervals:
             sys.exit('Unknown sstype')
             
         return opred
-    
+    # --------------------------------------------
     @classmethod
     def _empirical_quantiles(cls, x, p = np.array([0.25, 0.5, 0.75])):
         '''
