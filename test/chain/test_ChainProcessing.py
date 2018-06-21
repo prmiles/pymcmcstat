@@ -160,7 +160,7 @@ class CheckSaveToTextFile(unittest.TestCase):
         CP._save_to_txt_file(filename = tmpfile, mtx = np.array([0.1, 0.2]))
         self.assertTrue(os.path.isfile(tmpfile), msg = 'File exists')
         loadmtx = np.loadtxt(tmpfile)
-        self.assertTrue(np.array_equal(loadmtx, np.array([0.1, 0.2])), msg = 'Arrays should match')
+        self.assertTrue(np.array_equal(loadmtx, np.array([0.1, 0.2])), msg = str('Arrays should match: {}'.format(loadmtx)))
         os.remove(tmpfile)
         
 # -------------------

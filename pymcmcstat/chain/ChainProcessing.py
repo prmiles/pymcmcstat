@@ -196,7 +196,7 @@ def _save_to_bin_file(filename, datasetname, mtx):
     hf.close()
         
 def _save_to_txt_file(filename, mtx):
-    handle = open(filename, 'a')
+    handle = open(filename, 'ab')
     np.savetxt(handle,mtx)
     handle.close()
     
