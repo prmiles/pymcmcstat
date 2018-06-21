@@ -11,7 +11,7 @@ from __future__ import division
 import math
 import matplotlib.pyplot as pyplot
 from pylab import hist
-from .utilities import generate_default_names, extend_names_to_match_nparam, make_x_grid
+from .utilities import generate_names, setup_plot_features, make_x_grid
 
 import warnings
 
@@ -32,28 +32,13 @@ def plot_density_panel(chains, names = None, hist_on = False, figsizeinches = No
         * **figsizeinches** (:py:class:`list`): Specify figure size in inches [Width, Height]
 
     """
-    nrow, ncol = chains.shape # number of rows, number of columns
-    
-    nparam = ncol # number of parameter chains
-    ns1 = math.ceil(math.sqrt(nparam))
-    ns2 = round(math.sqrt(nparam))
-
-    # Check if names defined
-    if names == None:
-        names = generate_default_names(nparam)
-        
-    # Check if enough names defined
-    if len(names) != nparam:
-        names = extend_names_to_match_nparam(names, nparam)
-    
-    if figsizeinches is None:
-        figsizeinches = [5,4]
+    nsimu, nparam = chains.shape # number of rows, number of columns
+    ns1, ns2, names, figsizeinches = setup_plot_features(nparam = nparam, names = names, figsizeinches = figsizeinches)
         
     pyplot.figure(dpi=100, figsize=(figsizeinches)) # initialize figure
     for ii in range(nparam):
         # define chain
-        chain = chains[:,ii] # check indexing
-        chain = chain.reshape(nrow,1)
+        chain = chains[:,ii].reshape(nsimu,1) # check indexing
         
         # define x grid
         chain_grid = make_x_grid(chain)
@@ -84,28 +69,13 @@ def plot_histogram_panel(chains, names = None, figsizeinches = None):
         * **hist_on** (:py:class:`bool`): Flag to include histogram on density plot
         * **figsizeinches** (:py:class:`list`): Specify figure size in inches [Width, Height]
     """
-    nrow, ncol = chains.shape # number of rows, number of columns
-    
-    nparam = ncol # number of parameter chains
-    ns1 = math.ceil(math.sqrt(nparam))
-    ns2 = round(math.sqrt(nparam))
-    
-    # Check if names defined
-    if names == None:
-        names = generate_default_names(nparam)
-    
-    # Check if enough names defined
-    if len(names) != nparam:
-        names = extend_names_to_match_nparam(names, nparam)
-       
-    if figsizeinches is None:
-        figsizeinches = [5,4]
+    nsimu, nparam = chains.shape # number of rows, number of columns
+    ns1, ns2, names, figsizeinches = setup_plot_features(nparam = nparam, names = names, figsizeinches = figsizeinches)
         
     f = pyplot.figure(dpi=100, figsize=(figsizeinches)) # initialize figure
     for ii in range(nparam):
         # define chain
-        chain = chains[:,ii] # check indexing
-        chain = chain.reshape(nrow,1)
+        chain = chains[:,ii].reshape(nsimu,1) # check indexing
         
         # plot density on subplot
         ax = pyplot.subplot(ns1,ns2,ii+1)
@@ -118,7 +88,7 @@ def plot_histogram_panel(chains, names = None, figsizeinches = None):
     return f
         
 # --------------------------------------------
-def plot_chain_panel(chains, names = None, figsizeinches = None):
+def plot_chain_panel(chains, names = None, figsizeinches = None, maxpoints = 500):
     """
     Plot sampling chain for each parameter
     
@@ -126,35 +96,21 @@ def plot_chain_panel(chains, names = None, figsizeinches = None):
         * **chains** (:class:`~numpy.ndarray`): Sampling chain for each parameter
         * **names** (:py:class:`list`): List of strings - name of each parameter
         * **figsizeinches** (:py:class:`list`): Specify figure size in inches [Width, Height]
+        * **maxpoints** (:py:class:`int`): Max number of display points - keeps scatter plot from becoming overcrowded
     """
     nsimu, nparam = chains.shape # number of rows, number of columns
-
+    ns1, ns2, names, figsizeinches = setup_plot_features(nparam = nparam, names = names, figsizeinches = figsizeinches)
+    
     skip = 1
-    maxpoints = 500 # max number of display points - keeps scatter plot from becoming overcrowded
     if nsimu > maxpoints:
         skip = int(math.floor(nsimu/maxpoints))
     
-    ns1 = math.ceil(math.sqrt(nparam))
-    ns2 = round(math.sqrt(nparam))
-    
-    # Check if names defined
-    if names == None:
-        names = generate_default_names(nparam)
-    
-    # Check if enough names defined
-    if len(names) != nparam:
-        names = extend_names_to_match_nparam(names, nparam)
-        
-    if figsizeinches is None:
-        figsizeinches = [5,4]
-        
     f = pyplot.figure(dpi=100, figsize=(figsizeinches)) # initialize figure
     for ii in range(nparam):
         # define chain
-        chain = chains[:,ii] # check indexing
-        chain = chain.reshape(nsimu,1)
+        chain = chains[:,ii].reshape(nsimu,1) # check indexing
         
-        # plot density on subplot
+        # plot chain on subplot
         pyplot.subplot(ns1,ns2,ii+1)
         pyplot.plot(range(0,nsimu,skip), chain[range(0,nsimu,skip),0], '.b')
         # format figure
@@ -168,7 +124,7 @@ def plot_chain_panel(chains, names = None, figsizeinches = None):
     return f
         
 # --------------------------------------------
-def plot_pairwise_correlation_panel(chains, names = None, figsizeinches = None, skip=1):
+def plot_pairwise_correlation_panel(chains, names = None, figsizeinches = None, skip = 1):
     """
     Plot pairwise correlation for each parameter
     
@@ -182,13 +138,7 @@ def plot_pairwise_correlation_panel(chains, names = None, figsizeinches = None, 
     
     inds = range(0,nsimu,skip)
     
-    # Check if names defined
-    if names == None:
-        names = generate_default_names(nparam)
-        
-    # Check if enough names defined
-    if len(names) != nparam:
-        names = extend_names_to_match_nparam(names, nparam)
+    names = generate_names(nparam = nparam, names = names)
         
     if figsizeinches is None:
         figsizeinches = [7,5]
@@ -236,6 +186,7 @@ def plot_chain_metrics(chain, name, figsizeinches = None):
         * **names** (:py:class:`str`): Name of each parameter
         * **figsizeinches** (:py:class:`list`): Specify figure size in inches [Width, Height]
     """
+    name = generate_names(nparam = 1, names = name)
     
     if figsizeinches is None:
         figsizeinches = [7,5]
