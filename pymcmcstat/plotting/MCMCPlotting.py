@@ -43,7 +43,7 @@ def plot_density_panel(chains, names = None, hist_on = False, figsizeinches = No
         # define x grid
         chain_grid = make_x_grid(chain)
         
-        # Compuate kernel density estimate
+        # Compute kernel density estimate
         kde = KDEMultivariate(chain, bw = 'normal_reference', var_type = 'c')
 
         # plot density on subplot
@@ -176,7 +176,7 @@ def plot_pairwise_correlation_panel(chains, names = None, figsizeinches = None, 
     return f
  
 # --------------------------------------------
-def plot_chain_metrics(chain, name, figsizeinches = None):
+def plot_chain_metrics(chain, name = None, figsizeinches = None):
     """
     Plot chain metrics for individual chain
     
@@ -193,10 +193,10 @@ def plot_chain_metrics(chain, name, figsizeinches = None):
     if figsizeinches is None:
         figsizeinches = [7,5]
         
-    plt.figure(dpi=100, figsize=(figsizeinches)) # initialize figure
+    f = plt.figure(dpi=100, figsize=(figsizeinches)) # initialize figure
     plt.suptitle('Chain metrics for {}'.format(name), fontsize='12')
     plt.subplot(2,1,1)
-    plt.scatter(range(0,len(chain)),chain, marker='.')
+    plt.plot(range(0,len(chain)),chain, marker='.')
     # format figure
     plt.xlabel('Iterations')
     ystr = str('{}-chain'.format(name))
@@ -208,6 +208,7 @@ def plot_chain_metrics(chain, name, figsizeinches = None):
     plt.xlabel(name)
     plt.ylabel(str('Histogram of {}-chain'.format(name)))
     plt.tight_layout(rect=[0, 0.03, 1, 0.95],h_pad=1.0) # adjust spacing
+    return f
     
 class Plot:
     """
