@@ -312,8 +312,6 @@ class MCMC:
         self.simulation_results.add_chain(chain = self.__chain)
         self.simulation_results.add_s2chain(s2chain = self.__s2chain)
         self.simulation_results.add_sschain(sschain = self.__sschain)
-        
-#        self.simulation_results.results # assign dictionary
     
     # --------------------------------------------------------
     def __save_chains_to_bin(self, start, end):

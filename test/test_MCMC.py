@@ -9,7 +9,7 @@ Created on Wed Jun  6 08:33:47 2018
 from pymcmcstat.MCMC import MCMC
 from pymcmcstat.structures.ParameterSet import ParameterSet
 import unittest
-from mock import patch, PropertyMock
+from mock import patch
 import io
 import sys
 import numpy as np
@@ -272,3 +272,17 @@ class SetupSimulator(unittest.TestCase):
         self.assertEqual(mcstat._MCMC__chain.shape, (mcstat.simulation_options.nsimu*2 - 1, 2), msg = str('Shape should be (nsimu,2) -> {}'.format(mcstat._MCMC__chain.shape)))
         self.assertEqual(mcstat._MCMC__sschain.shape, (mcstat.simulation_options.nsimu*2 - 1, 1), msg = str('Shape should be (nsimu,1) -> {}'.format(mcstat._MCMC__sschain.shape)))
         self.assertEqual(mcstat._MCMC__s2chain.shape, (mcstat.simulation_options.nsimu*2 - 1, 1), msg = str('Shape should be (nsimu,1) -> {}'.format(mcstat._MCMC__s2chain.shape)))
+        
+# --------------------------
+class GenerateSimulationResults(unittest.TestCase):
+    def test_results_generation_ntry_gt_1(self):
+        mcstat = setup_pseudo_results(initialize = False)
+        mcstat._MCMC__setup_simulator(use_previous_results = False)
+        mcstat._MCMC__generate_simulation_results()
+        results = mcstat.simulation_results.results
+        self.assertTrue(mcstat.simulation_results.basic, msg = 'Basic successfully added if true')
+        self.assertTrue(np.array_equal(results['R'], mcstat._covariance._R), msg = 'Arrays should match')
+        self.assertTrue(np.array_equal(results['cov'], mcstat._covariance._covchain), msg = 'Arrays should match')
+        check_for_these = ['simulation_options', 'model_settings', 'chain', 's2chain', 'sschain', 'drscale', 'iacce', 'RDR']
+        for cft in check_for_these:
+            self.assertTrue(cft in results, msg = str('{} assigned successfully'.format(cft)))

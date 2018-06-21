@@ -187,8 +187,8 @@ def _create_path_without_extension(savedir, file):
     return file
     
 def _add_to_log(filename, logstr):
-        with open(filename, 'a') as logfile:
-            logfile.write(logstr)
+    with open(filename, 'a') as logfile:
+        logfile.write(logstr)
     
 def _save_to_bin_file(filename, datasetname, mtx):
     hf = h5py.File(filename, 'a')
