@@ -61,7 +61,7 @@ class MCMC:
         np.random.seed(seed = rngseed)
         
     # --------------------------------------------------------
-    def run_simulation(self, use_previous_results = False, rngseed = None):
+    def run_simulation(self, use_previous_results = False):
         '''
         Run MCMC Simulation
         
@@ -70,23 +70,8 @@ class MCMC:
         '''
         start_time = time.time()
         
-        if use_previous_results == True:
-            if self._mcmc_status == True:
-                self.parameters._results_to_params(self.simulation_results.results, 1)
-                self._initialize_simulation()
-                self.__expand_chains(nsimu = self.simulation_options.nsimu, npar = self.parameters.npar, nsos = self.model_settings.nsos, updatesigma=self.simulation_options.updatesigma)
-            else:
-                sys.exit('No previous results found.  Set ''use_previous_results'' to ''False''')
-        else:
-            if self.simulation_options.json_restart_file is not None:
-                RS = ResultsStructure()
-                res = RS.load_json_object(self.simulation_options.json_restart_file)
-                self.parameters._results_to_params(res, 1)
-                self.simulation_options.qcov = np.array(res['qcov'])
-                
-            self.__chain_index = 0 # start index at zero
-            self._initialize_simulation()
-            self.__initialize_chains(chainind = self.__chain_index, nsimu = self.simulation_options.nsimu, npar = self.parameters.npar, nsos = self.model_settings.nsos, updatesigma=self.simulation_options.updatesigma, sigma2 = self.model_settings.sigma2)
+        self.__setup_simulator(use_previous_results = use_previous_results)
+        
         # ---------------------
         # setup progress bar
         if self.simulation_options.waitbar:
@@ -113,6 +98,28 @@ class MCMC:
         self.PI = PredictionIntervals()
         self.chainstats = ChainStatistics.chainstats
         self._mcmc_status = True # simulation has been performed
+    
+    # --------------------------------------------------------    
+    def __setup_simulator(self, use_previous_results):
+        
+        if use_previous_results == True:
+            if self._mcmc_status == True:
+                self.parameters._results_to_params(self.simulation_results.results, 1)
+                self._initialize_simulation()
+                self.__expand_chains(nsimu = self.simulation_options.nsimu, npar = self.parameters.npar, nsos = self.model_settings.nsos, updatesigma=self.simulation_options.updatesigma)
+            else:
+                sys.exit('No previous results found.  Set ''use_previous_results'' to ''False''')
+        else:
+            if self.simulation_options.json_restart_file is not None:
+                RS = ResultsStructure()
+                res = RS.load_json_object(self.simulation_options.json_restart_file)
+                self.parameters._results_to_params(res, 1)
+                self.simulation_options.qcov = np.array(res['qcov'])
+                
+            self.__chain_index = 0 # start index at zero
+            self._initialize_simulation()
+            self.__initialize_chains(chainind = self.__chain_index, nsimu = self.simulation_options.nsimu, npar = self.parameters.npar, nsos = self.model_settings.nsos, updatesigma=self.simulation_options.updatesigma, sigma2 = self.model_settings.sigma2)
+            
     # --------------------------------------------------------
     def _initialize_simulation(self):
         # ---------------------------------

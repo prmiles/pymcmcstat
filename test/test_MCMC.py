@@ -9,6 +9,7 @@ Created on Wed Jun  6 08:33:47 2018
 from pymcmcstat.MCMC import MCMC
 from pymcmcstat.structures.ParameterSet import ParameterSet
 import unittest
+from mock import patch, PropertyMock
 import io
 import sys
 import numpy as np
@@ -31,7 +32,7 @@ def ssfun(theta, data, local = None):
     ss = sum((ymodel[:,0] - ydata[:,0])**2)
     return ss
 
-def setup_mcmc():
+def setup_mcmc(initialize = True):
     # Initialize MCMC object
     mcstat = MCMC()
     # Add data
@@ -49,8 +50,16 @@ def setup_mcmc():
     mcstat.parameters.add_model_parameter(name = 'b', theta0 = -5., minimum = -10, maximum = 100, sample = 0)
     mcstat.parameters.add_model_parameter(name = 'b2', theta0 = -5., minimum = -10, maximum = 100, sample = 1)
     
-    mcstat._initialize_simulation()
+    if initialize:
+        mcstat._initialize_simulation()
     
+    return mcstat
+
+def setup_pseudo_results(initialize = True):
+    mcstat = setup_mcmc(initialize = initialize)
+    rejectedin = {'total': 10, 'in_adaptation_interval': 4, 'outside_bounds': 1}
+    mcstat._MCMC__rejected = rejectedin.copy()
+    mcstat._MCMC__simulation_time = 0.1
     return mcstat
 
 # --------------------------
@@ -239,3 +248,27 @@ class ExpandChain(unittest.TestCase):
         self.assertEqual(mcstat._MCMC__sschain.shape, (mcstat.simulation_options.nsimu*2 - 1, 2), msg = str('Shape should be (nsimu,2) -> {}'.format(mcstat._MCMC__sschain.shape)))
         self.assertEqual(mcstat._MCMC__s2chain.shape, (mcstat.simulation_options.nsimu*2 - 1, 2), msg = str('Shape should be (nsimu,2) -> {}'.format(mcstat._MCMC__s2chain.shape)))
        
+# --------------------------
+class SetupSimulator(unittest.TestCase):
+    def test_setup_simu_use_prev_false(self):
+        mcstat = setup_mcmc(initialize=False)
+        mcstat._MCMC__setup_simulator(use_previous_results = False)
+        self.assertEqual(mcstat._MCMC__chain_index, 0, msg = 'Chain index should be 0')
+        self.assertEqual(mcstat._MCMC__chain.shape, (mcstat.simulation_options.nsimu, 2), msg = str('Shape should be (nsimu,2) -> {}'.format(mcstat._MCMC__chain.shape)))
+        self.assertEqual(mcstat._MCMC__sschain.shape, (mcstat.simulation_options.nsimu, 1), msg = str('Shape should be (nsimu,1) -> {}'.format(mcstat._MCMC__sschain.shape)))
+        self.assertEqual(mcstat._MCMC__s2chain.shape, (mcstat.simulation_options.nsimu, 1), msg = str('Shape should be (nsimu,1) -> {}'.format(mcstat._MCMC__s2chain.shape)))
+        
+    def test_setup_simu_use_prev_true_causes_error(self):
+        mcstat = setup_mcmc(initialize=False)
+        with self.assertRaises(SystemExit, msg = 'No previous results exist'):
+            mcstat._MCMC__setup_simulator(use_previous_results = True)
+    
+    def test_setup_simu_use_prev_true(self):
+        mcstat = setup_pseudo_results(initialize = False)
+        mcstat._MCMC__setup_simulator(use_previous_results = False)
+        mcstat._MCMC__generate_simulation_results()
+        mcstat._mcmc_status = True
+        mcstat._MCMC__setup_simulator(use_previous_results = True)
+        self.assertEqual(mcstat._MCMC__chain.shape, (mcstat.simulation_options.nsimu*2 - 1, 2), msg = str('Shape should be (nsimu,2) -> {}'.format(mcstat._MCMC__chain.shape)))
+        self.assertEqual(mcstat._MCMC__sschain.shape, (mcstat.simulation_options.nsimu*2 - 1, 1), msg = str('Shape should be (nsimu,1) -> {}'.format(mcstat._MCMC__sschain.shape)))
+        self.assertEqual(mcstat._MCMC__s2chain.shape, (mcstat.simulation_options.nsimu*2 - 1, 1), msg = str('Shape should be (nsimu,1) -> {}'.format(mcstat._MCMC__s2chain.shape)))
