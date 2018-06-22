@@ -47,11 +47,11 @@ class PredictionIntervals:
         self._assign_features_from_results_structure(results = results)
         
         # evaluate model function to determine shape of response
-        self._determine_shape_of_response(modelfunction = modelfunction)
+        self.__nrow, self.__ncol = self._determine_shape_of_response(modelfunction = modelfunction, ndatabatches = self.__ndatabatches, datapred = self.datapred, theta = self.__theta)
         
         # analyze structure of s2chain with respect to model output
         if self.__s2chain is not None:
-            self._analyze_s2chain(ndatabatches = self.__ndatabatches)
+            self.__s2chain_index = self._analyze_s2chain(ndatabatches = self.__ndatabatches, s2chain = self.__s2chain, ncol = self.__ncol)
     # -------------------------------------------- 
     @classmethod
     def _analyze_data_structure(cls, data):
@@ -78,7 +78,7 @@ class PredictionIntervals:
             else:
                 ncols.append(1)
         return ndatabatches, nrows, ncols
-    # -------------------------------------------- 
+    # --------------------------------------------
     @classmethod
     def _setup_data_structure_for_prediction(cls, data, ndatabatches):
         '''
@@ -87,6 +87,9 @@ class PredictionIntervals:
         :Args:
             * **data** (:class:`~.DataStructure`): Data structure.
             * **ndatabatches** (:py:class:`int`): Number of batch data sets.
+            
+        :Returns:
+            * **datapred** (:py:class:`list`): Data structure for interval generation.
         '''
         datapred = []
         for ii in range(ndatabatches):
@@ -122,8 +125,9 @@ class PredictionIntervals:
             self.__sstype = results['sstype']
         else:
             self.__sstype = 0
-    # --------------------------------------------        
-    def _determine_shape_of_response(self, modelfunction):
+    # --------------------------------------------
+    @classmethod      
+    def _determine_shape_of_response(cls, modelfunction, ndatabatches, datapred, theta):
         '''
         Determine shape of model function repsonse.
         
@@ -131,23 +135,25 @@ class PredictionIntervals:
             * **modelfun** (:py:class:`func`): Model function handle.
         '''
         # evaluate model function to determine shape of response
-        self.__nrow = []
-        self.__ncol = []
-        for ii in range(self.__ndatabatches):
+        nrow = []
+        ncol = []
+        for ii in range(ndatabatches):
             if isinstance(modelfunction, list):
-                y = self.modelfunction[ii](self.datapred[ii], self.__theta)
+                y = modelfunction[ii](datapred[ii], theta)
             else:
-                y = self.modelfunction(self.datapred[ii], self.__theta)
+                y = modelfunction(datapred[ii], theta)
                 
             sh = y.shape
             if len(sh) == 1:
-                self.__nrow.append(sh[0])
-                self.__ncol.append(1)
+                nrow.append(sh[0])
+                ncol.append(1)
             else:
-                self.__nrow.append(sh[0])
-                self.__ncol.append(sh[1])
-    # --------------------------------------------            
-    def _analyze_s2chain(self, ndatabatches):
+                nrow.append(sh[0])
+                ncol.append(sh[1])
+        return nrow, ncol
+    # --------------------------------------------
+    @classmethod
+    def _analyze_s2chain(cls, ndatabatches, s2chain, ncol):
         '''
         Analysis of s2chain.
         
@@ -163,41 +169,41 @@ class PredictionIntervals:
             * **ndatabatches** (:py:class:`int`): Number of batch data sets.
         '''
         # shape of s2chain
-        n = self.__s2chain.shape[1]
+        n = s2chain.shape[1]
         
         # compare shape of s2chain with the number of data batches and the
         # number of columns in each batch.
-        total_columns = sum(self.__ncol)
+        total_columns = sum(ncol)
         
         if n == 1: # only one obs. error for all data sets
-            self.__s2chain_index = np.zeros([ndatabatches,2], dtype = int)
+            s2chain_index = np.zeros([ndatabatches,2], dtype = int)
             for ii in range(ndatabatches):
-                self.__s2chain_index[ii,:] = np.array([0, 1])
+                s2chain_index[ii,:] = np.array([0, 1])
             
         elif n != 1 and total_columns == n: # then different obs. error for each column
-            self.__s2chain_index = np.zeros([ndatabatches,2], dtype = int)
+            s2chain_index = np.zeros([ndatabatches,2], dtype = int)
             for ii in range(ndatabatches):
-                if ii == 1:
-                    self.__s2chain_index[ii,:] = np.array([0, self.__ncol[ii]])
+                if ii == 0:
+                    s2chain_index[ii,:] = np.array([0, ncol[ii]])
                 else:
-                    self.__s2chain_index[ii,:] = np.array([self.__s2chain_index[ii-1,1],
-                                                          self.__s2chain_index[ii-1,1] + self.__ncol[ii]])
+                    s2chain_index[ii,:] = np.array([s2chain_index[ii-1,1], s2chain_index[ii-1,1] + ncol[ii]])
         elif n != 1 and total_columns != n:
             if n == ndatabatches: # assume separate obs. error for each batch
-                self.__s2chain_index = np.zeros([ndatabatches,2], dtype = int)
+                s2chain_index = np.zeros([ndatabatches,2], dtype = int)
                 for ii in range(ndatabatches):
                     if ii == 0: # 1?
-                        self.__s2chain_index[ii,:] = np.array([0, 1])
+                        s2chain_index[ii,:] = np.array([0, 1])
                     else:
-                        self.__s2chain_index[ii,:] = np.array([self.__s2chain_index[ii-1,1],
-                                                              self.__s2chain_index[ii-1,1] + 1])
+                        s2chain_index[ii,:] = np.array([s2chain_index[ii-1,1], s2chain_index[ii-1,1] + 1])
             else:
-                print('s2chain.shape = {}'.format(self.__s2chain.shape))
+                print('s2chain.shape = {}'.format(s2chain.shape))
                 print('ndatabatches = {}'.format(ndatabatches))
-                print('# of columns per batch = {}'.format(self.__ncol))
+                print('# of columns per batch = {}'.format(ncol))
                 sys.exit('Unclear data structure: error variances do not match size of model output')
+                
+        return s2chain_index
         
-    # --------------------------------------------    
+    # --------------------------------------------
     def generate_prediction_intervals(self, sstype = None, nsample = 500, calc_pred_int = True, waitbar = False):
         '''
         Generate prediction/credible interval.
@@ -247,7 +253,7 @@ class PredictionIntervals:
                'prediction_intervals': prediction_intervals}
     
         print('\nInterval generation complete\n')
-    # -------------------------------------------- 
+    # --------------------------------------------
     def _setup_predii(self, ii):
         '''
         Setup value for interval ii.
@@ -275,7 +281,7 @@ class PredictionIntervals:
         test2 = self.__local == ii
         test = test1 + test2
         return datapredii, nrow, ncol, modelfun, test
-    # -------------------------------------------- 
+    # --------------------------------------------
     def _run_predii(self, testchain, tests2chain, nrow, ncol, waitbar, sstype, test, modelfun, datapredii):
         '''
         Calculate observations for set ii.
@@ -393,7 +399,7 @@ class PredictionIntervals:
         iisample, nsample = self._define_sample_points(nsample = nsample, nsimu = nsimu)
         
         return chain, s2chain, nsimu, lims, sstype, nsample, iisample
-    # -------------------------------------------- 
+    # --------------------------------------------
     @classmethod
     def _setup_interval_limits(cls, s2chain):
         '''
@@ -418,7 +424,7 @@ class PredictionIntervals:
         else:
             lims = np.array([0.025, 0.5, 0.975])
         return lims 
-    # -------------------------------------------- 
+    # --------------------------------------------
     def _setup_sstype(self, sstype):
         '''
         Setup sstype and check value.
@@ -441,7 +447,7 @@ class PredictionIntervals:
         else:
             sstype = 0
         return sstype
-    # -------------------------------------------- 
+    # --------------------------------------------
     @classmethod
     def _check_nsample(cls, nsample, nsimu):
         '''
@@ -458,7 +464,7 @@ class PredictionIntervals:
         if nsample is None:
             nsample = nsimu
         return nsample
-    # -------------------------------------------- 
+    # --------------------------------------------
     @classmethod
     def _define_sample_points(cls, nsample, nsimu):
         '''
@@ -554,6 +560,15 @@ class PredictionIntervals:
     
     @classmethod
     def _initialize_plot_features(cls, ii, jj, ny, figsizeinches):
+        '''
+        Initialize plot for prediction/credible intervals.
+        
+        :Args:
+            * **ii** (:py:class:`int`): Batch #
+            * **jj** (:py:class:`int`): Column #
+            * **ny** (:py:class:`ny`): Number of intervals
+            * **figsizeinches** (:py:class:`list`): Specify figure size in inches [Width, Height].
+        '''
         fighandbatch = str('Batch # {}'.format(ii))
         fighandcolumn = str('Column # {}'.format(jj))
         fighand = str('{} | {}'.format(fighandbatch, fighandcolumn))
@@ -568,6 +583,15 @@ class PredictionIntervals:
      
     @classmethod
     def _add_title(cls, nbatch, ny, ii, jj):
+        '''
+        Add title to plot based on batch/column number.
+        
+        :Args:
+            * **nbatch** (:py:class:`nbatch`): Number of batches
+            * **ny** (:py:class:`ny`): Number of intervals
+            * **ii** (:py:class:`int`): Batch #
+            * **jj** (:py:class:`int`): Column #
+        '''
         # add title
         if nbatch > 1:
             plt.title(str('Batch #{}, Column #{}'.format(ii,jj)))
@@ -576,6 +600,23 @@ class PredictionIntervals:
                           
     # --------------------------------------------
     def _setup_interval_plotting(self, plot_pred_int, prediction_intervals, credible_intervals, figsizeinches):
+        '''
+        Setup variables for interval plotting
+        
+        :Args:
+            * **plot_pred_int** (:py:class:`bool`): Flag to plot prediction interval
+            * **prediction_intervals** (:py:class:`list`): Prediction intervals
+            * **credible_intervals** (:py:class:`list`): Credible intervals
+            * **figsizeinches** (:py:class:`list`): Specify figure size in inches [Width, Height].
+            
+        :Returns:
+            * **prediction_intervals** (:py:class:`list` or `None`): Prediction intervals
+            * **figsizeinches** (:py:class:`list`): Specify figure size in inches [Width, Height].
+            * **nbatch** (:py:class:`int`): Number of batches
+            * **nn** (:py:class:`int`): Line number corresponding to median.
+            * **clabels** (:py:class:`list`): List of label strings for credible intervals.
+            * **plabels** (:py:class:`list`): List of label strings for prediction intervals.
+        '''
         prediction_intervals = self._check_prediction_interval_flag(plot_pred_int = plot_pred_int, prediction_intervals = prediction_intervals)
             
         # check if figure size was specified
@@ -589,6 +630,16 @@ class PredictionIntervals:
     
     # --------------------------------------------
     def _check_prediction_interval_flag(self, plot_pred_int, prediction_intervals):
+        '''
+        Check prediction interval flag.
+        
+        :Args:
+            * **plot_pred_int** (:py:class:`bool`): Flag to plot prediction interval
+            * **prediction_intervals** (:py:class:`list`): Prediction intervals
+            
+        :Returns:
+            * **prediction_intervals** (:py:class:`list` or `None`): Prediction intervals
+        '''
         # check if prediction intervals exist and if user wants to plot them
         plot_pred_int = self.__convert_pred_int_flag(plot_pred_int)
         if plot_pred_int is False or prediction_intervals is None:
@@ -597,6 +648,17 @@ class PredictionIntervals:
     # --------------------------------------------
     @classmethod
     def _setup_labels(cls, prediction_intervals, nlines):
+        '''
+        Setup labels for prediction/credible intervals.
+        
+        :Args:
+            * **prediction_intervals** (:py:class:`list`): Prediction intervals
+            * **nlines** (:py:class:`int`): Number of lines
+            
+        :Returns:
+            * **clabels** (:py:class:`list`): List of label strings for credible intervals.
+            * **plabels** (:py:class:`list`): List of label strings for prediction intervals.
+        '''
         clabels = ['95% CI']
         plabels = ['95% PI']
         
@@ -611,6 +673,17 @@ class PredictionIntervals:
     # --------------------------------------------
     @classmethod
     def _setup_counting_metrics(cls, credible_intervals):
+        '''
+        Setup counting metrics for prediction/credible intervals.
+        
+        :Args:
+            * **credible_intervals** (:py:class:`list`): Credible intervals
+            
+        :Returns:
+            * **nbatch** (:py:class:`int`): Number of batches
+            * **nn** (:py:class:`int`): Line number corresponding to median.
+            * **nlines** (:py:class:`int`): Number of lines
+        '''    
         # define number of batches
         nbatch = len(credible_intervals)
         
