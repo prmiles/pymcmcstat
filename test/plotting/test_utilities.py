@@ -228,3 +228,17 @@ class ConvertFlagToBoolean(unittest.TestCase):
     def test_boolean_conversion(self):
         self.assertTrue(utilities.convert_flag_to_boolean(flag = 'on'), msg = 'on -> True')
         self.assertFalse(utilities.convert_flag_to_boolean(flag = 'off'), msg = 'off -> False')
+        
+# --------------------------
+class SetLocalParameters(unittest.TestCase):
+    def test_set_local_parameters(self):
+        slp = utilities.set_local_parameters
+        self.assertTrue(np.array_equal(slp(ii = 0, local = np.array([0, 0])), np.array([True, True])), msg = 'Expect Array [True, True]')
+        self.assertTrue(np.array_equal(slp(ii = 0, local = np.array([0, 1])), np.array([True, False])), msg = 'Expect Array [True, False]')
+        self.assertTrue(np.array_equal(slp(ii = 0, local = np.array([1, 0])), np.array([False, True])), msg = 'Expect Array [False, True]')
+
+        self.assertTrue(np.array_equal(slp(ii = 1, local = np.array([0, 1])), np.array([True, True])), msg = 'Expect Array [True, True]')
+        self.assertTrue(np.array_equal(slp(ii = 1, local = np.array([1, 0])), np.array([True, True])), msg = 'Expect Array [True, True]')
+        
+        self.assertTrue(np.array_equal(slp(ii = 1, local = np.array([2, 2])), np.array([False, False])), msg = 'Expect Array [False, False]')
+        self.assertTrue(np.array_equal(slp(ii = 2, local = np.array([1, 2])), np.array([False, True])), msg = 'Expect Array [False, True]')

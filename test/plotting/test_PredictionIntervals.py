@@ -60,6 +60,14 @@ def setup_pseudo_results():
             }
     return results
 
+def setup_pseudo_ci():
+    ci = []
+    ci1 = []
+    ci1.append([np.random.random_sample(size = (100,)),np.random.random_sample(size = (100,)),np.random.random_sample(size = (100,))])
+    ci.append(ci1)
+    return ci
+        
+
 # --------------------------------------------
 class Empirical_Quantiles_Test(unittest.TestCase):
 
@@ -296,11 +304,6 @@ class AnalyzeS2Chain(unittest.TestCase):
         ncol = [1, 2, 1]
         with self.assertRaises(SystemExit, msg = 'Unrecognized data structure'):
             PI._analyze_s2chain(ndatabatches = ndatabatches, s2chain = s2chain, ncol = ncol)
-            
-## --------------------------------------------
-#class SetupPredii(unittest.TestCase):
-#    def test_setup_predii(self):
-   
 
 # --------------------------------------------
 class SetupSstype(unittest.TestCase):
@@ -401,3 +404,103 @@ class CheckPIFlag(unittest.TestCase):
         PI = PredictionIntervals()
         prediction_intervals = PI._check_prediction_interval_flag(plot_pred_int = False, prediction_intervals = None)
         self.assertEqual(prediction_intervals, None, msg = 'Expect None')
+        
+        
+# --------------------------------------------
+class SetupIntervalLimits(unittest.TestCase):
+    def test_setup_int_lims_s2chain_none(self):
+        PI = PredictionIntervals()
+        lims = PI._setup_interval_limits(s2chain = None)
+        self.assertTrue(np.array_equal(lims, np.array([0.005,0.025,0.05,0.25,0.5,0.75,0.9,0.975,0.995])), msg = str('Arrays should match: {}'.format(lims)))
+        
+    def test_setup_int_lims_s2chain_not_none(self):
+        PI = PredictionIntervals()
+        lims = PI._setup_interval_limits(s2chain = 1)
+        self.assertTrue(np.array_equal(lims, np.array([0.025, 0.5, 0.975])), msg = str('Arrays should match: {}'.format(lims)))
+        
+# --------------------------------------------
+class SetupCountingMetrics(unittest.TestCase):
+    def test_setup_counting_metrics(self):
+        PI = PredictionIntervals()
+        ci = setup_pseudo_ci()
+        nbatch, nn, nlines = PI._setup_counting_metrics(credible_intervals = ci)
+        self.assertEqual(nbatch, 1, msg = 'Expect nbatch = 1')
+        self.assertEqual(nn, 2, msg = 'Expect nn = 2')
+        self.assertEqual(nlines, 1, msg = 'Expect nlines = 1')
+
+# --------------------------------------------
+class SetupIntervalPlotting(unittest.TestCase):
+    def test_setup_interval_plotting(self):
+        PI = PredictionIntervals()
+        ci = setup_pseudo_ci()
+        prediction_intervals, figsizeinches, nbatch, nn, clabels, plabels = PI._setup_interval_plotting(plot_pred_int = True, prediction_intervals = None, credible_intervals = ci, figsizeinches = [10,11])
+        self.assertEqual(prediction_intervals, None, msg = 'Expect None')
+        self.assertEqual(figsizeinches, [10, 11], msg = 'Expect [10,11]')
+        self.assertEqual(nbatch, 1, msg = 'Expect nbatch = 1')
+        self.assertEqual(nn, 2, msg = 'Expect nn = 2')
+        self.assertEqual(clabels, ['95% CI'], msg = 'String should match')
+        self.assertEqual(plabels, ['95% PI'], msg = 'String should match')
+
+# --------------------------------------------
+class SetupGenerationRequirements(unittest.TestCase):
+    @patch('numpy.random.rand')
+    def test_setup_generation(self, mock_rand):
+        aa = np.random.rand([400,1])
+        mock_rand.return_value = aa
+        PI = PredictionIntervals()
+        results = setup_pseudo_results()
+        PI._assign_features_from_results_structure(results = results)
+        chain, s2chain, nsimu, lims, sstype, nsample, iisample = PI._setup_generation_requirements(nsample = 400, calc_pred_int = False, sstype = 0)
+        
+        self.assertTrue(np.array_equal(chain, results['chain']), msg = str('Arrays should match: {}'.format(chain)))
+        self.assertEqual(s2chain, None, msg = 'Expect None')
+        self.assertEqual(nsimu, chain.shape[0], msg = 'Expect nsimu = chain.shape[0]')
+        self.assertTrue(np.array_equal(lims, np.array([0.005,0.025,0.05,0.25,0.5,0.75,0.9,0.975,0.995])), msg = str('Arrays should match: {}'.format(lims)))
+        self.assertEqual(sstype, 0, msg = 'Expect 0')
+        self.assertEqual(nsample, 100, msg = 'Expect nsample to go to 100')
+        self.assertTrue(np.array_equal(iisample, range(100)), msg = str('Arrays should match: {}'.format(iisample)))
+        
+    @patch('numpy.random.rand')
+    def test_setup_generation_with_pi(self, mock_rand):
+        aa = np.random.rand([400,1])
+        mock_rand.return_value = aa
+        PI = PredictionIntervals()
+        results = setup_pseudo_results()
+        PI._assign_features_from_results_structure(results = results)
+        chain, s2chain, nsimu, lims, sstype, nsample, iisample = PI._setup_generation_requirements(nsample = 400, calc_pred_int = True, sstype = 0)
+        
+        self.assertTrue(np.array_equal(chain, results['chain']), msg = str('Arrays should match: {}'.format(chain)))
+        self.assertTrue(np.array_equal(s2chain, results['s2chain']), msg = str('Arrays should match: {}'.format(s2chain)))
+        self.assertEqual(nsimu, chain.shape[0], msg = 'Expect nsimu = chain.shape[0]')
+        self.assertTrue(np.array_equal(lims, np.array([0.025, 0.5, 0.975])), msg = str('Arrays should match: {}'.format(lims)))
+        self.assertEqual(sstype, 0, msg = 'Expect 0')
+        self.assertEqual(nsample, 100, msg = 'Expect nsample to go to 100')
+        self.assertTrue(np.array_equal(iisample, range(100)), msg = str('Arrays should match: {}'.format(iisample)))
+        
+# --------------------------------------------
+class SetupPredii(unittest.TestCase):
+    def test_setup_predii_nonlist_mdlfun(self):
+        PI = PredictionIntervals()
+        DS = basic_data_structure()
+        datapred = PI._setup_data_structure_for_prediction(data = DS, ndatabatches = 1)
+        
+        datapredii, nrow, ncol, modelfun, test = PI._setup_predii(ii = 0, datapred = datapred, nrow = [100], ncol = [1], modelfunction = predmodelfun, local = np.array([0, 0]))
+        self.assertTrue(np.array_equal(datapredii.xdata[0], datapred[0].xdata[0]), msg = 'Arrays should match')
+        self.assertTrue(np.array_equal(datapredii.ydata[0], datapred[0].ydata[0]), msg = 'Arrays should match')
+        self.assertEqual(nrow, 100, msg = 'Expect nrow = 100')
+        self.assertEqual(ncol, 1, msg = 'Expect ncol = 1')
+        self.assertEqual(modelfun, predmodelfun, msg = 'Functions should match')
+        self.assertTrue(np.array_equal(test, np.array([True, True])), msg = str('Arrays should match: {}'.format(test)))
+        
+    def test_setup_predii_list_mdlfun(self):
+        PI = PredictionIntervals()
+        DS = basic_data_structure()
+        datapred = PI._setup_data_structure_for_prediction(data = DS, ndatabatches = 1)
+        
+        datapredii, nrow, ncol, modelfun, test = PI._setup_predii(ii = 0, datapred = datapred, nrow = [100], ncol = [1], modelfunction = [predmodelfun], local = np.array([0, 0]))
+        self.assertTrue(np.array_equal(datapredii.xdata[0], datapred[0].xdata[0]), msg = 'Arrays should match')
+        self.assertTrue(np.array_equal(datapredii.ydata[0], datapred[0].ydata[0]), msg = 'Arrays should match')
+        self.assertEqual(nrow, 100, msg = 'Expect nrow = 100')
+        self.assertEqual(ncol, 1, msg = 'Expect ncol = 1')
+        self.assertEqual(modelfun, predmodelfun, msg = 'Functions should match')
+        self.assertTrue(np.array_equal(test, np.array([True, True])), msg = str('Arrays should match: {}'.format(test)))

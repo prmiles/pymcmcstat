@@ -12,7 +12,7 @@ from scipy.interpolate import interp1d
 from ..settings.DataStructure import DataStructure
 from ..settings.ModelSettings import ModelSettings
 from ..utilities.progressbar import progress_bar
-from ..plotting.utilities import append_to_nrow_ncol_based_on_shape, convert_flag_to_boolean
+from ..plotting.utilities import append_to_nrow_ncol_based_on_shape, convert_flag_to_boolean, set_local_parameters
 import matplotlib.pyplot as plt
 
 class PredictionIntervals:
@@ -226,7 +226,7 @@ class PredictionIntervals:
         credible_intervals = []
         prediction_intervals = []
         for ii in range(len(self.datapred)):
-            datapredii, nrow, ncol, modelfun, test = self._setup_predii(ii = ii)
+            datapredii, nrow, ncol, modelfun, test = self._setup_predii(ii = ii, datapred = self.datapred, nrow = self.__nrow, ncol = self.__ncol, modelfunction = self.modelfunction, local = self.__local)
             if s2chain is not None:
                 s2ci = [self.__s2chain_index[ii][0], self.__s2chain_index[ii][1]]
                 tests2chain = s2chain[iisample, s2ci[0]:s2ci[1]]
@@ -251,7 +251,8 @@ class PredictionIntervals:
     
         print('\nInterval generation complete\n')
     # --------------------------------------------
-    def _setup_predii(self, ii):
+    @classmethod
+    def _setup_predii(cls, ii, datapred, nrow, ncol, modelfunction, local):
         '''
         Setup value for interval ii.
         
@@ -265,19 +266,19 @@ class PredictionIntervals:
             * **modelfun** (:py:class:`func`): Model function handle.
             * **test** (:class:`~numpy.ndarray`): Array of booleans correponding to local test.
         '''
-        datapredii = self.datapred[ii]
-        nrow = self.__nrow[ii]
-        ncol = self.__ncol[ii]
-        if isinstance(self.modelfunction, list):
-            modelfun = self.modelfunction[ii]
+        datapredii = datapred[ii]
+        nrow = nrow[ii]
+        ncol = ncol[ii]
+        if isinstance(modelfunction, list):
+            modelfun = modelfunction[ii]
         else:
-            modelfun = self.modelfunction
+            modelfun = modelfunction
         
         # some parameters may only apply to certain batch sets
-        test1 = self.__local == 0
-        test2 = self.__local == ii
-        test = test1 + test2
+        test = set_local_parameters(ii = ii, local = local)
         return datapredii, nrow, ncol, modelfun, test
+    
+
     # --------------------------------------------
     def _run_predii(self, testchain, tests2chain, nrow, ncol, waitbar, sstype, test, modelfun, datapredii):
         '''

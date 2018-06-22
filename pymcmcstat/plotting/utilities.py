@@ -291,3 +291,11 @@ def convert_flag_to_boolean(flag):
         flag = False
         
     return flag
+
+# --------------------------------------------
+def set_local_parameters(ii, local):
+    # some parameters may only apply to certain batch sets
+    test1 = local == 0
+    test2 = local == ii
+    test = test1 + test2
+    return test
