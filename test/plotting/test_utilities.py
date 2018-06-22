@@ -242,3 +242,24 @@ class SetLocalParameters(unittest.TestCase):
         
         self.assertTrue(np.array_equal(slp(ii = 1, local = np.array([2, 2])), np.array([False, False])), msg = 'Expect Array [False, False]')
         self.assertTrue(np.array_equal(slp(ii = 2, local = np.array([1, 2])), np.array([False, True])), msg = 'Expect Array [False, True]')
+        
+# --------------------------------------------
+class Empirical_Quantiles_Test(unittest.TestCase):
+
+    def test_does_default_empirical_quantiles_return_3_element_array(self):
+        test_out = utilities.empirical_quantiles(np.random.rand(10,1))
+        self.assertEqual(test_out.shape, (3,1), msg = 'Default output shape is (3,1)')
+        
+    def test_does_non_default_empirical_quantiles_return_2_element_array(self):
+        test_out = utilities.empirical_quantiles(np.random.rand(10,1), p = np.array([0.2, 0.5]))
+        self.assertEqual(test_out.shape, (2,1), msg = 'Non-default output shape should be (2,1)')
+        
+    def test_empirical_quantiles_should_not_support_list_input(self):
+        with self.assertRaises(AttributeError):
+            utilities.empirical_quantiles([-1,0,1])
+            
+    def test_empirical_quantiles_vector(self):
+        out = utilities.empirical_quantiles(np.linspace(10,20, num = 10).reshape(10,1), p = np.array([0.22, 0.57345]))
+        exact = np.array([[12.2], [15.7345]])
+        comp = np.linalg.norm(out - exact)
+        self.assertAlmostEqual(comp, 0)

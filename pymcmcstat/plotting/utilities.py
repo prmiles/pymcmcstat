@@ -6,6 +6,7 @@ Created on Mon May 14 06:24:12 2018
 @author: prmiles
 """
 import numpy as np
+from scipy.interpolate import interp1d
 from scipy import pi,sin,cos
 import sys
 import math
@@ -299,3 +300,27 @@ def set_local_parameters(ii, local):
     test2 = local == ii
     test = test1 + test2
     return test
+
+# --------------------------------------------
+def empirical_quantiles(x, p = np.array([0.25, 0.5, 0.75])):
+    '''
+    Calculate empirical quantiles.
+    
+    :Args:
+        * **x** (:class:`~numpy.ndarray`): Observations from which to generate quantile.
+        * **p** (:class:`~numpy.ndarray`): Quantile limits.
+        
+    :Returns:
+        * (:class:`~numpy.ndarray`): Interpolated quantiles.
+    '''
+
+    # extract number of rows/cols from np.array
+    n = x.shape[0]
+    # define vector valued interpolation function
+    xpoints = range(n)
+    interpfun = interp1d(xpoints, np.sort(x, 0), axis = 0)
+    
+    # evaluation points
+    itpoints = (n-1)*p
+    
+    return interpfun(itpoints)

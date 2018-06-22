@@ -13,6 +13,7 @@ from ..settings.DataStructure import DataStructure
 from ..settings.ModelSettings import ModelSettings
 from ..utilities.progressbar import progress_bar
 from ..plotting.utilities import append_to_nrow_ncol_based_on_shape, convert_flag_to_boolean, set_local_parameters
+from ..plotting.utilities import empirical_quantiles
 import matplotlib.pyplot as plt
 
 class PredictionIntervals:
@@ -329,7 +330,8 @@ class PredictionIntervals:
             osave[kk,:,:] = opred # store model output with observation errors
         return ysave, osave
     # --------------------------------------------
-    def _generate_quantiles(self, ysave, osave, lims, ncol, s2chain):
+    @classmethod
+    def _generate_quantiles(cls, ysave, osave, lims, ncol, s2chain):
         '''
         Generate quantiles based on observations.
         
@@ -348,9 +350,9 @@ class PredictionIntervals:
         credible_quantiles = []
         prediction_quantiles = []
         for jj in range(ncol):
-            credible_quantiles.append(self._empirical_quantiles(ysave[:,:,jj], lims))
+            credible_quantiles.append(empirical_quantiles(ysave[:,:,jj], lims))
             if s2chain is not None:
-                prediction_quantiles.append(self._empirical_quantiles(osave[:,:,jj], lims))
+                prediction_quantiles.append(empirical_quantiles(osave[:,:,jj], lims))
             
         return credible_quantiles, prediction_quantiles
     # --------------------------------------------
@@ -726,27 +728,3 @@ class PredictionIntervals:
             sys.exit('Unknown sstype')
             
         return opred
-    # --------------------------------------------
-    @classmethod
-    def _empirical_quantiles(cls, x, p = np.array([0.25, 0.5, 0.75])):
-        '''
-        Calculate empirical quantiles.
-        
-        :Args:
-            * **x** (:class:`~numpy.ndarray`): Observations from which to generate quantile.
-            * **p** (:class:`~numpy.ndarray`): Quantile limits.
-            
-        :Returns:
-            * (:class:`~numpy.ndarray`): Interpolated quantiles.
-        '''
-    
-        # extract number of rows/cols from np.array
-        n = x.shape[0]
-        # define vector valued interpolation function
-        xpoints = range(n)
-        interpfun = interp1d(xpoints, np.sort(x, 0), axis = 0)
-        
-        # evaluation points
-        itpoints = (n-1)*p
-        
-        return interpfun(itpoints)
