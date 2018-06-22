@@ -401,7 +401,7 @@ class PredictionIntervals:
         
         If the observation errors are `None`, then it means prediction intervals
         are irrelevant.  As a default the routine will then plot an expanded
-        set of credible intervals.  The output of this function should be 
+        set of credible intervals.  The output of this function should be
         interpreted as lower/upper limits of quantiles.  So, a 99% quantile will
         have the limits [0.005, ..., 0.995].
         
@@ -497,7 +497,7 @@ class PredictionIntervals:
         credible_intervals = self.intervals['credible_intervals']
         prediction_intervals = self.intervals['prediction_intervals']
         
-        prediction_intervals, figsizeinches, nbatch, nn, nlines, clabels, plabels = self._setup_interval_plotting(
+        prediction_intervals, figsizeinches, nbatch, nn, clabels, plabels = self._setup_interval_plotting(
                 plot_pred_int, prediction_intervals, credible_intervals, figsizeinches)
         
         # initialize figure handle
@@ -585,7 +585,7 @@ class PredictionIntervals:
         nbatch, nn, nlines = self._setup_counting_metrics(credible_intervals = credible_intervals)
         
         clabels, plabels = self._setup_labels(prediction_intervals = prediction_intervals, nlines = nlines)
-        return prediction_intervals, figsizeinches, nbatch, nn, nlines, clabels, plabels
+        return prediction_intervals, figsizeinches, nbatch, nn, clabels, plabels
     
     # --------------------------------------------
     def _check_prediction_interval_flag(self, plot_pred_int, prediction_intervals):
