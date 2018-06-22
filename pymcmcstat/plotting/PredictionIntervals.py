@@ -12,6 +12,7 @@ from scipy.interpolate import interp1d
 from ..settings.DataStructure import DataStructure
 from ..settings.ModelSettings import ModelSettings
 from ..utilities.progressbar import progress_bar
+from ..plotting.utilities import append_to_nrow_ncol_based_on_shape, convert_flag_to_boolean
 import matplotlib.pyplot as plt
 
 class PredictionIntervals:
@@ -73,7 +74,7 @@ class PredictionIntervals:
         ncols = []
         for ii in range(ndatabatches):
             nrows.append(dshapes[ii][0])
-            if len(dshapes[0]) != 1:
+            if len(dshapes[ii]) != 1:
                 ncols.append(dshapes[ii][1])
             else:
                 ncols.append(1)
@@ -144,13 +145,9 @@ class PredictionIntervals:
                 y = modelfunction(datapred[ii], theta)
                 
             sh = y.shape
-            if len(sh) == 1:
-                nrow.append(sh[0])
-                ncol.append(1)
-            else:
-                nrow.append(sh[0])
-                ncol.append(sh[1])
+            nrow, ncol = append_to_nrow_ncol_based_on_shape(sh, nrow, ncol)
         return nrow, ncol
+
     # --------------------------------------------
     @classmethod
     def _analyze_s2chain(cls, ndatabatches, s2chain, ncol):
@@ -377,7 +374,7 @@ class PredictionIntervals:
         # extract chain & s2chain from results
         chain = self.__chain
         
-        calc_pred_int = self.__convert_pred_int_flag(calc_pred_int)
+        calc_pred_int = convert_flag_to_boolean(calc_pred_int)
         if calc_pred_int is False:
             s2chain = None
         else:
@@ -549,7 +546,7 @@ class PredictionIntervals:
                     plt.plot(dataii.xdata[0], dataii.ydata[0][:,jj], '.b', linewidth=1, label = 'data')
                     
                 # add title
-                self._add_title(nbatch, ny, ii, jj)
+                self._add_batch_column_title(nbatch, ny, ii, jj)
                     
                 # add legend
                 if addlegend is True:
@@ -582,7 +579,7 @@ class PredictionIntervals:
         return htmp, ax
      
     @classmethod
-    def _add_title(cls, nbatch, ny, ii, jj):
+    def _add_batch_column_title(cls, nbatch, ny, ii, jj):
         '''
         Add title to plot based on batch/column number.
         
@@ -641,7 +638,7 @@ class PredictionIntervals:
             * **prediction_intervals** (:py:class:`list` or `None`): Prediction intervals
         '''
         # check if prediction intervals exist and if user wants to plot them
-        plot_pred_int = self.__convert_pred_int_flag(plot_pred_int)
+        plot_pred_int = convert_flag_to_boolean(plot_pred_int)
         if plot_pred_int is False or prediction_intervals is None:
             prediction_intervals = None # turn off prediction intervals
         return prediction_intervals
@@ -693,24 +690,6 @@ class PredictionIntervals:
         nlines = nn - 1
         
         return nbatch, nn, nlines
-    # --------------------------------------------
-    @classmethod
-    def __convert_pred_int_flag(cls, flag):
-        '''
-        Convert flag to boolean for backwards compatibility.
-        
-        :Args:
-            * **flag** (:py:class:`bool' or :py:class:'int`): Flag to specify something.
-            
-        :Returns:
-            * **flag** (:py:class:`bool`): Flag to converted to boolean.
-        '''
-        if flag is 'on':
-            flag = True
-        elif flag is 'off':
-            flag = False
-            
-        return flag
     # --------------------------------------------
     @classmethod
     def _observation_sample(cls, s2elem, ypred, sstype):

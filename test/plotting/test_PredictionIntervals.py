@@ -13,6 +13,7 @@ functions tested include:
 from pymcmcstat.plotting.PredictionIntervals import PredictionIntervals
 from pymcmcstat.settings.DataStructure import DataStructure
 import unittest
+from mock import patch
 import numpy as np
 
 def removekey(d, key):
@@ -160,6 +161,15 @@ class AnalyzeDataStructure(unittest.TestCase):
         self.assertEqual(ndatabatches, 2, msg = 'Expect 2 batches')
         self.assertEqual(nrows, [100, 100], msg = 'Expect [100, 100]')
         self.assertEqual(ncols, [1, 2], msg = 'Expect [1, 1]')
+        
+    def test_basic_ds_shape_0(self):
+        PI = PredictionIntervals()
+        DS = basic_data_structure()
+        DS.shape = [(100,)] # remove column - code should add it back
+        ndatabatches, nrows, ncols = PI._analyze_data_structure(data = DS)
+        self.assertEqual(ndatabatches, 1, msg = 'Expect 1 batch')
+        self.assertEqual(nrows, [100], msg = 'Expect [100]')
+        self.assertEqual(ncols, [1], msg = 'Expect [1]')
 # --------------------------------------------
 class SetupDataStructureForPrediction(unittest.TestCase):
     def test_basic_datapred(self):
@@ -213,6 +223,14 @@ class DetermineShapeOfReponse(unittest.TestCase):
         self.assertEqual(nrow, [100], msg = 'Expect [100]')
         self.assertEqual(ncol, [1], msg = 'Expect [1]')
         
+    def test_basic_modelfunction_list_nbatch_2(self):
+        PI = PredictionIntervals()
+        DS = non_basic_data_structure()
+        datapred = PI._setup_data_structure_for_prediction(data = DS, ndatabatches = 2)
+        nrow, ncol = PI._determine_shape_of_response(modelfunction = [predmodelfun, predmodelfun], ndatabatches = 2, datapred = datapred, theta = [3.0, 5.0])
+        self.assertEqual(nrow, [100, 100], msg = 'Expect [100, 100]')
+        self.assertEqual(ncol, [1, 1], msg = 'Expect [1, 1]')
+        
     def test_non_basic_modelfunction(self):
         PI = PredictionIntervals()
         DS = non_basic_data_structure()
@@ -260,3 +278,66 @@ class AnalyzeS2Chain(unittest.TestCase):
         ncol = [1, 2, 1]
         with self.assertRaises(SystemExit, msg = 'Unrecognized data structure'):
             PI._analyze_s2chain(ndatabatches = ndatabatches, s2chain = s2chain, ncol = ncol)
+            
+## --------------------------------------------
+#class SetupPredii(unittest.TestCase):
+#    def test_setup_predii(self):
+   
+
+# --------------------------------------------
+class SetupSstype(unittest.TestCase):
+    def test_setup_sstype(self):
+        PI = PredictionIntervals()
+        PI._PredictionIntervals__sstype = 3
+        sstype = PI._setup_sstype(sstype = None)
+        self.assertEqual(sstype, PI._PredictionIntervals__sstype, msg = 'Expected 3')
+        sstype = PI._setup_sstype(sstype = 2)
+        self.assertEqual(sstype, 0, msg = 'Expected 0')
+
+# --------------------------------------------
+class CheckNsample(unittest.TestCase):
+    def test_check_nsample(self):
+        PI = PredictionIntervals()
+        nsample = PI._check_nsample(nsample = 400, nsimu = 500)
+        self.assertEqual(nsample, 400, msg = 'Expect 400')
+        nsample = PI._check_nsample(nsample = None, nsimu = 500)
+        self.assertEqual(nsample, 500, msg = 'Expect 500')
+# --------------------------------------------
+class DefineSamplePoints(unittest.TestCase):
+    def test_define_sample_points_nsample_gt_nsimu(self):
+        PI = PredictionIntervals()
+        iisample, nsample = PI._define_sample_points(nsample = 1000, nsimu = 500)
+        self.assertEqual(iisample, range(500), msg = 'Expect range(500)')
+        self.assertEqual(nsample, 500, msg = 'Expect nsample updated to 500')
+        
+    @patch('numpy.random.rand')
+    def test_define_sample_points_nsample_lte_nsimu(self, mock_rand):
+        PI = PredictionIntervals()
+        aa = np.random.rand([400,1])
+        mock_rand.return_value = aa
+        iisample, nsample = PI._define_sample_points(nsample = 400, nsimu = 500)
+        self.assertTrue(np.array_equal(iisample, np.ceil(aa*500) - 1), msg = 'Expect range(500)')
+        self.assertEqual(nsample, 400, msg = 'Expect nsample to stay 400')
+        
+# --------------------------------------------
+class InitializePlotFeatures(unittest.TestCase):
+    def test_initialize_plot_features(self):
+        PI = PredictionIntervals()
+        htmp, ax = PI._initialize_plot_features(ii = 0, jj = 0, ny = 1, figsizeinches = [10, 11])
+        self.assertEqual(htmp.get_figwidth(), 10.0, msg = 'Figure width is 10in')
+        self.assertEqual(htmp.get_figheight(), 11.0, msg = 'Figure height is 11in')
+        self.assertEqual(htmp.get_label(), 'Batch # 0 | Column # 0', msg = 'Strings should match')
+                         
+# --------------------------------------------
+class AddBatchColumnTitle(unittest.TestCase):
+    def test_add_batch_column_title_nbatch_gt_1(self):
+        PI = PredictionIntervals()
+        htmp, ax = PI._initialize_plot_features(ii = 0, jj = 0, ny = 1, figsizeinches = [10, 11])
+        PI._add_batch_column_title(nbatch = 2, ny = 1, ii = 0, jj = 0)
+        self.assertEqual(ax.get_title(), 'Batch #0, Column #0', msg = 'Strings should match')
+                         
+    def test_add_batch_column_title_ny_gt_1(self):
+        PI = PredictionIntervals()
+        htmp, ax = PI._initialize_plot_features(ii = 0, jj = 0, ny = 1, figsizeinches = [10, 11])
+        PI._add_batch_column_title(nbatch = 1, ny = 2, ii = 0, jj = 0)
+        self.assertEqual(ax.get_title(), 'Column #0', msg = 'Strings should match')

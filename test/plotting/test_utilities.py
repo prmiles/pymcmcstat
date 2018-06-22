@@ -205,3 +205,26 @@ class ScaleBandWidth(unittest.TestCase):
         s = utilities.scale_bandwidth(x = x)
         self.assertTrue(isinstance(s, np.ndarray), msg = 'Expected array return - received {}'.format(type(s)))
         
+# --------------------------
+class AppendToNrowNcolBasedOnShape(unittest.TestCase):
+    def test_shape_is_2d(self):
+        nrow = []
+        ncol = []
+        sh = (2,1)
+        nrow, ncol = utilities.append_to_nrow_ncol_based_on_shape(sh = sh, nrow = nrow, ncol = ncol)
+        self.assertEqual(nrow, [2], msg = 'Expect [2]')
+        self.assertEqual(ncol, [1], msg = 'Expect [1]')
+        
+    def test_shape_is_1d(self):
+        nrow = []
+        ncol = []
+        sh = (2,)
+        nrow, ncol = utilities.append_to_nrow_ncol_based_on_shape(sh = sh, nrow = nrow, ncol = ncol)
+        self.assertEqual(nrow, [2], msg = 'Expect [2]')
+        self.assertEqual(ncol, [1], msg = 'Expect [1]')
+        
+# --------------------------
+class ConvertFlagToBoolean(unittest.TestCase):
+    def test_boolean_conversion(self):
+        self.assertTrue(utilities.convert_flag_to_boolean(flag = 'on'), msg = 'on -> True')
+        self.assertFalse(utilities.convert_flag_to_boolean(flag = 'off'), msg = 'off -> False')

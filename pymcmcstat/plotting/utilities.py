@@ -238,7 +238,7 @@ def is_semi_pos_def_chol(x):
     Check if matrix is semi positive definite by calculating Cholesky decomposition.
     
     :Args:
-        * x (:class:`~numpy.ndarray`): Matrix to check
+        * **x** (:class:`~numpy.ndarray`): Matrix to check
     
     \\
         
@@ -252,3 +252,42 @@ def is_semi_pos_def_chol(x):
         return True, c.transpose()
     except np.linalg.linalg.LinAlgError:
         return False, c
+    
+def append_to_nrow_ncol_based_on_shape(sh, nrow, ncol):
+    '''
+    Append to list based on shape of array
+    
+    :Args:
+        * **sh** (:py:class:`tuple`): Shape of array.
+        * **nrow** (:py:class:`list`): List of number of rows
+        * **ncol** (:py:class:`list`): List of number of columns
+        
+    :Returns:
+        * **nrow** (:py:class:`list`): List of number of rows
+        * **ncol** (:py:class:`list`): List of number of columns
+    '''
+    if len(sh) == 1:
+        nrow.append(sh[0])
+        ncol.append(1)
+    else:
+        nrow.append(sh[0])
+        ncol.append(sh[1])
+    return nrow, ncol
+
+# --------------------------------------------
+def convert_flag_to_boolean(flag):
+    '''
+    Convert flag to boolean for backwards compatibility.
+    
+    :Args:
+        * **flag** (:py:class:`bool' or :py:class:'int`): Flag to specify something.
+        
+    :Returns:
+        * **flag** (:py:class:`bool`): Flag to converted to boolean.
+    '''
+    if flag is 'on':
+        flag = True
+    elif flag is 'off':
+        flag = False
+        
+    return flag
