@@ -55,6 +55,17 @@ class PredictionIntervals:
     # -------------------------------------------- 
     @classmethod
     def _analyze_data_structure(cls, data):
+        '''
+        Analyze data structure.
+        
+        :Args:
+            * **data** (:class:`~.DataStructure`): Data structure.
+            
+        :Returns:
+            * **ndatabatches** (:py:class:`int`): Number of batch data sets.
+            * **nrows** (:py:class:`list`): List containing number of rows in each set.
+            * **ncols** (:py:class:`list`): List containing number of columns in each set.
+        '''
         # Analyze data structure
         dshapes = data.shape
         ndatabatches = len(dshapes)
@@ -70,6 +81,13 @@ class PredictionIntervals:
     # -------------------------------------------- 
     @classmethod
     def _setup_data_structure_for_prediction(cls, data, ndatabatches):
+        '''
+        Setup data structure for generating quantile.
+        
+        :Args:
+            * **data** (:class:`~.DataStructure`): Data structure.
+            * **ndatabatches** (:py:class:`int`): Number of batch data sets.
+        '''
         datapred = []
         for ii in range(ndatabatches):
             # setup data structure for prediction
@@ -81,6 +99,12 @@ class PredictionIntervals:
         return datapred
     # --------------------------------------------
     def _assign_features_from_results_structure(self, results):
+        '''
+        Define variables based on items extracted from results dictionary.
+        
+        :Args:
+            * **results** (:py:class:`dict`): Results dictionary from MCMC simulation.
+        '''
         # assign required features from the results structure
         self.__chain = results['chain']
         self.__s2chain = results['s2chain']
@@ -100,6 +124,12 @@ class PredictionIntervals:
             self.__sstype = 0
     # --------------------------------------------        
     def _determine_shape_of_response(self, modelfunction):
+        '''
+        Determine shape of model function repsonse.
+        
+        :Args:
+            * **modelfun** (:py:class:`func`): Model function handle.
+        '''
         # evaluate model function to determine shape of response
         self.__nrow = []
         self.__ncol = []
@@ -128,6 +158,9 @@ class PredictionIntervals:
         similar sized vectors in a matrix; or, creates distinct list elements for
         equal or different size vectors.  Creating distinct list elements of matrices
         will generate an error when trying to plot prediction intervals.
+        
+        :Args:
+            * **ndatabatches** (:py:class:`int`): Number of batch data sets.
         '''
         # shape of s2chain
         n = self.__s2chain.shape[1]
@@ -201,12 +234,7 @@ class PredictionIntervals:
             ysave, osave = self._run_predii(testchain, tests2chain, nrow, ncol, waitbar, sstype, test, modelfun, datapredii)
                 
             # generate quantiles
-            plim = []
-            olim = []
-            for jj in range(self.__ncol[ii]):
-                plim.append(self._empirical_quantiles(ysave[:,:,jj], lims))
-                if s2chain is not None:
-                    olim.append(self._empirical_quantiles(osave[:,:,jj], lims))
+            plim, olim = self._generate_quantiles(ysave, osave, lims, ncol, s2chain)
                 
             credible_intervals.append(plim)
             prediction_intervals.append(olim)
@@ -221,6 +249,19 @@ class PredictionIntervals:
         print('\nInterval generation complete\n')
     # -------------------------------------------- 
     def _setup_predii(self, ii):
+        '''
+        Setup value for interval ii.
+        
+        :Args:
+            * **ii** (:py:class:`int`): Iteration number.
+            
+        :Returns:
+            * **datapredii** (:class:`~numpy.ndarray`): Data set.
+            * **nrow** (:py:class:`int`): Number of rows in data set.
+            * **ncol** (:py:class:`int`): Number of columns in data set.
+            * **modelfun** (:py:class:`func`): Model function handle.
+            * **test** (:class:`~numpy.ndarray`): Array of booleans correponding to local test.
+        '''
         datapredii = self.datapred[ii]
         nrow = self.__nrow[ii]
         ncol = self.__ncol[ii]
@@ -236,6 +277,24 @@ class PredictionIntervals:
         return datapredii, nrow, ncol, modelfun, test
     # -------------------------------------------- 
     def _run_predii(self, testchain, tests2chain, nrow, ncol, waitbar, sstype, test, modelfun, datapredii):
+        '''
+        Calculate observations for set ii.
+        
+        :Args:
+            * **testchain** (:class:`~numpy.ndarray`): Sample points from posterior density.
+            * **s2chain** (:class:`~numpy.ndarray`): Sample points from observation errors.
+            * **nrow** (:py:class:`int`): Number of rows in data set.
+            * **ncol** (:py:class:`int`): Number of columns in data set.
+            * **waitbar** (:py:class:`bool`): Flag to turn on progress bar.
+            * **sstype** (:py:class:`int`): Flag to specify sstype.
+            * **test** (:class:`~numpy.ndarray`): Array of booleans correponding to local test.
+            * **modelfun** (:py:class:`func`): Model function handle.
+            * **datapredii** (:class:`~numpy.ndarray`): Data set.
+            
+        :Returns:
+            * **ysave** (:class:`~numpy.ndarray`): Model responses.
+            * **osave** (:class:`~numpy.ndarray`): Model responses with observation errors.
+        '''
         nsample, npar = testchain.shape
         theta = self.__theta
         ysave = np.zeros([nsample, nrow, ncol])
@@ -265,9 +324,50 @@ class PredictionIntervals:
             ysave[kk,:,:] = ypred # store model output
             osave[kk,:,:] = opred # store model output with observation errors
         return ysave, osave
-    
-    # -------------------------------------------- 
+    # --------------------------------------------
+    def _generate_quantiles(self, ysave, osave, lims, ncol, s2chain):
+        '''
+        Generate quantiles based on observations.
+        
+        :Args:
+            * **ysave** (:class:`~numpy.ndarray`): Array of model responses.
+            * **osave** (:class:`~numpy.ndarray`): Array of model responses plus observation errors.
+            * **lims** (:class:`~numpy.ndarray`): Array of quantile limits.
+            * **ncol** (:py:class:`int`): Number of columns in `ysave`.
+            * **s2chain** (:class:`~numpy.ndarray`): Array of observation errors.
+            
+        :Returns:
+            * **credible_quantiles** (:py:class:`list`): Quantiles for credible intervals.
+            * **prediction_quantiles** (:py:class:`list`): Quantiles for prediction intervals
+        '''
+        # generate quantiles
+        credible_quantiles = []
+        prediction_quantiles = []
+        for jj in range(ncol):
+            credible_quantiles.append(self._empirical_quantiles(ysave[:,:,jj], lims))
+            if s2chain is not None:
+                prediction_quantiles.append(self._empirical_quantiles(osave[:,:,jj], lims))
+            
+        return credible_quantiles, prediction_quantiles
+    # --------------------------------------------
     def _setup_generation_requirements(self, nsample, calc_pred_int, sstype):
+        '''
+        Check if number of samples is defined - default to number of simulations.
+        
+        :Args:
+            * **nsample** (:py:class:`int`): Number of samples to draw from posterior.
+            * **calc_pred_int** (:py:class:`bool`): User defined flag as to whether or not they want PI plotted.
+            * **sstype** (:py:class:`int`): Flag to specify sstype.
+            
+        :Returns:
+            * **chain** (:class:`~numpy.ndarray`): Chain of posterior density.
+            * **s2chain** (:class:`~numpy.ndarray`): Chain of observation errors.
+            * **nsimu** (:py:class:`int`): Number of MCMC simulations.
+            * **lims** (:class:`~numpy.ndarray`): Quantile limits.
+            * **sstype** (:py:class:`int`): Flag to specify sstype.
+            * **nsample** (:py:class:`int`): Number of samples to draw from posterior.
+            * **iisample** (:class:`~numpy.ndarray`): Array of indices in posterior set.
+        '''
         # extract chain & s2chain from results
         chain = self.__chain
         
@@ -296,6 +396,23 @@ class PredictionIntervals:
     # -------------------------------------------- 
     @classmethod
     def _setup_interval_limits(cls, s2chain):
+        '''
+        Setup interval limits.
+        
+        If the observation errors are `None`, then it means prediction intervals
+        are irrelevant.  As a default the routine will then plot an expanded
+        set of credible intervals.  The output of this function should be 
+        interpreted as lower/upper limits of quantiles.  So, a 99% quantile will
+        have the limits [0.005, ..., 0.995].
+        
+        :Args:
+            * **sigma2** (:class:`~numpy.ndarray` or `None`): Observation error chain.
+            
+        \\
+        
+        :Returns:
+            * **lims** (:class:`~numpy.ndarray`): Lower/Upper limits of quantiles.
+        '''
         if s2chain is None:
             lims = np.array([0.005,0.025,0.05,0.25,0.5,0.75,0.9,0.975,0.995])
         else:
@@ -303,6 +420,22 @@ class PredictionIntervals:
         return lims 
     # -------------------------------------------- 
     def _setup_sstype(self, sstype):
+        '''
+        Setup sstype and check value.
+        
+        Cases:
+            - `sstype = 0`: Standard normal.
+            - `sstype = 1`: Square root.
+            - `sstype = 2`: Logarithmic.
+            
+        See example usage in :meth:`~._observation_sample`.
+        
+        :Args:
+            * **sstype** (:py:class:`int`): Flag to specify sstype.
+            
+        :Returns:
+            * **sstype** (:py:class:`int`): Flag to specify sstype
+        '''
         if sstype is None:
             sstype = self.__sstype
         else:
@@ -311,6 +444,16 @@ class PredictionIntervals:
     # -------------------------------------------- 
     @classmethod
     def _check_nsample(cls, nsample, nsimu):
+        '''
+        Check if number of samples is defined - default to number of simulations.
+        
+        :Args:
+            * **nsample** (:py:class:`int`): Number of samples to draw from posterior.
+            * **nsimu** (:py:class:`int`): Number of MCMC simulations.
+            
+        :Returns:
+            * **nsample** (:py:class:`int`): Number of samples to draw from posterior.
+        '''
         # check value of nsample
         if nsample is None:
             nsample = nsimu
@@ -318,6 +461,17 @@ class PredictionIntervals:
     # -------------------------------------------- 
     @classmethod
     def _define_sample_points(cls, nsample, nsimu):
+        '''
+        Define indices to sample from posteriors.
+        
+        :Args:
+            * **nsample** (:py:class:`int`): Number of samples to draw from posterior.
+            * **nsimu** (:py:class:`int`): Number of MCMC simulations.
+            
+        :Returns:
+            * **iisample** (:class:`~numpy.ndarray`): Array of indices in posterior set.
+            * **nsample** (:py:class:`int`): Number of samples to draw from posterior.
+        '''
         # define sample points
         if nsample >= nsimu:
             iisample = range(nsimu) # sample all points from chain
@@ -339,41 +493,19 @@ class PredictionIntervals:
             * **addlegend** (:py:class:`bool`): Flag to include legend on plot.
             * **figsizeinches** (:py:class:`list`): Specify figure size in inches [Width, Height].
         '''
-        # unpack out dictionary
+        # unpack dictionary
         credible_intervals = self.intervals['credible_intervals']
         prediction_intervals = self.intervals['prediction_intervals']
         
-        clabels = ['95% CI']
-        plabels = ['95% PI']
-        
-        # check if prediction intervals exist and if user wants to plot them
-        plot_pred_int = self.__convert_pred_int_flag(plot_pred_int)
-        if plot_pred_int is False or prediction_intervals is None:
-            prediction_intervals = None # turn off prediction intervals
-            clabels = ['99% CI', '95% CI', '90% CI', '50% CI']
-            
-        # check if figure size was specified
-        if figsizeinches is None:
-            figsizeinches = [7,5]
-            
-        # define number of batches
-        nbatch = len(credible_intervals)
-        
-        # define counting metrics
-        nlines = len(credible_intervals[0][0]) # number of lines
-        nn = np.int((nlines + 1)/2) # median
-        nlines = nn - 1
-        
-        if prediction_intervals is None and nlines == 1:
-            clabels = ['95% CI']
+        prediction_intervals, figsizeinches, nbatch, nn, nlines, clabels, plabels = self._setup_interval_plotting(
+                plot_pred_int, prediction_intervals, credible_intervals, figsizeinches)
         
         # initialize figure handle
         fighandle = []
         axhandle = []
         for ii in range(self.__ndatabatches):
-            fighandbatch = str('Batch # {}'.format(ii))
                           
-            credlims = credible_intervals[ii] # should be np lists inside
+            credlims = credible_intervals[ii] # should be ny lists inside
             ny = len(credlims)
             
             # extract data
@@ -383,50 +515,35 @@ class PredictionIntervals:
             time = dataii.xdata[0].reshape(dataii.xdata[0].shape[0],)
             
             for jj in range(ny):
-                fighandcolumn = str('Column # {}'.format(jj))
-                fighand = str('{} | {}'.format(fighandbatch, fighandcolumn))
-                htmp = plt.figure(fighand, figsize=(figsizeinches)) # create new figure
+                htmp, ax = self._initialize_plot_features(ii = ii, jj = jj, ny = ny, figsizeinches = figsizeinches)
                 fighandle.append(htmp)
-                
-                intcol = [0.85, 0.85, 0.85] # dimmest (lightest) color
-                plt.figure(fighand)
-                ax = plt.subplot(ny,1,jj+1)
-                plt.tight_layout()
-                plt.subplots_adjust(hspace=0.5)
                 axhandle.append(ax)
+
+                intcol = [0.85, 0.85, 0.85] # dimmest (lightest) color
                 
                 # add prediction intervals - if applicable
                 if prediction_intervals is not None:
-                    ax.fill_between(time, prediction_intervals[ii][jj][0],
-                                    prediction_intervals[ii][jj][-1],
-                                    facecolor = intcol, alpha = 0.5,
-                                    label = plabels[0])
+                    ax.fill_between(time, prediction_intervals[ii][jj][0], prediction_intervals[ii][jj][-1],
+                                    facecolor = intcol, alpha = 0.5, label = plabels[0])
                     intcol = [0.75, 0.75, 0.75]
                 
                 # add first credible interval
-                ax.fill_between(time, credlims[jj][0], credlims[jj][-1],
-                                  facecolor = intcol, alpha = 0.5, label = clabels[0])
+                ax.fill_between(time, credlims[jj][0], credlims[jj][-1], facecolor = intcol, alpha = 0.5, label = clabels[0])
                 
                 # add range of credible intervals - if applicable
                 for kk in range(1,int(nn)-1):
                     tmpintcol = np.array(intcol)*0.9**(kk)
-                    ax.fill_between(time, credlims[jj][kk], credlims[jj][-kk - 1],
-                                  facecolor = tmpintcol, alpha = 0.5,
-                                  label = clabels[kk])
+                    ax.fill_between(time, credlims[jj][kk], credlims[jj][-kk - 1], facecolor = tmpintcol, alpha = 0.5, label = clabels[kk])
                     
                 # add model (median parameter values)
                 ax.plot(time, credlims[jj][int(nn)-1], '-k', linewidth=2, label = 'model')
                 
                 # add data to plot
                 if adddata is True:
-                    plt.plot(dataii.xdata[0], dataii.ydata[0][:,jj], '.b', linewidth=1,
-                             label = 'data')
+                    plt.plot(dataii.xdata[0], dataii.ydata[0][:,jj], '.b', linewidth=1, label = 'data')
                     
                 # add title
-                if nbatch > 1:
-                    plt.title(str('Batch #{}, Column #{}'.format(ii,jj)))
-                elif ny > 1:
-                    plt.title(str('Column #{}'.format(jj)))
+                self._add_title(nbatch, ny, ii, jj)
                     
                 # add legend
                 if addlegend is True:
@@ -434,21 +551,107 @@ class PredictionIntervals:
                     ax.legend(handles, labels, loc='upper left')
     
         return fighandle, axhandle
+    
+    @classmethod
+    def _initialize_plot_features(cls, ii, jj, ny, figsizeinches):
+        fighandbatch = str('Batch # {}'.format(ii))
+        fighandcolumn = str('Column # {}'.format(jj))
+        fighand = str('{} | {}'.format(fighandbatch, fighandcolumn))
+        htmp = plt.figure(fighand, figsize=(figsizeinches)) # create new figure
+        
+        plt.figure(fighand)
+        ax = plt.subplot(ny,1,jj+1)
+        plt.tight_layout()
+        plt.subplots_adjust(hspace=0.5)
+        
+        return htmp, ax
+     
+    @classmethod
+    def _add_title(cls, nbatch, ny, ii, jj):
+        # add title
+        if nbatch > 1:
+            plt.title(str('Batch #{}, Column #{}'.format(ii,jj)))
+        elif ny > 1:
+            plt.title(str('Column #{}'.format(jj)))
+                          
+    # --------------------------------------------
+    def _setup_interval_plotting(self, plot_pred_int, prediction_intervals, credible_intervals, figsizeinches):
+        prediction_intervals = self._check_prediction_interval_flag(plot_pred_int = plot_pred_int, prediction_intervals = prediction_intervals)
+            
+        # check if figure size was specified
+        if figsizeinches is None:
+            figsizeinches = [7,5]
+            
+        nbatch, nn, nlines = self._setup_counting_metrics(credible_intervals = credible_intervals)
+        
+        clabels, plabels = self._setup_labels(prediction_intervals = prediction_intervals, nlines = nlines)
+        return prediction_intervals, figsizeinches, nbatch, nn, nlines, clabels, plabels
+    
+    # --------------------------------------------
+    def _check_prediction_interval_flag(self, plot_pred_int, prediction_intervals):
+        # check if prediction intervals exist and if user wants to plot them
+        plot_pred_int = self.__convert_pred_int_flag(plot_pred_int)
+        if plot_pred_int is False or prediction_intervals is None:
+            prediction_intervals = None # turn off prediction intervals
+        return prediction_intervals
     # --------------------------------------------
     @classmethod
-    def __convert_pred_int_flag(cls, calc_pred_int):
-            '''
-            Convert flag to boolean for backwards compatibility.
-            '''
-            if calc_pred_int is 'on':
-                calc_pred_int = True
-            elif calc_pred_int is 'off':
-                calc_pred_int = False
-                
-            return calc_pred_int
+    def _setup_labels(cls, prediction_intervals, nlines):
+        clabels = ['95% CI']
+        plabels = ['95% PI']
+        
+        # check if prediction intervals exist
+        if prediction_intervals is None:
+            clabels = ['99% CI', '95% CI', '90% CI', '50% CI']
+            
+        if prediction_intervals is None and nlines == 1:
+            clabels = ['95% CI']
+            
+        return clabels, plabels
+    # --------------------------------------------
+    @classmethod
+    def _setup_counting_metrics(cls, credible_intervals):
+        # define number of batches
+        nbatch = len(credible_intervals)
+        
+        # define counting metrics
+        nlines = len(credible_intervals[0][0]) # number of lines
+        nn = np.int((nlines + 1)/2) # median
+        nlines = nn - 1
+        
+        return nbatch, nn, nlines
+    # --------------------------------------------
+    @classmethod
+    def __convert_pred_int_flag(cls, flag):
+        '''
+        Convert flag to boolean for backwards compatibility.
+        
+        :Args:
+            * **flag** (:py:class:`bool' or :py:class:'int`): Flag to specify something.
+            
+        :Returns:
+            * **flag** (:py:class:`bool`): Flag to converted to boolean.
+        '''
+        if flag is 'on':
+            flag = True
+        elif flag is 'off':
+            flag = False
+            
+        return flag
     # --------------------------------------------
     @classmethod
     def _observation_sample(cls, s2elem, ypred, sstype):
+        '''
+        Calculate model response with observation errors.
+        
+        :Args:
+            * **s2elem** (:class:`~numpy.ndarray`): Observation error(s).
+            * **ypred** (:class:`~numpy.ndarray`): Model responses.
+            * **sstype** (:py:class:`int`): Flag to specify sstype.
+            
+        :Returns:
+            * **opred** (:class:`~numpy.ndarray`): Model responses with observation errors.
+        '''
         # check shape of s2elem and ypred
         ny = ypred.shape[1]
         ns = s2elem.shape[1]
@@ -474,8 +677,14 @@ class PredictionIntervals:
     @classmethod
     def _empirical_quantiles(cls, x, p = np.array([0.25, 0.5, 0.75])):
         '''
-        Calculate empirical quantiles
+        Calculate empirical quantiles.
         
+        :Args:
+            * **x** (:class:`~numpy.ndarray`): Observations from which to generate quantile.
+            * **p** (:class:`~numpy.ndarray`): Quantile limits.
+            
+        :Returns:
+            * (:class:`~numpy.ndarray`): Interpolated quantiles.
         '''
     
         # extract number of rows/cols from np.array
