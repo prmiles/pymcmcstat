@@ -143,7 +143,25 @@ class Observation_Sample_Test(unittest.TestCase):
         sstype = 0
         with self.assertRaises(SystemExit):
             PI._observation_sample(s2elem, ypred, sstype)
-   
+            
+    def test_sstype_1(self):
+        PI = PredictionIntervals()
+        s2elem = np.array([[2.0]])
+        ypred = np.linspace(2.0, 3.0, num = 10)
+        ypred = ypred.reshape(5,2)
+        sstype = 1
+        opred = PI._observation_sample(s2elem, ypred, sstype)
+        self.assertEqual(opred.shape, ypred.shape)
+        
+    def test_sstype_2(self):
+        PI = PredictionIntervals()
+        s2elem = np.array([[2.0]])
+        ypred = np.linspace(2.0, 3.0, num = 10)
+        ypred = ypred.reshape(5,2)
+        sstype = 2
+        opred = PI._observation_sample(s2elem, ypred, sstype)
+        self.assertEqual(opred.shape, ypred.shape)
+        
 # --------------------------------------------
 class AnalyzeDataStructure(unittest.TestCase):
     def test_basic_ds(self):
@@ -341,3 +359,45 @@ class AddBatchColumnTitle(unittest.TestCase):
         htmp, ax = PI._initialize_plot_features(ii = 0, jj = 0, ny = 1, figsizeinches = [10, 11])
         PI._add_batch_column_title(nbatch = 1, ny = 2, ii = 0, jj = 0)
         self.assertEqual(ax.get_title(), 'Column #0', msg = 'Strings should match')
+                         
+# --------------------------------------------
+class SetupLabels(unittest.TestCase):
+    def test_setup_labels_pi_none_nlines_2(self):
+        PI = PredictionIntervals()
+        clabels, plabels = PI._setup_labels(prediction_intervals = None, nlines = 2)
+        self.assertEqual(clabels, ['99% CI', '95% CI', '90% CI', '50% CI'], msg = 'String should match')
+        self.assertEqual(plabels, ['95% PI'], msg = 'String should match')
+        
+    def test_setup_labels_pi_not_none_nlines_2(self):
+        PI = PredictionIntervals()
+        clabels, plabels = PI._setup_labels(prediction_intervals = 0, nlines = 2)
+        self.assertEqual(clabels, ['95% CI'], msg = 'String should match')
+        self.assertEqual(plabels, ['95% PI'], msg = 'String should match')
+        
+    def test_setup_labels_pi_none_nlines_1(self):
+        PI = PredictionIntervals()
+        clabels, plabels = PI._setup_labels(prediction_intervals = None, nlines = 1)
+        self.assertEqual(clabels, ['95% CI'], msg = 'String should match')
+        self.assertEqual(plabels, ['95% PI'], msg = 'String should match')
+        
+# --------------------------------------------
+class CheckPIFlag(unittest.TestCase):
+    def test_check_pi_flag_true_0(self):
+        PI = PredictionIntervals()
+        prediction_intervals = PI._check_prediction_interval_flag(plot_pred_int = True, prediction_intervals = 0)
+        self.assertEqual(prediction_intervals, 0, msg = 'Expect 0')
+        
+    def test_check_pi_flag_true_none(self):
+        PI = PredictionIntervals()
+        prediction_intervals = PI._check_prediction_interval_flag(plot_pred_int = True, prediction_intervals = None)
+        self.assertEqual(prediction_intervals, None, msg = 'Expect None')
+        
+    def test_check_pi_flag_false_0(self):
+        PI = PredictionIntervals()
+        prediction_intervals = PI._check_prediction_interval_flag(plot_pred_int = False, prediction_intervals = 0)
+        self.assertEqual(prediction_intervals, None, msg = 'Expect None')
+        
+    def test_check_pi_flag_false_none(self):
+        PI = PredictionIntervals()
+        prediction_intervals = PI._check_prediction_interval_flag(plot_pred_int = False, prediction_intervals = None)
+        self.assertEqual(prediction_intervals, None, msg = 'Expect None')
