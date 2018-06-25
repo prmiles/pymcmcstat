@@ -527,7 +527,7 @@ class RunCredii(unittest.TestCase):
         DS = basic_data_structure()
         datapred = PI._setup_data_structure_for_prediction(data = DS, ndatabatches = 1)
         
-        ysave = PI._run_credii(testchain = testchain, nrow = 100, ncol = 1, waitbar = False, test = np.array([True, True]), modelfun = predmodelfun, datapredii = datapred[0])
+        ysave = PI._calc_credible_ii(testchain = testchain, nrow = 100, ncol = 1, waitbar = False, test = np.array([True, True]), modelfun = predmodelfun, datapredii = datapred[0])
         self.assertTrue(isinstance(ysave, np.ndarray), msg = 'Expect array')
         self.assertEqual(ysave.shape[0], 100, msg = 'Expect 1st dim = 100')
         
@@ -543,7 +543,7 @@ class RunPredii(unittest.TestCase):
         DS = basic_data_structure()
         datapred = PI._setup_data_structure_for_prediction(data = DS, ndatabatches = 1)
         
-        ysave, osave = PI._run_credii_and_predii(testchain = testchain, tests2chain = tests2chain, nrow = 100, ncol = 1, waitbar = False, sstype = 0, test = np.array([True, True]), modelfun = predmodelfun, datapredii = datapred[0])
+        ysave, osave = PI._calc_credible_and_prediction_ii(testchain = testchain, tests2chain = tests2chain, nrow = 100, ncol = 1, waitbar = False, sstype = 0, test = np.array([True, True]), modelfun = predmodelfun, datapredii = datapred[0])
         self.assertTrue(isinstance(ysave, np.ndarray), msg = 'Expect array')
         self.assertTrue(isinstance(osave, np.ndarray), msg = 'Expect array')
         self.assertEqual(ysave.shape[0], 100, msg = 'Expect 1st dim = 100')
@@ -560,7 +560,7 @@ class RunPredii(unittest.TestCase):
         datapred = PI._setup_data_structure_for_prediction(data = DS, ndatabatches = 1)
         
         with self.assertRaises(TypeError, msg = 'This function should not be called in tests2chain is None'):
-            PI._run_credii_and_predii(testchain = testchain, tests2chain = tests2chain, nrow = 100, ncol = 1, waitbar = False, sstype = 0, test = np.array([True, True]), modelfun = predmodelfun, datapredii = datapred[0])
+            PI._calc_credible_and_prediction_ii(testchain = testchain, tests2chain = tests2chain, nrow = 100, ncol = 1, waitbar = False, sstype = 0, test = np.array([True, True]), modelfun = predmodelfun, datapredii = datapred[0])
                    
     def test_run_predii_s2chain_tran(self):
         PI = PredictionIntervals()
@@ -573,7 +573,7 @@ class RunPredii(unittest.TestCase):
         datapred = PI._setup_data_structure_for_prediction(data = DS, ndatabatches = 1)
         
         with self.assertRaises(SystemExit, msg = 'Unknown structure'):
-            PI._run_credii_and_predii(testchain = testchain, tests2chain = tests2chain, nrow = 100, ncol = 1, waitbar = False, sstype = 0, test = np.array([True, True]), modelfun = predmodelfun, datapredii = datapred[0])
+            PI._calc_credible_and_prediction_ii(testchain = testchain, tests2chain = tests2chain, nrow = 100, ncol = 1, waitbar = False, sstype = 0, test = np.array([True, True]), modelfun = predmodelfun, datapredii = datapred[0])
             
 # --------------------------------------------
 class SetupPredictionIntervalCalculation(unittest.TestCase):

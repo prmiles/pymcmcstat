@@ -8,7 +8,6 @@ Created on Wed Nov  8 12:00:11 2017
 
 import numpy as np
 import sys
-from scipy.interpolate import interp1d
 from ..settings.DataStructure import DataStructure
 from ..settings.ModelSettings import ModelSettings
 from ..utilities.progressbar import progress_bar
@@ -25,6 +24,7 @@ class PredictionIntervals:
         - :meth:`~generate_prediction_intervals`
         - :meth:`~plot_prediction_intervals`
     '''
+    # ******************************************************************************
     # --------------------------------------------
     def setup_prediction_interval_calculation(self, results, data, modelfunction):
         '''
@@ -200,7 +200,7 @@ class PredictionIntervals:
                 sys.exit('Unclear data structure: error variances do not match size of model output')
                 
         return s2chain_index
-        
+    # ******************************************************************************    
     # --------------------------------------------
     def generate_prediction_intervals(self, sstype = None, nsample = 500, calc_pred_int = True, waitbar = False):
         '''
@@ -237,205 +237,6 @@ class PredictionIntervals:
                'prediction_intervals': prediction_intervals}
     
         print('\nInterval generation complete\n')
-    
-    # --------------------------------------------    
-    def _calculate_ci_for_data_sets(self, testchain, waitbar, sstype, lims):
-        '''
-        Calculate credible intervals.
-        
-        :Args:
-            * **testchain** (:class:`~numpy.ndarray`): Sample points from posterior density.
-            * **s2chain** (:class:`~numpy.ndarray`): Chain of observation errors.
-            * **iisample** (:class:`~numpy.ndarray`): Array of indices in posterior set.
-            * **waitbar** (:py:class:`bool`): Flag to turn on progress bar.
-            * **sstype** (:py:class:`int`): Flag to specify sstype.
-            
-        :Returns:
-            * **credible_intervals(:py:class:`list`): List of credible intervals.
-        '''
-        credible_intervals = []
-        for ii in range(len(self.datapred)):
-            datapredii, nrow, ncol, modelfun, test = self._setup_predii(ii = ii, datapred = self.datapred, nrow = self.__nrow, ncol = self.__ncol, modelfunction = self.modelfunction, local = self.__local)
-            
-            # Run interval generation on set ii
-            ysave = self._run_credii(testchain = testchain, nrow = nrow, ncol = ncol, 
-                                     waitbar = waitbar, test = test, modelfun = modelfun, datapredii = datapredii)
-                
-            # generate quantiles
-            plim = self._generate_quantiles(ysave, lims, ncol)
-                
-            credible_intervals.append(plim)
-            
-        return credible_intervals
-    
-    # --------------------------------------------    
-    def _calculate_ci_and_pi_for_data_sets(self, testchain, s2chain, iisample, waitbar, sstype, lims):
-        '''
-        Calculate prediction/credible intervals.
-        
-        :Args:
-            * **testchain** (:class:`~numpy.ndarray`): Sample points from posterior density.
-            * **s2chain** (:class:`~numpy.ndarray`): Chain of observation errors.
-            * **iisample** (:class:`~numpy.ndarray`): Array of indices in posterior set.
-            * **waitbar** (:py:class:`bool`): Flag to turn on progress bar.
-            * **sstype** (:py:class:`int`): Flag to specify sstype.
-            
-        :Returns:
-            * **credible_intervals(:py:class:`list`): List of credible intervals.
-            * **prediction_intervals(:py:class:`list`): List of prediction intervals.
-        '''
-        credible_intervals = []
-        prediction_intervals = []
-        for ii in range(len(self.datapred)):
-            datapredii, nrow, ncol, modelfun, test = self._setup_predii(ii = ii, datapred = self.datapred, nrow = self.__nrow, ncol = self.__ncol, modelfunction = self.modelfunction, local = self.__local)
-            s2ci = [self.__s2chain_index[ii][0], self.__s2chain_index[ii][1]]
-            tests2chain = s2chain[iisample, s2ci[0]:s2ci[1]]
-            
-            # Run interval generation on set ii
-            ysave, osave = self._run_credii_and_predii(testchain, tests2chain, nrow, ncol, waitbar, sstype, test, modelfun, datapredii)
-                
-            # generate quantiles
-            plim = self._generate_quantiles(ysave, lims, ncol)
-            olim = self._generate_quantiles(osave, lims, ncol)
-                
-            credible_intervals.append(plim)
-            prediction_intervals.append(olim)
-            
-        return credible_intervals, prediction_intervals
-    # --------------------------------------------
-    @classmethod
-    def _setup_predii(cls, ii, datapred, nrow, ncol, modelfunction, local):
-        '''
-        Setup value for interval ii.
-        
-        :Args:
-            * **ii** (:py:class:`int`): Iteration number.
-            * **datapred** (:py:class:`list`): List of data sets.
-            * **nrow** (:py:class:`list`): List of rows in each data set.
-            * **ncol** (:py:class:`list`): List of columns in each data set.
-            * **modelfun** (:py:class:`func` or :py:class:`list`): Model function handle.
-            
-        :Returns:
-            * **datapredii** (:class:`~numpy.ndarray`): Data set.
-            * **nrow** (:py:class:`int`): Number of rows in data set.
-            * **ncol** (:py:class:`int`): Number of columns in data set.
-            * **modelfun** (:py:class:`func`): Model function handle.
-            * **test** (:class:`~numpy.ndarray`): Array of booleans correponding to local test.
-        '''
-        datapredii = datapred[ii]
-        nrow = nrow[ii]
-        ncol = ncol[ii]
-        if isinstance(modelfunction, list):
-            modelfun = modelfunction[ii]
-        else:
-            modelfun = modelfunction
-        
-        # some parameters may only apply to certain batch sets
-        test = set_local_parameters(ii = ii, local = local)
-        return datapredii, nrow, ncol, modelfun, test
-    
-    # --------------------------------------------
-    def _run_credii(self, testchain, nrow, ncol, waitbar, test, modelfun, datapredii):
-        '''
-        Calculate response for set ii.
-        
-        :Args:
-            * **testchain** (:class:`~numpy.ndarray`): Sample points from posterior density.
-            * **nrow** (:py:class:`int`): Number of rows in data set.
-            * **ncol** (:py:class:`int`): Number of columns in data set.
-            * **waitbar** (:py:class:`bool`): Flag to turn on progress bar.
-            * **test** (:class:`~numpy.ndarray`): Array of booleans correponding to local test.
-            * **modelfun** (:py:class:`func`): Model function handle.
-            * **datapredii** (:class:`~numpy.ndarray`): Data set.
-            
-        :Returns:
-            * **ysave** (:class:`~numpy.ndarray`): Model responses.
-        '''
-        nsample, npar = testchain.shape
-        theta = self.__theta
-        ysave = np.zeros([nsample, nrow, ncol])
-        
-        for kk, isa in enumerate(testchain):
-            # progress bar
-            if waitbar is True:
-                self.__wbarstatus.update(kk)
-            
-            # extract chain set
-            theta[self.__parind[:]] = isa
-            th = theta[test]
-            # evaluate model
-            ypred = modelfun(datapredii, th)
-            ypred = ypred.reshape(nrow, ncol)
-               
-            # store model prediction
-            ysave[kk,:,:] = ypred # store model output
-        return ysave
-    # --------------------------------------------
-    def _run_credii_and_predii(self, testchain, tests2chain, nrow, ncol, waitbar, sstype, test, modelfun, datapredii):
-        '''
-        Calculate response and observations for set ii.
-        
-        :Args:
-            * **testchain** (:class:`~numpy.ndarray`): Sample points from posterior density.
-            * **tests2chain** (:class:`~numpy.ndarray`): Sample points from observation errors.
-            * **nrow** (:py:class:`int`): Number of rows in data set.
-            * **ncol** (:py:class:`int`): Number of columns in data set.
-            * **waitbar** (:py:class:`bool`): Flag to turn on progress bar.
-            * **sstype** (:py:class:`int`): Flag to specify sstype.
-            * **test** (:class:`~numpy.ndarray`): Array of booleans correponding to local test.
-            * **modelfun** (:py:class:`func`): Model function handle.
-            * **datapredii** (:class:`~numpy.ndarray`): Data set.
-            
-        :Returns:
-            * **ysave** (:class:`~numpy.ndarray`): Model responses.
-            * **osave** (:class:`~numpy.ndarray`): Model responses with observation errors.
-        '''
-        nsample, npar = testchain.shape
-        theta = self.__theta
-        ysave = np.zeros([nsample, nrow, ncol])
-        osave = np.zeros([nsample, nrow, ncol])
-        
-        for kk, isa in enumerate(testchain):
-            # progress bar
-            if waitbar is True:
-                self.__wbarstatus.update(kk)
-            
-            # extract chain set
-            theta[self.__parind[:]] = isa
-            th = theta[test]
-            # evaluate model
-            ypred = modelfun(datapredii, th)
-            ypred = ypred.reshape(nrow, ncol)
-            
-            s2elem = tests2chain[kk]
-            if s2elem.shape != (1,s2elem.size):
-                s2elem = s2elem.reshape(1,s2elem.shape[0]) # make row vector
-            opred = self._observation_sample(s2elem, ypred, sstype)
-               
-            # store model prediction
-            ysave[kk,:,:] = ypred # store model output
-            osave[kk,:,:] = opred # store model output with observation errors
-        return ysave, osave
-    # --------------------------------------------
-    @classmethod
-    def _generate_quantiles(cls, response, lims, ncol):
-        '''
-        Generate quantiles based on observations.
-        
-        :Args:
-            * **response** (:class:`~numpy.ndarray`): Array of model responses.
-            * **lims** (:class:`~numpy.ndarray`): Array of quantile limits.
-            * **ncol** (:py:class:`int`): Number of columns in `ysave`.
-            
-        :Returns:
-            * **quantiles** (:py:class:`list`): Quantiles for intervals.
-        '''
-        # generate quantiles
-        quantiles = []
-        for jj in range(ncol):
-            quantiles.append(empirical_quantiles(response[:,:,jj], lims))
-            
-        return quantiles
     # --------------------------------------------
     def _setup_generation_requirements(self, nsample, calc_pred_int, sstype):
         '''
@@ -480,6 +281,7 @@ class PredictionIntervals:
         iisample, nsample = self._define_sample_points(nsample = nsample, nsimu = nsimu)
         
         return chain, s2chain, nsimu, lims, sstype, nsample, iisample
+    
     # --------------------------------------------
     @classmethod
     def _setup_interval_limits(cls, s2chain):
@@ -568,7 +370,241 @@ class PredictionIntervals:
             iisample = np.ceil(np.random.rand(nsample)*nsimu) - 1
             iisample = iisample.astype(int)
         return iisample, nsample
-
+    
+    # --------------------------------------------    
+    def _calculate_ci_for_data_sets(self, testchain, waitbar, sstype, lims):
+        '''
+        Calculate credible intervals.
+        
+        :Args:
+            * **testchain** (:class:`~numpy.ndarray`): Sample points from posterior density.
+            * **iisample** (:class:`~numpy.ndarray`): Array of indices in posterior set.
+            * **waitbar** (:py:class:`bool`): Flag to turn on progress bar.
+            * **sstype** (:py:class:`int`): Flag to specify sstype.
+            
+        :Returns:
+            * **credible_intervals(:py:class:`list`): List of credible intervals.
+        '''
+        credible_intervals = []
+        for ii in range(len(self.datapred)):
+            datapredii, nrow, ncol, modelfun, test = self._setup_predii(ii = ii, datapred = self.datapred, nrow = self.__nrow, ncol = self.__ncol, modelfunction = self.modelfunction, local = self.__local)
+            
+            # Run interval generation on set ii
+            ysave = self._calc_credible_ii(testchain = testchain, nrow = nrow, ncol = ncol, 
+                                     waitbar = waitbar, test = test, modelfun = modelfun, datapredii = datapredii)
+                
+            # generate quantiles
+            plim = self._generate_quantiles(ysave, lims, ncol)
+                
+            credible_intervals.append(plim)
+            
+        return credible_intervals
+    
+    # --------------------------------------------    
+    def _calculate_ci_and_pi_for_data_sets(self, testchain, s2chain, iisample, waitbar, sstype, lims):
+        '''
+        Calculate prediction/credible intervals.
+        
+        :Args:
+            * **testchain** (:class:`~numpy.ndarray`): Sample points from posterior density.
+            * **s2chain** (:class:`~numpy.ndarray`): Chain of observation errors.
+            * **iisample** (:class:`~numpy.ndarray`): Array of indices in posterior set.
+            * **waitbar** (:py:class:`bool`): Flag to turn on progress bar.
+            * **sstype** (:py:class:`int`): Flag to specify sstype.
+            
+        :Returns:
+            * **credible_intervals(:py:class:`list`): List of credible intervals.
+            * **prediction_intervals(:py:class:`list`): List of prediction intervals.
+        '''
+        credible_intervals = []
+        prediction_intervals = []
+        for ii in range(len(self.datapred)):
+            datapredii, nrow, ncol, modelfun, test = self._setup_predii(ii = ii, datapred = self.datapred, nrow = self.__nrow, ncol = self.__ncol, modelfunction = self.modelfunction, local = self.__local)
+            s2ci = [self.__s2chain_index[ii][0], self.__s2chain_index[ii][1]]
+            tests2chain = s2chain[iisample, s2ci[0]:s2ci[1]]
+            
+            # Run interval generation on set ii
+            ysave, osave = self._calc_credible_and_prediction_ii(testchain, tests2chain, nrow, ncol, waitbar, sstype, test, modelfun, datapredii)
+                
+            # generate quantiles
+            plim = self._generate_quantiles(ysave, lims, ncol)
+            olim = self._generate_quantiles(osave, lims, ncol)
+                
+            credible_intervals.append(plim)
+            prediction_intervals.append(olim)
+            
+        return credible_intervals, prediction_intervals
+    # --------------------------------------------
+    @classmethod
+    def _setup_predii(cls, ii, datapred, nrow, ncol, modelfunction, local):
+        '''
+        Setup value for interval ii.
+        
+        :Args:
+            * **ii** (:py:class:`int`): Iteration number.
+            * **datapred** (:py:class:`list`): List of data sets.
+            * **nrow** (:py:class:`list`): List of rows in each data set.
+            * **ncol** (:py:class:`list`): List of columns in each data set.
+            * **modelfun** (:py:class:`func` or :py:class:`list`): Model function handle.
+            
+        :Returns:
+            * **datapredii** (:class:`~numpy.ndarray`): Data set.
+            * **nrow** (:py:class:`int`): Number of rows in data set.
+            * **ncol** (:py:class:`int`): Number of columns in data set.
+            * **modelfun** (:py:class:`func`): Model function handle.
+            * **test** (:class:`~numpy.ndarray`): Array of booleans correponding to local test.
+        '''
+        datapredii = datapred[ii]
+        nrow = nrow[ii]
+        ncol = ncol[ii]
+        if isinstance(modelfunction, list):
+            modelfun = modelfunction[ii]
+        else:
+            modelfun = modelfunction
+        
+        # some parameters may only apply to certain batch sets
+        test = set_local_parameters(ii = ii, local = local)
+        return datapredii, nrow, ncol, modelfun, test
+    
+    # --------------------------------------------
+    def _calc_credible_ii(self, testchain, nrow, ncol, waitbar, test, modelfun, datapredii):
+        '''
+        Calculate response for set ii.
+        
+        :Args:
+            * **testchain** (:class:`~numpy.ndarray`): Sample points from posterior density.
+            * **nrow** (:py:class:`int`): Number of rows in data set.
+            * **ncol** (:py:class:`int`): Number of columns in data set.
+            * **waitbar** (:py:class:`bool`): Flag to turn on progress bar.
+            * **test** (:class:`~numpy.ndarray`): Array of booleans correponding to local test.
+            * **modelfun** (:py:class:`func`): Model function handle.
+            * **datapredii** (:class:`~numpy.ndarray`): Data set.
+            
+        :Returns:
+            * **ysave** (:class:`~numpy.ndarray`): Model responses.
+        '''
+        nsample, npar = testchain.shape
+        theta = self.__theta
+        ysave = np.zeros([nsample, nrow, ncol])
+        
+        for kk, isa in enumerate(testchain):
+            # progress bar
+            if waitbar is True:
+                self.__wbarstatus.update(kk)
+            
+            # extract chain set
+            theta[self.__parind[:]] = isa
+            th = theta[test]
+            # evaluate model
+            ypred = modelfun(datapredii, th)
+            ypred = ypred.reshape(nrow, ncol)
+               
+            # store model prediction
+            ysave[kk,:,:] = ypred # store model output
+        return ysave
+    # --------------------------------------------
+    def _calc_credible_and_prediction_ii(self, testchain, tests2chain, nrow, ncol, waitbar, sstype, test, modelfun, datapredii):
+        '''
+        Calculate response and observations for set ii.
+        
+        :Args:
+            * **testchain** (:class:`~numpy.ndarray`): Sample points from posterior density.
+            * **tests2chain** (:class:`~numpy.ndarray`): Sample points from observation errors.
+            * **nrow** (:py:class:`int`): Number of rows in data set.
+            * **ncol** (:py:class:`int`): Number of columns in data set.
+            * **waitbar** (:py:class:`bool`): Flag to turn on progress bar.
+            * **sstype** (:py:class:`int`): Flag to specify sstype.
+            * **test** (:class:`~numpy.ndarray`): Array of booleans correponding to local test.
+            * **modelfun** (:py:class:`func`): Model function handle.
+            * **datapredii** (:class:`~numpy.ndarray`): Data set.
+            
+        :Returns:
+            * **ysave** (:class:`~numpy.ndarray`): Model responses.
+            * **osave** (:class:`~numpy.ndarray`): Model responses with observation errors.
+        '''
+        nsample, npar = testchain.shape
+        theta = self.__theta
+        ysave = np.zeros([nsample, nrow, ncol])
+        osave = np.zeros([nsample, nrow, ncol])
+        
+        for kk, isa in enumerate(testchain):
+            # progress bar
+            if waitbar is True:
+                self.__wbarstatus.update(kk)
+            
+            # extract chain set
+            theta[self.__parind[:]] = isa
+            th = theta[test]
+            # evaluate model
+            ypred = modelfun(datapredii, th)
+            ypred = ypred.reshape(nrow, ncol)
+            
+            s2elem = tests2chain[kk]
+            if s2elem.shape != (1,s2elem.size):
+                s2elem = s2elem.reshape(1,s2elem.shape[0]) # make row vector
+            opred = self._observation_sample(s2elem, ypred, sstype)
+               
+            # store model prediction
+            ysave[kk,:,:] = ypred # store model output
+            osave[kk,:,:] = opred # store model output with observation errors
+        return ysave, osave
+    # --------------------------------------------
+    @classmethod
+    def _observation_sample(cls, s2elem, ypred, sstype):
+        '''
+        Calculate model response with observation errors.
+        
+        :Args:
+            * **s2elem** (:class:`~numpy.ndarray`): Observation error(s).
+            * **ypred** (:class:`~numpy.ndarray`): Model responses.
+            * **sstype** (:py:class:`int`): Flag to specify sstype.
+            
+        :Returns:
+            * **opred** (:class:`~numpy.ndarray`): Model responses with observation errors.
+        '''
+        # check shape of s2elem and ypred
+        ny = ypred.shape[1]
+        ns = s2elem.shape[1]
+        if ns != ny and ns == 1:
+            s2elem = s2elem*np.ones([ny,1])
+        elif ns != ny and ns != 1:
+            sys.exit('Unclear data structure: error variances do not match size of model output')
+            
+        if sstype == 0:
+            opred = ypred + np.matmul(np.random.standard_normal(ypred.shape),np.diagflat(
+                    np.sqrt(s2elem))).reshape(ypred.shape)
+        elif sstype == 1: # sqrt
+            opred = (np.sqrt(ypred) + np.matmul(np.random.standard_normal(ypred.shape),np.diagflat(
+                np.sqrt(s2elem))).reshape(ypred.shape))**2
+        elif sstype == 2: # log
+            opred = ypred*np.exp(np.matmul(np.random.standard_normal(ypred.shape),np.diagflat(
+                np.sqrt(s2elem))).reshape(ypred.shape))
+        else:
+            sys.exit('Unknown sstype')
+            
+        return opred
+    # --------------------------------------------
+    @classmethod
+    def _generate_quantiles(cls, response, lims, ncol):
+        '''
+        Generate quantiles based on observations.
+        
+        :Args:
+            * **response** (:class:`~numpy.ndarray`): Array of model responses.
+            * **lims** (:class:`~numpy.ndarray`): Array of quantile limits.
+            * **ncol** (:py:class:`int`): Number of columns in `ysave`.
+            
+        :Returns:
+            * **quantiles** (:py:class:`list`): Quantiles for intervals.
+        '''
+        # generate quantiles
+        quantiles = []
+        for jj in range(ncol):
+            quantiles.append(empirical_quantiles(response[:,:,jj], lims))
+            
+        return quantiles
+    
+    # ******************************************************************************
     # --------------------------------------------
     def plot_prediction_intervals(self, plot_pred_int = True, adddata = False, addlegend = True, figsizeinches = None):
         '''
@@ -774,38 +810,3 @@ class PredictionIntervals:
         nlines = nn - 1
         
         return nbatch, nn, nlines
-    # --------------------------------------------
-    @classmethod
-    def _observation_sample(cls, s2elem, ypred, sstype):
-        '''
-        Calculate model response with observation errors.
-        
-        :Args:
-            * **s2elem** (:class:`~numpy.ndarray`): Observation error(s).
-            * **ypred** (:class:`~numpy.ndarray`): Model responses.
-            * **sstype** (:py:class:`int`): Flag to specify sstype.
-            
-        :Returns:
-            * **opred** (:class:`~numpy.ndarray`): Model responses with observation errors.
-        '''
-        # check shape of s2elem and ypred
-        ny = ypred.shape[1]
-        ns = s2elem.shape[1]
-        if ns != ny and ns == 1:
-            s2elem = s2elem*np.ones([ny,1])
-        elif ns != ny and ns != 1:
-            sys.exit('Unclear data structure: error variances do not match size of model output')
-            
-        if sstype == 0:
-            opred = ypred + np.matmul(np.random.standard_normal(ypred.shape),np.diagflat(
-                    np.sqrt(s2elem))).reshape(ypred.shape)
-        elif sstype == 1: # sqrt
-            opred = (np.sqrt(ypred) + np.matmul(np.random.standard_normal(ypred.shape),np.diagflat(
-                np.sqrt(s2elem))).reshape(ypred.shape))**2
-        elif sstype == 2: # log
-            opred = ypred*np.exp(np.matmul(np.random.standard_normal(ypred.shape),np.diagflat(
-                np.sqrt(s2elem))).reshape(ypred.shape))
-        else:
-            sys.exit('Unknown sstype')
-            
-        return opred
