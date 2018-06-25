@@ -496,14 +496,10 @@ class GenerateQuantiles(unittest.TestCase):
         nrow = 100
         ncol = 1
         ysave = np.zeros([nsample, nrow, ncol])
-        osave = np.zeros([nsample, nrow, ncol])
         lims = np.array([0.025, 0.5, 0.975])
-        s2chain = None
-        cq, pq = PI._generate_quantiles(ysave = ysave, osave = osave, lims = lims, ncol = ncol, s2chain = s2chain)
+        cq = PI._generate_quantiles(response = ysave, lims = lims, ncol = ncol)
         self.assertTrue(isinstance(cq, list), msg = 'Expect list')
-        self.assertTrue(isinstance(pq, list), msg = 'Expect list')
         self.assertEqual(cq[0].shape, (3,100), msg = 'Expect shape = (3, 100)')
-        self.assertEqual(pq, [], msg = 'Expect empty list')
         
     def test_generate_quantiles_s2chain_not_none(self):
         PI = PredictionIntervals()
@@ -513,12 +509,27 @@ class GenerateQuantiles(unittest.TestCase):
         ysave = np.zeros([nsample, nrow, ncol])
         osave = np.zeros([nsample, nrow, ncol])
         lims = np.array([0.025, 0.5, 0.975])
-        s2chain = 1
-        cq, pq = PI._generate_quantiles(ysave = ysave, osave = osave, lims = lims, ncol = ncol, s2chain = s2chain)
+        cq = PI._generate_quantiles(response = ysave, lims = lims, ncol = ncol)
+        pq = PI._generate_quantiles(response = osave, lims = lims, ncol = ncol)
         self.assertTrue(isinstance(cq, list), msg = 'Expect list')
         self.assertTrue(isinstance(pq, list), msg = 'Expect list')
         self.assertEqual(cq[0].shape, (3,100), msg = 'Expect shape = (3, 100)')
         self.assertEqual(pq[0].shape, (3,100), msg = 'Expect shape = (3, 100)')
+
+# --------------------------------------------
+class RunCredii(unittest.TestCase):
+    def test_run_credii(self):
+        PI = PredictionIntervals()
+        results = setup_pseudo_results()
+        PI._assign_features_from_results_structure(results = results)
+        chain, s2chain, nsimu, lims, sstype, nsample, iisample = PI._setup_generation_requirements(nsample = 400, calc_pred_int = True, sstype = 0)
+        testchain = np.random.random_sample(size = (100,2))
+        DS = basic_data_structure()
+        datapred = PI._setup_data_structure_for_prediction(data = DS, ndatabatches = 1)
+        
+        ysave = PI._run_credii(testchain = testchain, nrow = 100, ncol = 1, waitbar = False, test = np.array([True, True]), modelfun = predmodelfun, datapredii = datapred[0])
+        self.assertTrue(isinstance(ysave, np.ndarray), msg = 'Expect array')
+        self.assertEqual(ysave.shape[0], 100, msg = 'Expect 1st dim = 100')
         
 # --------------------------------------------
 class RunPredii(unittest.TestCase):
@@ -532,7 +543,7 @@ class RunPredii(unittest.TestCase):
         DS = basic_data_structure()
         datapred = PI._setup_data_structure_for_prediction(data = DS, ndatabatches = 1)
         
-        ysave, osave = PI._run_predii(testchain = testchain, tests2chain = tests2chain, nrow = 100, ncol = 1, waitbar = False, sstype = 0, test = np.array([True, True]), modelfun = predmodelfun, datapredii = datapred[0])
+        ysave, osave = PI._run_credii_and_predii(testchain = testchain, tests2chain = tests2chain, nrow = 100, ncol = 1, waitbar = False, sstype = 0, test = np.array([True, True]), modelfun = predmodelfun, datapredii = datapred[0])
         self.assertTrue(isinstance(ysave, np.ndarray), msg = 'Expect array')
         self.assertTrue(isinstance(osave, np.ndarray), msg = 'Expect array')
         self.assertEqual(ysave.shape[0], 100, msg = 'Expect 1st dim = 100')
@@ -548,12 +559,9 @@ class RunPredii(unittest.TestCase):
         DS = basic_data_structure()
         datapred = PI._setup_data_structure_for_prediction(data = DS, ndatabatches = 1)
         
-        ysave, osave = PI._run_predii(testchain = testchain, tests2chain = tests2chain, nrow = 100, ncol = 1, waitbar = False, sstype = 0, test = np.array([True, True]), modelfun = predmodelfun, datapredii = datapred[0])
-        self.assertTrue(isinstance(ysave, np.ndarray), msg = 'Expect array')
-        self.assertTrue(isinstance(osave, np.ndarray), msg = 'Expect array')
-        self.assertEqual(ysave.shape[0], 100, msg = 'Expect 1st dim = 100')
-        self.assertEqual(osave.shape[0], 100, msg = 'Expect 1st dim = 100')
-        
+        with self.assertRaises(TypeError, msg = 'This function should not be called in tests2chain is None'):
+            PI._run_credii_and_predii(testchain = testchain, tests2chain = tests2chain, nrow = 100, ncol = 1, waitbar = False, sstype = 0, test = np.array([True, True]), modelfun = predmodelfun, datapredii = datapred[0])
+                   
     def test_run_predii_s2chain_tran(self):
         PI = PredictionIntervals()
         results = setup_pseudo_results()
@@ -565,7 +573,7 @@ class RunPredii(unittest.TestCase):
         datapred = PI._setup_data_structure_for_prediction(data = DS, ndatabatches = 1)
         
         with self.assertRaises(SystemExit, msg = 'Unknown structure'):
-            PI._run_predii(testchain = testchain, tests2chain = tests2chain, nrow = 100, ncol = 1, waitbar = False, sstype = 0, test = np.array([True, True]), modelfun = predmodelfun, datapredii = datapred[0])
+            PI._run_credii_and_predii(testchain = testchain, tests2chain = tests2chain, nrow = 100, ncol = 1, waitbar = False, sstype = 0, test = np.array([True, True]), modelfun = predmodelfun, datapredii = datapred[0])
             
 # --------------------------------------------
 class SetupPredictionIntervalCalculation(unittest.TestCase):
@@ -589,31 +597,57 @@ class SetupPredictionIntervalCalculation(unittest.TestCase):
         self.assertEqual(PI.modelfunction, predmodelfun, msg = 'Functions should match')
         self.assertFalse(hasattr(PI, '_PredictionIntervals__s2chain_index'), msg = 'Expect False')
         self.assertTrue(np.array_equal(PI._PredictionIntervals__chain, results['chain']), msg = 'Arrays should match')
-#    def setup_prediction_interval_calculation(self, results, data, modelfunction):
+
+# --------------------------------------------
+#class SetupPredictionIntervalCalculation(unittest.TestCase):
+    
+#    # --------------------------------------------
+#    def generate_prediction_intervals(self, sstype = None, nsample = 500, calc_pred_int = True, waitbar = False):
 #        '''
-#        Setup calculation for prediction interval generation
+#        Generate prediction/credible interval.
 #        
 #        :Args:
-#            * results (:class:`~.ResultsStructure`): MCMC results structure
-#            * data (:class:`~.DataStructure`): MCMC data structure
-#            * modelfunction: Model function handle
-#            
+#            * **sstype** (:py:class:`int`): Sum-of-squares type
+#            * **nsample** (:py:class:`int`): Number of samples to use in generating intervals.
+#            * **calc_pred_int** (:py:class:`bool`): Flag to turn on prediction interval calculation.
+#            * **waitbar** (:py:class:`bool`): Flag to turn on progress bar.
 #        '''
-#        # Analyze data structure
-#        self.__ndatabatches, nrows, ncols = self._analyze_data_structure(data = data)
+#        
+#        chain, s2chain, nsimu, lims, sstype, nsample, iisample = self._setup_generation_requirements(sstype = sstype, nsample = nsample, calc_pred_int = calc_pred_int)
+#        
+#        # setup progress bar
+#        print('Generating credible/prediction intervals:\n')
+#        if waitbar is True:
+#            self.__wbarstatus = progress_bar(iters = int(nsample))
 #            
-#        # setup data structure for prediction
-#        self.datapred = self._setup_data_structure_for_prediction(data = data, ndatabatches = self.__ndatabatches)
+#        # extract chain elements
+#        testchain = chain[iisample,:]
 #            
-#        # assign model function
-#        self.modelfunction = modelfunction
-#        
-#        # assign required features from the results structure
-#        self._assign_features_from_results_structure(results = results)
-#        
-#        # evaluate model function to determine shape of response
-#        self.__nrow, self.__ncol = self._determine_shape_of_response(modelfunction = modelfunction, ndatabatches = self.__ndatabatches, datapred = self.datapred, theta = self.__theta)
-#        
-#        # analyze structure of s2chain with respect to model output
-#        if self.__s2chain is not None:
-#            self.__s2chain_index = self._analyze_s2chain(ndatabatches = self.__ndatabatches, s2chain = self.__s2chain, ncol = self.__ncol)
+#        # loop through data sets
+#        credible_intervals = []
+#        prediction_intervals = []
+#        for ii in range(len(self.datapred)):
+#            datapredii, nrow, ncol, modelfun, test = self._setup_predii(ii = ii, datapred = self.datapred, nrow = self.__nrow, ncol = self.__ncol, modelfunction = self.modelfunction, local = self.__local)
+#            if s2chain is not None:
+#                s2ci = [self.__s2chain_index[ii][0], self.__s2chain_index[ii][1]]
+#                tests2chain = s2chain[iisample, s2ci[0]:s2ci[1]]
+#            else:
+#                tests2chain = None
+#            
+#            # Run interval generation on set ii
+#            ysave, osave = self._run_predii(testchain, tests2chain, nrow, ncol, waitbar, sstype, test, modelfun, datapredii)
+#                
+#            # generate quantiles
+#            plim, olim = self._generate_quantiles(ysave, osave, lims, ncol, s2chain)
+#                
+#            credible_intervals.append(plim)
+#            prediction_intervals.append(olim)
+#            
+#        if s2chain is None:
+#            prediction_intervals = None
+#            
+#        # generate output dictionary
+#        self.intervals = {'credible_intervals': credible_intervals,
+#               'prediction_intervals': prediction_intervals}
+#    
+#        print('\nInterval generation complete\n')
