@@ -37,7 +37,7 @@ class PredictionIntervals:
             
         '''
         # Analyze data structure
-        self.__ndatabatches, nrows, ncols = self._analyze_data_structure(data = data)
+        self.__ndatabatches, ncols = self._analyze_data_structure(data = data)
             
         # setup data structure for prediction
         self.datapred = self._setup_data_structure_for_prediction(data = data, ndatabatches = self.__ndatabatches)
@@ -54,7 +54,7 @@ class PredictionIntervals:
         # analyze structure of s2chain with respect to model output
         if self.__s2chain is not None:
             self.__s2chain_index = self._analyze_s2chain(ndatabatches = self.__ndatabatches, s2chain = self.__s2chain, ncol = self.__ncol)
-    # -------------------------------------------- 
+    # --------------------------------------------
     @classmethod
     def _analyze_data_structure(cls, data):
         '''
@@ -65,21 +65,18 @@ class PredictionIntervals:
             
         :Returns:
             * **ndatabatches** (:py:class:`int`): Number of batch data sets.
-            * **nrows** (:py:class:`list`): List containing number of rows in each set.
             * **ncols** (:py:class:`list`): List containing number of columns in each set.
         '''
         # Analyze data structure
         dshapes = data.shape
         ndatabatches = len(dshapes)
-        nrows = []
         ncols = []
         for ii in range(ndatabatches):
-            nrows.append(dshapes[ii][0])
             if len(dshapes[ii]) != 1:
                 ncols.append(dshapes[ii][1])
             else:
                 ncols.append(1)
-        return ndatabatches, nrows, ncols
+        return ndatabatches, ncols
     # --------------------------------------------
     @classmethod
     def _setup_data_structure_for_prediction(cls, data, ndatabatches):
@@ -128,7 +125,7 @@ class PredictionIntervals:
         else:
             self.__sstype = 0
     # --------------------------------------------
-    @classmethod      
+    @classmethod
     def _determine_shape_of_response(cls, modelfunction, ndatabatches, datapred, theta):
         '''
         Determine shape of model function repsonse.
@@ -200,7 +197,7 @@ class PredictionIntervals:
                 sys.exit('Unclear data structure: error variances do not match size of model output')
                 
         return s2chain_index
-    # ******************************************************************************    
+    # ******************************************************************************
     # --------------------------------------------
     def generate_prediction_intervals(self, sstype = None, nsample = 500, calc_pred_int = True, waitbar = False):
         '''
@@ -213,7 +210,7 @@ class PredictionIntervals:
             * **waitbar** (:py:class:`bool`): Flag to turn on progress bar.
         '''
         
-        chain, s2chain, nsimu, lims, sstype, nsample, iisample = self._setup_generation_requirements(sstype = sstype, nsample = nsample, calc_pred_int = calc_pred_int)
+        chain, s2chain, lims, sstype, nsample, iisample = self._setup_generation_requirements(sstype = sstype, nsample = nsample, calc_pred_int = calc_pred_int)
         
         # setup progress bar
         print('Generating credible/prediction intervals:\n')
@@ -250,7 +247,6 @@ class PredictionIntervals:
         :Returns:
             * **chain** (:class:`~numpy.ndarray`): Chain of posterior density.
             * **s2chain** (:class:`~numpy.ndarray`): Chain of observation errors.
-            * **nsimu** (:py:class:`int`): Number of MCMC simulations.
             * **lims** (:class:`~numpy.ndarray`): Quantile limits.
             * **sstype** (:py:class:`int`): Flag to specify sstype.
             * **nsample** (:py:class:`int`): Number of samples to draw from posterior.
@@ -280,7 +276,7 @@ class PredictionIntervals:
         # define sample points
         iisample, nsample = self._define_sample_points(nsample = nsample, nsimu = nsimu)
         
-        return chain, s2chain, nsimu, lims, sstype, nsample, iisample
+        return chain, s2chain, lims, sstype, nsample, iisample
     
     # --------------------------------------------
     @classmethod
@@ -306,7 +302,7 @@ class PredictionIntervals:
             lims = np.array([0.005,0.025,0.05,0.25,0.5,0.75,0.9,0.975,0.995])
         else:
             lims = np.array([0.025, 0.5, 0.975])
-        return lims 
+        return lims
     # --------------------------------------------
     def _setup_sstype(self, sstype):
         '''
@@ -390,7 +386,7 @@ class PredictionIntervals:
             datapredii, nrow, ncol, modelfun, test = self._setup_interval_ii(ii = ii, datapred = self.datapred, nrow = self.__nrow, ncol = self.__ncol, modelfunction = self.modelfunction, local = self.__local)
             
             # Run interval generation on set ii
-            ysave = self._calc_credible_ii(testchain = testchain, nrow = nrow, ncol = ncol, 
+            ysave = self._calc_credible_ii(testchain = testchain, nrow = nrow, ncol = ncol,
                                      waitbar = waitbar, test = test, modelfun = modelfun, datapredii = datapredii)
                 
             # generate quantiles
@@ -420,7 +416,7 @@ class PredictionIntervals:
         prediction_intervals = []
         for ii in range(len(self.datapred)):
             datapredii, nrow, ncol, modelfun, test = self._setup_interval_ii(
-                    ii = ii, datapred = self.datapred, nrow = self.__nrow, ncol = self.__ncol, 
+                    ii = ii, datapred = self.datapred, nrow = self.__nrow, ncol = self.__ncol,
                     modelfunction = self.modelfunction, local = self.__local)
             s2ci = [self.__s2chain_index[ii][0], self.__s2chain_index[ii][1]]
             tests2chain = s2chain[iisample, s2ci[0]:s2ci[1]]
@@ -487,7 +483,7 @@ class PredictionIntervals:
         :Returns:
             * **ysave** (:class:`~numpy.ndarray`): Model responses.
         '''
-        nsample, npar = testchain.shape
+        nsample = testchain.shape[0]
         theta = self.__theta
         ysave = np.zeros([nsample, nrow, ncol])
         
@@ -750,7 +746,8 @@ class PredictionIntervals:
         return prediction_intervals, figsizeinches, nbatch, nn, clabels, plabels
     
     # --------------------------------------------
-    def _check_prediction_interval_flag(self, plot_pred_int, prediction_intervals):
+    @classmethod
+    def _check_prediction_interval_flag(cls, plot_pred_int, prediction_intervals):
         '''
         Check prediction interval flag.
         
@@ -804,7 +801,7 @@ class PredictionIntervals:
             * **nbatch** (:py:class:`int`): Number of batches
             * **nn** (:py:class:`int`): Line number corresponding to median.
             * **nlines** (:py:class:`int`): Number of lines
-        '''    
+        '''
         # define number of batches
         nbatch = len(credible_intervals)
         
