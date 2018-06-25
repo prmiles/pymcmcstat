@@ -6,7 +6,7 @@ Created on Wed Jun 13 08:26:50 2018
 @author: prmiles
 """
 
-from pymcmcstat.samplers.Adaptation import Adaptation
+from pymcmcstat.samplers.Adaptation import Adaptation, is_semi_pos_def_chol
 import unittest
 import numpy as np
 import math
@@ -54,15 +54,13 @@ class CheckForSingularCovMatrix(unittest.TestCase):
         
 class IsSemiPositiveDefinite(unittest.TestCase):
     def test_semipositivedef(self):
-        AD = Adaptation()
         mtx = np.diag([2, 2])
-        flag, c = AD.is_semi_pos_def_chol(x = mtx)
+        flag, c = is_semi_pos_def_chol(x = mtx)
         self.assertTrue(flag, msg = 'Expect true')
         self.assertTrue(isinstance(c, np.ndarray), msg = 'Expect numpy array')
         self.assertEqual(c.shape, (2,2), msg = 'Expect 2x2 array')
         
     def test_notsemipositivedef(self):
-        AD = Adaptation()
         mtx = np.array([[2, -1],[0, 0]])
-        flag, c = AD.is_semi_pos_def_chol(x = mtx)
+        flag, c = is_semi_pos_def_chol(x = mtx)
         self.assertFalse(flag, msg = 'Expect false')

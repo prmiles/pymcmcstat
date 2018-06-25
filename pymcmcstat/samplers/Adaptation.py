@@ -9,14 +9,85 @@ Created on Thu Jan 18 11:14:11 2018
 import numpy as np
 import math
 
+# Cholesky Update
+def cholupdate(cls, R, x):
+    '''
+    Update Cholesky decomposition
+    
+    :Args:
+        * **R** (:class:`~numpy.ndarray`): Weighted Cholesky decomposition
+        * **x** (:class:`~numpy.ndarray`): Weighted sum based on local chain update
+        
+    \\
+    
+    :Returns:
+        * **R1** (:class:`~numpy.ndarray`): Updated Cholesky decomposition
+    '''
+    n = len(x)
+    R1 = R.copy()
+    x1 = x.copy()
+    for ii in range(n):
+        r = math.sqrt(R1[ii,ii]**2 + x1[ii]**2)
+        c = r*(R1[ii,ii]**(-1))
+        s = x1[ii]*(R1[ii,ii]**(-1))
+        R1[ii,ii] = r
+        if ii+1 < n:
+            R1[ii,ii+1:n] = (R1[ii,ii+1:n] + s*x1[ii+1:n])*(c**(-1))
+            x1[ii+1:n] = c*x1[ii+1:n] - s*R1[ii,ii+1:n]
+
+    return R1
+
+def is_semi_pos_def_chol(x):
+    '''
+    Check if matrix is semi-positive definite using Cholesky Decomposition
+    
+    :Args:
+        * **x** (:class:`~numpy.ndarray`): Covariance matrix
+    
+    \\
+    
+    :Returns:
+        * `Boolean`
+        * **c** (:class:`~numpy.ndarray`): Cholesky decomposition (upper triangular form) or `None`
+    '''
+    
+    c = None
+    try:
+        c = np.linalg.cholesky(x)
+        return True, c.transpose()
+    except np.linalg.linalg.LinAlgError:
+        return False, c
+    
+def initialize_covariance_mean_sum(x, w):
+    p = x.shape[1]
+    wsum = sum(w)
+    xmean = np.zeros(p)
+    xcov = np.zeros([p,p])
+    for ii in range(p):
+        xmean[ii] = sum(x[:,ii]*w)*(wsum**(-1))
+    if wsum > 1:
+        for ii in range(0,p):
+            for jj in range(0,ii+1):
+                term1 = x[:,ii] - xmean[ii]
+                term2 = x[:,jj] - xmean[jj]
+                xcov[ii,jj] = np.dot(term1.transpose(), ((term2)*w)*((wsum-1)**(-1)))
+                if ii != jj:
+                    xcov[jj,ii] = xcov[ii,jj]
+    return xcov, xmean, wsum
+
+def message(verbosity, level, printthis):
+    printed = False
+    if verbosity >= level:
+        print(printthis)
+        printed = True
+    return printed
+    
 class Adaptation:
     """
     Adaptive Metropolis (AM) algorithm based on :cite:`haario2001adaptive`.
     
     :Attributes:
-        * :meth:`~cholupdate`
         * :meth:`~covupd`
-        * :meth:`~is_semi_pos_def_chol`
         * :meth:`~run_adaptation`
         
     """
@@ -81,12 +152,12 @@ class Adaptation:
             R = self.below_burnin_threshhold(rejected = rejected, iiadapt = iiadapt, R = R, burnin_scale = burnin_scale, verbosity=options.verbosity)
                     
         else:
-            self.__message(options.verbosity, 2, str('i:{} adapting ({}, {}, {})'.format(
+            message(options.verbosity, 2, str('i:{} adapting ({}, {}, {})'.format(
                     isimu, rejected['total']*(isimu**(-1))*100, rejected['in_adaptation_interval']*(iiadapt**(-1))*100,
                     rejected['outside_bounds']*(isimu**(-1))*100)))
     
             # UPDATE COVARIANCE MATRIX - CHOLESKY
-            covchain, meanchain, wsum = self.covupd(
+            covchain, meanchain, wsum = self.update_covariance_mean_sum(
                     chain[last_index_since_adaptation:chainind,:], np.ones(1), oldcovchain, oldmeanchain, oldwsum)
                     
             last_index_since_adaptation = isimu
@@ -114,19 +185,21 @@ class Adaptation:
         
         return covariance
     
-    def below_burnin_threshhold(self, rejected, iiadapt, R, burnin_scale, verbosity):
+    @classmethod
+    def below_burnin_threshhold(cls, rejected, iiadapt, R, burnin_scale, verbosity):
         # during burnin no adaptation, just scaling down
         if rejected['in_adaptation_interval']*(iiadapt**(-1)) > 0.95:
-            self.__message(verbosity, 2, str(' (burnin/down) {3.2f}'.format(
+            message(verbosity, 2, str(' (burnin/down) {3.2f}'.format(
                     rejected['in_adaptation_interval']*(iiadapt**(-1))*100)))
             R = R*(burnin_scale**(-1))
         elif rejected['in_adaptation_interval']*(iiadapt**(-1)) < 0.05:
-            self.__message(verbosity, 2, str(' (burnin/up) {3.2f}'.format(
+            message(verbosity, 2, str(' (burnin/up) {3.2f}'.format(
                     rejected['in_adaptation_interval']*(iiadapt**(-1))*100)))
             R = R*burnin_scale
         return R
-     
-    def update_delayed_rejection(self, R, npar, ntry, drscale):
+    
+    @classmethod
+    def update_delayed_rejection(cls, R, npar, ntry, drscale):
         RDR = []
         invR = []
         RDR.append(R)
@@ -146,7 +219,7 @@ class Adaptation:
     
     def check_for_singular_cov_matrix(self, upcov, R, npar, qcov_adjust, qcov_scale, rejected, iiadapt, verbosity):
         # check if singular covariance matrix
-        pos_def, pRa = self.is_semi_pos_def_chol(upcov)
+        pos_def, pRa = is_semi_pos_def_chol(upcov)
         if pos_def == 1: # not singular!
             return self.scale_cholesky_decomposition(Ra = pRa, qcov_scale = qcov_scale)      
         else: # singular covariance matrix
@@ -156,19 +229,20 @@ class Adaptation:
     def scale_cholesky_decomposition(cls, Ra, qcov_scale):
         return Ra*qcov_scale
     
-    def adjust_cov_matrix(self, upcov, R, npar, qcov_adjust, qcov_scale, Ra, rejected, iiadapt, verbosity):
+    @classmethod
+    def adjust_cov_matrix(cls, upcov, R, npar, qcov_adjust, qcov_scale, Ra, rejected, iiadapt, verbosity):
         # try to blow it up
         tmp = upcov + np.eye(npar)*qcov_adjust
-        pos_def_adjust, pRa = self.is_semi_pos_def_chol(tmp)
+        pos_def_adjust, pRa = is_semi_pos_def_chol(tmp)
         if pos_def_adjust == 1: # not singular!
             Ra = pRa
-            self.__message(verbosity, 1, 'adjusted covariance matrix')
+            message(verbosity, 1, 'adjusted covariance matrix')
             # scale R
             R = Ra*qcov_scale
             return R
         else: # still singular...
             errstr = str('convariance matrix singular, no adaptation')
-            self.__message(verbosity, 0, '{} {}'.format(errstr, rejected['in_adaptation_interval']*(iiadapt**(-1))*100))
+            message(verbosity, 0, '{} {}'.format(errstr, rejected['in_adaptation_interval']*(iiadapt**(-1))*100))
             return R
     
     @classmethod
@@ -178,7 +252,8 @@ class Adaptation:
         upcov[:,no_adapt_index] = qcov[:,no_adapt_index]
         return upcov
     
-    def covupd(self, x, w, oldcov, oldmean, oldwsum, oldR = None):
+    @classmethod
+    def update_covariance_mean_sum(cls, x, w, oldcov, oldmean, oldwsum, oldR = None):
         """
         Update covariance chain, local mean, local sum
         
@@ -214,19 +289,7 @@ class Adaptation:
             R = oldR
                
         if oldcov is None:
-            wsum = sum(w)
-            xmean = np.zeros(p)
-            xcov = np.zeros([p,p])
-            for ii in range(p):
-                xmean[ii] = sum(x[:,ii]*w)*(wsum**(-1))
-            if wsum > 1:
-                for ii in range(0,p):
-                    for jj in range(0,ii+1):
-                        term1 = x[:,ii] - xmean[ii]
-                        term2 = x[:,jj] - xmean[jj]
-                        xcov[ii,jj] = np.dot(term1.transpose(), ((term2)*w)*((wsum-1)**(-1)))
-                        if ii != jj:
-                            xcov[jj,ii] = xcov[ii,jj]
+            xcov, xmean, wsum = initialize_covariance_mean_sum(x, w)
                             
         else:
             for ii in range(0,n):
@@ -239,7 +302,7 @@ class Adaptation:
                     print('R = \n{}\n'.format(R))
                     print('np.sqrt((oldwsum-1)*((wsum+oldwsum-1)**(-1))) = {}\n'.format(np.sqrt((oldwsum-1)*((wsum+oldwsum-1)**(-1)))))
                 
-                    R = self.cholupdate(np.sqrt((oldwsum-1)*((wsum+oldwsum-1)**(-1)))*R, np.dot((xi - oldmean).transpose(),
+                    R = cholupdate(np.sqrt((oldwsum-1)*((wsum+oldwsum-1)**(-1)))*R, np.dot((xi - oldmean).transpose(),
                                           np.sqrt(((wsum*oldwsum)*((wsum+oldwsum-1)**(-1))*((wsum+oldwsum)**(-1))))))
             
                 
@@ -253,62 +316,3 @@ class Adaptation:
                 oldwsum = wsum
        
         return xcov, xmean, wsum
-    
-    # Cholesky Update
-    @classmethod
-    def cholupdate(cls, R, x):
-        """
-        Update Cholesky decomposition
-        
-        :Args:
-            * **R** (:class:`~numpy.ndarray`): Weighted Cholesky decomposition
-            * **x** (:class:`~numpy.ndarray`): Weighted sum based on local chain update
-            
-        \\
-        
-        :Returns:
-            * **R1** (:class:`~numpy.ndarray`): Updated Cholesky decomposition
-        """
-        n = len(x)
-        R1 = R.copy()
-        x1 = x.copy()
-        for ii in range(n):
-            r = math.sqrt(R1[ii,ii]**2 + x1[ii]**2)
-            c = r*(R1[ii,ii]**(-1))
-            s = x1[ii]*(R1[ii,ii]**(-1))
-            R1[ii,ii] = r
-            if ii+1 < n:
-                R1[ii,ii+1:n] = (R1[ii,ii+1:n] + s*x1[ii+1:n])*(c**(-1))
-                x1[ii+1:n] = c*x1[ii+1:n] - s*R1[ii,ii+1:n]
-    
-        return R1
-    
-    @classmethod
-    def is_semi_pos_def_chol(cls, x):
-        """
-        Check if matrix is semi-positive definite using Cholesky Decomposition
-        
-        :Args:
-            * **x** (:class:`~numpy.ndarray`): Covariance matrix
-        
-        \\
-        
-        :Returns:
-            * `Boolean`
-            * **c** (:class:`~numpy.ndarray`): Cholesky decomposition (upper triangular form) or `None`
-        """
-        
-        c = None
-        try:
-            c = np.linalg.cholesky(x)
-            return True, c.transpose()
-        except np.linalg.linalg.LinAlgError:
-            return False, c
-     
-    @classmethod
-    def __message(cls, verbosity, level, printthis):
-        printed = False
-        if verbosity >= level:
-            print(printthis)
-            printed = True
-        return printed
