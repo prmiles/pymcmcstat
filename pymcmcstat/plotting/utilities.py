@@ -299,7 +299,7 @@ def set_local_parameters(ii, local):
     test1 = local == 0
     test2 = local == ii
     test = test1 + test2
-    return test
+    return test.reshape(test.size,)
 
 # --------------------------------------------
 def empirical_quantiles(x, p = np.array([0.25, 0.5, 0.75])):

@@ -226,7 +226,7 @@ class PredictionIntervals:
         # calculate intervals for data sets
         if s2chain is None:
             credible_intervals = self._calculate_ci_for_data_sets(
-                    testchain = testchain, waitbar = waitbar, sstype = sstype, lims = lims)
+                    testchain = testchain, waitbar = waitbar, lims = lims)
             prediction_intervals = None
         else:
             credible_intervals, prediction_intervals = self._calculate_ci_and_pi_for_data_sets(
@@ -371,8 +371,8 @@ class PredictionIntervals:
             iisample = iisample.astype(int)
         return iisample, nsample
     
-    # --------------------------------------------    
-    def _calculate_ci_for_data_sets(self, testchain, waitbar, sstype, lims):
+    # --------------------------------------------
+    def _calculate_ci_for_data_sets(self, testchain, waitbar, lims):
         '''
         Calculate credible intervals.
         
@@ -387,7 +387,7 @@ class PredictionIntervals:
         '''
         credible_intervals = []
         for ii in range(len(self.datapred)):
-            datapredii, nrow, ncol, modelfun, test = self._setup_predii(ii = ii, datapred = self.datapred, nrow = self.__nrow, ncol = self.__ncol, modelfunction = self.modelfunction, local = self.__local)
+            datapredii, nrow, ncol, modelfun, test = self._setup_interval_ii(ii = ii, datapred = self.datapred, nrow = self.__nrow, ncol = self.__ncol, modelfunction = self.modelfunction, local = self.__local)
             
             # Run interval generation on set ii
             ysave = self._calc_credible_ii(testchain = testchain, nrow = nrow, ncol = ncol, 
@@ -400,7 +400,7 @@ class PredictionIntervals:
             
         return credible_intervals
     
-    # --------------------------------------------    
+    # --------------------------------------------
     def _calculate_ci_and_pi_for_data_sets(self, testchain, s2chain, iisample, waitbar, sstype, lims):
         '''
         Calculate prediction/credible intervals.
@@ -419,12 +419,16 @@ class PredictionIntervals:
         credible_intervals = []
         prediction_intervals = []
         for ii in range(len(self.datapred)):
-            datapredii, nrow, ncol, modelfun, test = self._setup_predii(ii = ii, datapred = self.datapred, nrow = self.__nrow, ncol = self.__ncol, modelfunction = self.modelfunction, local = self.__local)
+            datapredii, nrow, ncol, modelfun, test = self._setup_interval_ii(
+                    ii = ii, datapred = self.datapred, nrow = self.__nrow, ncol = self.__ncol, 
+                    modelfunction = self.modelfunction, local = self.__local)
             s2ci = [self.__s2chain_index[ii][0], self.__s2chain_index[ii][1]]
             tests2chain = s2chain[iisample, s2ci[0]:s2ci[1]]
             
             # Run interval generation on set ii
-            ysave, osave = self._calc_credible_and_prediction_ii(testchain, tests2chain, nrow, ncol, waitbar, sstype, test, modelfun, datapredii)
+            ysave, osave = self._calc_credible_and_prediction_ii(
+                    testchain = testchain, tests2chain = tests2chain, nrow = nrow, ncol = ncol,
+                    waitbar = waitbar, sstype = sstype, test = test, modelfun = modelfun, datapredii = datapredii)
                 
             # generate quantiles
             plim = self._generate_quantiles(ysave, lims, ncol)
@@ -436,7 +440,7 @@ class PredictionIntervals:
         return credible_intervals, prediction_intervals
     # --------------------------------------------
     @classmethod
-    def _setup_predii(cls, ii, datapred, nrow, ncol, modelfunction, local):
+    def _setup_interval_ii(cls, ii, datapred, nrow, ncol, modelfunction, local):
         '''
         Setup value for interval ii.
         

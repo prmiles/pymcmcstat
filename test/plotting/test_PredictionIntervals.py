@@ -12,6 +12,7 @@ functions tested include:
 """
 from pymcmcstat.plotting.PredictionIntervals import PredictionIntervals
 from pymcmcstat.settings.DataStructure import DataStructure
+from pymcmcstat.utilities.progressbar import progress_bar
 import unittest
 from mock import patch
 import numpy as np
@@ -461,13 +462,13 @@ class SetupGenerationRequirements(unittest.TestCase):
         self.assertTrue(np.array_equal(iisample, range(100)), msg = str('Arrays should match: {}'.format(iisample)))
         
 # --------------------------------------------
-class SetupPredii(unittest.TestCase):
+class SetupIntervalii(unittest.TestCase):
     def test_setup_predii_nonlist_mdlfun(self):
         PI = PredictionIntervals()
         DS = basic_data_structure()
         datapred = PI._setup_data_structure_for_prediction(data = DS, ndatabatches = 1)
         
-        datapredii, nrow, ncol, modelfun, test = PI._setup_predii(ii = 0, datapred = datapred, nrow = [100], ncol = [1], modelfunction = predmodelfun, local = np.array([0, 0]))
+        datapredii, nrow, ncol, modelfun, test = PI._setup_interval_ii(ii = 0, datapred = datapred, nrow = [100], ncol = [1], modelfunction = predmodelfun, local = np.array([0, 0]))
         self.assertTrue(np.array_equal(datapredii.xdata[0], datapred[0].xdata[0]), msg = 'Arrays should match')
         self.assertTrue(np.array_equal(datapredii.ydata[0], datapred[0].ydata[0]), msg = 'Arrays should match')
         self.assertEqual(nrow, 100, msg = 'Expect nrow = 100')
@@ -480,7 +481,7 @@ class SetupPredii(unittest.TestCase):
         DS = basic_data_structure()
         datapred = PI._setup_data_structure_for_prediction(data = DS, ndatabatches = 1)
         
-        datapredii, nrow, ncol, modelfun, test = PI._setup_predii(ii = 0, datapred = datapred, nrow = [100], ncol = [1], modelfunction = [predmodelfun], local = np.array([0, 0]))
+        datapredii, nrow, ncol, modelfun, test = PI._setup_interval_ii(ii = 0, datapred = datapred, nrow = [100], ncol = [1], modelfunction = [predmodelfun], local = np.array([0, 0]))
         self.assertTrue(np.array_equal(datapredii.xdata[0], datapred[0].xdata[0]), msg = 'Arrays should match')
         self.assertTrue(np.array_equal(datapredii.ydata[0], datapred[0].ydata[0]), msg = 'Arrays should match')
         self.assertEqual(nrow, 100, msg = 'Expect nrow = 100')
@@ -517,8 +518,8 @@ class GenerateQuantiles(unittest.TestCase):
         self.assertEqual(pq[0].shape, (3,100), msg = 'Expect shape = (3, 100)')
 
 # --------------------------------------------
-class RunCredii(unittest.TestCase):
-    def test_run_credii(self):
+class CalcCredii(unittest.TestCase):
+    def test_calc_credii(self):
         PI = PredictionIntervals()
         results = setup_pseudo_results()
         PI._assign_features_from_results_structure(results = results)
@@ -531,9 +532,25 @@ class RunCredii(unittest.TestCase):
         self.assertTrue(isinstance(ysave, np.ndarray), msg = 'Expect array')
         self.assertEqual(ysave.shape[0], 100, msg = 'Expect 1st dim = 100')
         
+    def test_calc_credii_with_waitbar(self):
+        PI = PredictionIntervals()
+        results = setup_pseudo_results()
+        PI._assign_features_from_results_structure(results = results)
+        chain, s2chain, nsimu, lims, sstype, nsample, iisample = PI._setup_generation_requirements(nsample = 400, calc_pred_int = True, sstype = 0)
+        testchain = np.random.random_sample(size = (100,2))
+        DS = basic_data_structure()
+        datapred = PI._setup_data_structure_for_prediction(data = DS, ndatabatches = 1)
+        
+        PI._PredictionIntervals__wbarstatus = progress_bar(iters = 200)
+            
+        ysave = PI._calc_credible_ii(testchain = testchain, nrow = 100, ncol = 1, waitbar = True, test = np.array([True, True]), modelfun = predmodelfun, datapredii = datapred[0])
+        self.assertTrue(isinstance(ysave, np.ndarray), msg = 'Expect array')
+        self.assertEqual(ysave.shape[0], 100, msg = 'Expect 1st dim = 100')
+        self.assertEqual(PI._PredictionIntervals__wbarstatus.percentage(3), 1.5, msg = 'Expect 1.5')
+        
 # --------------------------------------------
-class RunPredii(unittest.TestCase):
-    def test_run_predii(self):
+class CalcPredii(unittest.TestCase):
+    def test_calc_predii(self):
         PI = PredictionIntervals()
         results = setup_pseudo_results()
         PI._assign_features_from_results_structure(results = results)
@@ -549,7 +566,26 @@ class RunPredii(unittest.TestCase):
         self.assertEqual(ysave.shape[0], 100, msg = 'Expect 1st dim = 100')
         self.assertEqual(osave.shape[0], 100, msg = 'Expect 1st dim = 100')
         
-    def test_run_predii_s2chain_none(self):
+    def test_calc_predii_with_waitbar(self):
+        PI = PredictionIntervals()
+        results = setup_pseudo_results()
+        PI._assign_features_from_results_structure(results = results)
+        chain, s2chain, nsimu, lims, sstype, nsample, iisample = PI._setup_generation_requirements(nsample = 400, calc_pred_int = True, sstype = 0)
+        testchain = np.random.random_sample(size = (100,2))
+        tests2chain = np.random.random_sample(size = (100,1))
+        DS = basic_data_structure()
+        datapred = PI._setup_data_structure_for_prediction(data = DS, ndatabatches = 1)
+        
+        PI._PredictionIntervals__wbarstatus = progress_bar(iters = 200)
+        
+        ysave, osave = PI._calc_credible_and_prediction_ii(testchain = testchain, tests2chain = tests2chain, nrow = 100, ncol = 1, waitbar = False, sstype = 0, test = np.array([True, True]), modelfun = predmodelfun, datapredii = datapred[0])
+        self.assertTrue(isinstance(ysave, np.ndarray), msg = 'Expect array')
+        self.assertTrue(isinstance(osave, np.ndarray), msg = 'Expect array')
+        self.assertEqual(ysave.shape[0], 100, msg = 'Expect 1st dim = 100')
+        self.assertEqual(osave.shape[0], 100, msg = 'Expect 1st dim = 100')
+        self.assertEqual(PI._PredictionIntervals__wbarstatus.percentage(3), 1.5, msg = 'Expect 1.5')
+        
+    def test_calc_predii_s2chain_none(self):
         PI = PredictionIntervals()
         results = setup_pseudo_results()
         PI._assign_features_from_results_structure(results = results)
@@ -562,7 +598,7 @@ class RunPredii(unittest.TestCase):
         with self.assertRaises(TypeError, msg = 'This function should not be called in tests2chain is None'):
             PI._calc_credible_and_prediction_ii(testchain = testchain, tests2chain = tests2chain, nrow = 100, ncol = 1, waitbar = False, sstype = 0, test = np.array([True, True]), modelfun = predmodelfun, datapredii = datapred[0])
                    
-    def test_run_predii_s2chain_tran(self):
+    def test_calc_predii_s2chain_tran(self):
         PI = PredictionIntervals()
         results = setup_pseudo_results()
         PI._assign_features_from_results_structure(results = results)
@@ -599,55 +635,99 @@ class SetupPredictionIntervalCalculation(unittest.TestCase):
         self.assertTrue(np.array_equal(PI._PredictionIntervals__chain, results['chain']), msg = 'Arrays should match')
 
 # --------------------------------------------
-#class SetupPredictionIntervalCalculation(unittest.TestCase):
-    
-#    # --------------------------------------------
-#    def generate_prediction_intervals(self, sstype = None, nsample = 500, calc_pred_int = True, waitbar = False):
-#        '''
-#        Generate prediction/credible interval.
-#        
-#        :Args:
-#            * **sstype** (:py:class:`int`): Sum-of-squares type
-#            * **nsample** (:py:class:`int`): Number of samples to use in generating intervals.
-#            * **calc_pred_int** (:py:class:`bool`): Flag to turn on prediction interval calculation.
-#            * **waitbar** (:py:class:`bool`): Flag to turn on progress bar.
-#        '''
-#        
-#        chain, s2chain, nsimu, lims, sstype, nsample, iisample = self._setup_generation_requirements(sstype = sstype, nsample = nsample, calc_pred_int = calc_pred_int)
-#        
-#        # setup progress bar
-#        print('Generating credible/prediction intervals:\n')
-#        if waitbar is True:
-#            self.__wbarstatus = progress_bar(iters = int(nsample))
-#            
-#        # extract chain elements
-#        testchain = chain[iisample,:]
-#            
-#        # loop through data sets
-#        credible_intervals = []
-#        prediction_intervals = []
-#        for ii in range(len(self.datapred)):
-#            datapredii, nrow, ncol, modelfun, test = self._setup_predii(ii = ii, datapred = self.datapred, nrow = self.__nrow, ncol = self.__ncol, modelfunction = self.modelfunction, local = self.__local)
-#            if s2chain is not None:
-#                s2ci = [self.__s2chain_index[ii][0], self.__s2chain_index[ii][1]]
-#                tests2chain = s2chain[iisample, s2ci[0]:s2ci[1]]
-#            else:
-#                tests2chain = None
-#            
-#            # Run interval generation on set ii
-#            ysave, osave = self._run_predii(testchain, tests2chain, nrow, ncol, waitbar, sstype, test, modelfun, datapredii)
-#                
-#            # generate quantiles
-#            plim, olim = self._generate_quantiles(ysave, osave, lims, ncol, s2chain)
-#                
-#            credible_intervals.append(plim)
-#            prediction_intervals.append(olim)
-#            
-#        if s2chain is None:
-#            prediction_intervals = None
-#            
-#        # generate output dictionary
-#        self.intervals = {'credible_intervals': credible_intervals,
-#               'prediction_intervals': prediction_intervals}
-#    
-#        print('\nInterval generation complete\n')
+class CalculateCIForDataSets(unittest.TestCase):
+    def test_calc_ci_for_ds(self):
+        PI = PredictionIntervals()
+        results = setup_pseudo_results()
+        DS = basic_data_structure()
+        PI.setup_prediction_interval_calculation(results = results, data = DS, modelfunction = predmodelfun)
+        PI._assign_features_from_results_structure(results = results)
+        lims = np.array([0.025, 0.5, 0.975])
+        testchain = np.random.random_sample(size = (100,2))
+        ci = PI._calculate_ci_for_data_sets(testchain = testchain, waitbar = False, lims = lims)
+        
+        self.assertTrue(isinstance(ci, list), msg = 'Expect list return')
+        self.assertEqual(ci[0][0].shape[0], 3, msg = 'Expect 1st dim = 3')
+        self.assertEqual(ci[0][0].shape[1], 100, msg = 'Expect 2nd dim = 100')
+        
+        
+# --------------------------------------------
+class CalculateCIandPIForDataSets(unittest.TestCase):
+    def test_calc_ci_and_pi_for_ds(self):
+        PI = PredictionIntervals()
+        results = setup_pseudo_results()
+        DS = basic_data_structure()
+        PI.setup_prediction_interval_calculation(results = results, data = DS, modelfunction = predmodelfun)
+        PI._assign_features_from_results_structure(results = results)
+        lims = np.array([0.025, 0.5, 0.975])
+        testchain = np.random.random_sample(size = (100,2))
+        s2chain = np.random.random_sample(size = (100,1))
+        sstype = 0
+        iisample, nsample = PI._define_sample_points(nsample = 400, nsimu = 100)
+        ci, pi = PI._calculate_ci_and_pi_for_data_sets(testchain = testchain, s2chain = s2chain, iisample = iisample, waitbar = False, sstype = sstype, lims = lims)
+        
+        self.assertTrue(isinstance(ci, list), msg = 'Expect list return')
+        self.assertEqual(ci[0][0].shape[0], 3, msg = 'Expect 1st dim = 3')
+        self.assertEqual(ci[0][0].shape[1], 100, msg = 'Expect 2nd dim = 100')
+        self.assertTrue(isinstance(pi, list), msg = 'Expect list return')
+        self.assertEqual(pi[0][0].shape[0], 3, msg = 'Expect 1st dim = 3')
+        self.assertEqual(pi[0][0].shape[1], 100, msg = 'Expect 2nd dim = 100')
+        
+# --------------------------------------------
+class GeneratePredictionIntervals(unittest.TestCase):
+    def test_generate_credible_intervals(self):
+        PI = PredictionIntervals()
+        results = setup_pseudo_results()
+        results['s2chain'] = None
+        DS = basic_data_structure()
+        PI.setup_prediction_interval_calculation(results = results, data = DS, modelfunction = predmodelfun)
+        PI.generate_prediction_intervals(sstype = None, nsample = 500, calc_pred_int = False, waitbar = False)
+        cint = PI.intervals['credible_intervals']
+        pint = PI.intervals['prediction_intervals']
+        self.assertTrue(isinstance(cint, list), msg = 'Expect list return')
+        self.assertEqual(cint[0][0].shape[0], 9, msg = 'Expect 1st dim = 9')
+        self.assertEqual(cint[0][0].shape[1], 100, msg = 'Expect 2nd dim = 100')
+        self.assertEqual(pint, None, msg = 'Expect None')
+        
+    def test_generate_credible_intervals_with_waitbar(self):
+        PI = PredictionIntervals()
+        results = setup_pseudo_results()
+        results['s2chain'] = None
+        DS = basic_data_structure()
+        PI.setup_prediction_interval_calculation(results = results, data = DS, modelfunction = predmodelfun)
+        PI.generate_prediction_intervals(sstype = None, nsample = 500, calc_pred_int = False, waitbar = True)
+        cint = PI.intervals['credible_intervals']
+        pint = PI.intervals['prediction_intervals']
+        self.assertTrue(isinstance(cint, list), msg = 'Expect list return')
+        self.assertEqual(cint[0][0].shape[0], 9, msg = 'Expect 1st dim = 9')
+        self.assertEqual(cint[0][0].shape[1], 100, msg = 'Expect 2nd dim = 100')
+        self.assertEqual(pint, None, msg = 'Expect None')
+        self.assertEqual(PI._PredictionIntervals__wbarstatus.percentage(3), 3.0, msg = 'Expect 3.0')
+        
+    def test_generate_credible_and_prediction_intervals(self):
+        PI = PredictionIntervals()
+        results = setup_pseudo_results()
+        DS = basic_data_structure()
+        PI.setup_prediction_interval_calculation(results = results, data = DS, modelfunction = predmodelfun)
+        PI.generate_prediction_intervals(sstype = 0, nsample = 500, calc_pred_int = True, waitbar = False)
+        cint = PI.intervals['credible_intervals']
+        pint = PI.intervals['prediction_intervals']
+        self.assertTrue(isinstance(cint, list), msg = 'Expect list return')
+        self.assertEqual(cint[0][0].shape[0], 3, msg = 'Expect 1st dim = 3')
+        self.assertEqual(cint[0][0].shape[1], 100, msg = 'Expect 2nd dim = 100')
+        self.assertTrue(isinstance(pint, list), msg = 'Expect list return')
+        self.assertEqual(pint[0][0].shape[0], 3, msg = 'Expect 1st dim = 3')
+        self.assertEqual(pint[0][0].shape[1], 100, msg = 'Expect 2nd dim = 100')
+        
+    def test_generate_credible_and_prediction_intervals_with_pi_off(self):
+        PI = PredictionIntervals()
+        results = setup_pseudo_results()
+        DS = basic_data_structure()
+        PI.setup_prediction_interval_calculation(results = results, data = DS, modelfunction = predmodelfun)
+        PI.generate_prediction_intervals(sstype = 0, nsample = 500, calc_pred_int = False, waitbar = False)
+        cint = PI.intervals['credible_intervals']
+        pint = PI.intervals['prediction_intervals']
+        self.assertTrue(isinstance(cint, list), msg = 'Expect list return')
+        self.assertEqual(cint[0][0].shape[0], 9, msg = 'Expect 1st dim = 9')
+        self.assertEqual(cint[0][0].shape[1], 100, msg = 'Expect 2nd dim = 100')
+        self.assertEqual(pint, None, msg = 'Expect None')
