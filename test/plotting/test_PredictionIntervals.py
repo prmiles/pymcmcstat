@@ -13,6 +13,7 @@ functions tested include:
 from pymcmcstat.plotting.PredictionIntervals import PredictionIntervals
 from pymcmcstat.settings.DataStructure import DataStructure
 from pymcmcstat.utilities.progressbar import progress_bar
+import matplotlib.pyplot as plt
 import unittest
 from mock import patch
 import numpy as np
@@ -578,7 +579,7 @@ class CalcPredii(unittest.TestCase):
         
         PI._PredictionIntervals__wbarstatus = progress_bar(iters = 200)
         
-        ysave, osave = PI._calc_credible_and_prediction_ii(testchain = testchain, tests2chain = tests2chain, nrow = 100, ncol = 1, waitbar = False, sstype = 0, test = np.array([True, True]), modelfun = predmodelfun, datapredii = datapred[0])
+        ysave, osave = PI._calc_credible_and_prediction_ii(testchain = testchain, tests2chain = tests2chain, nrow = 100, ncol = 1, waitbar = True, sstype = 0, test = np.array([True, True]), modelfun = predmodelfun, datapredii = datapred[0])
         self.assertTrue(isinstance(ysave, np.ndarray), msg = 'Expect array')
         self.assertTrue(isinstance(osave, np.ndarray), msg = 'Expect array')
         self.assertEqual(ysave.shape[0], 100, msg = 'Expect 1st dim = 100')
@@ -731,3 +732,49 @@ class GeneratePredictionIntervals(unittest.TestCase):
         self.assertEqual(cint[0][0].shape[0], 9, msg = 'Expect 1st dim = 9')
         self.assertEqual(cint[0][0].shape[1], 100, msg = 'Expect 2nd dim = 100')
         self.assertEqual(pint, None, msg = 'Expect None')
+        
+# --------------------------------------------
+class PlotPredictionIntervals(unittest.TestCase):
+    def test_plotting_credible_and_prediction_intervals(self):
+        PI = PredictionIntervals()
+        results = setup_pseudo_results()
+        DS = basic_data_structure()
+        PI.setup_prediction_interval_calculation(results = results, data = DS, modelfunction = predmodelfun)
+        PI.generate_prediction_intervals(sstype = 0, nsample = 500, calc_pred_int = True, waitbar = False)
+        fighandle, axhandle = PI.plot_prediction_intervals(plot_pred_int = True, adddata = False, addlegend = True)
+        
+        self.assertTrue(isinstance(fighandle, list), msg = 'Expect list return')
+        self.assertTrue(isinstance(axhandle, list), msg = 'Expect list return')
+        self.assertEqual(fighandle[0].get_label(), 'Batch # 0 | Column # 0', msg = str('Strings should match: {}'.format(fighandle[0].get_label())))
+        self.assertEqual(axhandle[0].get_legend_handles_labels()[1], ['model', '95% PI', '95% CI'], msg = str('Strings should match: {}'.format(axhandle[0].get_legend_handles_labels()[1])))
+        plt.close()
+        
+    def test_plotting_credible_intervals(self):
+        PI = PredictionIntervals()
+        results = setup_pseudo_results()
+        results['s2chain'] = None
+        DS = basic_data_structure()
+        PI.setup_prediction_interval_calculation(results = results, data = DS, modelfunction = predmodelfun)
+        PI.generate_prediction_intervals(sstype = 0, nsample = 500, calc_pred_int = False, waitbar = False)
+        fighandle, axhandle = PI.plot_prediction_intervals(plot_pred_int = False, adddata = False, addlegend = True)
+        
+        self.assertTrue(isinstance(fighandle, list), msg = 'Expect list return')
+        self.assertTrue(isinstance(axhandle, list), msg = 'Expect list return')
+        self.assertEqual(fighandle[0].get_label(), 'Batch # 0 | Column # 0', msg = str('Strings should match: {}'.format(fighandle[0].get_label())))
+        self.assertEqual(axhandle[0].get_legend_handles_labels()[1], ['model', '99% CI', '95% CI', '90% CI', '50% CI'], msg = str('Strings should match: {}'.format(axhandle[0].get_legend_handles_labels()[1])))
+        plt.close()
+        
+    def test_plotting_credible_intervals_with_data(self):
+        PI = PredictionIntervals()
+        results = setup_pseudo_results()
+        results['s2chain'] = None
+        DS = basic_data_structure()
+        PI.setup_prediction_interval_calculation(results = results, data = DS, modelfunction = predmodelfun)
+        PI.generate_prediction_intervals(sstype = 0, nsample = 500, calc_pred_int = False, waitbar = False)
+        fighandle, axhandle = PI.plot_prediction_intervals(plot_pred_int = False, adddata = True, addlegend = True)
+        
+        self.assertTrue(isinstance(fighandle, list), msg = 'Expect list return')
+        self.assertTrue(isinstance(axhandle, list), msg = 'Expect list return')
+        self.assertEqual(fighandle[0].get_label(), 'Batch # 0 | Column # 0', msg = str('Strings should match: {}'.format(fighandle[0].get_label())))
+        self.assertEqual(axhandle[0].get_legend_handles_labels()[1], ['model', 'data', '99% CI', '95% CI', '90% CI', '50% CI'], msg = str('Strings should match: {}'.format(axhandle[0].get_legend_handles_labels()[1])))
+        plt.close()
