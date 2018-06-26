@@ -59,21 +59,9 @@ class Add_Model_Parameter_Test(unittest.TestCase):
         MP._openparameterstructure(nbatch=1)
         MP.display_parameter_settings(verbosity = SO.verbosity, noadaptind = SO.noadaptind)
         self.assertEqual(MP.parameters[0]['theta0'], results['theta'][0])
-        
+                
 # --------------------------
 MP = ModelParameters()
-class Message(unittest.TestCase):
-    
-    def test_verbosity_0_level_0(self):
-        self.assertTrue(MP.message(verbosity = 0, level = 0, printthis = 'hello world'))
-        
-    def test_verbosity_1_level_0(self):
-        self.assertTrue(MP.message(verbosity = 1, level = 0, printthis = 'hello world'))
-        
-    def test_verbosity_0_level_1(self):
-        self.assertFalse(MP.message(verbosity = 0, level = 1, printthis = 'hello world'))
-        
-# --------------------------
 class LessThanOrEqualToZero(unittest.TestCase):
     
     def test_x_lt_0(self):

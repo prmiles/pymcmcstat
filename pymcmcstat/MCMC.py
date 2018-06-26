@@ -266,7 +266,7 @@ class MCMC:
                         covariance = self._covariance, options = self.simulation_options,
                         isimu = isimu, iiadapt = iiadapt, rejected = self.__rejected,
                         chain = self.__chain, chainind = self.__chain_index, u = npar_sample_from_normal,
-                        npar = self.parameters.npar, new_set = new_set)
+                        npar = self.parameters.npar, alpha = new_set.alpha)
                 
                 iiadapt = 0 # reset local adaptation index
                 self.__rejected['in_adaptation_interval'] = 0 # reset local rejection index
