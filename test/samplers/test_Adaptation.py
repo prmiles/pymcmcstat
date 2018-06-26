@@ -7,6 +7,7 @@ Created on Wed Jun 13 08:26:50 2018
 """
 
 from pymcmcstat.MCMC import MCMC
+from pymcmcstat.samplers.Adaptation import cholupdate, initialize_covariance_mean_sum
 from pymcmcstat.samplers.Adaptation import Adaptation
 from pymcmcstat.samplers.Adaptation import is_semi_pos_def_chol
 from pymcmcstat.samplers.Adaptation import unpack_simulation_options, unpack_covariance_settings
@@ -16,6 +17,7 @@ from pymcmcstat.samplers.Adaptation import update_cov_via_ram
 from pymcmcstat.samplers.Adaptation import scale_cholesky_decomposition
 from pymcmcstat.samplers.Adaptation import adjust_cov_matrix
 from pymcmcstat.samplers.Adaptation import check_for_singular_cov_matrix
+from pymcmcstat.samplers.Adaptation import update_cov_from_covchain
 from pymcmcstat.settings.SimulationOptions import SimulationOptions
 from pymcmcstat.procedures.CovarianceProcedures import CovarianceProcedures
 import unittest
@@ -73,6 +75,32 @@ def setup_mcmc():
     parameters = mcstat.parameters
     data = mcstat.data
     return model, options, parameters, data
+
+# --------------------------------------------
+class CholUpdate(unittest.TestCase):
+    def test_cholupate(self):
+        R = np.diag([1., 1., 1.])
+        R1 = cholupdate(R = R, x = np.array([1,1,1], dtype = float))
+        tsmtx = np.array([[1.41421356237310,	0.707106781186548, 0.707106781186548],[0,	1.22474487139159,	0.408248290463863],[0,	0,	1.15470053837925]])
+        self.assertTrue(np.isclose(R1, tsmtx).all(), msg = str('Expect arrays to match within numerical precision: {} new {}'.format(R1, tsmtx)))
+
+# --------------------------------------------
+class InitializeCovarianceMeanSum(unittest.TestCase):
+    def test_initialize_covariance_mean_sum(self):
+        x = np.zeros([100,2])
+        x[:,0] = np.linspace(1,100,100)
+        x[:,1] = np.linspace(1,100,100)
+        w = np.ones([100,])
+        xcov, xmean, wsum = initialize_covariance_mean_sum(x = x, w = w)
+        tsmtx = np.array([[8.4167e+02, 8.4167e+02], [8.4167e+02,   8.4167e+02]])
+        tsmean = np.array([5.0500e+01, 5.0500e+01])
+        self.assertTrue(isinstance(xcov, np.ndarray), msg = 'Expect numpy array')
+        self.assertEqual(xcov.shape, (2,2), msg = 'Expect shape = (2,2)')
+        self.assertTrue(np.isclose(tsmtx, xcov).all(), msg = str('Mean algorithms should agree: {} neq {}'.format(tsmtx, xcov)))
+        self.assertTrue(np.isclose(tsmean, xmean).all(), msg = str('Mean algorithms should agree: {} neq {}'.format(tsmean, xmean)))
+        
+        self.assertTrue(np.isclose(xmean, np.mean(x, axis = 0)).all(), msg = str('Mean algorithms should agree: {} neq {}'.format(xmean, np.mean(x, axis = 0))))
+        self.assertEqual(wsum, 100, msg = 'Expect wsum = 100')
 
 # --------------------------------------------
 class Initialization(unittest.TestCase):
@@ -312,27 +340,30 @@ class CheckForSingularCovMatrix(unittest.TestCase):
         self.assertEqual(capturedOutput.getvalue(), 'covariance matrix singular, no adaptation 96.0\n', msg = 'Expected string {}'.format('covariance matrix singular, no adaptation 96.0\n'))
         self.assertTrue(np.array_equal(R, Rout), msg = str('Expect arrays to match: {} neq {}'.format(R, Rout)))
         
-#def check_for_singular_cov_matrix(upcov, R, npar, qcov_adjust, qcov_scale, rejected, iiadapt, verbosity):
-#    '''
-#    Check if singular covariance matrix
-#    
-#    :Args:
-#        * **upcov** (:class:`~numpy.ndarray`): Parameter covariance matrix.
-#        * **R** (:class:`~numpy.ndarray`): Cholesky decomposition of covariance matrix.
-#        * **npar** (:py:class:`int`): Number of parameters.
-#        * **qcov_adjust** (:py:class:`float`): Covariance adjustment factor.
-#        * **qcov_scale** (:py:class:`float`): Scale parameter
-#        * **rejected** (:py:class:`dict`): Rejection counters.
-#        * **iiadapt** (:py:class:`int`): Adaptation counter.
-#        * **verbosity** (:py:class:`int`): Verbosity of display output.
-#        
-#    :Returns:
-#        * **R** (:class:`~numpy.ndarray`): Adjusted Cholesky decomposition of covariance matrix.
-#        
-#    '''
-#    pos_def, pRa = is_semi_pos_def_chol(upcov)
-#    if pos_def == 1: # not singular!
-#        return scale_cholesky_decomposition(Ra = pRa, qcov_scale = qcov_scale)      
-#    else: # singular covariance matrix
-#        return adjust_cov_matrix(upcov = upcov, R = R, npar = npar, qcov_adjust = qcov_adjust, qcov_scale = qcov_scale, rejected = rejected, iiadapt = iiadapt, verbosity = verbosity)
-#    
+# --------------------------------------------
+class UpdateCovFromCovchain(unittest.TestCase):
+    def test_update_cov_from_chain_all_adapt(self):
+        covchain = np.random.random_sample(size = (3,3))
+        qcov = np.random.random_sample(size = (3,3))
+        no_adapt_index = np.array([False, False, False], dtype = bool)
+        upcov = update_cov_from_covchain(covchain = covchain, qcov = qcov, no_adapt_index = no_adapt_index)
+        
+        self.assertTrue(np.array_equal(upcov, covchain), msg = str('Expect arrays to match: {} neq {}'.format(covchain, upcov)))
+        
+    def test_update_cov_from_chain_middle_no_adapt(self):
+        covchain = np.random.random_sample(size = (3,3))
+        qcov = np.random.random_sample(size = (3,3))
+        no_adapt_index = np.array([False, True, False], dtype = bool)
+        upcov = update_cov_from_covchain(covchain = covchain, qcov = qcov, no_adapt_index = no_adapt_index)
+        covchain[no_adapt_index, :] = qcov[no_adapt_index,:]
+        covchain[:,no_adapt_index] = qcov[:,no_adapt_index]
+        self.assertTrue(np.array_equal(upcov, covchain), msg = str('Expect arrays to match: {} neq {}'.format(covchain, upcov)))
+        
+    def test_update_cov_from_chain_ends_no_adapt(self):
+        covchain = np.random.random_sample(size = (3,3))
+        qcov = np.random.random_sample(size = (3,3))
+        no_adapt_index = np.array([True, False, True], dtype = bool)
+        upcov = update_cov_from_covchain(covchain = covchain, qcov = qcov, no_adapt_index = no_adapt_index)
+        covchain[no_adapt_index, :] = qcov[no_adapt_index,:]
+        covchain[:,no_adapt_index] = qcov[:,no_adapt_index]
+        self.assertTrue(np.array_equal(upcov, covchain), msg = str('Expect arrays to match: {} neq {}'.format(covchain, upcov)))

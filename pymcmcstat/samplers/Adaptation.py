@@ -58,7 +58,7 @@ def is_semi_pos_def_chol(x):
         return True, c.transpose()
     except np.linalg.linalg.LinAlgError:
         return False, c
-# --------------------------------------------    
+# --------------------------------------------
 def initialize_covariance_mean_sum(x, w):
     '''
     Initialize covariance chain, local mean, local sum
@@ -266,7 +266,24 @@ def adjust_cov_matrix(upcov, R, npar, qcov_adjust, qcov_scale, rejected, iiadapt
         errstr = str('covariance matrix singular, no adaptation')
         message(verbosity, 0, '{} {}'.format(errstr, rejected['in_adaptation_interval']*(iiadapt**(-1))*100))
         return R
+
+# --------------------------------------------
+def update_cov_from_covchain(covchain, qcov, no_adapt_index):
+    '''
+    Update covariance matrix from covariance matrix chain
     
+    :Args:
+        * **covchain** (:class:`~numpy.ndarray`): Covariance matrix history.
+        * **qcov** (:class:`~numpy.ndarray'): Parameter covariance matrix
+        * **no_adapt_index** (:class:`numpy.ndarray'): Indices of parameters not being adapted.
+        
+    :Returns:
+        * **upcov** (:class:`~numpy.ndarray'): Updated covariance matrix
+    '''
+    upcov = covchain.copy()
+    upcov[no_adapt_index, :] = qcov[no_adapt_index,:]
+    upcov[:,no_adapt_index] = qcov[:,no_adapt_index]
+    return upcov    
 # --------------------------------------------
 def check_for_singular_cov_matrix(upcov, R, npar, qcov_adjust, qcov_scale, rejected, iiadapt, verbosity):
     '''
@@ -362,7 +379,7 @@ class Adaptation:
             if doram:
                 upcov = update_cov_via_ram(u = u, isimu = isimu, etaparam=etaparam, npar = npar, alphatarget = alphatarget, alpha = alpha, R = R)
             else:
-                upcov = self.update_cov_from_covchain(covchain = covchain, qcov = qcov, no_adapt_index = no_adapt_index)
+                upcov = update_cov_from_covchain(covchain = covchain, qcov = qcov, no_adapt_index = no_adapt_index)
 
             # check if singular covariance matrix
             R = check_for_singular_cov_matrix(upcov = upcov, R = R, npar = npar, qcov_adjust = qcov_adjust, qcov_scale = qcov_scale, rejected = rejected, iiadapt = iiadapt, verbosity = verbosity)
@@ -378,13 +395,6 @@ class Adaptation:
         
         return covariance
     
-    # --------------------------------------------
-    @classmethod
-    def update_cov_from_covchain(cls, covchain, qcov, no_adapt_index):
-        upcov = covchain
-        upcov[no_adapt_index, :] = qcov[no_adapt_index,:]
-        upcov[:,no_adapt_index] = qcov[:,no_adapt_index]
-        return upcov
     # --------------------------------------------
     @classmethod
     def update_covariance_mean_sum(cls, x, w, oldcov, oldmean, oldwsum, oldR = None):
