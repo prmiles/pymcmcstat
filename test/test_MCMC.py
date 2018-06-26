@@ -74,28 +74,7 @@ class MCMCInitialization(unittest.TestCase):
             self.assertTrue(hasattr(MC, ct), msg = str('Object missing attribute: {}'.format(ct)))
         
         self.assertFalse(MC._mcmc_status, msg = 'Status is False')
-        
-        
-# --------------------------
-class MessageDisplay(unittest.TestCase):
-    
-    def test_standard_print(self):
-        MC = MCMC()
-        capturedOutput = io.StringIO()                  # Create StringIO object
-        sys.stdout = capturedOutput                     #  and redirect stdout.
-        flag = MC._MCMC__message(verbosity = 1, level = 0, printthis = 'test')
-        sys.stdout = sys.__stdout__                     # Reset redirect.
-        self.assertEqual(capturedOutput.getvalue(), 'test\n', msg = 'Expected string')
-        self.assertTrue(flag, msg = 'Statement was printed')
-        
-    def test_no_print(self):
-        MC = MCMC()
-        capturedOutput = io.StringIO()                  # Create StringIO object
-        sys.stdout = capturedOutput                     #  and redirect stdout.
-        flag = MC._MCMC__message(verbosity = 0, level = 1, printthis = 'test')
-        sys.stdout = sys.__stdout__                     # Reset redirect.
-        self.assertFalse(flag, msg = 'Statement not printed because verbosity less than level')
-        
+
 # --------------------------
 class DisplayCurrentMCMCSettings(unittest.TestCase):
     

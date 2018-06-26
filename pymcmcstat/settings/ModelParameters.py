@@ -9,6 +9,7 @@ Created on Wed Jan 17 09:13:03 2018
 import numpy as np
 import math
 import sys
+from ..utilities.general import message
 
 class ModelParameters:
     '''
@@ -182,7 +183,7 @@ class ModelParameters:
              return True
          
     def _check_prior_sigma(self, verbosity):
-        self.message(verbosity, 2, 'If prior variance <= 0, setting to Inf\n')
+        message(verbosity, 2, 'If prior variance <= 0, setting to Inf\n')
         self._thetasigma = self.replace_list_elements(self._thetasigma, self.less_than_or_equal_to_zero, float('Inf'))
     
     def display_parameter_settings(self, verbosity = None, noadaptind = None):
@@ -264,11 +265,3 @@ class ModelParameters:
             if testfunction(xii):
                 x[ii] = value
         return x
-    
-    @classmethod
-    def message(cls, verbosity, level, printthis):
-        if verbosity >= level:
-            print(printthis)
-            return True
-        else:
-            return False

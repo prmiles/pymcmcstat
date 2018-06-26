@@ -8,6 +8,7 @@ Created on Thu Jan 18 11:14:11 2018
 # import required packages
 import numpy as np
 import math
+from ..utilities.general import message
 
 # Cholesky Update
 def cholupdate(cls, R, x):
@@ -74,13 +75,6 @@ def initialize_covariance_mean_sum(x, w):
                 if ii != jj:
                     xcov[jj,ii] = xcov[ii,jj]
     return xcov, xmean, wsum
-
-def message(verbosity, level, printthis):
-    printed = False
-    if verbosity >= level:
-        print(printthis)
-        printed = True
-    return printed
     
 class Adaptation:
     """

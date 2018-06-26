@@ -45,6 +45,7 @@ from .chain import ChainStatistics
 from .chain import ChainProcessing
 
 from .utilities.progressbar import progress_bar
+from .utilities.general import message
 
 class MCMC:
     def __init__(self, rngseed = None):
@@ -227,7 +228,7 @@ class MCMC:
             if self.simulation_options.waitbar:
                 self.__wbarstatus.update(isimu)
                 
-            self.__message(self.simulation_options.verbosity, 100, str('i: {:d}/{:d}\n'.format(isimu,nsimu)));
+            message(self.simulation_options.verbosity, 100, str('i: {:d}/{:d}\n'.format(isimu,nsimu)));
 
             # METROPOLIS ALGORITHM
             accept, new_set, outbound, npar_sample_from_normal = self._sampling_methods.metropolis.run_metropolis_step(
@@ -402,25 +403,9 @@ class MCMC:
             * **iiadapt** (:py:class:`int`): Adaptation counter
             * **verbosity** (:py:class:`int`): Verbosity of display output.
         '''
-        self.__message(verbosity, 2, str('i:{} ({},{},{})\n'.format(
+        message(verbosity, 2, str('i:{} ({},{},{})\n'.format(
                 isimu, rejected['total']*isimu**(-1)*100, rejected['in_adaptation_interval']*iiadapt**(-1)*100,
                 rejected['outside_bounds']*isimu**(-1)*100)))
-     
-    @classmethod
-    def __message(cls, verbosity, level, printthis):
-        '''
-        Display message
-        
-        :Args:
-            * **verbosity** (:py:class:`int`): Verbosity of display output.
-            * **level** (:py:class:`int`): Print level relative to verbosity.
-            * **printthis** (:py:class:`str'): String to be printed.
-        '''
-        printed = False
-        if verbosity >= level:
-            print(printthis)
-            printed = True
-        return printed
     
     def __display_current_mcmc_settings(self):
         self.model_settings.display_model_settings()
