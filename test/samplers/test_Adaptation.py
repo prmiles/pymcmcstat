@@ -15,12 +15,12 @@ from pymcmcstat.samplers.Adaptation import update_delayed_rejection
 from pymcmcstat.samplers.Adaptation import update_cov_via_ram
 from pymcmcstat.samplers.Adaptation import scale_cholesky_decomposition
 from pymcmcstat.samplers.Adaptation import adjust_cov_matrix
+from pymcmcstat.samplers.Adaptation import check_for_singular_cov_matrix
 from pymcmcstat.settings.SimulationOptions import SimulationOptions
 from pymcmcstat.procedures.CovarianceProcedures import CovarianceProcedures
 import unittest
 from mock import patch
 import numpy as np
-import math
 import io
 import sys
 
@@ -82,39 +82,6 @@ class Initialization(unittest.TestCase):
         check_fields = ['qcov', 'qcov_scale', 'R', 'qcov_original', 'invR', 'iacce', 'covchain', 'meanchain']
         for ii, cf in enumerate(check_fields):
             self.assertTrue(ADD[cf] is None, msg = str('Initialize {} to None'.format(cf)))
-# --------------------------------------------            
-class CheckForSingularCovMatrix(unittest.TestCase):
-    def test_not_singular(self):
-        AD = Adaptation()
-        
-        upcov = np.ones([2,2])
-        Rin = np.diag([2, 2])
-        npar = 2
-        qcov_adjust = 1e-8
-        qcov_scale = 2.4*(math.sqrt(npar)**(-1)) # scale factor in R
-        rejected = {'in_adaptation_interval': 10}
-        iiadapt = 100
-        verbosity = 0
-        
-        R = AD.check_for_singular_cov_matrix(upcov = upcov, R = Rin, npar = npar, qcov_adjust = qcov_adjust, qcov_scale = qcov_scale, rejected = rejected, iiadapt = iiadapt, verbosity = verbosity)
-        self.assertTrue(isinstance(R, np.ndarray), msg = 'Expect numpy array output')
-        self.assertEqual(R.shape, (2,2), msg = 'Expect 2x2 array')
-        
-    def test_singular(self):
-        AD = Adaptation()
-        
-        upcov = np.array([[2, -1],[0, 0]])
-        Rin = np.diag([2, 2])
-        npar = 2
-        qcov_adjust = 1e-8
-        qcov_scale = 2.4*(math.sqrt(npar)**(-1)) # scale factor in R
-        rejected = {'in_adaptation_interval': 10}
-        iiadapt = 100
-        verbosity = 0
-        
-        R = AD.check_for_singular_cov_matrix(upcov = upcov, R = Rin, npar = npar, qcov_adjust = qcov_adjust, qcov_scale = qcov_scale, rejected = rejected, iiadapt = iiadapt, verbosity = verbosity)
-        self.assertTrue(isinstance(R, np.ndarray), msg = 'Expect numpy array output')
-        self.assertEqual(R.shape, (2,2), msg = 'Expect 2x2 array')
 # --------------------------------------------        
 class IsSemiPositiveDefinite(unittest.TestCase):
     def test_semipositivedef(self):
@@ -287,3 +254,85 @@ class AdjustCovMatrix(unittest.TestCase):
         sys.stdout = sys.__stdout__
         self.assertEqual(capturedOutput.getvalue(), 'covariance matrix singular, no adaptation 96.0\n', msg = 'Expected string {}'.format('covariance matrix singular, no adaptation 96.0\n'))
         self.assertTrue(np.array_equal(R, Rout), msg = str('Expect arrays to match: {} neq {}'.format(R, Rout)))
+        
+# --------------------------------------------
+class CheckForSingularCovMatrix(unittest.TestCase):
+    @patch('pymcmcstat.samplers.Adaptation.is_semi_pos_def_chol', return_value = (True, np.array([[0.1, 0.],[0., 0.25]])))
+    def test_singular_cov_mat_scale_cholesky(self, mock_is):
+        upcov = np.array([[0.1, 0.4],[0.4, 0.2]])
+        R = np.array([[0.1, 0.],[0., 0.25]])
+        npar = 2
+        qcov_adjust = 0.9
+        qcov_scale = 0.3
+        rejected = {'in_adaptation_interval': 96}
+        iiadapt = 100
+        verbosity = 10
+        
+        capturedOutput = io.StringIO()                  # Create StringIO object
+        sys.stdout = capturedOutput                     #  and redirect stdout.
+        Rout = check_for_singular_cov_matrix(upcov = upcov, R = R, npar = npar, qcov_adjust = qcov_adjust, qcov_scale = qcov_scale, rejected = rejected, iiadapt = iiadapt, verbosity = verbosity)
+        sys.stdout = sys.__stdout__
+        self.assertTrue(np.array_equal(Rout, R*qcov_scale), msg = 'Expect arrays to match')
+        
+    def test_check_for_singular_cov_mat_successfully_adjusted(self):
+        upcov = np.array([[0.1, 0.4],[0.4, 0.2]])
+        R = np.array([[0.1, 0.],[0., 0.25]])
+        npar = 2
+        qcov_adjust = 0.9
+        qcov_scale = 0.3
+        rejected = {'in_adaptation_interval': 96}
+        iiadapt = 100
+        verbosity = 10
+        
+        capturedOutput = io.StringIO()                  # Create StringIO object
+        sys.stdout = capturedOutput                     #  and redirect stdout.
+        Rout = check_for_singular_cov_matrix(upcov = upcov, R = R, npar = npar, qcov_adjust = qcov_adjust, qcov_scale = qcov_scale, rejected = rejected, iiadapt = iiadapt, verbosity = verbosity)
+        sys.stdout = sys.__stdout__
+        self.assertEqual(capturedOutput.getvalue(), 'adjusted covariance matrix\n', msg = 'Expected string {}'.format('adjusted covariance matrix\n'))
+        tmp = upcov + np.eye(npar)*qcov_adjust
+        pos_def_adjust, pRa = is_semi_pos_def_chol(tmp)
+        self.assertTrue(pos_def_adjust, msg = 'Expect True')
+        self.assertTrue(np.array_equal(pRa*qcov_scale, Rout), msg = str('Expect arrays to match: {} neq {}'.format(pRa*qcov_scale, Rout)))
+        
+    @patch('pymcmcstat.samplers.Adaptation.is_semi_pos_def_chol', return_value = (False, None))
+    def test_check_for_singular_cov_mat_not_successfully_adjusted(self, mock_is):
+        upcov = np.array([[0.1, 0.4],[0.4, 0.2]])
+        R = np.array([[0.1, 0.],[0., 0.25]])
+        npar = 2
+        qcov_adjust = 0.9
+        qcov_scale = 0.3
+        rejected = {'in_adaptation_interval': 96}
+        iiadapt = 100
+        verbosity = 10
+        
+        capturedOutput = io.StringIO()                  # Create StringIO object
+        sys.stdout = capturedOutput                     #  and redirect stdout.
+        Rout = check_for_singular_cov_matrix(upcov = upcov, R = R, npar = npar, qcov_adjust = qcov_adjust, qcov_scale = qcov_scale, rejected = rejected, iiadapt = iiadapt, verbosity = verbosity)
+        sys.stdout = sys.__stdout__
+        self.assertEqual(capturedOutput.getvalue(), 'covariance matrix singular, no adaptation 96.0\n', msg = 'Expected string {}'.format('covariance matrix singular, no adaptation 96.0\n'))
+        self.assertTrue(np.array_equal(R, Rout), msg = str('Expect arrays to match: {} neq {}'.format(R, Rout)))
+        
+#def check_for_singular_cov_matrix(upcov, R, npar, qcov_adjust, qcov_scale, rejected, iiadapt, verbosity):
+#    '''
+#    Check if singular covariance matrix
+#    
+#    :Args:
+#        * **upcov** (:class:`~numpy.ndarray`): Parameter covariance matrix.
+#        * **R** (:class:`~numpy.ndarray`): Cholesky decomposition of covariance matrix.
+#        * **npar** (:py:class:`int`): Number of parameters.
+#        * **qcov_adjust** (:py:class:`float`): Covariance adjustment factor.
+#        * **qcov_scale** (:py:class:`float`): Scale parameter
+#        * **rejected** (:py:class:`dict`): Rejection counters.
+#        * **iiadapt** (:py:class:`int`): Adaptation counter.
+#        * **verbosity** (:py:class:`int`): Verbosity of display output.
+#        
+#    :Returns:
+#        * **R** (:class:`~numpy.ndarray`): Adjusted Cholesky decomposition of covariance matrix.
+#        
+#    '''
+#    pos_def, pRa = is_semi_pos_def_chol(upcov)
+#    if pos_def == 1: # not singular!
+#        return scale_cholesky_decomposition(Ra = pRa, qcov_scale = qcov_scale)      
+#    else: # singular covariance matrix
+#        return adjust_cov_matrix(upcov = upcov, R = R, npar = npar, qcov_adjust = qcov_adjust, qcov_scale = qcov_scale, rejected = rejected, iiadapt = iiadapt, verbosity = verbosity)
+#    

@@ -11,7 +11,7 @@ import math
 from ..utilities.general import message
 # --------------------------------------------
 # Cholesky Update
-def cholupdate(cls, R, x):
+def cholupdate(R, x):
     '''
     Update Cholesky decomposition
     
@@ -266,6 +266,32 @@ def adjust_cov_matrix(upcov, R, npar, qcov_adjust, qcov_scale, rejected, iiadapt
         errstr = str('covariance matrix singular, no adaptation')
         message(verbosity, 0, '{} {}'.format(errstr, rejected['in_adaptation_interval']*(iiadapt**(-1))*100))
         return R
+    
+# --------------------------------------------
+def check_for_singular_cov_matrix(upcov, R, npar, qcov_adjust, qcov_scale, rejected, iiadapt, verbosity):
+    '''
+    Check if singular covariance matrix
+    
+    :Args:
+        * **upcov** (:class:`~numpy.ndarray`): Parameter covariance matrix.
+        * **R** (:class:`~numpy.ndarray`): Cholesky decomposition of covariance matrix.
+        * **npar** (:py:class:`int`): Number of parameters.
+        * **qcov_adjust** (:py:class:`float`): Covariance adjustment factor.
+        * **qcov_scale** (:py:class:`float`): Scale parameter
+        * **rejected** (:py:class:`dict`): Rejection counters.
+        * **iiadapt** (:py:class:`int`): Adaptation counter.
+        * **verbosity** (:py:class:`int`): Verbosity of display output.
+        
+    :Returns:
+        * **R** (:class:`~numpy.ndarray`): Adjusted Cholesky decomposition of covariance matrix.
+        
+    '''
+    pos_def, pRa = is_semi_pos_def_chol(upcov)
+    if pos_def == 1: # not singular!
+        return scale_cholesky_decomposition(Ra = pRa, qcov_scale = qcov_scale)      
+    else: # singular covariance matrix
+        return adjust_cov_matrix(upcov = upcov, R = R, npar = npar, qcov_adjust = qcov_adjust, qcov_scale = qcov_scale, rejected = rejected, iiadapt = iiadapt, verbosity = verbosity)
+    
 # --------------------------------------------    
 class Adaptation:
     """
@@ -339,7 +365,7 @@ class Adaptation:
                 upcov = self.update_cov_from_covchain(covchain = covchain, qcov = qcov, no_adapt_index = no_adapt_index)
 
             # check if singular covariance matrix
-            R = self.check_for_singular_cov_matrix(upcov = upcov, R = R, npar = npar, qcov_adjust = qcov_adjust, qcov_scale = qcov_scale, rejected = rejected, iiadapt = iiadapt, verbosity = verbosity)
+            R = check_for_singular_cov_matrix(upcov = upcov, R = R, npar = npar, qcov_adjust = qcov_adjust, qcov_scale = qcov_scale, rejected = rejected, iiadapt = iiadapt, verbosity = verbosity)
             
             # update dram covariance matrix
             RDR, invR = update_delayed_rejection(R = R, npar = npar, ntry = ntry, drscale = drscale)          
@@ -352,14 +378,6 @@ class Adaptation:
         
         return covariance
     
-    # --------------------------------------------
-    def check_for_singular_cov_matrix(self, upcov, R, npar, qcov_adjust, qcov_scale, rejected, iiadapt, verbosity):
-        # check if singular covariance matrix
-        pos_def, pRa = is_semi_pos_def_chol(upcov)
-        if pos_def == 1: # not singular!
-            return scale_cholesky_decomposition(Ra = pRa, qcov_scale = qcov_scale)      
-        else: # singular covariance matrix
-            return adjust_cov_matrix(upcov = upcov, R = R, npar = npar, qcov_adjust = qcov_adjust, qcov_scale = qcov_scale, rejected = rejected, iiadapt = iiadapt, verbosity = verbosity)
     # --------------------------------------------
     @classmethod
     def update_cov_from_covchain(cls, covchain, qcov, no_adapt_index):
