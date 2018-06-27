@@ -9,7 +9,7 @@ Created on Thu Jan 18 10:42:07 2018
 import numpy as np
 from ..structures.ParameterSet import ParameterSet
 from .utilities import sample_candidate_from_gaussian_proposal
-from .utilities import is_sample_outside_bounds
+from .utilities import is_sample_outside_bounds, set_outside_bounds
 from .utilities import acceptance_test
 
 class DelayedRejection:
@@ -22,7 +22,7 @@ class DelayedRejection:
         * :meth:`~run_delayed_rejection`
          
     """
-        # -------------------------------------------
+    # -------------------------------------------
     def run_delayed_rejection(self, old_set, new_set, RDR, ntry, parameters, invR, sosobj, priorobj):
         """
         Perform delayed rejection step - occurs in standard metropolis is not accepted.
@@ -48,17 +48,19 @@ class DelayedRejection:
         # create trypath
         trypath = [old_set, new_set]
         itry = 1; # dr step index
-        accept = 0 # initialize acceptance criteria
-        while accept == 0 and itry < ntry:
-            itry = itry + 1 # update dr step index
+        accept = False # initialize acceptance criteria
+        while accept is False and itry < ntry:
+            itry += 1 # update dr step index
             # initialize next step parameter set
             next_set = self.initialize_next_metropolis_step(npar = parameters.npar, old_theta = old_set.theta, sigma2 = new_set.sigma2, RDR = RDR[itry-1])
                     
             # Reject points outside boundaries
             outsidebounds = is_sample_outside_bounds(next_set.theta, parameters._lower_limits[parameters._parind[:]], parameters._upper_limits[parameters._parind[:]])
             if outsidebounds is True:
-                out_set, next_set, trypath, outbound = self._outside_bounds(old_set = old_set, next_set = next_set, trypath = trypath)
-                continue
+                next_set, outbound = set_outside_bounds(next_set = next_set)
+                trypath.append(next_set)
+                out_set = old_set
+                continue # return to beginning of while loop
                     
             # Evaluate new proposals
             outbound = 0
@@ -70,11 +72,11 @@ class DelayedRejection:
                            
             # check results of delayed rejection
             accept = acceptance_test(alpha = alpha)
-            out_set = self.update_set_based_on_acceptance(accept, old_set = old_set, next_set = next_set)
-            self.iacce[itry -1] += accept # if accepted, adds 1, if not, adds 0
+            out_set = update_set_based_on_acceptance(accept, old_set = old_set, next_set = next_set)
+            self.iacce[itry - 1] += accept # if accepted, adds 1, if not, adds 0
                 
         return accept, out_set, outbound
-    
+    # -------------------------------------------
     @classmethod
     def initialize_next_metropolis_step(cls, npar, old_theta, sigma2, RDR):
         '''
@@ -98,53 +100,18 @@ class DelayedRejection:
         next_set.theta, u = sample_candidate_from_gaussian_proposal(npar = npar, oldpar = old_theta, R = RDR)
         next_set.sigma2 = sigma2
         return next_set
-    
-    @classmethod
-    def update_set_based_on_acceptance(cls, accept, old_set, next_set):
+    # -------------------------------------------
+    def _initialize_dr_metrics(self, options):
         '''
-        Define output set based on acceptance
-        
-        .. math::
-            
-            & \\text{If}~u_{\\alpha} <~\\alpha, \\
-            
-            & \\quad \\text{Set}~q^k = q^*,~SS_{q^k} = SS_{q^*} \\
-            
-            & \\text{Else} \\
-            
-            & \\quad \\text{Set}~q^k = q^{k-1},~SS_{q^k} = SS_{q^{k-1}}
+        Initialize counting metrics for delayed rejection algorithm.
         
         :Args:
-            * **accept** (:py:class:`int`): 0 - reject, 1 - accept
-            * **old_set** (:class:`~.ParameterSet`): Features of :math:`q^{k-1}`
-            * **next_set** (:class:`~.ParameterSet`): New proposal set
-           
-        \\
-        
-        :Returns:
-            * **out_set** (:class:`~.ParameterSet`): If accept == 1, then latest DR set; Else, :math:`q^k=q^{k-1}`
+            * **options** (:class:`~.SimulationOptions`): MCMC simulation options
         '''
-        if accept == 1:
-            out_set = next_set
-        else:
-            out_set = old_set
-        return out_set
-    
-    def _initialize_dr_metrics(self, options):
         self.iacce = np.zeros(options.ntry, dtype = int)
         self.dr_step_counter = 0
-    
-    @classmethod
-    def _outside_bounds(cls, old_set, next_set, trypath):
-        next_set.alpha = 0
-        next_set.prior = 0
-        next_set.ss = np.inf
-        trypath.append(next_set)
-        outbound = 1
-        out_set = old_set
-        
-        return out_set, next_set, trypath, outbound
-        
+
+    # -------------------------------------------    
     def __alphafun(self, trypath, invR):
         '''
         Calculate likelihood according to DR
@@ -158,7 +125,7 @@ class DelayedRejection:
         :Returns:
             * **alpha** (:py:class:`float`): Result of likelihood function according to delayed rejection
         '''
-        self.dr_step_counter = self.dr_step_counter + 1
+        self.dr_step_counter += 1
         stage = len(trypath) - 1 # The stage we're in, elements in trypath - 1
         # recursively compute past alphas
         a1 = 1 # initialize
@@ -172,34 +139,65 @@ class DelayedRejection:
                 alpha = np.zeros(1)
                 return alpha
             
-        y = self.__logposteriorratio(trypath[0], trypath[-1])
+        y = logposteriorratio(trypath[0], trypath[-1])
         
         for k in range(stage):
-            y = y + self.__qfun(k, trypath, invR)
+            y = y + qfun(k, trypath, invR)
             
         alpha = min(np.ones(1), np.exp(y)*a2*(a1**(-1)))
         
         return alpha
+
+# -------------------------------------------   
+def qfun(iq, trypath, invR):
+    # Gaussian nth stage log proposal ratio
+    # log of q_i(y_n,...,y_{n-j})/q_i(x,y_1,...,y_j)
+        
+    stage = len(trypath) - 1 - 1 # - 1, iq;
+    if stage == iq: # shift index due to 0-indexing
+        zq = np.zeros(1) # we are symmetric
+    else:
+        iR = invR[iq] # proposal^(-1/2)
+        y1 = trypath[0].theta
+        y2 = trypath[iq + 1].theta # check index
+        y3 = trypath[stage + 1].theta
+        y4 = trypath[stage - iq].theta
+        zq = -0.5*((np.linalg.norm(np.dot(y4-y3, iR)))**2 - (np.linalg.norm(np.dot(y2-y1, iR)))**2)
+        
+    return zq
+
+# -------------------------------------------   
+def logposteriorratio(x1, x2):
+    zq = -0.5*(sum((x2.ss*(x2.sigma2**(-1.0)) - x1.ss*(x1.sigma2**(-1.0)))) + x2.prior - x1.prior)
+    return sum(zq)
+    
+# -------------------------------------------
+def update_set_based_on_acceptance(accept, old_set, next_set):
+    '''
+    Define output set based on acceptance
+    
+    .. math::
+        
+        & \\text{If}~u_{\\alpha} <~\\alpha, \\
+        
+        & \\quad \\text{Set}~q^k = q^*,~SS_{q^k} = SS_{q^*} \\
+        
+        & \\text{Else} \\
+        
+        & \\quad \\text{Set}~q^k = q^{k-1},~SS_{q^k} = SS_{q^{k-1}}
+    
+    :Args:
+        * **accept** (:py:class:`int`): 0 - reject, 1 - accept
+        * **old_set** (:class:`~.ParameterSet`): Features of :math:`q^{k-1}`
+        * **next_set** (:class:`~.ParameterSet`): New proposal set
        
-    @classmethod
-    def __qfun(cls, iq, trypath, invR):
-        # Gaussian nth stage log proposal ratio
-        # log of q_i(y_n,...,y_{n-j})/q_i(x,y_1,...,y_j)
-            
-        stage = len(trypath) - 1 - 1 # - 1, iq;
-        if stage == iq: # shift index due to 0-indexing
-            zq = np.zeros(1) # we are symmetric
-        else:
-            iR = invR[iq] # proposal^(-1/2)
-            y1 = trypath[0].theta
-            y2 = trypath[iq + 1].theta # check index
-            y3 = trypath[stage + 1].theta
-            y4 = trypath[stage - iq].theta
-            zq = -0.5*((np.linalg.norm(np.dot(y4-y3, iR)))**2 - (np.linalg.norm(np.dot(y2-y1, iR)))**2)
-            
-        return zq
-       
-    @classmethod
-    def __logposteriorratio(cls, x1, x2):
-        zq = -0.5*(sum((x2.ss*(x2.sigma2**(-1.0)) - x1.ss*(x1.sigma2**(-1.0)))) + x2.prior - x1.prior)
-        return sum(zq)
+    \\
+    
+    :Returns:
+        * **out_set** (:class:`~.ParameterSet`): If accept == 1, then latest DR set; Else, :math:`q^k=q^{k-1}`
+    '''
+    if accept is True:
+        out_set = next_set
+    else:
+        out_set = old_set
+    return out_set

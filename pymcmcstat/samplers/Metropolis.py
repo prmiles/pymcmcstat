@@ -9,7 +9,7 @@ Created on Thu Jan 18 10:30:29 2018
 import numpy as np
 from ..structures.ParameterSet import ParameterSet
 from .utilities import sample_candidate_from_gaussian_proposal
-from .utilities import is_sample_outside_bounds
+from .utilities import is_sample_outside_bounds, set_outside_bounds
 from .utilities import acceptance_test
 
 class Metropolis:
@@ -68,7 +68,9 @@ class Metropolis:
         outsidebounds = is_sample_outside_bounds(newpar, parameters._lower_limits[parameters._parind[:]], parameters._upper_limits[parameters._parind[:]])
         if outsidebounds is True:
             # proposed value outside parameter limits
-            accept, newprior, alpha, ss1, ss2, outbound = self.values_for_outsidebounds(ss = ss)
+            newset = ParameterSet(theta = newpar, sigma2 = sigma2)
+            newset, outbound = set_outside_bounds(next_set = newset)
+            accept = False
         else:
             outbound = 0
             # prior SS for the new theta
@@ -81,21 +83,10 @@ class Metropolis:
             # make acceptance decision
             accept = acceptance_test(alpha)
                     
-        # store parameter sets in objects
-        newset = ParameterSet(theta = newpar, ss = ss1, prior = newprior, sigma2 = sigma2, alpha = alpha)
+            # store parameter sets in objects
+            newset = ParameterSet(theta = newpar, ss = ss1, prior = newprior, sigma2 = sigma2, alpha = alpha)
         
         return accept, newset, outbound, npar_sample_from_normal
-    # --------------------------------------------------------    
-    @classmethod
-    def values_for_outsidebounds(cls, ss):
-        # proposed value outside parameter limits
-        accept = 0
-        newprior = 0
-        alpha = 0
-        ss1 = np.inf
-        ss2 = ss
-        outbound = 1
-        return accept, newprior, alpha, ss1, ss2, outbound
     # --------------------------------------------------------
     @classmethod
     def unpack_set(cls, parset):

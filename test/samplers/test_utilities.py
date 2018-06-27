@@ -8,6 +8,8 @@ Created on Wed Jun 27 12:08:17 2018
 from pymcmcstat.samplers.utilities import sample_candidate_from_gaussian_proposal
 from pymcmcstat.samplers.utilities import is_sample_outside_bounds
 from pymcmcstat.samplers.utilities import acceptance_test
+from pymcmcstat.samplers.utilities import set_outside_bounds
+from pymcmcstat.structures.ParameterSet import ParameterSet
 import unittest
 from mock import patch
 import numpy as np
@@ -50,3 +52,13 @@ class Acceptance(unittest.TestCase):
         self.assertEqual(acceptance_test(alpha = 0.4), 0, msg = 'Reject alpha < u (0.4 < 0.5488135)')
         np.random.seed(0)
         self.assertEqual(acceptance_test(alpha = 0.6), 1, msg = 'Accept alpha > u (0.6 > 0.5488135)')
+        
+# --------------------------        
+class SetOutsideBounds(unittest.TestCase):
+    def test_set_outsidebounds(self):
+        next_set = ParameterSet()
+        next_set, outbound = set_outside_bounds(next_set = next_set)
+        self.assertEqual(next_set.alpha, 0, msg = 'next_set.alpha should be 0')
+        self.assertEqual(next_set.prior, 0, msg = 'next_set.prior should be 0')
+        self.assertEqual(next_set.ss, np.inf, msg = 'next_set.ss should be np.inf')
+        self.assertEqual(outbound, 1, msg = 'outbound should be 1')  

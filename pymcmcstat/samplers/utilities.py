@@ -12,6 +12,18 @@ import numpy as np
 
 # --------------------------------------------------------
 def sample_candidate_from_gaussian_proposal(npar, oldpar, R):
+    '''
+    Sample candidate from Gaussian proposal distribution
+    
+    :Args:
+        * **npar** (:py:class:`int`): Number of parameters being samples
+        * **oldpar** (:class:`~numpy.ndarray'): :math:`q^{k-1}` Old parameter set.
+        * **R** (:class:`~numpy.ndarray`): Cholesky decomposition of parameter covariance matrix.
+        
+    :Returns:
+        * **newpar** (:class:`~numpy.ndarray`): :math:`q^*` - candidate
+        * **npar_sample_from_sample** (:class:`~numpy.ndarray`): Sampled values from normal distibution: :math:`N(0,1)`.
+    '''
     npar_sample_from_normal = np.random.randn(1, npar)
     newpar = oldpar + np.dot(npar_sample_from_normal, R)
     newpar = newpar.reshape(npar)
@@ -59,11 +71,30 @@ def acceptance_test(alpha):
     \\
     
     :Returns:
-        * **accept** (:py:class:`int`): 0 - reject, 1 - accept
+        * **accept** (:py:class:`bool`): False - reject, True - accept
     '''
     if alpha >= 1 or alpha > np.random.rand(1,1):
-        accept = 1
+        accept = True
     else:
-        accept = 0
+        accept = False
         
     return accept
+
+# -------------------------------------------
+def set_outside_bounds(next_set):
+    '''
+    Assign set features based on being outside bounds
+    
+    :Args:
+        * **next_set** (:class:`~.ParameterSet`): :math:`q^*`
+        
+    :Returns:
+        * **next_set** (:class:`~.ParameterSet`): :math:`q^*` with updated features
+        * **outbound** (:class:`bool`): True
+    '''
+    next_set.alpha = 0
+    next_set.prior = 0
+    next_set.ss = np.inf
+    outbound = True
+    
+    return next_set, outbound

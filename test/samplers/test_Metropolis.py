@@ -180,16 +180,3 @@ class RunMetropolisStep(unittest.TestCase):
         accept, newset, outbound, npar_sample_from_normal = MS.run_metropolis_step(old_set = parset, parameters = parameters, R = R, prior_object = prior_object, sos_object = sos_object)
         self.assertEqual(outbound, 0, msg = 'outbound set to 0')
         self.assertEqual(accept, 0, msg = 'Accepted because 0.3 < 0.4')
-        
-# --------------------------
-class ValuesOutsideBounds(unittest.TestCase):
-    def test_values_ob(self):
-        MS = Metropolis()
-        ss = 0.24
-        accept, newprior, alpha, ss1, ss2, outbound = MS.values_for_outsidebounds(ss = ss)
-        self.assertEqual(accept, 0, msg = 'Do not accept -> 0')
-        self.assertEqual(newprior, 0, msg = 'New prior is 0')
-        self.assertEqual(alpha, 0, msg = 'Alpha set to 0')
-        self.assertEqual(ss1, np.inf, msg = 'ss1 set to np.inf')
-        self.assertEqual(ss2, ss, msg = 'ss2 set to ss')
-        self.assertEqual(outbound, 1, msg = 'outbound set to 1')      
