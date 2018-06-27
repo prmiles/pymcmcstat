@@ -8,6 +8,9 @@ Created on Thu Jan 18 10:30:29 2018
 # import required packages
 import numpy as np
 from ..structures.ParameterSet import ParameterSet
+from .utilities import sample_candidate_from_gaussian_proposal
+from .utilities import is_sample_outside_bounds
+from .utilities import acceptance_test
 
 class Metropolis:
     '''
@@ -34,7 +37,7 @@ class Metropolis:
         * :meth:`~unpack_set`
     '''
     
-    # -------------------------------------------
+    # --------------------------------------------------------
     def run_metropolis_step(self, old_set, parameters, R, prior_object, sos_object):
         '''
         Run Metropolis step.
@@ -59,14 +62,13 @@ class Metropolis:
         oldpar, ss, oldprior, sigma2 = self.unpack_set(old_set)
         
         # Sample new candidate from Gaussian proposal
-        newpar, npar_sample_from_normal = self.sample_candidate_from_gaussian_proposal(npar = parameters.npar, oldpar = oldpar, R = R)
+        newpar, npar_sample_from_normal = sample_candidate_from_gaussian_proposal(npar = parameters.npar, oldpar = oldpar, R = R)
            
         # Reject points outside boundaries
-        outsidebounds = self.is_sample_outside_bounds(newpar, parameters._lower_limits[parameters._parind[:]], parameters._upper_limits[parameters._parind[:]])
+        outsidebounds = is_sample_outside_bounds(newpar, parameters._lower_limits[parameters._parind[:]], parameters._upper_limits[parameters._parind[:]])
         if outsidebounds is True:
             # proposed value outside parameter limits
             accept, newprior, alpha, ss1, ss2, outbound = self.values_for_outsidebounds(ss = ss)
-            
         else:
             outbound = 0
             # prior SS for the new theta
@@ -77,22 +79,13 @@ class Metropolis:
             # evaluate likelihood
             alpha = self.evaluate_likelihood_function(ss1, ss2, sigma2, newprior, oldprior)
             # make acceptance decision
-            accept = self.acceptance_test(alpha)
+            accept = acceptance_test(alpha)
                     
         # store parameter sets in objects
         newset = ParameterSet(theta = newpar, ss = ss1, prior = newprior, sigma2 = sigma2, alpha = alpha)
         
         return accept, newset, outbound, npar_sample_from_normal
-    
-    @classmethod
-    def sample_candidate_from_gaussian_proposal(cls, npar, oldpar, R):
-        npar_sample_from_normal = np.random.randn(1, npar)
-#        print('u = {}\nR = {}\n'.format(npar_sample_from_normal, R))
-#        stop
-        newpar = oldpar + np.dot(npar_sample_from_normal, R)
-        newpar = newpar.reshape(npar)
-        return newpar, npar_sample_from_normal
-    
+    # --------------------------------------------------------    
     @classmethod
     def values_for_outsidebounds(cls, ss):
         # proposed value outside parameter limits
@@ -103,7 +96,7 @@ class Metropolis:
         ss2 = ss
         outbound = 1
         return accept, newprior, alpha, ss1, ss2, outbound
-    
+    # --------------------------------------------------------
     @classmethod
     def unpack_set(cls, parset):
         '''
@@ -125,28 +118,7 @@ class Metropolis:
         prior = parset.prior
         sigma2 = parset.sigma2
         return theta, ss, prior, sigma2
-    
-    @classmethod
-    def is_sample_outside_bounds(cls, theta, lower_limits, upper_limits):
-        '''
-        Check whether proposal value is outside parameter limits
-        
-        :Args:
-            * **theta** (:class:`~numpy.ndarray`): Value of sampled model parameters
-            * **lower_limits** (:class:`~numpy.ndarray`): Lower limits
-            * **upper_limits** (:class:`~numpy.ndarray`): Upper limits
-            
-        \\
-        
-        :Returns:
-            * **outsidebounds** (:py:class:`bool`): True -> Outside of parameter limits
-        '''
-        if (theta < lower_limits).any() or (theta > upper_limits).any():
-            outsidebounds = True
-        else:
-            outsidebounds = False
-        return outsidebounds
-    
+    # --------------------------------------------------------
     @classmethod
     def evaluate_likelihood_function(cls, ss1, ss2, sigma2, newprior, oldprior):
         '''
@@ -170,35 +142,3 @@ class Metropolis:
         '''
         alpha = np.exp(-0.5*(sum((ss1 - ss2)*(sigma2**(-1))) + newprior - oldprior))
         return sum(alpha)
-    
-    @classmethod
-    def acceptance_test(cls, alpha):
-        '''
-        Run standard acceptance test
-        
-        .. math::
-            
-            & \\text{If}~u_{\\alpha} <~\\alpha, \\
-            
-            & \\quad \\text{Set}~q^k = q^*,~SS_{q^k} = SS_{q^*} \\
-            
-            & \\text{Else} \\
-            
-            & \\quad \\text{Set}~q^k = q^{k-1},~SS_{q^k} = SS_{q^{k-1}}
-            
-        :Args:
-            * **alpha** (:py:class:`float`): Result of likelihood function
-        
-        \\
-        
-        :Returns:
-            * **accept** (:py:class:`int`): 0 - reject, 1 - accept
-        '''
-        if alpha <= 0:
-                accept = 0
-        elif alpha >= 1 or alpha > np.random.rand(1,1):
-            accept = 1
-        else:
-            accept = 0
-            
-        return accept

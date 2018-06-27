@@ -8,6 +8,9 @@ Created on Thu Jan 18 10:42:07 2018
 # import required packages
 import numpy as np
 from ..structures.ParameterSet import ParameterSet
+from .utilities import sample_candidate_from_gaussian_proposal
+from .utilities import is_sample_outside_bounds
+from .utilities import acceptance_test
 
 class DelayedRejection:
     """
@@ -52,7 +55,7 @@ class DelayedRejection:
             next_set = self.initialize_next_metropolis_step(npar = parameters.npar, old_theta = old_set.theta, sigma2 = new_set.sigma2, RDR = RDR[itry-1])
                     
             # Reject points outside boundaries
-            outsidebounds = self._is_sample_outside_bounds(next_set.theta, parameters._lower_limits[parameters._parind[:]], parameters._upper_limits[parameters._parind[:]])
+            outsidebounds = is_sample_outside_bounds(next_set.theta, parameters._lower_limits[parameters._parind[:]], parameters._upper_limits[parameters._parind[:]])
             if outsidebounds is True:
                 out_set, next_set, trypath, outbound = self._outside_bounds(old_set = old_set, next_set = next_set, trypath = trypath)
                 continue
@@ -66,7 +69,9 @@ class DelayedRejection:
             trypath[-1].alpha = alpha # add propability ratio
                            
             # check results of delayed rejection
-            accept, out_set = self.acceptance_test(alpha = alpha, old_set = old_set, next_set = next_set, itry = itry)
+            accept = acceptance_test(alpha = alpha)
+            out_set = self.update_set_based_on_acceptance(accept, old_set = old_set, next_set = next_set)
+            self.iacce[itry -1] += accept # if accepted, adds 1, if not, adds 0
                 
         return accept, out_set, outbound
     
@@ -90,15 +95,14 @@ class DelayedRejection:
         
         '''
         next_set = ParameterSet()
-        u = np.random.randn(1,npar) # u
-        next_set.theta = old_theta + np.dot(u,RDR)
-        next_set.theta = next_set.theta.reshape(npar)
+        next_set.theta, u = sample_candidate_from_gaussian_proposal(npar = npar, oldpar = old_theta, R = RDR)
         next_set.sigma2 = sigma2
         return next_set
     
-    def acceptance_test(self, alpha, old_set, next_set, itry):
+    @classmethod
+    def update_set_based_on_acceptance(cls, accept, old_set, next_set):
         '''
-        Run acceptance test
+        Define output set based on acceptance
         
         .. math::
             
@@ -111,37 +115,24 @@ class DelayedRejection:
             & \\quad \\text{Set}~q^k = q^{k-1},~SS_{q^k} = SS_{q^{k-1}}
         
         :Args:
-            * **alpha** (:py:class:`float`): Result of likelihood function according to delayed rejection
+            * **accept** (:py:class:`int`): 0 - reject, 1 - accept
             * **old_set** (:class:`~.ParameterSet`): Features of :math:`q^{k-1}`
             * **next_set** (:class:`~.ParameterSet`): New proposal set
-            * **itry** (:py:class:`int`): DR step counter
            
         \\
         
         :Returns:
-            * **accept** (:py:class:`int`): 0 - reject, 1 - accept
             * **out_set** (:class:`~.ParameterSet`): If accept == 1, then latest DR set; Else, :math:`q^k=q^{k-1}`
         '''
-        if alpha >= 1 or np.random.rand(1) < alpha: # accept
-            accept = 1
+        if accept == 1:
             out_set = next_set
-            self.iacce[itry-1] += 1 # number accepted from DR
         else:
-            accept = 0
             out_set = old_set
-        return accept, out_set
+        return out_set
     
     def _initialize_dr_metrics(self, options):
         self.iacce = np.zeros(options.ntry, dtype = int)
         self.dr_step_counter = 0
-    
-    @classmethod
-    def _is_sample_outside_bounds(cls, theta, lower_limits, upper_limits):
-        if (theta < lower_limits).any() or (theta > upper_limits).any():
-            outsidebounds = True
-        else:
-            outsidebounds = False
-        return outsidebounds
     
     @classmethod
     def _outside_bounds(cls, old_set, next_set, trypath):
