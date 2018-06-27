@@ -149,7 +149,7 @@ def unpack_covariance_settings(covariance):
     return last_index_since_adaptation, R, oldcovchain, oldmeanchain, oldwsum, no_adapt_index, qcov_scale, qcov
 
 # --------------------------------------------
-def below_burnin_threshold(rejected, iiadapt, R, burninscale, verbosity):
+def below_burnin_threshold(rejected, iiadapt, R, burnin_scale, verbosity):
     '''
     Update Cholesky Matrix using below burnin thershold
     
@@ -157,7 +157,7 @@ def below_burnin_threshold(rejected, iiadapt, R, burninscale, verbosity):
         * **rejected** (:py:class:`dict`): Rejection counters.
         * **iiadapt** (:py:class:`int`): Adaptation counter
         * **R** (:class:`~numpy.ndarray`): Cholesky decomposition of covariance matrix.
-        * **burninscale** (:py:class:`float`): Scale for burnin.
+        * **burnin_scale** (:py:class:`float`): Scale for burnin.
         * **verbosity** (:py:class:`int`): Verbosity of display output.
         
     :Returns:
@@ -166,11 +166,11 @@ def below_burnin_threshold(rejected, iiadapt, R, burninscale, verbosity):
     # during burnin no adaptation, just scaling down
     if rejected['in_adaptation_interval']*(iiadapt**(-1)) > 0.95:
         message(verbosity, 2, str(' (burnin/down) {}'.format(rejected['in_adaptation_interval']*(iiadapt**(-1))*100)))
-        R = R*(burninscale**(-1))
+        R = R*(burnin_scale**(-1))
     elif rejected['in_adaptation_interval']*(iiadapt**(-1)) < 0.05:
         message(verbosity, 2, str(' (burnin/up) {}'.format(
                 rejected['in_adaptation_interval']*(iiadapt**(-1))*100)))
-        R = R*burninscale
+        R = R*burnin_scale
     return R
 
 # --------------------------------------------
@@ -381,7 +381,7 @@ def update_covariance_mean_sum(x, w, oldcov, oldmean, oldwsum, oldR = None):
     n, p = x.shape
     
     if n == 0 or p == 0: # nothing to update with
-        return oldcov, oldmean, oldwsum, oldR
+        return oldcov, oldmean, oldwsum
     
     w, R = setup_w_R(w = w, oldR = oldR, n = n)
            
@@ -407,7 +407,7 @@ def update_covariance_mean_sum(x, w, oldcov, oldmean, oldwsum, oldR = None):
             oldmean = xmean
             oldwsum = wsum
    
-    return xcov, xmean, wsum, R
+    return xcov, xmean, wsum
     
 # --------------------------------------------    
 class Adaptation:
@@ -463,14 +463,18 @@ class Adaptation:
         
         if isimu < burnintime:
             R = below_burnin_threshold(rejected = rejected, iiadapt = iiadapt, R = R, burnin_scale = burnin_scale, verbosity = verbosity)
-                    
+            covchain = oldcovchain
+            meanchain = oldmeanchain
+            wsum = oldwsum
+            RDR = None
+            invR = None
         else:
             message(verbosity, 2, str('i:{} adapting ({}, {}, {})'.format(
                     isimu, rejected['total']*(isimu**(-1))*100, rejected['in_adaptation_interval']*(iiadapt**(-1))*100,
                     rejected['outside_bounds']*(isimu**(-1))*100)))
     
             # UPDATE COVARIANCE MATRIX - CHOLESKY, MEAN, SUM
-            covchain, meanchain, wsum, R = update_covariance_mean_sum(
+            covchain, meanchain, wsum = update_covariance_mean_sum(
                     chain[last_index_since_adaptation:chainind,:], np.ones(1), oldcovchain, oldmeanchain, oldwsum)
                     
             last_index_since_adaptation = isimu

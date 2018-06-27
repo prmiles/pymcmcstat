@@ -77,6 +77,91 @@ def setup_mcmc():
     data = mcstat.data
     return model, options, parameters, data
 
+def setup_run_adapt_settings():
+    model, options, parameters, data = setup_mcmc()
+    CP = CovarianceProcedures()
+    CP._initialize_covariance_settings(parameters = parameters, options = options)
+    rejected = {'in_adaptation_interval': 4, 'total': 10, 'outside_bounds': 1}
+    isimu = 100
+    iiadapt = 100
+    chain = np.zeros([100,2])
+    chain[:,0] = np.linspace(1,100,100)
+    chain[:,1] = np.linspace(1,100,100)
+    chainind = 100
+    u = np.random.random_sample(size = (1,2))
+    npar = 2
+    alpha = 0.78
+    return CP, options, isimu, iiadapt, rejected, chain, chainind, u, npar, alpha
+
+# -------------------------------------------
+class RunAdaptation(unittest.TestCase):
+    def test_run_adapt_isimu_lt_burnintime(self):
+        covariance, options, isimu, iiadapt, rejected, chain, chainind, u, npar, alpha = setup_run_adapt_settings()
+        options.burnintime = 1000
+        A = Adaptation()
+        
+        rejected['in_adaptation_interval'] =  96
+        tstR = np.array([[0.1, 0.],[0., 0.25]])
+        covariance._R = tstR.copy()
+        options.burnin_scale = 0.5
+        options.verbosity = 10
+        capturedOutput = io.StringIO()                  # Create StringIO object
+        sys.stdout = capturedOutput                     #  and redirect stdout.
+        cout = A.run_adaptation(covariance, options, isimu, iiadapt, rejected, chain, chainind, u, npar, alpha)
+        sys.stdout = sys.__stdout__
+
+        self.assertEqual(capturedOutput.getvalue(), ' (burnin/down) 96.0\n', msg = 'Expected string {}'.format(' (burnin/down) 96.0\n'))
+        self.assertTrue(np.isclose(cout._R, tstR/options.burnin_scale).all(), msg = str('Expect arrays to match within numerical precision: {} new {}'.format(cout._R, tstR/options.burnin_scale)))
+        
+    def test_run_adapt_update_covariance_mean_sum_R_is_not_none(self):
+        covariance, options, isimu, iiadapt, rejected, chain, chainind, u, npar, alpha = setup_run_adapt_settings()
+        
+        oldcov = np.array([[0.5, 0.1],[0.1, 0.3]])
+        oldmean = np.array([10.2, 2.4])
+        oldwsum = 100*np.ones([1])
+        oldR = np.array([[0.3, 0.1],[0, 0.4]])
+        
+        covariance._R = oldR.copy()
+        covariance._wsum = oldwsum.copy()
+        covariance._meanchain = oldmean.copy()
+        covariance._covchain = oldcov.copy()
+        
+        A = Adaptation()
+        cout = A.run_adaptation(covariance, options, isimu, iiadapt, rejected, chain, chainind, u, npar, alpha)
+        
+        tsmtx = np.array([[827.030150753768,	905.811055276382],[905.811055276382,	1000.17688442211]])
+        tsRmtx = np.array([[48.8041682048865, 53.4531359748650],[0.,	4.82407313255805]])
+        tsmean = np.array([30.3500000000000,	26.4500000000000])
+        self.assertTrue(np.isclose(tsmtx, cout._covchain).all(), msg = str('Mean algorithms should agree: {} neq {}'.format(tsmtx, cout._covchain)))
+        self.assertTrue(np.isclose(tsmean, cout._meanchain).all(), msg = str('Mean algorithms should agree: {} neq {}'.format(tsmean, cout._meanchain)))
+        self.assertTrue(np.isclose(tsRmtx, cout._R).all(), msg = str('Mean algorithms should agree: {} neq {}'.format(tsRmtx, cout._R)))
+        
+    @patch('pymcmcstat.samplers.Adaptation.update_cov_via_ram', return_value = np.array([[0.26917331, 0.09473752],[0.09473752, 0.49657009]]))
+    def test_run_adapt_update_covariance_mean_sum_doram_is_true(self, mock_ram):
+        covariance, options, isimu, iiadapt, rejected, chain, chainind, u, npar, alpha = setup_run_adapt_settings()
+        
+        options.doram = True
+        
+        oldcov = np.array([[0.5, 0.1],[0.1, 0.3]])
+        oldmean = np.array([10.2, 2.4])
+        oldwsum = 100*np.ones([1])
+        oldR = np.array([[0.3, 0.1],[0, 0.4]])
+        
+        covariance._R = oldR.copy()
+        covariance._wsum = oldwsum.copy()
+        covariance._meanchain = oldmean.copy()
+        covariance._covchain = oldcov.copy()
+        
+        A = Adaptation()
+        cout = A.run_adaptation(covariance, options, isimu, iiadapt, rejected, chain, chainind, u, npar, alpha)
+        
+        tsmtx = np.array([[827.030150753768,	905.811055276382],[905.811055276382,	1000.17688442211]])
+        tsRmtx = np.array([[0.880465293353463,	0.309886215458656],[0.,	1.15502917394701]])
+        tsmean = np.array([30.3500000000000,	26.4500000000000])
+        self.assertTrue(np.isclose(tsmtx, cout._covchain).all(), msg = str('Mean algorithms should agree: {} neq {}'.format(tsmtx, cout._covchain)))
+        self.assertTrue(np.isclose(tsmean, cout._meanchain).all(), msg = str('Mean algorithms should agree: {} neq {}'.format(tsmean, cout._meanchain)))
+        self.assertTrue(np.isclose(tsRmtx, cout._R).all(), msg = str('Mean algorithms should agree: {} neq {}'.format(tsRmtx, cout._R)))
+   
 # --------------------------------------------
 class CholUpdate(unittest.TestCase):
     def test_cholupate(self):
@@ -127,18 +212,17 @@ class UpdateCovarianceMeanSum(unittest.TestCase):
     def test_update_covariance_mean_sum_none(self):
         x = np.array([[]])
         w = np.ones([1])
-        xcov, xmean, wsum, R = update_covariance_mean_sum(x = x, w = w, oldcov = None, oldmean = None, oldwsum = None, oldR = None)
+        xcov, xmean, wsum = update_covariance_mean_sum(x = x, w = w, oldcov = None, oldmean = None, oldwsum = None, oldR = None)
         self.assertEqual(xcov, None, msg = 'Expect None')
         self.assertEqual(xmean, None, msg = 'Expect None')
         self.assertEqual(wsum, None, msg = 'Expect None')
-        self.assertEqual(R, None, msg = 'Expect None')
         
     def test_update_covariance_mean_sum_initialize(self):
         x = np.zeros([100,2])
         x[:,0] = np.linspace(1,100,100)
         x[:,1] = np.linspace(1,100,100)
         w = np.ones([1])
-        xcov, xmean, wsum, R = update_covariance_mean_sum(x = x, w = w, oldcov = None, oldmean = None, oldwsum = None, oldR = None)
+        xcov, xmean, wsum = update_covariance_mean_sum(x = x, w = w, oldcov = None, oldmean = None, oldwsum = None, oldR = None)
         tsmtx = np.array([[8.4167e+02, 8.4167e+02], [8.4167e+02,   8.4167e+02]])
         tsmean = np.array([5.0500e+01, 5.0500e+01])
         self.assertTrue(isinstance(xcov, np.ndarray), msg = 'Expect numpy array')
@@ -148,7 +232,6 @@ class UpdateCovarianceMeanSum(unittest.TestCase):
         
         self.assertTrue(np.isclose(xmean, np.mean(x, axis = 0)).all(), msg = str('Mean algorithms should agree: {} neq {}'.format(xmean, np.mean(x, axis = 0))))
         self.assertEqual(wsum, 100, msg = 'Expect wsum = 100')
-        self.assertEqual(R, None, msg = 'Expect None')
         
     def test_update_covariance_mean_sum_R_is_none(self):
         x = np.zeros([100,2])
@@ -158,7 +241,7 @@ class UpdateCovarianceMeanSum(unittest.TestCase):
         oldcov = np.array([[0.5, 0.1],[0.1, 0.3]])
         oldmean = np.array([10.2, 2.4])
         oldwsum = 100*np.ones(1)
-        xcov, xmean, wsum, R = update_covariance_mean_sum(x = x, w = w, oldcov = oldcov, oldmean = oldmean, oldwsum = oldwsum, oldR = None)
+        xcov, xmean, wsum = update_covariance_mean_sum(x = x, w = w, oldcov = oldcov, oldmean = oldmean, oldwsum = oldwsum, oldR = None)
         tsmtx = np.array([[827.030150753768,	905.811055276382],[905.811055276382,	1000.17688442211]])
         tsmean = np.array([30.3500000000000,	26.4500000000000])
         self.assertTrue(isinstance(xcov, np.ndarray), msg = 'Expect numpy array')
@@ -166,7 +249,6 @@ class UpdateCovarianceMeanSum(unittest.TestCase):
         self.assertTrue(np.isclose(tsmtx, xcov).all(), msg = str('Mean algorithms should agree: {} neq {}'.format(tsmtx, xcov)))
         self.assertTrue(np.isclose(tsmean, xmean).all(), msg = str('Mean algorithms should agree: {} neq {}'.format(tsmean, xmean)))
         self.assertEqual(wsum, 200, msg = 'Expect wsum = 200')
-        self.assertEqual(R, None, msg = 'Expect None')
         
     def test_update_covariance_mean_sum_R_is_not_none(self):
         x = np.zeros([100,2])
@@ -177,16 +259,14 @@ class UpdateCovarianceMeanSum(unittest.TestCase):
         oldmean = np.array([10.2, 2.4])
         oldwsum = 100*np.ones([1])
         oldR = np.array([[0.3, 0.1],[0, 0.4]])
-        xcov, xmean, wsum, R = update_covariance_mean_sum(x = x, w = w, oldcov = oldcov, oldmean = oldmean, oldwsum = oldwsum, oldR = oldR)
+        xcov, xmean, wsum = update_covariance_mean_sum(x = x, w = w, oldcov = oldcov, oldmean = oldmean, oldwsum = oldwsum, oldR = oldR)
         tsmtx = np.array([[827.030150753768,	905.811055276382],[905.811055276382,	1000.17688442211]])
-        tsRmtx = np.array([[28.7545853891953,	31.5002361848045],[0, 2.80130886494365]])
         tsmean = np.array([30.3500000000000,	26.4500000000000])
         self.assertTrue(isinstance(xcov, np.ndarray), msg = 'Expect numpy array')
         self.assertEqual(xcov.shape, (2,2), msg = 'Expect shape = (2,2)')
         self.assertTrue(np.isclose(tsmtx, xcov).all(), msg = str('Mean algorithms should agree: {} neq {}'.format(tsmtx, xcov)))
         self.assertTrue(np.isclose(tsmean, xmean).all(), msg = str('Mean algorithms should agree: {} neq {}'.format(tsmean, xmean)))
         self.assertEqual(wsum, 200, msg = 'Expect wsum = 200')
-        self.assertTrue(np.isclose(tsRmtx, R).all(), msg = str('Mean algorithms should agree: {} neq {}'.format(tsRmtx, R)))
 
 # --------------------------------------------
 class InitializeCovarianceMeanSum(unittest.TestCase):
@@ -278,7 +358,7 @@ class BelowBurninThreshold(unittest.TestCase):
         verbosity = 10
         capturedOutput = io.StringIO()                  # Create StringIO object
         sys.stdout = capturedOutput                     #  and redirect stdout.
-        Rout = below_burnin_threshold(rejected = rejected, iiadapt = iiadapt, R = R, burninscale = burninscale, verbosity = verbosity)
+        Rout = below_burnin_threshold(rejected = rejected, iiadapt = iiadapt, R = R, burnin_scale = burninscale, verbosity = verbosity)
         sys.stdout = sys.__stdout__
 
         self.assertEqual(capturedOutput.getvalue(), ' (burnin/down) 96.0\n', msg = 'Expected string {}'.format(' (burnin/down) 96.0\n'))
@@ -292,7 +372,7 @@ class BelowBurninThreshold(unittest.TestCase):
         verbosity = 10
         capturedOutput = io.StringIO()                  # Create StringIO object
         sys.stdout = capturedOutput                     #  and redirect stdout.
-        Rout = below_burnin_threshold(rejected = rejected, iiadapt = iiadapt, R = R, burninscale = burninscale, verbosity = verbosity)
+        Rout = below_burnin_threshold(rejected = rejected, iiadapt = iiadapt, R = R, burnin_scale = burninscale, verbosity = verbosity)
         sys.stdout = sys.__stdout__
 
         self.assertEqual(capturedOutput.getvalue(), ' (burnin/up) 4.0\n', msg = 'Expected string {}'.format(' (burnin/up) 4.0\n'))
