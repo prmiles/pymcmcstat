@@ -18,6 +18,7 @@ from pymcmcstat.samplers.Adaptation import scale_cholesky_decomposition
 from pymcmcstat.samplers.Adaptation import adjust_cov_matrix
 from pymcmcstat.samplers.Adaptation import check_for_singular_cov_matrix
 from pymcmcstat.samplers.Adaptation import update_cov_from_covchain
+from pymcmcstat.samplers.Adaptation import setup_w_R, setup_cholupdate
 from pymcmcstat.settings.SimulationOptions import SimulationOptions
 from pymcmcstat.procedures.CovarianceProcedures import CovarianceProcedures
 import unittest
@@ -85,22 +86,59 @@ class CholUpdate(unittest.TestCase):
         self.assertTrue(np.isclose(R1, tsmtx).all(), msg = str('Expect arrays to match within numerical precision: {} new {}'.format(R1, tsmtx)))
 
 # --------------------------------------------
+class SetupWR(unittest.TestCase):
+    def test_setup_w_R_none_input(self):
+        w = None
+        oldR = None
+        n = 100
+        wout, Rout = setup_w_R(w = w, oldR = oldR, n = n)
+        self.assertTrue(np.array_equal(wout, np.ones(n)*np.ones(1)), msg = 'Expect np.ones([n])')
+        self.assertEqual(Rout, None, msg = 'Expect None')
+        
+    def test_setup_w_R_not_none_input(self):
+        w = 100*np.ones(1)
+        oldR = np.random.random_sample(size = (3,3))
+        n = 100
+        wout, Rout = setup_w_R(w = w, oldR = oldR, n = n)
+        self.assertTrue(np.array_equal(wout, 100*np.ones(n)*np.ones(1)), msg = 'Expect 100*np.ones([n])')
+        self.assertTrue(np.array_equal(Rout, oldR), msg = 'Expect arrays to match')
+
+# --------------------------------------------
+class SetupCholUpdate(unittest.TestCase):
+    def test_setup_cholupdate(self):
+        x = np.zeros([100,2])
+        x[:,0] = np.linspace(1,100,100)
+        x[:,1] = np.linspace(1,100,100)
+        xi = x[0,:]
+        wsum = np.ones([1])
+        oldmean = np.array([10.2, 2.4])
+        oldwsum = 100*np.ones([1])
+        R = np.array([[0.3, 0.1],[0, 0.4]])
+        Rin, xin = setup_cholupdate(R = R, oldwsum = oldwsum, wsum = wsum, oldmean = oldmean, xi = xi)
+        
+        tstRin = np.array([[0.298496231131986, 0.0994987437106620],[0, 0.397994974842648]])
+        tstxin = np.array([-0.915434214993190,-0.139305206629398])
+        self.assertTrue(np.isclose(Rin, tstRin).all(), msg = str('Mean algorithms should agree: {} neq {}'.format(Rin, tstRin)))
+        self.assertTrue(np.isclose(xin, tstxin).all(), msg = str('Mean algorithms should agree: {} neq {}'.format(xin, tstxin)))
+
+# --------------------------------------------
 class UpdateCovarianceMeanSum(unittest.TestCase):
-#    @patch('shape', return_value = (0, 1))
-#    def test_update_covariance_mean_sum_none(self, mock_shape):
-#        x = np.zeros([100,2])
-#        x[:,0] = np.linspace(1,100,100)
-#        x[:,1] = np.linspace(1,100,100)
-#        w = np.ones([1])
-#        xcov, xmean, wsum = update_covariance_mean_sum(x = x, w = w, oldcov = None, oldmean = None, oldwsum = None, oldR = None)
-#        self.assertEqual(xcov, None)       
+
+    def test_update_covariance_mean_sum_none(self):
+        x = np.array([[]])
+        w = np.ones([1])
+        xcov, xmean, wsum, R = update_covariance_mean_sum(x = x, w = w, oldcov = None, oldmean = None, oldwsum = None, oldR = None)
+        self.assertEqual(xcov, None, msg = 'Expect None')
+        self.assertEqual(xmean, None, msg = 'Expect None')
+        self.assertEqual(wsum, None, msg = 'Expect None')
+        self.assertEqual(R, None, msg = 'Expect None')
         
     def test_update_covariance_mean_sum_initialize(self):
         x = np.zeros([100,2])
         x[:,0] = np.linspace(1,100,100)
         x[:,1] = np.linspace(1,100,100)
         w = np.ones([1])
-        xcov, xmean, wsum = update_covariance_mean_sum(x = x, w = w, oldcov = None, oldmean = None, oldwsum = None, oldR = None)
+        xcov, xmean, wsum, R = update_covariance_mean_sum(x = x, w = w, oldcov = None, oldmean = None, oldwsum = None, oldR = None)
         tsmtx = np.array([[8.4167e+02, 8.4167e+02], [8.4167e+02,   8.4167e+02]])
         tsmean = np.array([5.0500e+01, 5.0500e+01])
         self.assertTrue(isinstance(xcov, np.ndarray), msg = 'Expect numpy array')
@@ -110,72 +148,46 @@ class UpdateCovarianceMeanSum(unittest.TestCase):
         
         self.assertTrue(np.isclose(xmean, np.mean(x, axis = 0)).all(), msg = str('Mean algorithms should agree: {} neq {}'.format(xmean, np.mean(x, axis = 0))))
         self.assertEqual(wsum, 100, msg = 'Expect wsum = 100')
+        self.assertEqual(R, None, msg = 'Expect None')
         
-#    @classmethod
-#    def update_covariance_mean_sum(cls, x, w, oldcov, oldmean, oldwsum, oldR = None):
-#        '''
-#        Update covariance chain, local mean, local sum
-#        
-#        :Args:
-#            * **x** (:class:`~numpy.ndarray`): Chain segment
-#            * **w** (:class:`~numpy.ndarray`): Weights
-#            * **oldcov** (:class:`~numpy.ndarray` or `None`): Previous covariance matrix
-#            * **oldmean** (:class:`~numpy.ndarray`): Previous mean chain values
-#            * **oldwsum** (:class:`~numpy.ndarray`): Previous weighted sum
-#            * **oldR** (:class:`~numpy.ndarray`): Previous Cholesky decomposition matrix
-#            
-#        \\
-#        
-#        :Returns:
-#            * **xcov** (:class:`~numpy.ndarray`): Updated covariance matrix
-#            * **xmean** (:class:`~numpy.ndarray`): Updated mean chain values
-#            * **wsum** (:class:`~numpy.ndarray`): Updated weighted sum
-#        '''
-#        n, p = x.shape
-#        
-#        if n == 0: # nothing to update with
-#            return oldcov, oldmean, oldwsum
-#        
-#        if not w:
-#            w = np.ones(1)
-#            
-#        if len(w) == 1:
-#            w = np.ones(n)*w
-#            
-#        if oldR is None:
-#            R = None
-#        else:
-#            R = oldR
-#               
-#        if oldcov is None:
-#            xcov, xmean, wsum = initialize_covariance_mean_sum(x, w)
-#                            
-#        else:
-#            for ii in range(0,n):
-#                xi = x[ii,:]
-#                wsum = w[ii]
-#                xmean = oldmean + wsum*((wsum+oldwsum)**(-1.0))*(xi - oldmean)
-#                
-#                    
-#                if R is not None:
-#                    print('R = \n{}\n'.format(R))
-#                    print('np.sqrt((oldwsum-1)*((wsum+oldwsum-1)**(-1))) = {}\n'.format(np.sqrt((oldwsum-1)*((wsum+oldwsum-1)**(-1)))))
-#                
-#                    R = cholupdate(np.sqrt((oldwsum-1)*((wsum+oldwsum-1)**(-1)))*R, np.dot((xi - oldmean).transpose(),
-#                                          np.sqrt(((wsum*oldwsum)*((wsum+oldwsum-1)**(-1))*((wsum+oldwsum)**(-1))))))
-#            
-#                
-#                xcov = (((oldwsum-1)*((wsum + oldwsum - 1)**(-1)))*oldcov
-#                        + (wsum*oldwsum*((wsum+oldwsum-1)**(-1)))*((wsum
-#                               + oldwsum)**(-1))*(np.dot((xi-oldmean).reshape(p,1),(xi-oldmean).reshape(1,p))))
-#            
-#                wsum = wsum + oldwsum
-#                oldcov = xcov
-#                oldmean = xmean
-#                oldwsum = wsum
-#       
-#        return xcov, xmean, wsum
-#    
+    def test_update_covariance_mean_sum_R_is_none(self):
+        x = np.zeros([100,2])
+        x[:,0] = np.linspace(1,100,100)
+        x[:,1] = np.linspace(1,100,100)
+        w = np.ones([1])
+        oldcov = np.array([[0.5, 0.1],[0.1, 0.3]])
+        oldmean = np.array([10.2, 2.4])
+        oldwsum = 100*np.ones(1)
+        xcov, xmean, wsum, R = update_covariance_mean_sum(x = x, w = w, oldcov = oldcov, oldmean = oldmean, oldwsum = oldwsum, oldR = None)
+        tsmtx = np.array([[827.030150753768,	905.811055276382],[905.811055276382,	1000.17688442211]])
+        tsmean = np.array([30.3500000000000,	26.4500000000000])
+        self.assertTrue(isinstance(xcov, np.ndarray), msg = 'Expect numpy array')
+        self.assertEqual(xcov.shape, (2,2), msg = 'Expect shape = (2,2)')
+        self.assertTrue(np.isclose(tsmtx, xcov).all(), msg = str('Mean algorithms should agree: {} neq {}'.format(tsmtx, xcov)))
+        self.assertTrue(np.isclose(tsmean, xmean).all(), msg = str('Mean algorithms should agree: {} neq {}'.format(tsmean, xmean)))
+        self.assertEqual(wsum, 200, msg = 'Expect wsum = 200')
+        self.assertEqual(R, None, msg = 'Expect None')
+        
+    def test_update_covariance_mean_sum_R_is_not_none(self):
+        x = np.zeros([100,2])
+        x[:,0] = np.linspace(1,100,100)
+        x[:,1] = np.linspace(1,100,100)
+        w = np.ones([1])
+        oldcov = np.array([[0.5, 0.1],[0.1, 0.3]])
+        oldmean = np.array([10.2, 2.4])
+        oldwsum = 100*np.ones([1])
+        oldR = np.array([[0.3, 0.1],[0, 0.4]])
+        xcov, xmean, wsum, R = update_covariance_mean_sum(x = x, w = w, oldcov = oldcov, oldmean = oldmean, oldwsum = oldwsum, oldR = oldR)
+        tsmtx = np.array([[827.030150753768,	905.811055276382],[905.811055276382,	1000.17688442211]])
+        tsRmtx = np.array([[28.7545853891953,	31.5002361848045],[0, 2.80130886494365]])
+        tsmean = np.array([30.3500000000000,	26.4500000000000])
+        self.assertTrue(isinstance(xcov, np.ndarray), msg = 'Expect numpy array')
+        self.assertEqual(xcov.shape, (2,2), msg = 'Expect shape = (2,2)')
+        self.assertTrue(np.isclose(tsmtx, xcov).all(), msg = str('Mean algorithms should agree: {} neq {}'.format(tsmtx, xcov)))
+        self.assertTrue(np.isclose(tsmean, xmean).all(), msg = str('Mean algorithms should agree: {} neq {}'.format(tsmean, xmean)))
+        self.assertEqual(wsum, 200, msg = 'Expect wsum = 200')
+        self.assertTrue(np.isclose(tsRmtx, R).all(), msg = str('Mean algorithms should agree: {} neq {}'.format(tsRmtx, R)))
+
 # --------------------------------------------
 class InitializeCovarianceMeanSum(unittest.TestCase):
     def test_initialize_covariance_mean_sum(self):

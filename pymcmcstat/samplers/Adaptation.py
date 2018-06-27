@@ -326,7 +326,7 @@ def setup_w_R(w, oldR, n):
         * **w** (:class:`~numpy.ndarray`): Weights
         * **R** (:class:`~numpy.ndarray`): Previous Cholesky decomposition matrix
     '''
-    if not w:
+    if w is None:
         w = np.ones(1)
         
     if len(w) == 1:
@@ -337,6 +337,27 @@ def setup_w_R(w, oldR, n):
     else:
         R = oldR
     return w, R
+# --------------------------------------------
+def setup_cholupdate(R, oldwsum, wsum, oldmean, xi):
+    '''
+    Setup input arguments to the Cholesky update function
+    
+    :Args:
+        * **R** (:class:`~numpy.ndarray`): Previous Cholesky decomposition matrix
+        * **oldwsum** (:class:`~numpy.ndarray`): Previous weighted sum
+        * **w** (:class:`~numpy.ndarray`): Current Weights
+        * **oldmean** (:class:`~numpy.ndarray`): Previous mean chain values
+        * **xi** (:class:`~numpy.ndarray`): Row of chain segment
+        
+    \\
+    
+    :Returns:
+        * **Rin** (:class:`~numpy.ndarray`): Scaled Cholesky decomposition matrix
+        * **xin** (:class:`~numpy.ndarray`): Updated mean chain values for Cholesky function
+    '''
+    Rin = np.sqrt((oldwsum-1)*((wsum+oldwsum-1)**(-1)))*R
+    xin = (xi - oldmean).transpose()*np.sqrt(((wsum*oldwsum)*((wsum+oldwsum-1)**(-1))*((wsum+oldwsum)**(-1))))
+    return Rin, xin
 # --------------------------------------------
 def update_covariance_mean_sum(x, w, oldcov, oldmean, oldwsum, oldR = None):
     '''
@@ -359,8 +380,8 @@ def update_covariance_mean_sum(x, w, oldcov, oldmean, oldwsum, oldR = None):
     '''
     n, p = x.shape
     
-    if n == 0: # nothing to update with
-        return oldcov, oldmean, oldwsum
+    if n == 0 or p == 0: # nothing to update with
+        return oldcov, oldmean, oldwsum, oldR
     
     w, R = setup_w_R(w = w, oldR = oldR, n = n)
            
@@ -373,15 +394,10 @@ def update_covariance_mean_sum(x, w, oldcov, oldmean, oldwsum, oldR = None):
             wsum = w[ii]
             xmean = oldmean + wsum*((wsum+oldwsum)**(-1.0))*(xi - oldmean)
             
-                
             if R is not None:
-                print('R = \n{}\n'.format(R))
-                print('np.sqrt((oldwsum-1)*((wsum+oldwsum-1)**(-1))) = {}\n'.format(np.sqrt((oldwsum-1)*((wsum+oldwsum-1)**(-1)))))
-            
-                R = cholupdate(np.sqrt((oldwsum-1)*((wsum+oldwsum-1)**(-1)))*R, np.dot((xi - oldmean).transpose(),
-                                      np.sqrt(((wsum*oldwsum)*((wsum+oldwsum-1)**(-1))*((wsum+oldwsum)**(-1))))))
+                Rin, xin = setup_cholupdate(R = R, oldwsum = oldwsum, wsum = wsum, oldmean = oldmean, xi = xi)
+                R = cholupdate(Rin, xin)
         
-            
             xcov = (((oldwsum-1)*((wsum + oldwsum - 1)**(-1)))*oldcov
                     + (wsum*oldwsum*((wsum+oldwsum-1)**(-1)))*((wsum
                            + oldwsum)**(-1))*(np.dot((xi-oldmean).reshape(p,1),(xi-oldmean).reshape(1,p))))
@@ -391,7 +407,7 @@ def update_covariance_mean_sum(x, w, oldcov, oldmean, oldwsum, oldR = None):
             oldmean = xmean
             oldwsum = wsum
    
-    return xcov, xmean, wsum
+    return xcov, xmean, wsum, R
     
 # --------------------------------------------    
 class Adaptation:
@@ -454,7 +470,7 @@ class Adaptation:
                     rejected['outside_bounds']*(isimu**(-1))*100)))
     
             # UPDATE COVARIANCE MATRIX - CHOLESKY, MEAN, SUM
-            covchain, meanchain, wsum = update_covariance_mean_sum(
+            covchain, meanchain, wsum, R = update_covariance_mean_sum(
                     chain[last_index_since_adaptation:chainind,:], np.ones(1), oldcovchain, oldmeanchain, oldwsum)
                     
             last_index_since_adaptation = isimu
