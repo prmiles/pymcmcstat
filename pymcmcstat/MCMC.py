@@ -248,7 +248,7 @@ class MCMC:
             
             # PRINT REJECTION STATISTICS
             if self.simulation_options.printint and iiprint + 1 == self.simulation_options.printint:
-                self.__print_rejection_statistics(rejected = self.__rejected, isimu = isimu, iiadapt = iiadapt, verbosity = self.simulation_options.verbosity)
+                print_rejection_statistics(rejected = self.__rejected, isimu = isimu, iiadapt = iiadapt, verbosity = self.simulation_options.verbosity)
                 iiprint = 0 # reset print counter
                 
             # UPDATE SUM-OF-SQUARES CHAIN
@@ -393,19 +393,6 @@ class MCMC:
             # reject
             self.__chain[self.__chain_index,:] = self.__old_set.theta
             self.__update_rejected(outsidebounds = outsidebounds)
-            
-    def __print_rejection_statistics(self, rejected, isimu, iiadapt, verbosity):
-        '''
-        Print Rejection Statistics
-        
-        :Args:
-            * **isimu** (:py:class:`int`): Simulation counter
-            * **iiadapt** (:py:class:`int`): Adaptation counter
-            * **verbosity** (:py:class:`int`): Verbosity of display output.
-        '''
-        message(verbosity, 2, str('i:{} ({},{},{})\n'.format(
-                isimu, rejected['total']*isimu**(-1)*100, rejected['in_adaptation_interval']*iiadapt**(-1)*100,
-                rejected['outside_bounds']*isimu**(-1)*100)))
     
     def __display_current_mcmc_settings(self):
         self.model_settings.display_model_settings()
@@ -423,3 +410,16 @@ class MCMC:
         self.__rejected['in_adaptation_interval'] += 1
         if outsidebounds:
             self.__rejected['outside_bounds'] += 1
+            
+def print_rejection_statistics(rejected, isimu, iiadapt, verbosity):
+    '''
+    Print Rejection Statistics
+    
+    :Args:
+        * **isimu** (:py:class:`int`): Simulation counter
+        * **iiadapt** (:py:class:`int`): Adaptation counter
+        * **verbosity** (:py:class:`int`): Verbosity of display output.
+    '''
+    message(verbosity, 2, str('i:{} ({},{},{})\n'.format(
+            isimu, rejected['total']*isimu**(-1)*100, rejected['in_adaptation_interval']*iiadapt**(-1)*100,
+            rejected['outside_bounds']*isimu**(-1)*100)))

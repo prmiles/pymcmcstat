@@ -6,7 +6,7 @@ Created on Thu Apr 26 08:48:00 2018
 @author: prmiles
 """
 
-from pymcmcstat.samplers.DelayedRejection import update_set_based_on_acceptance
+from pymcmcstat.samplers.DelayedRejection import update_set_based_on_acceptance, extract_state_elements
 from pymcmcstat.samplers.DelayedRejection import DelayedRejection
 from pymcmcstat.structures.ParameterSet import ParameterSet
 from pymcmcstat.MCMC import MCMC
@@ -98,3 +98,47 @@ class UpdateSetBasedOnAcceptance(unittest.TestCase):
         old_set = ParameterSet(theta = np.random.random_sample(size = (2,1)), ss = 0.6)
         out_set = update_set_based_on_acceptance(accept = True, old_set = old_set, next_set = next_set)
         self.assertEqual(out_set, next_set)
+        
+# -------------------------------------------
+class ExtractStateElements(unittest.TestCase):
+    def test_extract_state_elements_iq_eq_0(self):
+        iq = 0
+        trypath = []
+        trypath.append(ParameterSet(theta = 0.1))
+        trypath.append(ParameterSet(theta = 0.2))
+        trypath.append(ParameterSet(theta = 0.3))
+        trypath.append(ParameterSet(theta = 0.4))
+        stage = len(trypath) - 2
+        y1, y2, y3, y4 = extract_state_elements(iq = iq, stage = stage, trypath = trypath)
+        self.assertEqual(y1, trypath[0].theta, msg = 'Expect [0]')
+        self.assertEqual(y2, trypath[1].theta, msg = 'Expect [1]')
+        self.assertEqual(y3, trypath[3].theta, msg = 'Expect [3]')
+        self.assertEqual(y4, trypath[2].theta, msg = 'Expect [2]')
+        
+    def test_extract_state_elements_iq_eq_1(self):
+        iq = 1
+        trypath = []
+        trypath.append(ParameterSet(theta = 0.1))
+        trypath.append(ParameterSet(theta = 0.2))
+        trypath.append(ParameterSet(theta = 0.3))
+        trypath.append(ParameterSet(theta = 0.4))
+        stage = len(trypath) - 2
+        y1, y2, y3, y4 = extract_state_elements(iq = iq, stage = stage, trypath = trypath)
+        self.assertEqual(y1, trypath[0].theta, msg = 'Expect [0]')
+        self.assertEqual(y2, trypath[2].theta, msg = 'Expect [2]')
+        self.assertEqual(y3, trypath[3].theta, msg = 'Expect [3]')
+        self.assertEqual(y4, trypath[1].theta, msg = 'Expect [1]')
+        
+    def test_extract_state_elements_iq_eq_2(self):
+        iq = 2
+        trypath = []
+        trypath.append(ParameterSet(theta = 0.1))
+        trypath.append(ParameterSet(theta = 0.2))
+        trypath.append(ParameterSet(theta = 0.3))
+        trypath.append(ParameterSet(theta = 0.4))
+        stage = len(trypath) - 2
+        y1, y2, y3, y4 = extract_state_elements(iq = iq, stage = stage, trypath = trypath)
+        self.assertEqual(y1, trypath[0].theta, msg = 'Expect [0]')
+        self.assertEqual(y2, trypath[3].theta, msg = 'Expect [3]')
+        self.assertEqual(y3, trypath[3].theta, msg = 'Expect [3]')
+        self.assertEqual(y4, trypath[0].theta, msg = 'Expect [0]')

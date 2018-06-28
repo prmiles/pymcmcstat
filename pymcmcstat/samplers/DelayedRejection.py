@@ -130,10 +130,10 @@ class DelayedRejection:
         # recursively compute past alphas
         a1 = 1 # initialize
         a2 = 1 # initialize
-        for k in range(0,stage-1):
-            tmp1 = self.__alphafun(trypath[0:(k+2)], invR)
+        for kk in range(0,stage-1):
+            tmp1 = self.__alphafun(trypath[0:(kk+2)], invR)
             a1 = a1*(1 - tmp1)
-            tmp2 = self.__alphafun(trypath[stage:stage-k-2:-1], invR)
+            tmp2 = self.__alphafun(trypath[stage:stage-kk-2:-1], invR)
             a2 = a2*(1 - tmp2)
             if a2 == 0: # we will come back with prob 1
                 alpha = np.zeros(1)
@@ -141,8 +141,8 @@ class DelayedRejection:
             
         y = logposteriorratio(trypath[0], trypath[-1])
         
-        for k in range(stage):
-            y = y + qfun(k, trypath, invR)
+        for kk in range(stage):
+            y = y + qfun(kk, trypath, invR)
             
         alpha = min(np.ones(1), np.exp(y)*a2*(a1**(-1)))
         
@@ -150,24 +150,56 @@ class DelayedRejection:
 
 # -------------------------------------------   
 def qfun(iq, trypath, invR):
-    # Gaussian nth stage log proposal ratio
-    # log of q_i(y_n,...,y_{n-j})/q_i(x,y_1,...,y_j)
+    '''
+    Gaussian nth stage log proposal ratio.
+    
+    Logarithm of :math:'q_i(y_n,...,y_{n-j})/q_i(x,y_1,...,y_j)`
+    
+    :Args:
+        * **iq** (:py:class:`int`): Stage number.
+        * **trypath** (:py:class:`list`): Sequence of DR steps
+        * **invR** (:class:`~numpy.ndarray`): Inverse Cholesky decomposition matrix
         
+    :Returns:
+        * **zq** (:py:class:`float`): Logarithm of Gaussian nth stage proposal ratio.
+    ''' 
     stage = len(trypath) - 1 - 1 # - 1, iq;
     if stage == iq: # shift index due to 0-indexing
         zq = np.zeros(1) # we are symmetric
     else:
         iR = invR[iq] # proposal^(-1/2)
-        y1 = trypath[0].theta
-        y2 = trypath[iq + 1].theta # check index
-        y3 = trypath[stage + 1].theta
-        y4 = trypath[stage - iq].theta
+        y1, y2, y3, y4 = extract_state_elements(iq = iq, stage = stage, trypath = trypath)
         zq = -0.5*((np.linalg.norm(np.dot(y4-y3, iR)))**2 - (np.linalg.norm(np.dot(y2-y1, iR)))**2)
         
     return zq
 
 # -------------------------------------------   
+def extract_state_elements(iq, stage, trypath):
+    '''
+    Extract elements from tried paths.
+    
+    :Args:
+        * **iq** (:py:class:`int`): Stage number.
+        * **stage** (:py:class:`int`): Number of stages - 2
+        * **trypath** (:py:class:`list`): Sequence of DR steps
+    '''
+    y1 = trypath[0].theta
+    y2 = trypath[iq + 1].theta # check index
+    y3 = trypath[stage + 1].theta
+    y4 = trypath[stage - iq].theta
+    return y1, y2, y3, y4
+# -------------------------------------------   
 def logposteriorratio(x1, x2):
+    '''
+    Calculate the logarithm of the posterior ratio.
+    
+    :Args:
+        * **x1** (:class:`~.ParameterSet`): Old set - :math:`q^{k-1}`
+        * **x2** (:class:`~.ParameterSet`): New set - :math:`q^*`
+        
+    :Returns:
+        * **zq** (:py:class:`float`): Logarithm of posterior ratio.
+    '''
     zq = -0.5*(sum((x2.ss*(x2.sigma2**(-1.0)) - x1.ss*(x1.sigma2**(-1.0)))) + x2.prior - x1.prior)
     return sum(zq)
     

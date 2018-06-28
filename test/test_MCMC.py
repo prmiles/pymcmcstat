@@ -6,6 +6,7 @@ Created on Wed Jun  6 08:33:47 2018
 @author: prmiles
 """
 
+from pymcmcstat.MCMC import print_rejection_statistics
 from pymcmcstat.MCMC import MCMC
 from pymcmcstat.structures.ParameterSet import ParameterSet
 import unittest
@@ -93,10 +94,9 @@ class PrintRejectionStatistics(unittest.TestCase):
         isimu = 100
         iiadapt = 10
         verbosity = 3
-        MC = MCMC()
         capturedOutput = io.StringIO()                  # Create StringIO object
         sys.stdout = capturedOutput                     #  and redirect stdout.
-        MC._MCMC__print_rejection_statistics(rejected = rejected, isimu = isimu, iiadapt = iiadapt, verbosity = verbosity)
+        print_rejection_statistics(rejected = rejected, isimu = isimu, iiadapt = iiadapt, verbosity = verbosity)
         sys.stdout = sys.__stdout__
         
         self.assertEqual(capturedOutput.getvalue(), str('i:{} ({},{},{})\n\n'.format(
