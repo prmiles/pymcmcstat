@@ -22,7 +22,7 @@ class ModelSettings:
     def __init__(self):
         # Initialize all variables to default values
         self.description = 'Model Settings'
-        
+
     def define_model_settings(self, sos_function = None, prior_function = None, prior_type = 1,
                  prior_update_function = None, prior_pars = None, model_function = None,
                  sigma2 = None, N = None, S20 = np.nan, N0 = None, nbatch = None):

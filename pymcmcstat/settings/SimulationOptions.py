@@ -22,7 +22,7 @@ class SimulationOptions:
 #        self.options = BaseSimulationOptions()
         self.description = 'simulation_options'
         self.__options_set = False
-        
+
     def define_simulation_options(self, nsimu=int(1e4), adaptint = None, ntry = None, method='dram',
                  printint=None, adaptend = 0, lastadapt = 0, burnintime = 0,
                  waitbar = 1, debug = 0, qcov = None, updatesigma = False,

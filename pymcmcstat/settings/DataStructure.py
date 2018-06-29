@@ -36,8 +36,7 @@ class DataStructure:
         self.shape = [] # shape of ydata - important if information stored as matrix
         self.weight = [] # initialize list - weight of data set
         self.user_defined_object = [] # user defined object
-        
-    
+
     def add_data_set(self, x, y, n = None, weight = 1, user_defined_object = 0):
         '''
         Add data set to MCMC object.  This method must be called first before using

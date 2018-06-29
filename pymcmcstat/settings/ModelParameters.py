@@ -39,7 +39,7 @@ class ModelParameters:
     def __init__(self):
         self.parameters = [] # initialize list
         self.description = 'MCMC model parameters'
-    # --------------------------    
+    # --------------------------
     def add_model_parameter(self, name = None, theta0 = None, minimum = -np.inf,
                       maximum = np.inf, prior_mu = np.zeros([1]), prior_sigma = np.inf,
                       sample = True, local = 0):
@@ -58,13 +58,12 @@ class ModelParameters:
 
         The default prior is a uniform distribution from minimum to maximum parameter value.
         '''
-        
         if name is None:
             name = generate_default_name(len(self.parameters))
-            
+
         if theta0 is None:
             theta0 = 1.0
-        
+
         # append dictionary element
         self.parameters.append({'name': name, 'theta0': theta0, 'minimum': minimum,
                                 'maximum': maximum, 'prior_mu': prior_mu, 'prior_sigma': prior_sigma,
