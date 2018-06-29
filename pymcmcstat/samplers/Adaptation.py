@@ -29,9 +29,8 @@ class Adaptation:
         self.iacce = None
         self.covchain = None
         self.meanchain = None
-        
         self.last_index_since_adaptation = 0
-        
+
     # -------------------------------------------
     def run_adaptation(self, covariance, options, isimu, iiadapt, rejected, chain, chainind, u, npar, alpha):
         '''
@@ -88,7 +87,7 @@ class Adaptation:
             R = check_for_singular_cov_matrix(upcov = upcov, R = R, npar = npar, qcov_adjust = qcov_adjust, qcov_scale = qcov_scale, rejected = rejected, iiadapt = iiadapt, verbosity = verbosity)
             
             # update dram covariance matrix
-            RDR, invR = update_delayed_rejection(R = R, npar = npar, ntry = ntry, drscale = drscale)          
+            RDR, invR = update_delayed_rejection(R = R, npar = npar, ntry = ntry, drscale = drscale)
 
         covariance._update_covariance_from_adaptation(R, covchain, meanchain, wsum,
                                           last_index_since_adaptation, iiadapt)
@@ -96,7 +95,7 @@ class Adaptation:
         covariance._update_covariance_for_delayed_rejection_from_adaptation(RDR = RDR, invR = invR)
         
         return covariance
-# -------------------------------------------- 
+# --------------------------------------------
 def unpack_simulation_options(options):
     '''
     Unpack simulation options
