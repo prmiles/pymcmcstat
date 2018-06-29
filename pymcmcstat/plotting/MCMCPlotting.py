@@ -22,7 +22,7 @@ except ImportError as e:
 
 # --------------------------------------------
 def plot_density_panel(chains, names = None, hist_on = False, figsizeinches = None):
-    """
+    '''
     Plot marginal posterior densities
 
     :Args:
@@ -30,11 +30,10 @@ def plot_density_panel(chains, names = None, hist_on = False, figsizeinches = No
         * **names** (:py:class:`list`): List of strings - name of each parameter
         * **hist_on** (:py:class:`bool`): Flag to include histogram on density plot
         * **figsizeinches** (:py:class:`list`): Specify figure size in inches [Width, Height]
-
-    """
+    '''
     nsimu, nparam = chains.shape # number of rows, number of columns
     ns1, ns2, names, figsizeinches = setup_plot_features(nparam = nparam, names = names, figsizeinches = figsizeinches)
-        
+
     f = plt.figure(dpi=100, figsize=(figsizeinches)) # initialize figure
     for ii in range(nparam):
         # define chain

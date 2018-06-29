@@ -50,7 +50,7 @@ def generate_names(nparam, names):
     # Check if names defined
     if names == None:
         names = generate_default_names(nparam)
-        
+
     # Check if enough names defined
     if len(names) != nparam:
         names = extend_names_to_match_nparam(names, nparam)

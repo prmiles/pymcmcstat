@@ -38,19 +38,19 @@ class PredictionIntervals:
         '''
         # Analyze data structure
         self.__ndatabatches, ncols = self._analyze_data_structure(data = data)
-            
+
         # setup data structure for prediction
         self.datapred = self._setup_data_structure_for_prediction(data = data, ndatabatches = self.__ndatabatches)
-            
+
         # assign model function
         self.modelfunction = modelfunction
-        
+
         # assign required features from the results structure
         self._assign_features_from_results_structure(results = results)
-        
+
         # evaluate model function to determine shape of response
         self.__nrow, self.__ncol = self._determine_shape_of_response(modelfunction = modelfunction, ndatabatches = self.__ndatabatches, datapred = self.datapred, theta = self.__theta)
-        
+
         # analyze structure of s2chain with respect to model output
         if self.__s2chain is not None:
             self.__s2chain_index = self._analyze_s2chain(ndatabatches = self.__ndatabatches, s2chain = self.__s2chain, ncol = self.__ncol)
