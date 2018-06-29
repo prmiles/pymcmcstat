@@ -31,7 +31,7 @@ class SaveLoadJSONObject(unittest.TestCase):
 # -------------------
 class DetermineFilename(unittest.TestCase):
     def test_resfilename_is_none(self):
-        model, options, parameters, data, covariance, rejected, chain, s2chain, sschain = gf.setup_mcmc_case_dr()
+        __, options, parameters, data, covariance, rejected, chain, s2chain, sschain = gf.setup_mcmc_case_dr()
         RS = ResultsStructure()
         RS.add_options(options = options)
         RS.results['simulation_options']['results_filename'] = None
@@ -39,7 +39,7 @@ class DetermineFilename(unittest.TestCase):
         self.assertEqual(filename, str('{}{}{}'.format(RS.results['simulation_options']['datestr'],'_','mcmc_simulation.json')), msg = 'Filename matches')
         
     def test_resfilename_is_not_none(self):
-        model, options, parameters, data, covariance, rejected, chain, s2chain, sschain = gf.setup_mcmc_case_dr()
+        __, options, parameters, data, covariance, rejected, chain, s2chain, sschain = gf.setup_mcmc_case_dr()
         RS = ResultsStructure()
         RS.add_options(options = options)
         RS.results['simulation_options']['results_filename'] = 'test'

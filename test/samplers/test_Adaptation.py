@@ -6,7 +6,6 @@ Created on Wed Jun 13 08:26:50 2018
 @author: prmiles
 """
 
-from pymcmcstat.MCMC import MCMC
 from pymcmcstat.samplers.Adaptation import cholupdate, initialize_covariance_mean_sum
 from pymcmcstat.samplers.Adaptation import Adaptation
 from pymcmcstat.samplers.Adaptation import is_semi_pos_def_chol, update_covariance_mean_sum
@@ -34,7 +33,7 @@ def setup_options(**kwargs):
     return SO
 
 def setup_run_adapt_settings():
-    model, options, parameters, data = gf.setup_mcmc()
+    __, options, parameters, data = gf.setup_mcmc()
     CP = CovarianceProcedures()
     CP._initialize_covariance_settings(parameters = parameters, options = options)
     rejected = {'in_adaptation_interval': 4, 'total': 10, 'outside_bounds': 1}

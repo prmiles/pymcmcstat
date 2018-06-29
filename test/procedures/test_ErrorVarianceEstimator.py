@@ -23,7 +23,7 @@ class InitializeEVE(unittest.TestCase):
 class UpdateEVE(unittest.TestCase):
     
     def test_eve_update_with_nsos_1(self):
-        model, options, parameters, data = gf.setup_mcmc()
+        model, __, parameters, data = gf.setup_mcmc()
         SOS = SumOfSquares(model = model, data = data, parameters = parameters)
         theta = np.array([2., 5.])
         ss = SOS.evaluate_sos_function(theta = theta)

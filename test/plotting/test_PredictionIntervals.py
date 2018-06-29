@@ -351,7 +351,8 @@ class SetupIntervalPlotting(unittest.TestCase):
 
 # --------------------------------------------
 class SetupGenerationRequirements(unittest.TestCase):
-    def setup_generation(self):
+    @classmethod
+    def setup_generation(cls):
         aa = np.random.rand([400,1])
         PI = PredictionIntervals()
         results = gf.setup_pseudo_results()
@@ -388,7 +389,8 @@ class SetupGenerationRequirements(unittest.TestCase):
         
 # --------------------------------------------
 class SetupIntervalii(unittest.TestCase):
-    def setup_interval(self):
+    @classmethod
+    def setup_interval(cls):
         PI = PredictionIntervals()
         DS = gf.basic_data_structure()
         datapred = PI._setup_data_structure_for_prediction(data = DS, ndatabatches = 1)
@@ -453,14 +455,14 @@ def cc_setup(calc_pred_int = True):
 
 class CalcCredii(unittest.TestCase):
     def test_calc_credii(self):
-        PI, __, testchain, s2chain, lims, sstype, nsample, iisample, datapred = cc_setup()
+        PI, __, testchain, __, lims, sstype, nsample, iisample, datapred = cc_setup()
         
         ysave = PI._calc_credible_ii(testchain = testchain, nrow = 100, ncol = 1, waitbar = False, test = np.array([True, True]), modelfun = gf.predmodelfun, datapredii = datapred[0])
         self.assertTrue(isinstance(ysave, np.ndarray), msg = 'Expect array')
         self.assertEqual(ysave.shape[0], 100, msg = 'Expect 1st dim = 100')
         
     def test_calc_credii_with_waitbar(self):
-        PI, __, testchain, s2chain, lims, sstype, nsample, iisample, datapred = cc_setup()
+        PI, __, testchain, __, lims, sstype, nsample, iisample, datapred = cc_setup()
         
         PI._PredictionIntervals__wbarstatus = progress_bar(iters = 200)
             
@@ -478,13 +480,13 @@ class CalcPredii(unittest.TestCase):
         self.assertEqual(osave.shape[0], 100, msg = 'Expect 1st dim = 100')
         
     def test_calc_predii(self):
-        PI, __, testchain, tests2chain, lims, sstype, nsample, iisample, datapred = cc_setup()
+        PI, __, testchain, tests2chain, __, sstype, nsample, iisample, datapred = cc_setup()
                 
         ysave, osave = PI._calc_credible_and_prediction_ii(testchain = testchain, tests2chain = tests2chain, nrow = 100, ncol = 1, waitbar = False, sstype = 0, test = np.array([True, True]), modelfun = gf.predmodelfun, datapredii = datapred[0])
         self.common_checks(ysave, osave)
         
     def test_calc_predii_with_waitbar(self):
-        PI, __, testchain, tests2chain, lims, sstype, nsample, iisample, datapred = cc_setup()
+        PI, __, testchain, tests2chain, __, sstype, nsample, iisample, datapred = cc_setup()
         
         PI._PredictionIntervals__wbarstatus = progress_bar(iters = 200)
         
@@ -493,14 +495,14 @@ class CalcPredii(unittest.TestCase):
         self.assertEqual(PI._PredictionIntervals__wbarstatus.percentage(3), 1.5, msg = 'Expect 1.5')
         
     def test_calc_predii_s2chain_none(self):
-        PI, results, testchain, tests2chain, lims, sstype, nsample, iisample, datapred = cc_setup(calc_pred_int = False)
+        PI, results, testchain, tests2chain, __, sstype, nsample, iisample, datapred = cc_setup(calc_pred_int = False)
         tests2chain = None
         
         with self.assertRaises(TypeError, msg = 'This function should not be called in tests2chain is None'):
             PI._calc_credible_and_prediction_ii(testchain = testchain, tests2chain = tests2chain, nrow = 100, ncol = 1, waitbar = False, sstype = 0, test = np.array([True, True]), modelfun = gf.predmodelfun, datapredii = datapred[0])
                    
     def test_calc_predii_s2chain_tran(self):
-        PI, results, testchain, tests2chain, lims, sstype, nsample, iisample, datapred = cc_setup(calc_pred_int = False)
+        PI, results, testchain, tests2chain, __, sstype, nsample, iisample, datapred = cc_setup(calc_pred_int = False)
         tests2chain = np.random.random_sample(size = (1,100))
         
         with self.assertRaises(SystemExit, msg = 'Unknown structure'):
@@ -624,7 +626,8 @@ class PlotPredictionIntervals(unittest.TestCase):
         self.assertTrue(isinstance(axhandle, list), msg = 'Expect list return')
         self.assertEqual(fighandle[0].get_label(), 'Batch # 0 | Column # 0', msg = str('Strings should match: {}'.format(fighandle[0].get_label())))
 
-    def setup_complex_pi(self):
+    @classmethod
+    def setup_complex_pi(cls):
         PI = PredictionIntervals()
         results = gf.setup_pseudo_results()
         results['s2chain'] = None
