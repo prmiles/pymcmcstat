@@ -60,7 +60,7 @@ class MCMC:
         self._sampling_methods = SamplingMethods()
         self._mcmc_status = False
         np.random.seed(seed = rngseed)
-        
+
     # --------------------------------------------------------
     def run_simulation(self, use_previous_results = False):
         '''

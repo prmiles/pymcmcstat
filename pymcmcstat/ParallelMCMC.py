@@ -26,7 +26,7 @@ class ParallelMCMC:
     '''
     def __init__(self):
         self.description = 'Run MCMC simulations in parallel'
-        
+
     def setup_parallel_simulation(self, mcset, initial_values = None, num_cores = 1, num_chain = 1):
     
         # extract settings from mcset
