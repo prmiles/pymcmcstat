@@ -211,21 +211,30 @@ class ModelParameters:
         
         if verbosity > 0:
             print('\nSampling these parameters:')
-            print('{:10s} {:>7s} [{:>6s}, {:>6s}] N({:>4s}, {:>4s})'.format('name',
+            print('{:>10s} {:>10s} [{:>9s}, {:>9s}] N({:>9s}, {:>9s})'.format('name',
                   'start', 'min', 'max', 'mu', 'sigma^2'))
             nprint = len(parind)
             for ii in range(nprint):
+                name = str('{:>10s}'.format(names[parind[ii]]))
+                valuestr = format_number_to_str(value[parind[ii]])
+                lowstr = format_number_to_str(lower_limits[parind[ii]])
+                uppstr = format_number_to_str(upper_limits[parind[ii]])
+                mustr = format_number_to_str(theta_mu[parind[ii]])
+                sigstr = format_number_to_str(theta_sigma[parind[ii]])
+                
                 st = self.noadapt_display_setting(ii, noadaptind)
                 h2 = self.prior_display_setting(x = theta_sigma[parind[ii]])
-                    
-                if value[parind[ii]] > 1e4:
-                    print('{:10s}: {:6.2g} [{:6.2g}, {:6.2g}] N({:4.2g},{:4.2f}{:s}){:s}'.format(names[parind[ii]],
-                      value[parind[ii]], lower_limits[parind[ii]], upper_limits[parind[ii]],
-                      theta_mu[parind[ii]], theta_sigma[parind[ii]], h2, st))
-                else:
-                    print('{:10s}: {:6.2f} [{:6.2f}, {:6.2f}] N({:4.2f},{:4.2f}{:s}){:s}'.format(names[parind[ii]],
-                      value[parind[ii]], lower_limits[parind[ii]], upper_limits[parind[ii]],
-                      theta_mu[parind[ii]], theta_sigma[parind[ii]], h2, st))
+                
+                print('{:s}: {:s} [{:s}, {:s}] N({:s},{:s}{:s}){:s}'.format(name, valuestr, lowstr, uppstr, mustr, sigstr, h2, st))
+
+#                if abs(value[parind[ii]]) > 1e4 or abs(value[parind[ii]]) < 1e-2:
+#                    print('{:10s}: {:10.2e} [{:6.2e}, {:6.2e}] N({:4.2g},{:4.2f}{:s}){:s}'.format(names[parind[ii]],
+#                      value[parind[ii]], lower_limits[parind[ii]], upper_limits[parind[ii]],
+#                      theta_mu[parind[ii]], theta_sigma[parind[ii]], h2, st))
+#                else:
+#                    print('{:10s}: {:10.2f} [{:6.2f}, {:6.2f}] N({:4.2f},{:4.2f}{:s}){:s}'.format(names[parind[ii]],
+#                      value[parind[ii]], lower_limits[parind[ii]], upper_limits[parind[ii]],
+#                      theta_mu[parind[ii]], theta_sigma[parind[ii]], h2, st))
     
     @classmethod
     def check_verbosity(cls, verbosity):
@@ -265,3 +274,9 @@ class ModelParameters:
             if testfunction(xii):
                 x[ii] = value
         return x
+    
+def format_number_to_str(number):
+    if abs(number) >= 1e4 or abs(number) <= 1e-2:
+        return str('{:9.2e}'.format(number))
+    else:
+        return str('{:9.2f}'.format(number))
