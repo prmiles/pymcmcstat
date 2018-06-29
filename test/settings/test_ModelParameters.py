@@ -11,6 +11,8 @@ functions tested include:
 @author: prmiles
 """
 from pymcmcstat.settings.ModelParameters import ModelParameters
+from pymcmcstat.settings.ModelParameters import format_number_to_str, generate_default_name, check_verbosity, replace_list_elements
+from pymcmcstat.settings.ModelParameters import noadapt_display_setting, check_noadaptind, prior_display_setting, less_than_or_equal_to_zero
 from pymcmcstat.settings.SimulationOptions import SimulationOptions
 import unittest
 import numpy as np
@@ -65,32 +67,32 @@ MP = ModelParameters()
 class LessThanOrEqualToZero(unittest.TestCase):
     
     def test_x_lt_0(self):
-        self.assertTrue(MP.less_than_or_equal_to_zero(x = -1))
+        self.assertTrue(less_than_or_equal_to_zero(x = -1))
         
     def test_x_eq_0(self):
-        self.assertTrue(MP.less_than_or_equal_to_zero(x = 0))
+        self.assertTrue(less_than_or_equal_to_zero(x = 0))
         
     def test_x_gt_0(self):
-        self.assertFalse(MP.less_than_or_equal_to_zero(x = 1))
+        self.assertFalse(less_than_or_equal_to_zero(x = 1))
 
 # --------------------------
 class ReplaceListElements(unittest.TestCase):
     
     def test_list_of_0s(self):
         x = [0, 0, 0]
-        self.assertEqual(MP.replace_list_elements(x = x, testfunction = MP.less_than_or_equal_to_zero, value = 10), [10, 10, 10])
+        self.assertEqual(replace_list_elements(x = x, testfunction = less_than_or_equal_to_zero, value = 10), [10, 10, 10])
         
     def test_list_of_neg(self):
         x = [-1, -1, -1]
-        self.assertEqual(MP.replace_list_elements(x = x, testfunction = MP.less_than_or_equal_to_zero, value = 10), [10, 10, 10])
+        self.assertEqual(replace_list_elements(x = x, testfunction = less_than_or_equal_to_zero, value = 10), [10, 10, 10])
         
     def test_list_of_pos(self):
         x = [1, 1, 1]
-        self.assertEqual(MP.replace_list_elements(x = x, testfunction = MP.less_than_or_equal_to_zero, value = 10), x)
+        self.assertEqual(replace_list_elements(x = x, testfunction = less_than_or_equal_to_zero, value = 10), x)
         
     def test_list_of_mixed(self):
         x = [1, 0, -1]
-        self.assertEqual(MP.replace_list_elements(x = x, testfunction = MP.less_than_or_equal_to_zero, value = 10), [1, 10, 10])
+        self.assertEqual(replace_list_elements(x = x, testfunction = less_than_or_equal_to_zero, value = 10), [1, 10, 10])
         
 # --------------------------
 class DisplayParametersSettings(unittest.TestCase):
@@ -115,39 +117,39 @@ class DisplayParametersSettings(unittest.TestCase):
 class NoadaptindDisplaySetting(unittest.TestCase):
     
     def test_noadaptind_is_empty(self):
-        self.assertEqual(MP.noadapt_display_setting(ii = 1, noadaptind = []), '', msg = 'Default is blank string')
-        self.assertEqual(MP.noadapt_display_setting(ii = 2, noadaptind = []), '', msg = 'Default is blank string')
+        self.assertEqual(noadapt_display_setting(ii = 1, noadaptind = []), '', msg = 'Default is blank string')
+        self.assertEqual(noadapt_display_setting(ii = 2, noadaptind = []), '', msg = 'Default is blank string')
         
     def test_noadaptind_is_not_empty(self):
-        self.assertEqual(MP.noadapt_display_setting(ii = 1, noadaptind = [2]), '', msg = 'Default is blank string')
-        self.assertEqual(MP.noadapt_display_setting(ii = 2, noadaptind = [2]), ' (*)', msg = 'Default is blank string')
+        self.assertEqual(noadapt_display_setting(ii = 1, noadaptind = [2]), '', msg = 'Default is blank string')
+        self.assertEqual(noadapt_display_setting(ii = 2, noadaptind = [2]), ' (*)', msg = 'Default is blank string')
 
 # --------------------------        
 class PriorDisplaySetting(unittest.TestCase):
     
     def test_x_is_inf(self):
-        self.assertEqual(MP.prior_display_setting(x = np.inf), '', msg = 'Blank string if infinity.')
+        self.assertEqual(prior_display_setting(x = np.inf), '', msg = 'Blank string if infinity.')
         
     def test_x_is_not_inf(self):
-        self.assertEqual(MP.prior_display_setting(x = 2.0), '^2', msg = 'Raised to the second power if not infinity.')
+        self.assertEqual(prior_display_setting(x = 2.0), '^2', msg = 'Raised to the second power if not infinity.')
         
 # --------------------------        
 class CheckNoadaptind(unittest.TestCase):
     
     def test_noadaptind_is_none(self):
-        self.assertEqual(MP.check_noadaptind(noadaptind = None), [], msg = 'Returns empty list.')
+        self.assertEqual(check_noadaptind(noadaptind = None), [], msg = 'Returns empty list.')
         
     def test_noadaptind_is_not_none(self):
-        self.assertEqual(MP.check_noadaptind(noadaptind = [1]), [1], msg = 'Returns input.')
+        self.assertEqual(check_noadaptind(noadaptind = [1]), [1], msg = 'Returns input.')
         
 # --------------------------        
 class Verbosity(unittest.TestCase):
     
     def test_verbosity_is_none(self):
-        self.assertEqual(MP.check_verbosity(verbosity = None), 0, msg = 'Returns 0.')
+        self.assertEqual(check_verbosity(verbosity = None), 0, msg = 'Returns 0.')
         
     def test_verbosity_is_not_none(self):
-        self.assertEqual(MP.check_verbosity(verbosity = 1), 1, msg = 'Returns input.')
+        self.assertEqual(check_verbosity(verbosity = 1), 1, msg = 'Returns input.')
         
 # --------------------------        
 class ParameterLimits(unittest.TestCase):
@@ -171,7 +173,14 @@ class ParameterLimits(unittest.TestCase):
 class GenerateDefaultName(unittest.TestCase):
     
     def test_default_name_generation(self):
-        self.assertEqual(MP.generate_default_name(nparam = 0), '$p_{0}$', msg = '0 based naming convention.')
-        self.assertEqual(MP.generate_default_name(nparam = 3), '$p_{3}$', msg = '0 based naming convention.')
-        self.assertEqual(MP.generate_default_name(nparam = 2), '$p_{2}$', msg = '0 based naming convention.')
-        self.assertEqual(MP.generate_default_name(nparam = 10), '$p_{10}$', msg = '0 based naming convention.')
+        self.assertEqual(generate_default_name(nparam = 0), '$p_{0}$', msg = '0 based naming convention.')
+        self.assertEqual(generate_default_name(nparam = 3), '$p_{3}$', msg = '0 based naming convention.')
+        self.assertEqual(generate_default_name(nparam = 2), '$p_{2}$', msg = '0 based naming convention.')
+        self.assertEqual(generate_default_name(nparam = 10), '$p_{10}$', msg = '0 based naming convention.')
+
+# --------------------------
+class FormatNumberToStr(unittest.TestCase):
+    def test_format_number_to_str(self):
+        self.assertEqual(str('{:9.2f}'.format(1.0)), format_number_to_str(1.0), msg = str('Exect: {:9.2f}'.format(1.0)))
+        self.assertEqual(str('{:9.2e}'.format(1.0e4)), format_number_to_str(1.0e4), msg = str('Exect: {:9.2f}'.format(1.0e4)))
+        self.assertEqual(str('{:9.2e}'.format(1.0e-2)), format_number_to_str(1.0e-2), msg = str('Exect: {:9.2f}'.format(1.0e-2)))
