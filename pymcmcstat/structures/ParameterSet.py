@@ -9,9 +9,9 @@ Created on Thu Jan 18 10:15:37 2018
 class ParameterSet:
     '''
     Basic MCMC parameter set.
-    
+
     **Description:** Storage device for passing parameter sets back and forth between sampling methods.
-    
+
     :Args:
         * **theta** (:class:`~numpy.ndarray`): Sampled values.
         * **ss** (:class:`~numpy.ndarray`): Sum-of-squares error(s).

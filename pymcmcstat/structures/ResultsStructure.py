@@ -15,7 +15,7 @@ import os
 class ResultsStructure:
     '''
     Results from MCMC simulation.
-    
+
     **Description:** Class used to organize results of MCMC simulation.
     '''
     def __init__(self):
@@ -26,7 +26,7 @@ class ResultsStructure:
     def export_simulation_results_to_json_file(self, results):
         '''
         Export simulation results to a json file.
-        
+
         :Args:
             * **results** (:class:`~.ResultsStructure`): Dictionary of MCMC simulation results/settings.
         '''
@@ -49,11 +49,11 @@ class ResultsStructure:
     def save_json_object(cls, results, filename):
         '''
         Save object to json file.
-        
+
         .. note::
-            
+
             Filename should include extension.
-        
+
         :Args:
             * **results** (:py:class:`dict`): Object to save.
             * **filename** (:py:class:`str`): Write object into file with this name.
@@ -65,16 +65,16 @@ class ResultsStructure:
     def load_json_object(cls, filename):
         '''
         Load object stored in json file.
-        
+
         .. note::
-            
+
             Filename should include extension.
-        
+
         :Args:
             * **filename** (:py:class:`str`): Load object from file with this name.
-            
+
         \\
-        
+
         :Returns:
             * **results** (:py:class:`dict`): Object loaded from file.
         '''
@@ -86,7 +86,7 @@ class ResultsStructure:
     def add_basic(self, nsimu, covariance, parameters, rejected, simutime, theta):
         '''
         Add basic results from MCMC simulation to structure.
-        
+
         :Args:
             * **nsimu** (:py:class:`int`): Number of MCMC simulations.
             * **model** (:class:`.ModelSettings`): MCMC model settings.
@@ -120,29 +120,28 @@ class ResultsStructure:
     def add_updatesigma(self, updatesigma, sigma2, S20, N0):
         '''
         Add information to results structure related to observation error.
-        
+
         :Args:
             * **updatesigma** (:py:class:`bool`): Flag to update error variance(s).
             * **sigma2** (:class:`~numpy.ndarray`): Latest estimate of error variance(s).
             * **S20** (:class:`~numpy.ndarray`): Scaling parameter(s).
             * **N0** (:class:`~numpy.ndarray`): Shape parameter(s).
-            
+
         If :code:`updatesigma is True`, then
-        
+
         ::
-            
+
             results['sigma2'] = np.nan
             results['S20'] = S20
             results['N0'] = N0
-            
+
         Otherwise
-        
+
         ::
-            
+
             results['sigma2'] = sigma2
             results['S20'] = np.nan
             results['N0'] = np.nan
-        
         '''
         self.results['updatesigma'] = updatesigma
         if updatesigma:
@@ -157,13 +156,12 @@ class ResultsStructure:
     def add_dram(self, drscale, RDR, total_rejected, drsettings):
         '''
         Add results specific to performing DR algorithm.
-        
+
         :Args:
             * **drscale** (:class:`~numpy.ndarray`): Reduced scale for sampling in DR algorithm. Default is [5,4,3].
             * **RDR** (:class:`~numpy.ndarray`): Cholesky decomposition of covariance matrix based on DR.
             * **total_rejected** (:py:class:`int`): Number of rejected samples.
             * **drsettings** (:class:`~.DelayedRejection`): Need access to counters within DR class.
-            
         '''
         # extract results from basic structure
         if self.basic is True:
@@ -185,16 +183,16 @@ class ResultsStructure:
     def add_prior(self, mu, sig, priorfun, priortype, priorpars):
         '''
         Add results specific to prior function.
-        
+
         :Args:
             * **mu** (:py:class:`float`): Prior mean.
             * **sig** (:py:class:`float`): Prior standard deviation.
             * **priorfun**: Handle for prior function.
             * **priortype** (:py:class:`int`): Flag identifying type of prior.
             * **priorpars** (:py:class:`float`): Prior parameter for prior update function.
-            
+
         .. note::
-            
+
             This feature is not currently implemented.
         '''
         self.results['prior'] = [mu, sig]
@@ -205,7 +203,7 @@ class ResultsStructure:
     def add_options(self, options = None):
         '''
         Saves subset of features of the simulation options in a nested dictionary.
-        
+
         :Args:
             * **options** (:class:`.SimulationOptions`): MCMC simulation options.
         '''
@@ -222,7 +220,7 @@ class ResultsStructure:
     def add_model(self, model = None):
         '''
         Saves subset of features of the model settings in a nested dictionary.
-        
+
         :Args:
             * **model** (:class:`.ModelSettings`): MCMC model settings.
         '''
@@ -238,7 +236,7 @@ class ResultsStructure:
     def add_chain(self, chain = None):
         '''
         Add chain to results structure.
-        
+
         :Args:
             * **chain** (:class:`~numpy.ndarray`): Model parameter sampling chain.
         '''
@@ -247,7 +245,7 @@ class ResultsStructure:
     def add_s2chain(self, s2chain = None):
         '''
         Add observiation error chain to results structure.
-        
+
         :Args:
             * **s2chain** (:class:`~numpy.ndarray`): Sampling chain of observation errors.
         '''
@@ -256,7 +254,7 @@ class ResultsStructure:
     def add_sschain(self, sschain = None):
         '''
         Add sum-of-squares chain to results structure.
-        
+
         :Args:
             * **sschain** (:class:`~numpy.ndarray`): Calculated sum-of-squares error for each parameter chains set.
         '''
@@ -265,14 +263,14 @@ class ResultsStructure:
     def add_time_stats(self, mtime, drtime, adtime):
         '''
         Add time spend using each sampling algorithm.
-        
+
         :Args:
             * **mtime** (:py:class:`float`): Time spent performing standard Metropolis.
             * **drtime** (:py:class:`float`): Time spent performing Delayed Rejection.
             * **adtime** (:py:class:`float`): Time spent performing Adaptation.
-            
+
         .. note::
-            
+
             This feature is not currently implemented.
         '''
         self.results['time [mh, dr, am]'] = [mtime, drtime, adtime]
@@ -280,12 +278,12 @@ class ResultsStructure:
     def add_random_number_sequence(self, rndseq):
         '''
         Add random number sequence to results structure.
-        
+
         :Args:
             * **rndseq** (:class:`~numpy.ndarray`): Sequence of sampled random numbers.
-            
+
         .. note::
-            
+
             This feature is not currently implemented.
         '''
         self.results['rndseq'] = rndseq
@@ -294,13 +292,13 @@ class ResultsStructure:
     def removekey(cls, d, key):
         '''
         Removed elements from dictionary and return the remainder.
-        
+
         :Args:
             * **d** (:py:class:`dict`): Original dictionary.
             * **key** (:py:class:`str`): Keyword to be removed.
-         
+
         \\
-        
+
         :Returns:
             * **r** (:py:class:`dict`): Updated dictionary without the keywork, value pair.
         '''
