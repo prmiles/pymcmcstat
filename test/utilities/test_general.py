@@ -12,7 +12,6 @@ import sys
 
 # --------------------------
 class MessageDisplay(unittest.TestCase):
-    
     def test_standard_print(self):
         capturedOutput = io.StringIO()                  # Create StringIO object
         sys.stdout = capturedOutput                     #  and redirect stdout.

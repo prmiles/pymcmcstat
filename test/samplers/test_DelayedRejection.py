@@ -43,7 +43,7 @@ def setup_mcmc():
     mcstat.data.add_data_set(x, y)
 
     mcstat.simulation_options.define_simulation_options(nsimu = int(2.0e2), updatesigma = 1, method = 'dram', verbosity = 0)
-    
+
     # update model settings
     mcstat.model_settings.define_model_settings(sos_function = ssfun)
     
@@ -63,7 +63,7 @@ def setup_mcmc():
     sschain = np.zeros([options.nsimu, 1])
     return model, options, parameters, data, covariance, rejected, chain, s2chain, sschain
 
-# --------------------------        
+# --------------------------
 class InitializeDRMetrics(unittest.TestCase):
     def test_dr_metrics(self):
         DR = DelayedRejection()

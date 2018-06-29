@@ -44,7 +44,7 @@ def setup_mcmc():
     mcstat.data.add_data_set(x, y)
 
     mcstat.simulation_options.define_simulation_options(nsimu = int(5.0e3), updatesigma = 1, method = 'dram', verbosity = 0)
-    
+
     # update model settings
     mcstat.model_settings.define_model_settings(sos_function = ssfun)
     
@@ -194,7 +194,7 @@ class SetupRBasedOnCovarianceMatrix(unittest.TestCase):
         CP._CovarianceProcedures__setup_R_based_on_covariance_matrix(parind = parind)
         self.assertTrue(np.array_equal(CP._R, np.linalg.cholesky(testmtx[np.ix_(parind,parind)]).T), msg = 'Expect sqrt of variance')
         self.assertTrue(np.array_equal(CP._qcovorig, testmtx), msg = 'Expect sqrt of variance')
-#        
+
 # -------------------------------------------
 class SetupNoAdaptIndex(unittest.TestCase):
     def test_noadapt_empty(self):

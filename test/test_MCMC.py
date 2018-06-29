@@ -10,7 +10,6 @@ from pymcmcstat.MCMC import print_rejection_statistics
 from pymcmcstat.MCMC import MCMC
 from pymcmcstat.structures.ParameterSet import ParameterSet
 import unittest
-from mock import patch
 import io
 import sys
 import numpy as np
@@ -43,7 +42,7 @@ def setup_mcmc(initialize = True):
     mcstat.data.add_data_set(x, y)
 
     mcstat.simulation_options.define_simulation_options(nsimu = int(5.0e3), updatesigma = 1, method = 'dram', verbosity = 0)
-    
+
     # update model settings
     mcstat.model_settings.define_model_settings(sos_function = ssfun)
     

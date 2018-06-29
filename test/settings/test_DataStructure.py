@@ -16,7 +16,6 @@ import numpy as np
 # initialization
 # --------------------------
 class Data_Structure_Initialization(unittest.TestCase):
-    
     def test_does_initialization_yield_xdata(self):
         data = DataStructure.DataStructure()
         self.assertTrue(hasattr(data,'xdata'))

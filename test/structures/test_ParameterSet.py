@@ -26,7 +26,7 @@ class Initialize_Parameter_Set(unittest.TestCase):
         PSD = PS.__dict__
         for (k,v) in PSD.items():
             self.assertEqual(v, None, msg = str('Default {} is None'.format(k)))
-            
+
     def test_PS_set_theta(self):
         x = 1.2
         key = 'theta'

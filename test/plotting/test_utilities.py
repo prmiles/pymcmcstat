@@ -18,7 +18,7 @@ class GenerateSubplotGrid(unittest.TestCase):
         ns1, ns2 = utilities.generate_subplot_grid(nparam = nparam)
         self.assertEqual(ns1, math.ceil(math.sqrt(nparam)), msg = 'Expect 3')
         self.assertEqual(ns2, round(math.sqrt(nparam)), msg = 'Expect 2')
-        
+
     def test_generate_subplot_grid_1(self):
         nparam = 1
         ns1, ns2 = utilities.generate_subplot_grid(nparam = nparam)
@@ -93,9 +93,9 @@ class ExtendNamesToMatchNparam(unittest.TestCase):
         names = ['aa']
         names = utilities.extend_names_to_match_nparam(names = names, nparam = nparam)
         expected_names = ['aa','$p_{1}$','$p_{2}$']
-        self.assertEqual(names, expected_names, 
+        self.assertEqual(names, expected_names,
                          msg = str('Names do not match: Expected - {}, Received - {}'.format(expected_names, names)))
-        
+
     def test_double_entry_name_set(self):
         nparam = 3
         names = ['aa', 'zz']

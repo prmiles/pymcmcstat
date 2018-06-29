@@ -42,9 +42,9 @@ def setup_mcmc():
     x = np.linspace(2, 3, num=nds)
     y = 2.*x + 3. + 0.1*np.random.standard_normal(x.shape)
     mcstat.data.add_data_set(x, y)
-    
+
     mcstat.simulation_options.define_simulation_options(nsimu = int(5.0e3), updatesigma = 1, method = 'dram', verbosity = 0)
-    
+
     # update model settings
     mcstat.model_settings.define_model_settings(sos_function = ssfun)
     

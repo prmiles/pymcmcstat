@@ -16,10 +16,10 @@ class NumpyEncoderTesting(unittest.TestCase):
 
     def test_NE_initialization_attributes(self):
         self.assertTrue(hasattr(NE, 'default'))
-        
+
     def test_NE_return_ndarray(self):
         self.assertTrue(isinstance(NE.default(obj = np.ones([10,1])), list), msg = 'Numpy array converted to list')
-        
+
     def test_NE_return_json(self):
         with self.assertRaises(TypeError, msg = 'dict not JSON serializable'):
             NE.default(obj = {'test_object': [10,1]})

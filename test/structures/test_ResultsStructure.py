@@ -43,10 +43,10 @@ def setup_mcmc():
     mcstat.data.add_data_set(x, y)
 
     mcstat.simulation_options.define_simulation_options(nsimu = int(2.0e2), updatesigma = 1, method = 'dram', verbosity = 0)
-    
+
     # update model settings
     mcstat.model_settings.define_model_settings(sos_function = ssfun)
-    
+
     mcstat.parameters.add_model_parameter(name = 'm', theta0 = 2., minimum = -10, maximum = np.inf, sample = 1)
     mcstat.parameters.add_model_parameter(name = 'b', theta0 = -5., minimum = -10, maximum = 100, sample = 1)
     mcstat._initialize_simulation()

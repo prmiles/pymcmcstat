@@ -12,7 +12,7 @@ import unittest
 from mock import patch
 import io
 import sys
-    
+
 # --------------------------
 class InitializeProgress_Bar(unittest.TestCase):
 

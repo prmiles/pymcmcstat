@@ -44,7 +44,7 @@ class Add_Model_Parameter_Test(unittest.TestCase):
         self.assertEqual(MP.parameters[0]['prior_sigma'],np.inf)
         self.assertEqual(MP.parameters[0]['sample'],1)
         self.assertEqual(MP.parameters[0]['local'],0)
-        
+
     def test_results_to_params(self):
         MP = ModelParameters()
         MP.add_model_parameter('aa', 0)
@@ -124,7 +124,7 @@ class NoadaptindDisplaySetting(unittest.TestCase):
         self.assertEqual(noadapt_display_setting(ii = 1, noadaptind = [2]), '', msg = 'Default is blank string')
         self.assertEqual(noadapt_display_setting(ii = 2, noadaptind = [2]), ' (*)', msg = 'Default is blank string')
 
-# --------------------------        
+# --------------------------
 class PriorDisplaySetting(unittest.TestCase):
     
     def test_x_is_inf(self):

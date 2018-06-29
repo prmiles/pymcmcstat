@@ -60,7 +60,7 @@ def setup_mcmc():
     mcstat.data.add_data_set(x, y)
 
     mcstat.simulation_options.define_simulation_options(nsimu = int(5.0e3), updatesigma = 1, method = 'dram', verbosity = 0)
-    
+
     # update model settings
     mcstat.model_settings.define_model_settings(sos_function = ssfun)
     
@@ -294,7 +294,7 @@ class Initialization(unittest.TestCase):
         check_fields = ['qcov', 'qcov_scale', 'R', 'qcov_original', 'invR', 'iacce', 'covchain', 'meanchain']
         for ii, cf in enumerate(check_fields):
             self.assertTrue(ADD[cf] is None, msg = str('Initialize {} to None'.format(cf)))
-# --------------------------------------------        
+# --------------------------------------------
 class IsSemiPositiveDefinite(unittest.TestCase):
     def test_semipositivedef(self):
         mtx = np.diag([2, 2])
@@ -332,19 +332,19 @@ class UnpackCovarianceSettings(unittest.TestCase):
         CP = CovarianceProcedures()
         CP._initialize_covariance_settings(parameters = parameters, options = options)
         
-        last_index_since_adaptation, R, oldcovchain, oldmeanchain, oldwsum, no_adapt_index, qcov_scale, qcov = unpack_covariance_settings(covariance = CP)     
-        
+        last_index_since_adaptation, R, oldcovchain, oldmeanchain, oldwsum, no_adapt_index, qcov_scale, qcov = unpack_covariance_settings(covariance = CP)
+
         out = {'last_index_since_adaptation': last_index_since_adaptation, 'R': R, 'oldcovchain': oldcovchain, 'oldmeanchain': oldmeanchain,
                     'oldwsum': oldwsum, 'no_adapt_index': no_adapt_index, 'qcov_scale': qcov_scale, 'qcov': qcov}
         
         defaults = {'last_index_since_adaptation': 0, 'R': np.array([[0.1, 0.],[0., 0.25]]), 'oldcovchain': None, 'oldmeanchain': None,
                     'oldwsum': None, 'no_adapt_index': np.array([False, False]), 'qcov_scale': 2.4/np.sqrt(2), 'qcov': np.square(np.array([[0.1, 0.],[0., 0.25]]))}
 
-        check_these = ['last_index_since_adaptation', 'oldcovchain', 'oldmeanchain', 'oldwsum']        
+        check_these = ['last_index_since_adaptation', 'oldcovchain', 'oldmeanchain', 'oldwsum']
         for item in check_these:
             self.assertEqual(out[item], defaults[item], msg = str('Expected {} = {} ? {}'.format(item, defaults[item], out[item])))
             
-        check_these = ['R', 'no_adapt_index', 'qcov_scale', 'qcov']        
+        check_these = ['R', 'no_adapt_index', 'qcov_scale', 'qcov']
         for item in check_these:
             self.assertTrue(np.array_equal(out[item], defaults[item]), msg = str('Expected {} = {} ? {}'.format(item, defaults[item], out[item])))
         

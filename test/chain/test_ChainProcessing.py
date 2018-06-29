@@ -17,7 +17,7 @@ def removekey(d, key):
         r = dict(d)
         del r[key]
         return r
-    
+
 # define test model function
 def modelfun(xdata, theta):
     m = theta[0]

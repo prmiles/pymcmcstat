@@ -28,7 +28,7 @@ class Initialize_Prior_Function(unittest.TestCase):
         defaults = {'mu': None, 'sigma': None}
         for (k,v) in PFD.items():
             self.assertEqual(v, defaults[k], msg = str('Default {} is {}'.format(k, defaults[k])))
-            
+
     def test_PS_defaul_priorfun(self):
         key = 'priorfun'
         PF = PriorFunction()

@@ -18,7 +18,7 @@ def removekey(d, key):
 CS = ChainStatistics
 chain = np.random.random_sample(size = (1000,2))
 chain[:,1] = 1e6*chain[:,1]
-    
+
 # --------------------------
 # chainstats
 # --------------------------

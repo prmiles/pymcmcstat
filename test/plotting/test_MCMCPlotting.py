@@ -26,7 +26,7 @@ class PlotDensityPanel(unittest.TestCase):
         self.assertEqual(f.get_figwidth(), 5.0, msg = 'Width is 5in')
         self.assertEqual(f.get_figheight(), 4.0, msg = 'Height is 4in')
         plt.close()
-        
+
     def test_basic_plot_features_with_hist_on(self):
         npar = 3
         chains = np.random.random_sample(size = (100,npar))

@@ -68,7 +68,6 @@ def setup_pseudo_ci():
 
 # --------------------------------------------
 class Observation_Sample_Test(unittest.TestCase):
-    
     def test_does_observation_sample_unknown_sstype_cause_system_exit(self):
         PI = PredictionIntervals()
         s2elem = np.array([[2.0]])

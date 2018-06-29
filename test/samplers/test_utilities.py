@@ -26,9 +26,8 @@ class SampleCandidate(unittest.TestCase):
         self.assertEqual(npar_sample_from_normal.size, 2, msg = 'Size of sample is 2')
         self.assertTrue(np.array_equal(newpar, (oldpar + np.dot(np.array([0.1, 0.2]), R)).reshape(2)), msg = 'Arrays should match')
 
-# --------------------------      
+# --------------------------
 class OutsideBounds(unittest.TestCase):
-    
     def test_outsidebounds_p1_below(self):
         self.assertTrue(is_sample_outside_bounds(theta = np.array([-1.0, 1.5]), lower_limits = np.array([0,1]), upper_limits=np.array([1,2])), msg = 'p1 below')
         self.assertTrue(is_sample_outside_bounds(theta = np.array([1.0, 0.5]), lower_limits = np.array([0,1]), upper_limits=np.array([1,2])), msg = 'p2 below')
