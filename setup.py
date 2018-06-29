@@ -4,7 +4,7 @@ import codecs
 def read(fname):
     with codecs.open(fname, 'r', 'latin') as f:
         return f.read()
-    
+
 # read in version number
 version_dummy = {}
 exec(read('pymcmcstat/__version__.py'), version_dummy)
