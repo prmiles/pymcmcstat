@@ -18,15 +18,14 @@ from scipy.fftpack import fft
 def chainstats(chain = None, results = None, returnstats = False):
     '''
     Calculate chain statistics.
-    
+
     :Args:
         * **chain** (:class:`~numpy.ndarray`): Sampling chain.
         * **results** (:py:class:`dict`): Results from MCMC simulation.
         * **returnstats** (:py:class:`bool`): Flag to return statistics.
-        
+
     :Returns:
         * **stats** (:py:class:`dict`): Statistical measures of chain convergence.
-        
     '''
     if chain is None:
         prst = str('No chain reported - run simulation first.')
@@ -71,7 +70,7 @@ def chainstats(chain = None, results = None, returnstats = False):
 def print_chain_statistics(names, meanii, stdii, mcerr, tau, p):
     '''
     Print chain statistics to terminal window.
-    
+
     :Args:
         * **names** (:py:class:`list`): List of parameter names.
         * **meanii** (:py:class:`list`): Parameter mean values.
@@ -79,11 +78,11 @@ def print_chain_statistics(names, meanii, stdii, mcerr, tau, p):
         * **mcerr** (:class:`~numpy.ndarray`): Normalized batch mean standard deviation.
         * **tau** (:class:`~numpy.ndarray`): Integrated autocorrelation time.
         * **p** (:class:`~numpy.ndarray`): Geweke's convergence diagnostic.
-        
+
     Example display:
-    
+
     ::
-        
+
         ---------------------
         name      :       mean        std     MC_err        tau     geweke
         $p_{0}$   :     1.9680     0.0319     0.0013    36.3279     0.9979
@@ -105,16 +104,15 @@ def print_chain_statistics(names, meanii, stdii, mcerr, tau, p):
 def batch_mean_standard_deviation(chain, b = None):
     '''
     Standard deviation calculated from batch means
-    
+
     :Args:
         * **chain** (:class:`~numpy.ndarray`): Sampling chain.
         * **b** (:py:class:`int`): Step size.
-        
+
     \\
-    
+
     :Returns:
         * **s** (:class:`~numpy.ndarray`): Batch mean standard deviation.
-    
     '''
     
     nsimu, npar = chain.shape
@@ -144,27 +142,26 @@ def batch_mean_standard_deviation(chain, b = None):
 def geweke(chain, a = 0.1, b = 0.5):
     '''
     Geweke's MCMC convergence diagnostic
-    
+
     Test for equality of the means of the first a% (default 10%) and
     last b% (50%) of a Markov chain - see :cite:`brooks1998assessing`.
-    
+
     :Args:
         * **chain** (:class:`~numpy.ndarray`): Sampling chain.
         * **a** (:py:class:`float`): First a% of chain.
         * **b** (:py:class:`float`): Last b% of chain.
-        
+
     \\
-    
+
     :Returns:
         * **z** (:class:`~numpy.ndarray`): Convergence diagnostic prior to CDF.
         * **p** (:class:`~numpy.ndarray`): Geweke's MCMC convergence diagnostic.
 
     .. note::
-        
+
         The percentage of the chain should be given as a decimal between zero and one.
         So, for the first 10% of the chain, define :code:`a = 0.1`.  Likewise,
         for the last 50% of the chain, define :code:`b = 0.5`.
-        
     '''
     
     nsimu = chain.shape[0]
@@ -193,7 +190,7 @@ def geweke(chain, a = 0.1, b = 0.5):
 def spectral_estimate_for_variance(x):
     '''
     Spectral density at frequency zero.
-    
+
     :Args:
         x: portion of chain
     '''
@@ -248,12 +245,12 @@ def integrated_autocorrelation_time(chain):
     '''
     Estimates the integrated autocorrelation time using Sokal's
     adaptive truncated periodogram estimator.
-    
+
     :Args:
         * **chain** (:class:`~numpy.ndarray`): Sampling chain.
-        
+
     \\
-    
+
     :Returns:
         * **tau** (:class:`~numpy.ndarray`): Autocorrelation time.
         * **m** (:class:`~numpy.ndarray`): Counter.

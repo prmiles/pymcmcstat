@@ -150,7 +150,10 @@ def read_in_bin_file(filename):
             out[a:b,:] = np.array(hf.get(dsii))
             
         hf.close()
-    except:
+    except Exception as ex:
+        template = "An exception of type {0} occurred. Arguments:\n{1!r}"
+        message = template.format(type(ex).__name__, ex.args)
+        print(message)
         warnings.warn('Exception raised reading {} - does not exist - check path/file name.  Assigning to empty list.'.format(filename))
         out = []
     
@@ -165,7 +168,10 @@ def read_in_txt_file(filename):
     '''
     try:
         out = np.loadtxt(filename)
-    except:
+    except Exception as ex:
+        template = "An exception of type {0} occurred. Arguments:\n{1!r}"
+        message = template.format(type(ex).__name__, ex.args)
+        print(message)
         warnings.warn('Exception raised reading {} - does not exist - check path/file name.  Assigning to empty list.'.format(filename))
         out = []
     

@@ -24,7 +24,7 @@ except ImportError as e:
 def plot_density_panel(chains, names = None, hist_on = False, figsizeinches = None):
     """
     Plot marginal posterior densities
-    
+
     :Args:
         * **chains** (:class:`~numpy.ndarray`): Sampling chain for each parameter
         * **names** (:py:class:`list`): List of strings - name of each parameter
@@ -64,7 +64,7 @@ def plot_density_panel(chains, names = None, hist_on = False, figsizeinches = No
 def plot_histogram_panel(chains, names = None, figsizeinches = None):
     """
     Plot histogram from each parameter's sampling history
-    
+
     :Args:
         * **chains** (:class:`~numpy.ndarray`): Sampling chain for each parameter
         * **names** (:py:class:`list`): List of strings - name of each parameter
@@ -93,7 +93,7 @@ def plot_histogram_panel(chains, names = None, figsizeinches = None):
 def plot_chain_panel(chains, names = None, figsizeinches = None, maxpoints = 500):
     """
     Plot sampling chain for each parameter
-    
+
     :Args:
         * **chains** (:class:`~numpy.ndarray`): Sampling chain for each parameter
         * **names** (:py:class:`list`): List of strings - name of each parameter
@@ -129,7 +129,7 @@ def plot_chain_panel(chains, names = None, figsizeinches = None, maxpoints = 500
 def plot_pairwise_correlation_panel(chains, names = None, figsizeinches = None, skip = 1):
     """
     Plot pairwise correlation for each parameter
-    
+
     :Args:
         * **chains** (:class:`~numpy.ndarray`): Sampling chain for each parameter
         * **names** (:py:class:`list`): List of strings - name of each parameter
@@ -177,9 +177,9 @@ def plot_pairwise_correlation_panel(chains, names = None, figsizeinches = None, 
  
 # --------------------------------------------
 def plot_chain_metrics(chain, name = None, figsizeinches = None):
-    """
+    '''
     Plot chain metrics for individual chain
-    
+
     - Scatter plot of chain
     - Histogram of chain
     
@@ -187,7 +187,7 @@ def plot_chain_metrics(chain, name = None, figsizeinches = None):
         * **chains** (:class:`~numpy.ndarray`): Sampling chain for specific parameter
         * **names** (:py:class:`str`): Name of each parameter
         * **figsizeinches** (:py:class:`list`): Specify figure size in inches [Width, Height]
-    """
+    '''
     name = generate_names(nparam = 1, names = name)
     
     if figsizeinches is None:
@@ -211,16 +211,16 @@ def plot_chain_metrics(chain, name = None, figsizeinches = None):
     return f
     
 class Plot:
-    """
+    '''
     Plotting routines for analyzing sampling chains from MCMC process.
-    
+
     :Attributes:
         - :meth:`~plot_density_panel`
         - :meth:`~plot_chain_panel`
         - :meth:`~plot_pairwise_correlation_panel`
         - :meth:`~plot_histogram_panel`
         - :meth:`~plot_chain_metrics`
-    """
+    '''
     def __init__(self):
         self.plot_density_panel = plot_density_panel
         self.plot_chain_panel = plot_chain_panel
