@@ -15,11 +15,11 @@ from .utilities import acceptance_test
 class Metropolis:
     '''
     .. |br| raw:: html
-    
+
         <br>
-        
+
     Pseudo-Algorithm:
-        
+
         #. Sample :math:`z_k \sim N(0,1)`
         #. Construct candidate :math:`q^* = q^{k-1} + Rz_k`
         #. Compute |br| :math:`\quad SS_{q^*} = \\sum_{i=1}^N[v_i-f_i(q^*)]^2`
@@ -28,7 +28,7 @@ class Metropolis:
             Set :math:`q^k = q^*,~SS_{q^k} = SS_{q^*}`
            Else
             Set :math:`q^k = q^{k-1},~SS_{q^k} = SS_{q^{k-1}}`
-            
+
     :Attributes:
         * :meth:`~acceptance_test`
         * :meth:`~evaluate_likelihood_function`
@@ -41,7 +41,7 @@ class Metropolis:
     def run_metropolis_step(self, old_set, parameters, R, prior_object, sos_object):
         '''
         Run Metropolis step.
-        
+
         :Args:
             * **old_set** (:class:`~.ParameterSet`): Features of :math:`q^{k-1}`
             * **parameters** (:class:`~.ModelParameters`): Model parameters
@@ -50,7 +50,7 @@ class Metropolis:
             * **sosobj** (:class:`~.SumOfSquares`): Sum-of-Squares function
 
         \\
-        
+
         :Returns:
             * **accept** (:py:class:`int`): 0 - reject, 1 - accept
             * **newset** (:class:`~.ParameterSet`): Features of :math:`q^*`
@@ -92,12 +92,12 @@ class Metropolis:
     def unpack_set(cls, parset):
         '''
         Unpack parameter set
-        
+
         :Args:
             * **parset** (:class:`~.ParameterSet`): Parameter set to unpack
-            
+
         \\
-        
+
         :Returns:
             * **theta** (:class:`~numpy.ndarray`): Value of sampled model parameters
             * **ss** (:class:`~numpy.ndarray`): Sum-of-squares error using sampled value
@@ -114,20 +114,20 @@ class Metropolis:
     def evaluate_likelihood_function(cls, ss1, ss2, sigma2, newprior, oldprior):
         '''
         Evaluate likelihood function:
-            
+
         .. math::
-            
+
             \\alpha = \\exp\\Big[-0.5\\Big(\sum\\Big(\\frac{ SS_{q^*} - SS_{q^{k-1}} }{ \\sigma_{k-1}^2 }\\Big) + p_1 - p_2\\Big)\\Big]
-            
+
         :Args:
             * **ss1** (:class:`~numpy.ndarray`): SS error from proposed candidate, :math:`q^*`
             * **ss2** (:class:`~numpy.ndarray`): SS error from previous sample point, :math:`q^{k-1}`
             * **sigma2** (:class:`~numpy.ndarray`): Error variance estimate from previous sample point, :math:`\\sigma_{k-1}^2`
             * **newprior** (:class:`~numpy.ndarray`): Prior for proposal candidate
             * **oldprior** (:class:`~numpy.ndarray`): Prior for previous sample
-            
+
         \\
-        
+
         :Returns:
             * **alpha** (:py:class:`float`): Result of likelihood function
         '''
