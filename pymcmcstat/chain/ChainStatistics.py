@@ -34,7 +34,7 @@ def chainstats(chain = None, results = None, returnstats = False):
     else:
         nsimu, npar = chain.shape
         names = get_parameter_names(npar, results)
-        
+
         # calculate mean and standard deviation of entire chain
         meanii = []
         stdii = []

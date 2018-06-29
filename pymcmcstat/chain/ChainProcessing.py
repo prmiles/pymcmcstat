@@ -14,7 +14,7 @@ import warnings
 def print_log_files(savedir):
     '''
     Print log files to screen.
-    
+
     :Args:
         * **savedir** (:py:class:`str`): Directory where log files are saved.
         
