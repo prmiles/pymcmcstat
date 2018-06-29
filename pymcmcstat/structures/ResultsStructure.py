@@ -21,7 +21,7 @@ class ResultsStructure:
     def __init__(self):
         self.results = {} # initialize empty dictionary
         self.basic = False # basic structure not add yet
-     
+
     # --------------------------------------------------------
     def export_simulation_results_to_json_file(self, results):
         '''
