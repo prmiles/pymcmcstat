@@ -14,29 +14,27 @@ from ..utilities.general import message
 class ModelParameters:
     '''
     MCMC Model Parameters.
-    
+
     Example:
     ::
-        
+
         mcstat = MCMC()
 
         mcstat.parameters.add_model_parameter(name = 'm', theta0 = 1., minimum = -10, maximum = 10)
         mcstat.parameters.add_model_parameter(name = 'b', theta0 = -5., minimum = -10, maximum = 100)
-        
         mcstat.parameters.display_model_parameter_settings()
-        
+
     This will display to screen:
     ::
-        
+
         Sampling these parameters:
         name         start [   min,    max] N(  mu, sigma^2)
         m         :   1.00 [-10.00,  10.00] N(0.00, inf)
         b         :  -5.00 [-10.00, 100.00] N(0.00, inf)
-    
+
     :Attributes:
         * :meth:`~add_model_parameter`
         * :meth:`~display_parameter_settings`
-        
     '''
     def __init__(self):
         self.parameters = [] # initialize list
@@ -47,7 +45,7 @@ class ModelParameters:
                       sample = True, local = 0):
         '''
         Add model parameter to MCMC simulation.
-        
+
         :Args:
             * name (:py:class:`str`): Parameter name
             * theta0 (:py:class:`float`): Initial value
@@ -57,9 +55,8 @@ class ModelParameters:
             * prior_sigma (:py:class:`float`): Standard deviation of prior distribution
             * sample (:py:class:`bool`): Flag to turn sampling on (True) or off (False)
             * local (:py:class:`int`): Local flag - still testing.
-            
+
         The default prior is a uniform distribution from minimum to maximum parameter value.
-        
         '''
         
         if name is None:
@@ -169,11 +166,10 @@ class ModelParameters:
     def display_parameter_settings(self, verbosity = None, noadaptind = None):
         '''
         Display parameter settings
-        
+
         :Args:
             * **verbosity** (:py:class:`int`): Verbosity of display output. :code:`0`
             * **noadaptind** (:py:class:`int`): Indices not to be adapted in covariance matrix. :code:`[]`
-            
         '''
         parind = self._parind
         names = self._names
@@ -211,12 +207,12 @@ class ModelParameters:
 def replace_list_elements(x, testfunction, value):
     '''
     Replace list elements based on results from testfunction.
-    
+
     :Args:
         * **x** (:py:class:`list`): List of numbers to be tested
         * **testfunction** (:meth:): Test function
         * **value** (:py:class:`float`): Value to assign if test function return True
-        
+
     :Returns:
         * **x** (:py:class:`list`): Updated list
     '''
@@ -229,27 +225,26 @@ def generate_default_name(nparam):
     '''
     Generate generic parameter name.
     For example, if :code:`nparam = 4`, then the generated name are::
-    
+
         names = 'p_{3}'
-    
+
     :Args:
         * **nparam** (:py:class:`int`): Number of parameter names to generate
 
     \\
-    
+
     :Returns:
         * **name** (:py:class:`str`): Name based on size of parameter list
-        
     '''
     return (str('$p_{{{}}}$'.format(nparam)))
 # --------------------------
 def check_verbosity(verbosity):
     '''
     Check if verbosity is None -> 0
-    
+
     :Args:
         * **verbosity** (:py:class:`int`): Verbosity level
-        
+
     :Returns:
         * **verbosity** (:py:class:`int`): Returns 0 if verbosity was initially `None`
     '''
@@ -261,10 +256,10 @@ def check_verbosity(verbosity):
 def check_noadaptind(noadaptind):
     '''
     Check if noadaptind is None -> Empty List
-    
+
     :Args:
         * **noadaptind** (:py:class:`list`): Indices not to be adapted in covariance matrix.
-        
+
     :Returns:
         * * **noadaptind** (:py:class:`list`): Indices not to be adapted in covariance matrix.
     '''
@@ -275,11 +270,11 @@ def check_noadaptind(noadaptind):
 def noadapt_display_setting(ii, noadaptind):
     '''
     Define display settins if index not being adapted.
-    
+
     :Args:
         * **ii** (:py:class:`int`): Current index number
         * **noadaptind** (:py:class`list`): List of indices not being adapted.
-        
+
     :Returns:
         * **st** (:py:class:`str`): String to be displayed, depending on if in `noadaptind`.
     '''
@@ -292,10 +287,10 @@ def noadapt_display_setting(ii, noadaptind):
 def prior_display_setting(x):
     '''
     Define display string for prior.
-    
+
     :Args:
         * **x** (:py:class:`float`): Prior mean
-        
+
     :Returns:
         * **h2** (:py:class:`str`): String to be displayed, depending on if `x` is infinity.
     '''
@@ -308,10 +303,10 @@ def prior_display_setting(x):
 def format_number_to_str(number):
     '''
     Format number for display
-    
+
     :Args:
         * **number** (:py:class:`float`): Number to be formatted
-        
+
     :Returns:
         * (:py:class:`str`): Formatted string display
     '''
@@ -323,10 +318,10 @@ def format_number_to_str(number):
 def less_than_or_equal_to_zero(x):
     '''
     Return result of test on number based on less than or equal to
-    
+
     :Args:
         * **x** (:py:class:`float`): Number to be tested
-        
+
     :Returns:
         * (:py:class:`bool`): Result of test: `x<=0`
     '''

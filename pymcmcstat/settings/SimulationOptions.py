@@ -10,14 +10,13 @@ import numpy as np
 from datetime import datetime
 
 class SimulationOptions:
-    """
+    '''
     MCMC simulation options.
-    
+
     :Attributes:
        * :meth:`~define_simulation_options`
        * :meth:`~display_simulation_options`
-
-    """
+    '''
     def __init__(self):
         # initialize simulation option variables
 #        self.options = BaseSimulationOptions()
@@ -37,8 +36,8 @@ class SimulationOptions:
                  json_restart_file = None):
         '''
         Define simulation options.
-        
-        :Args:
+
+       :Args:
             * **nsimu** (:py:class:`int`): Number of parameter samples to simulate.  Default is 1e4.
             * **adaptint** (:py:class:`int`): Number of interates between adaptation. Default is method dependent.
             * **ntry** (:py:class:`int`): Number of tries to take before rejection. Default is method dependent.
@@ -80,9 +79,9 @@ class SimulationOptions:
             * **results_filename** (:py:class:`str`): Output file name when saving results structure with json.
             * **save_to_json** (:py:class:`bool`): Save results structure to json file.  Default is False.
             * **json_restart_file** (:py:class:`str`): Extract parameter covariance and last sample value from saved json file.
-        
+
         .. note::
-            
+
             For the log file names :code:`chainfile, sschainfile, s2chainfile` and :code:`covchainfile` do not include the extension.
             By specifying whether to save to text or to binary, the appropriate extension will be added.
         '''
@@ -187,7 +186,7 @@ class SimulationOptions:
         - If :code:`lastadapt` less than 1, then set equal to :code:`nsimu`.
         - Update :code:`printint` based on size of :code:`adaptint`.
         - If :code:`N0` not None, turn on :code:`updatesigma`.
-        
+
         :Args:
             * **model**: (:class:`~.ModelSettings`): MCMC model settings.
         '''
@@ -217,11 +216,10 @@ class SimulationOptions:
         
         :Args:
             * **print_these** (:py:class:`list`): List of strings corresponding to keywords.  Default below.
-        
+
         ::
-            
+
             print_these = ['nsimu', 'adaptint', 'ntry', 'method', 'printint', 'lastadapt', 'drscale', 'qcov']
-        
         '''
         if print_these is None:
             print_these = ['nsimu', 'adaptint', 'ntry', 'method', 'printint', 'lastadapt', 'drscale', 'qcov']

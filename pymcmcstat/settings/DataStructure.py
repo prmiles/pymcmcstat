@@ -16,13 +16,13 @@ class DataStructure:
     Structure for storing data in MCMC object.  The following random data sets
     will be referenced in examples for the different class methods:
     ::
-        
+
         x1 = np.random.random_sample(size = (5, 1))
         y1 = np.random.random_sample(size = (5, 2))
-        
+
         x2 = np.random.random_sample(size = (10, 1))
         y2 = np.random.random_sample(size = (10, 3))
-    
+
     :Attributes:
         * :meth:`~add_data_set`
         * :meth:`~get_number_of_batches`
@@ -43,13 +43,13 @@ class DataStructure:
         Add data set to MCMC object.  This method must be called first before using
         any of the other methods within :class:`~DataStructure`.
         ::
-            
+
             mcstat = MCMC()
             mcstat.data.add_data_set(x = x1, y = y1)
             mcstat.data.add_data_set(x = x2, y = y2)
-            
+
         This yields the following variables in the data structure.
-        
+
         * `xdata` (:py:class:`list`): List of numpy arrays
             - :code:`xdata[0] = x1, xdata[0].shape = (5,1)`
             - :code:`xdata[1] = x2, xdata[1].shape = (10,1)`
@@ -60,15 +60,14 @@ class DataStructure:
         * `shape` (:py:class:`list`): List of `y.shape`. :code:`shape = [(5,2),(10,3)]`
         * `weight` (:py:class:`list`): List of weights. :code:`weight = [1, 1]`
         * `user_defined_object` (:py:class:`list`): List of objects. :code:`user_defined_object = [0,0]`
-            
-            
+
         :Args:
             * **x** (:class:`~numpy.ndarray`): Independent data
             * **y** (:class:`~numpy.ndarray`): Dependent data
             * **n** (:py:class:`list`): List of integers denoting number of data points
             * **weight** (:py:class:`list`): Weight of each data set
             * **user_defined_object** (`User Defined`): Any object can be stored in this variable
-            
+
         .. note::
             In general, it is recommended that user's format their data as a column
             vector.  So, if you have `nds` independent data points, `x` and `y` should be
@@ -106,12 +105,12 @@ class DataStructure:
     def _convert_to_numpy_array(cls, xy):
         '''
         Convert variable to numpy array.
-        
+
         :Args:
             * **xy** (`Unknown`): Variable to be converted
-        
+
         \\
-        
+
         :Returns:
             * **xy** (:class:`~numpy.ndarray`): Variable as numpy array
         '''
@@ -124,12 +123,12 @@ class DataStructure:
     def _convert_numpy_array_to_2d(cls, xy):
         '''
         Convert numpy array to at least 2d numpy array.
-        
+
         :Args:
             * **xy** (:class:`~numpy.ndarray`): Variable to be checked/converted
-         
+
         \\
-        
+
         :Returns:
             * **xy** (:class:`~numpy.ndarray`): Variable as at least 2d numpy array
         '''
@@ -145,11 +144,11 @@ class DataStructure:
         also equivalent to say the number of batches is equal to the length of the
         list `ydata`.  For example,
         ::
-            
+
             nb = mcstat.data.get_number_of_batches()
-            
+
         should return :code:`nb = 2` because :code:`len(mcstat.data.ydata) = 2`.
-        
+
         :Returns:
             * **nbatch** (:py:class:`int`): Number of batches.
         '''
@@ -162,12 +161,12 @@ class DataStructure:
         speaking defined as the total number of columns in each element of
         the `ydata` list. For example,
         ::
-            
+
             nds = mcstat.data.get_number_of_data_sets()
-            
+
         should return :code:`nds = 2 + 3 = 5` because the number of columns in `y1` is
         2 and the number of columns in `y2` is 3.
-        
+
         :Returns:
             * Number of columns in `ydata` (:py:class:`int`)
         '''
@@ -189,15 +188,14 @@ class DataStructure:
         Get number of observations in data structure.  An observation is essentially
         the total number of rows from each element of the `ydata` list. For example,
         ::
-            
+
             nobs = mcstat.data.get_number_of_observations()
-            
+
         should return :code:`nobs = 5 + 10 = 15` because the number of rows in `y1` is
         5 and the number of rows in `y2` is 10.
-        
+
         :Returns:
             * Number of rows in `ydata` (:class:`~numpy.ndarray`)
-        
         '''
         n = np.sum(self.n)
         return np.array([n])
