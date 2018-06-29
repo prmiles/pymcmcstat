@@ -16,7 +16,7 @@ import math
 class CovarianceProcedures:
     '''
     Covariance matrix variables and methods.
-    
+
     :Attributes:
         * :meth:`~display_covariance_settings`
         * :meth:`~setup_covariance_matrix`
@@ -27,7 +27,7 @@ class CovarianceProcedures:
     def _initialize_covariance_settings(self, parameters, options):
         '''
         Initialize covariance settings.
-        
+
         :Args:
             * **parameters** (:class:`~.ModelParameters`): MCMC model parameters
             * **options** (:class:`~.SimulationOptions`): MCMC simulation options
@@ -72,7 +72,7 @@ class CovarianceProcedures:
                                           last_index_since_adaptation, iiadapt):
         '''
         Update covariance from adaptation algorithm.
-        
+
         :Args:
             * **R** (:class:`~numpy.ndarray`): Cholesky decomposition of covariance matrix.
             * **covchain** (:class:`~numpy.ndarray`): Covariance matrix history.
@@ -91,7 +91,7 @@ class CovarianceProcedures:
     def _update_covariance_for_delayed_rejection_from_adaptation(self, RDR = None, invR = None):
         '''
         Update covariance variables for delayed rejection based on adaptation.
-        
+
         :Args:
             * **RDR** (:class:`~numpy.ndarray`): Cholesky decomposition of covariance matrix based on DR.
             * **invR** (:class:`~numpy.ndarray`): Inverse of Cholesky decomposition matrix.
@@ -102,7 +102,7 @@ class CovarianceProcedures:
     def _update_covariance_settings(self, parameter_set):
         '''
         Update covariance settings based on parameter set
-        
+
         :Args:
             * **parameter_set** (:class:`~numpy.ndarray`): Mean parameter values
         '''
@@ -113,17 +113,17 @@ class CovarianceProcedures:
     def setup_covariance_matrix(self, qcov, thetasig, value):
         '''
         Initialize covariance matrix.
-        
+
         If no proposal covariance matrix is provided, then the default is generated
         by squaring 5% of the initial value.  This yields a diagonal covariance matrix.
-        
+
         .. math::
-            
+
             V = diag([(0.05\\theta_i)^2])
-            
+
         If the initial value was one, this would lead to zero variance.  In those
         instances the variance is set equal to :code:`qcov[qcov==0] = 1.0`.
-        
+
         :Args:
             * **qcov** (:class:`~numpy.ndarray`): Parameter covariance matrix.
             * **thetasig** (:class:`~numpy.ndarray`): Prior variance.
@@ -204,14 +204,13 @@ class CovarianceProcedures:
     def display_covariance_settings(self, print_these = None):
         '''
         Display subset of the covariance settings.
-        
+
         :Args:
             * **print_these** (:py:class:`list`): List of strings corresponding to keywords.  Default below.
-        
+
         ::
-            
+
             print_these = ['qcov', 'R', 'RDR', 'invR', 'last_index_since_adaptation', 'covchain']
-        
         '''
         if print_these is None:
             print_these = ['qcov', 'R', 'RDR', 'invR', 'last_index_since_adaptation', 'covchain']

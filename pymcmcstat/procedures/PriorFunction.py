@@ -13,11 +13,10 @@ import numpy as np
 class PriorFunction:
     '''
     Prior distribution functions.
-    
+
     :Attributes:
         * :meth:`default_priorfun`
         * :meth:`evaluate_prior`
-        
     '''
     def __init__(self, priorfun = None, mu = None, sigma = None):
 
@@ -34,11 +33,11 @@ class PriorFunction:
     def default_priorfun(cls, theta, mu, sigma):
         '''
         Default prior function.
-        
+
         .. math::
-            
+
             \\pi_0(q) = \sum_{i=1}^N \\Big(\\frac{\\theta_i - \\mu_i}{\\sigma_i^2}\\Big)^2
-        
+
         :Args:
             * **theta** (:class:`~numpy.ndarray`): Current parameter values.
             * **mu** (:class:`~numpy.ndarray`): Prior mean.
@@ -65,7 +64,7 @@ class PriorFunction:
     def evaluate_prior(self, theta):
         '''
         Evaluate the prior function.
-        
+
         :Args:
             * **theta** (:class:`~numpy.ndarray`): Current parameter values.
         '''
