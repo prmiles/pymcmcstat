@@ -15,7 +15,7 @@ import numpy as np
 class InitializeSOS(unittest.TestCase):
 
     def test_init_sos(self):
-        model, options, parameters, data = gf.setup_mcmc()
+        model, __, parameters, data = gf.setup_mcmc()
         SOS = SumOfSquares(model = model, data = data, parameters = parameters)
         SOSD = SOS.__dict__
         check = {'nbatch': 1, 'parind': parameters._parind, 'value': parameters._value,

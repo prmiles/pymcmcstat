@@ -19,7 +19,7 @@ import numpy as np
 class InitializeDRMetrics(unittest.TestCase):
     def test_dr_metrics(self):
         DR = DelayedRejection()
-        model, options, parameters, data, covariance, rejected, chain, s2chain, sschain = gf.setup_mcmc_case_dr()
+        __, options, parameters, data, covariance, rejected, chain, s2chain, sschain = gf.setup_mcmc_case_dr()
         DR._initialize_dr_metrics(options = options)
         self.assertTrue(np.array_equal(DR.iacce, np.zeros(options.ntry, dtype = int)), msg = 'Arrays should match')
         self.assertEqual(DR.dr_step_counter, 0, msg = 'Counter initialized to zero')
