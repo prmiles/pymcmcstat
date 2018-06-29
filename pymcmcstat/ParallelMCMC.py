@@ -18,7 +18,7 @@ import time
 class ParallelMCMC:
     '''
     Run Parallel MCMC Simulations.
-    
+
     :Attributes:
         * :meth:`~setup_parallel_simulation`
         * :meth:`~run_parallel_simulation`
