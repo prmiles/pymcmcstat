@@ -11,60 +11,12 @@ functions tested include:
 @author: prmiles
 """
 from pymcmcstat.plotting.PredictionIntervals import PredictionIntervals
-from pymcmcstat.settings.DataStructure import DataStructure
 from pymcmcstat.utilities.progressbar import progress_bar
+import test.general_functions as gf
 import matplotlib.pyplot as plt
 import unittest
 from mock import patch
 import numpy as np
-
-def removekey(d, key):
-    r = dict(d)
-    del r[key]
-    return r
-
-# define test model function
-def predmodelfun(data, theta):
-    m = theta[0]
-    b = theta[1]
-    nrow = data.xdata[0].shape[0]
-    y = np.zeros([nrow,1])
-    y[:,0] = m*data.xdata[0].reshape(nrow,) + b
-    return y
-
-def basic_data_structure():
-    DS = DataStructure()
-    x = np.random.random_sample(size = (100, 1))
-    y = np.random.random_sample(size = (100, 1))
-    DS.add_data_set(x = x, y = y)
-    return DS
-
-def non_basic_data_structure():
-    DS = basic_data_structure()
-    x = np.random.random_sample(size = (100, 1))
-    y = np.random.random_sample(size = (100, 2))
-    DS.add_data_set(x = x, y = y)
-    return DS
-
-def setup_pseudo_results():
-    results = {
-            'chain': np.random.random_sample(size = (100,2)),
-            's2chain': np.random.random_sample(size = (100,1)),
-            'sschain': np.random.random_sample(size = (100,1)),
-            'parind': np.array([[0, 1]]),
-            'local': np.array([[0, 0]]),
-            'model_settings': {'nbatch': np.random.random_sample(size = (100,1))},
-            'theta': np.random.random_sample(size = (2,)),
-            'sstype': np.random.random_sample(size = (1,1)),
-            }
-    return results
-
-def setup_pseudo_ci():
-    ci = []
-    ci1 = []
-    ci1.append([np.random.random_sample(size = (100,)),np.random.random_sample(size = (100,)),np.random.random_sample(size = (100,))])
-    ci.append(ci1)
-    return ci
 
 # --------------------------------------------
 class Observation_Sample_Test(unittest.TestCase):
@@ -74,17 +26,12 @@ class Observation_Sample_Test(unittest.TestCase):
         ypred = np.linspace(2.0, 3.0, num = 5)
         ypred = ypred.reshape(5,1)
         sstype = 4
-        with self.assertRaises(SystemExit):
+        with self.assertRaises(SystemExit, msg = 'Unrecognized sstype'):
             PI._observation_sample(s2elem, ypred, sstype)
-            
-    def test_does_observation_sample_return_right_size_array(self):
-        PI = PredictionIntervals()
-        s2elem = np.array([[2.0]])
-        ypred = np.linspace(2.0, 3.0, num = 5)
-        ypred = ypred.reshape(5,1)
+
         sstype = 0
         opred = PI._observation_sample(s2elem, ypred, sstype)
-        self.assertEqual(opred.shape, ypred.shape)
+        self.assertEqual(opred.shape, ypred.shape, msg = 'Shapes should match')
         
     def test_does_observation_sample_wrong_size_s2elem_break_right_size_array(self):
         PI = PredictionIntervals()
@@ -92,26 +39,30 @@ class Observation_Sample_Test(unittest.TestCase):
         ypred = np.linspace(2.0, 3.0, num = 5)
         ypred = ypred.reshape(5,1)
         sstype = 0
-        with self.assertRaises(SystemExit):
+        with self.assertRaises(SystemExit, msg = 'Mismatched size for s2chain and model return'):
             PI._observation_sample(s2elem, ypred, sstype)
             
     def test_does_observation_sample_2_column_ypred_right_size_array(self):
         PI = PredictionIntervals()
-        s2elem = np.array([[2.0, 1.0]])
         ypred = np.linspace(2.0, 3.0, num = 10)
         ypred = ypred.reshape(5,2)
-        sstype = 0
-        opred = PI._observation_sample(s2elem, ypred, sstype)
-        self.assertEqual(opred.shape, ypred.shape)
         
-    def test_does_observation_sample_2_column_ypred_with_1_s2elem_right_size_array(self):
-        PI = PredictionIntervals()
-        s2elem = np.array([[2.0]])
-        ypred = np.linspace(2.0, 3.0, num = 10)
-        ypred = ypred.reshape(5,2)
+        s2elem = np.array([[2.0, 1.0]])
         sstype = 0
         opred = PI._observation_sample(s2elem, ypred, sstype)
-        self.assertEqual(opred.shape, ypred.shape)
+        self.assertEqual(opred.shape, ypred.shape, msg = 'Shapes are compatible')
+        
+        s2elem = np.array([[2.0]])
+        opred = PI._observation_sample(s2elem, ypred, sstype)
+        self.assertEqual(opred.shape, ypred.shape, msg = 'Shapes are compatible')
+        
+        sstype = 1
+        opred = PI._observation_sample(s2elem, ypred, sstype)
+        self.assertEqual(opred.shape, ypred.shape, msg = 'Shapes are compatible')
+        
+        sstype = 2
+        opred = PI._observation_sample(s2elem, ypred, sstype)
+        self.assertEqual(opred.shape, ypred.shape, msg = 'Shapes are compatible')
         
     def test_does_observation_sample_off_s2elem_greater_than_1_cause_system_exit(self):
         PI = PredictionIntervals()
@@ -121,44 +72,26 @@ class Observation_Sample_Test(unittest.TestCase):
         sstype = 0
         with self.assertRaises(SystemExit):
             PI._observation_sample(s2elem, ypred, sstype)
-            
-    def test_sstype_1(self):
-        PI = PredictionIntervals()
-        s2elem = np.array([[2.0]])
-        ypred = np.linspace(2.0, 3.0, num = 10)
-        ypred = ypred.reshape(5,2)
-        sstype = 1
-        opred = PI._observation_sample(s2elem, ypred, sstype)
-        self.assertEqual(opred.shape, ypred.shape)
-        
-    def test_sstype_2(self):
-        PI = PredictionIntervals()
-        s2elem = np.array([[2.0]])
-        ypred = np.linspace(2.0, 3.0, num = 10)
-        ypred = ypred.reshape(5,2)
-        sstype = 2
-        opred = PI._observation_sample(s2elem, ypred, sstype)
-        self.assertEqual(opred.shape, ypred.shape)
-        
+
 # --------------------------------------------
 class AnalyzeDataStructure(unittest.TestCase):
     def test_basic_ds(self):
         PI = PredictionIntervals()
-        DS = basic_data_structure()
+        DS = gf.basic_data_structure()
         ndatabatches, ncols = PI._analyze_data_structure(data = DS)
         self.assertEqual(ndatabatches, 1, msg = 'Expect 1 batch')
         self.assertEqual(ncols, [1], msg = 'Expect [1]')
         
     def test_ds_2_nbatch(self):
         PI = PredictionIntervals()
-        DS = non_basic_data_structure()
+        DS = gf.non_basic_data_structure()
         ndatabatches, ncols = PI._analyze_data_structure(data = DS)
         self.assertEqual(ndatabatches, 2, msg = 'Expect 2 batches')
         self.assertEqual(ncols, [1, 2], msg = 'Expect [1, 1]')
         
     def test_basic_ds_shape_0(self):
         PI = PredictionIntervals()
-        DS = basic_data_structure()
+        DS = gf.basic_data_structure()
         DS.shape = [(100,)] # remove column - code should add it back
         ndatabatches, ncols = PI._analyze_data_structure(data = DS)
         self.assertEqual(ndatabatches, 1, msg = 'Expect 1 batch')
@@ -167,14 +100,14 @@ class AnalyzeDataStructure(unittest.TestCase):
 class SetupDataStructureForPrediction(unittest.TestCase):
     def test_basic_datapred(self):
         PI = PredictionIntervals()
-        DS = basic_data_structure()
+        DS = gf.basic_data_structure()
         datapred = PI._setup_data_structure_for_prediction(data = DS, ndatabatches = 1)
         self.assertTrue(np.array_equal(datapred[0].xdata[0], DS.xdata[0]), msg = 'Arrays should match')
         self.assertTrue(np.array_equal(datapred[0].ydata[0], DS.ydata[0]), msg = 'Arrays should match')
         
     def test_non_basic_datapred(self):
         PI = PredictionIntervals()
-        DS = non_basic_data_structure()
+        DS = gf.non_basic_data_structure()
         datapred = PI._setup_data_structure_for_prediction(data = DS, ndatabatches = 2)
         self.assertTrue(np.array_equal(datapred[0].xdata[0], DS.xdata[0]), msg = 'Arrays should match')
         self.assertTrue(np.array_equal(datapred[0].ydata[0], DS.ydata[0]), msg = 'Arrays should match')
@@ -182,53 +115,52 @@ class SetupDataStructureForPrediction(unittest.TestCase):
         self.assertTrue(np.array_equal(datapred[1].ydata[0], DS.ydata[1]), msg = 'Arrays should match')
 # --------------------------------------------
 class AssignFeaturesFromResultsStructure(unittest.TestCase):
+    def check_dictionary(self, check_these, PID, results):
+        for ct in check_these:
+            self.assertTrue(np.array_equal(PID[str('_PredictionIntervals__{}'.format(ct))], results[ct]), msg = str('Arrays should match: {}'.format(ct)))
+        self.assertTrue(np.array_equal(PID['_PredictionIntervals__nbatch'], results['model_settings']['nbatch']), msg = 'Arrays should match: nbatch')
+        
     def test_feature_assignment(self):
         PI = PredictionIntervals()
-        results = setup_pseudo_results()
+        results = gf.setup_pseudo_results()
         PI._assign_features_from_results_structure(results = results)
         PID = PI.__dict__
         check_these = ['chain', 's2chain', 'parind', 'local', 'theta', 'sstype']
-        for ct in check_these:
-            self.assertTrue(np.array_equal(PID[str('_PredictionIntervals__{}'.format(ct))], results[ct]), msg = str('Arrays should match: {}'.format(ct)))
-        
-        self.assertTrue(np.array_equal(PID['_PredictionIntervals__nbatch'], results['model_settings']['nbatch']), msg = 'Arrays should match: nbatch')
+        self.check_dictionary(check_these, PID, results)
         
     def test_second_feature_assignment(self):
         PI = PredictionIntervals()
-        results = setup_pseudo_results()
-        results = removekey(results, 'sstype')
+        results = gf.setup_pseudo_results()
+        results = gf.removekey(results, 'sstype')
         PI._assign_features_from_results_structure(results = results)
         PID = PI.__dict__
         check_these = ['chain', 's2chain', 'parind', 'local', 'theta']
-        for ct in check_these:
-            self.assertTrue(np.array_equal(PID[str('_PredictionIntervals__{}'.format(ct))], results[ct]), msg = str('Arrays should match: {}'.format(ct)))
-        
-        self.assertTrue(np.array_equal(PID['_PredictionIntervals__nbatch'], results['model_settings']['nbatch']), msg = 'Arrays should match: nbatch')
+        self.check_dictionary(check_these, PID, results)
         self.assertEqual(PID['_PredictionIntervals__sstype'], 0, msg = 'Should default to 0')
         
 # --------------------------------------------
 class DetermineShapeOfReponse(unittest.TestCase):
     def test_basic_modelfunction(self):
         PI = PredictionIntervals()
-        DS = basic_data_structure()
+        DS = gf.basic_data_structure()
         datapred = PI._setup_data_structure_for_prediction(data = DS, ndatabatches = 1)
-        nrow, ncol = PI._determine_shape_of_response(modelfunction = predmodelfun, ndatabatches = 1, datapred = datapred, theta = [3.0, 5.0])
+        nrow, ncol = PI._determine_shape_of_response(modelfunction = gf.predmodelfun, ndatabatches = 1, datapred = datapred, theta = [3.0, 5.0])
         self.assertEqual(nrow, [100], msg = 'Expect [100]')
         self.assertEqual(ncol, [1], msg = 'Expect [1]')
         
     def test_basic_modelfunction_list_nbatch_2(self):
         PI = PredictionIntervals()
-        DS = non_basic_data_structure()
+        DS = gf.non_basic_data_structure()
         datapred = PI._setup_data_structure_for_prediction(data = DS, ndatabatches = 2)
-        nrow, ncol = PI._determine_shape_of_response(modelfunction = [predmodelfun, predmodelfun], ndatabatches = 2, datapred = datapred, theta = [3.0, 5.0])
+        nrow, ncol = PI._determine_shape_of_response(modelfunction = [gf.predmodelfun, gf.predmodelfun], ndatabatches = 2, datapred = datapred, theta = [3.0, 5.0])
         self.assertEqual(nrow, [100, 100], msg = 'Expect [100, 100]')
         self.assertEqual(ncol, [1, 1], msg = 'Expect [1, 1]')
         
     def test_non_basic_modelfunction(self):
         PI = PredictionIntervals()
-        DS = non_basic_data_structure()
+        DS = gf.non_basic_data_structure()
         datapred = PI._setup_data_structure_for_prediction(data = DS, ndatabatches = 2)
-        nrow, ncol = PI._determine_shape_of_response(modelfunction = predmodelfun, ndatabatches = 2, datapred = datapred, theta = [3.0, 5.0])
+        nrow, ncol = PI._determine_shape_of_response(modelfunction = gf.predmodelfun, ndatabatches = 2, datapred = datapred, theta = [3.0, 5.0])
         self.assertEqual(nrow, [100, 100], msg = 'Expect [100, 100]')
         self.assertEqual(ncol, [1, 1], msg = 'Expect [1, 1]')
  
@@ -324,12 +256,16 @@ class AddBatchColumnTitle(unittest.TestCase):
         htmp, ax = PI._initialize_plot_features(ii = 0, jj = 0, ny = 1, figsizeinches = [10, 11])
         PI._add_batch_column_title(nbatch = 2, ny = 1, ii = 0, jj = 0)
         self.assertEqual(ax.get_title(), 'Batch #0, Column #0', msg = 'Strings should match')
+        self.assertEqual(htmp.get_figwidth(), 10.0, msg = 'Expect 10.0')
+        self.assertEqual(htmp.get_figheight(), 11.0, msg = 'Expect 11.0')
                          
     def test_add_batch_column_title_ny_gt_1(self):
         PI = PredictionIntervals()
         htmp, ax = PI._initialize_plot_features(ii = 0, jj = 0, ny = 1, figsizeinches = [10, 11])
         PI._add_batch_column_title(nbatch = 1, ny = 2, ii = 0, jj = 0)
         self.assertEqual(ax.get_title(), 'Column #0', msg = 'Strings should match')
+        self.assertEqual(htmp.get_figwidth(), 10.0, msg = 'Expect 10.0')
+        self.assertEqual(htmp.get_figheight(), 11.0, msg = 'Expect 11.0')
                          
 # --------------------------------------------
 class SetupLabels(unittest.TestCase):
@@ -390,7 +326,7 @@ class SetupIntervalLimits(unittest.TestCase):
 class SetupCountingMetrics(unittest.TestCase):
     def test_setup_counting_metrics(self):
         PI = PredictionIntervals()
-        ci = setup_pseudo_ci()
+        ci = gf.setup_pseudo_ci()
         nbatch, nn, nlines = PI._setup_counting_metrics(credible_intervals = ci)
         self.assertEqual(nbatch, 1, msg = 'Expect nbatch = 1')
         self.assertEqual(nn, 2, msg = 'Expect nn = 2')
@@ -398,89 +334,83 @@ class SetupCountingMetrics(unittest.TestCase):
 
 # --------------------------------------------
 class SetupIntervalPlotting(unittest.TestCase):
-    def test_setup_interval_plotting(self):
+    def check_these_settings(self, infigsizeinches, expected):
         PI = PredictionIntervals()
-        ci = setup_pseudo_ci()
-        prediction_intervals, figsizeinches, nbatch, nn, clabels, plabels = PI._setup_interval_plotting(plot_pred_int = True, prediction_intervals = None, credible_intervals = ci, figsizeinches = [10,11])
+        ci = gf.setup_pseudo_ci()
+        prediction_intervals, figsizeinches, nbatch, nn, clabels, plabels = PI._setup_interval_plotting(plot_pred_int = True, prediction_intervals = None, credible_intervals = ci, figsizeinches = infigsizeinches)
+        self.assertEqual(figsizeinches, expected, msg = str('Expect {}'.format(expected)))
         self.assertEqual(prediction_intervals, None, msg = 'Expect None')
-        self.assertEqual(figsizeinches, [10, 11], msg = 'Expect [10,11]')
         self.assertEqual(nbatch, 1, msg = 'Expect nbatch = 1')
         self.assertEqual(nn, 2, msg = 'Expect nn = 2')
         self.assertEqual(clabels, ['95% CI'], msg = 'String should match')
         self.assertEqual(plabels, ['95% PI'], msg = 'String should match')
         
-    def test_setup_interval_plotting_default_figsize(self):
-        PI = PredictionIntervals()
-        ci = setup_pseudo_ci()
-        prediction_intervals, figsizeinches, nbatch, nn, clabels, plabels = PI._setup_interval_plotting(plot_pred_int = True, prediction_intervals = None, credible_intervals = ci, figsizeinches = None)
-        self.assertEqual(prediction_intervals, None, msg = 'Expect None')
-        self.assertEqual(figsizeinches, [7, 5], msg = 'Expect [7,5]')
-        self.assertEqual(nbatch, 1, msg = 'Expect nbatch = 1')
-        self.assertEqual(nn, 2, msg = 'Expect nn = 2')
-        self.assertEqual(clabels, ['95% CI'], msg = 'String should match')
-        self.assertEqual(plabels, ['95% PI'], msg = 'String should match')
+    def test_setup_interval_plotting(self):
+        self.check_these_settings(infigsizeinches = [10, 11], expected = [10, 11])
+        self.check_these_settings(infigsizeinches = None, expected = [7,5])
 
 # --------------------------------------------
 class SetupGenerationRequirements(unittest.TestCase):
-    @patch('numpy.random.rand')
-    def test_setup_generation(self, mock_rand):
+    def setup_generation(self):
         aa = np.random.rand([400,1])
-        mock_rand.return_value = aa
         PI = PredictionIntervals()
-        results = setup_pseudo_results()
+        results = gf.setup_pseudo_results()
         PI._assign_features_from_results_structure(results = results)
-        chain, s2chain, lims, sstype, nsample, iisample = PI._setup_generation_requirements(nsample = 400, calc_pred_int = False, sstype = 0)
+        return PI, aa, results
         
+    def common_checks(self, results, chain, sstype, nsample, iisample):
         self.assertTrue(np.array_equal(chain, results['chain']), msg = str('Arrays should match: {}'.format(chain)))
-        self.assertEqual(s2chain, None, msg = 'Expect None')
-        self.assertTrue(np.array_equal(lims, np.array([0.005,0.025,0.05,0.25,0.5,0.75,0.9,0.975,0.995])), msg = str('Arrays should match: {}'.format(lims)))
         self.assertEqual(sstype, 0, msg = 'Expect 0')
         self.assertEqual(nsample, 100, msg = 'Expect nsample to go to 100')
         self.assertTrue(np.array_equal(iisample, range(100)), msg = str('Arrays should match: {}'.format(iisample)))
+
+    @patch('numpy.random.rand')
+    def test_setup_generation(self, mock_rand):
+        PI, aa, results = self.setup_generation()
+        mock_rand.return_value = aa
+        chain, s2chain, lims, sstype, nsample, iisample = PI._setup_generation_requirements(nsample = 400, calc_pred_int = False, sstype = 0)
+        
+        self.assertTrue(np.array_equal(lims, np.array([0.005,0.025,0.05,0.25,0.5,0.75,0.9,0.975,0.995])), msg = str('Arrays should match: {}'.format(lims)))
+        self.assertEqual(s2chain, None, msg = 'Expect None')
+
+        self.common_checks(results, chain, sstype, nsample, iisample)
         
     @patch('numpy.random.rand')
     def test_setup_generation_with_pi(self, mock_rand):
-        aa = np.random.rand([400,1])
+        PI, aa, results = self.setup_generation()
         mock_rand.return_value = aa
-        PI = PredictionIntervals()
-        results = setup_pseudo_results()
-        PI._assign_features_from_results_structure(results = results)
         chain, s2chain, lims, sstype, nsample, iisample = PI._setup_generation_requirements(nsample = 400, calc_pred_int = True, sstype = 0)
-        
-        self.assertTrue(np.array_equal(chain, results['chain']), msg = str('Arrays should match: {}'.format(chain)))
-        self.assertTrue(np.array_equal(s2chain, results['s2chain']), msg = str('Arrays should match: {}'.format(s2chain)))
+
         self.assertTrue(np.array_equal(lims, np.array([0.025, 0.5, 0.975])), msg = str('Arrays should match: {}'.format(lims)))
-        self.assertEqual(sstype, 0, msg = 'Expect 0')
-        self.assertEqual(nsample, 100, msg = 'Expect nsample to go to 100')
-        self.assertTrue(np.array_equal(iisample, range(100)), msg = str('Arrays should match: {}'.format(iisample)))
+        self.assertTrue(np.array_equal(s2chain, results['s2chain']), msg = str('Arrays should match: {}'.format(s2chain)))
+        
+        self.common_checks(results, chain, sstype, nsample, iisample)
         
 # --------------------------------------------
 class SetupIntervalii(unittest.TestCase):
-    def test_setup_predii_nonlist_mdlfun(self):
+    def setup_interval(self):
         PI = PredictionIntervals()
-        DS = basic_data_structure()
+        DS = gf.basic_data_structure()
         datapred = PI._setup_data_structure_for_prediction(data = DS, ndatabatches = 1)
-        
-        datapredii, nrow, ncol, modelfun, test = PI._setup_interval_ii(ii = 0, datapred = datapred, nrow = [100], ncol = [1], modelfunction = predmodelfun, local = np.array([0, 0]))
+        return PI, datapred
+
+    def common_checks(self, datapredii, datapred, nrow, ncol, modelfun, predmodelfun, test):
         self.assertTrue(np.array_equal(datapredii.xdata[0], datapred[0].xdata[0]), msg = 'Arrays should match')
         self.assertTrue(np.array_equal(datapredii.ydata[0], datapred[0].ydata[0]), msg = 'Arrays should match')
         self.assertEqual(nrow, 100, msg = 'Expect nrow = 100')
         self.assertEqual(ncol, 1, msg = 'Expect ncol = 1')
         self.assertEqual(modelfun, predmodelfun, msg = 'Functions should match')
         self.assertTrue(np.array_equal(test, np.array([True, True])), msg = str('Arrays should match: {}'.format(test)))
+        
+    def test_setup_predii_nonlist_mdlfun(self):
+        PI, datapred = self.setup_interval()
+        datapredii, nrow, ncol, modelfun, test = PI._setup_interval_ii(ii = 0, datapred = datapred, nrow = [100], ncol = [1], modelfunction = gf.predmodelfun, local = np.array([0, 0]))
+        self.common_checks(datapredii, datapred, nrow, ncol, modelfun, gf.predmodelfun, test)
         
     def test_setup_predii_list_mdlfun(self):
-        PI = PredictionIntervals()
-        DS = basic_data_structure()
-        datapred = PI._setup_data_structure_for_prediction(data = DS, ndatabatches = 1)
-        
-        datapredii, nrow, ncol, modelfun, test = PI._setup_interval_ii(ii = 0, datapred = datapred, nrow = [100], ncol = [1], modelfunction = [predmodelfun], local = np.array([0, 0]))
-        self.assertTrue(np.array_equal(datapredii.xdata[0], datapred[0].xdata[0]), msg = 'Arrays should match')
-        self.assertTrue(np.array_equal(datapredii.ydata[0], datapred[0].ydata[0]), msg = 'Arrays should match')
-        self.assertEqual(nrow, 100, msg = 'Expect nrow = 100')
-        self.assertEqual(ncol, 1, msg = 'Expect ncol = 1')
-        self.assertEqual(modelfun, predmodelfun, msg = 'Functions should match')
-        self.assertTrue(np.array_equal(test, np.array([True, True])), msg = str('Arrays should match: {}'.format(test)))
+        PI, datapred = self.setup_interval()
+        datapredii, nrow, ncol, modelfun, test = PI._setup_interval_ii(ii = 0, datapred = datapred, nrow = [100], ncol = [1], modelfunction = [gf.predmodelfun], local = np.array([0, 0]))
+        self.common_checks(datapredii, datapred, nrow, ncol, modelfun, gf.predmodelfun, test)
         
 # --------------------------------------------
 def gq_settings():
@@ -514,52 +444,52 @@ class GenerateQuantiles(unittest.TestCase):
 # --------------------------------------------
 def cc_setup(calc_pred_int = True):
     PI = PredictionIntervals()
-    results = setup_pseudo_results()
+    results = gf.setup_pseudo_results()
     PI._assign_features_from_results_structure(results = results)
     testchain, s2chain, lims, sstype, nsample, iisample = PI._setup_generation_requirements(nsample = 400, calc_pred_int = calc_pred_int, sstype = 0)
-    DS = basic_data_structure()
+    DS = gf.basic_data_structure()
     datapred = PI._setup_data_structure_for_prediction(data = DS, ndatabatches = 1)
     return PI, results, testchain, s2chain, lims, sstype, nsample, iisample, datapred
 
 class CalcCredii(unittest.TestCase):
     def test_calc_credii(self):
-        PI, results, testchain, s2chain, lims, sstype, nsample, iisample, datapred = cc_setup()
+        PI, __, testchain, s2chain, lims, sstype, nsample, iisample, datapred = cc_setup()
         
-        ysave = PI._calc_credible_ii(testchain = testchain, nrow = 100, ncol = 1, waitbar = False, test = np.array([True, True]), modelfun = predmodelfun, datapredii = datapred[0])
+        ysave = PI._calc_credible_ii(testchain = testchain, nrow = 100, ncol = 1, waitbar = False, test = np.array([True, True]), modelfun = gf.predmodelfun, datapredii = datapred[0])
         self.assertTrue(isinstance(ysave, np.ndarray), msg = 'Expect array')
         self.assertEqual(ysave.shape[0], 100, msg = 'Expect 1st dim = 100')
         
     def test_calc_credii_with_waitbar(self):
-        PI, results, testchain, s2chain, lims, sstype, nsample, iisample, datapred = cc_setup()
+        PI, __, testchain, s2chain, lims, sstype, nsample, iisample, datapred = cc_setup()
         
         PI._PredictionIntervals__wbarstatus = progress_bar(iters = 200)
             
-        ysave = PI._calc_credible_ii(testchain = testchain, nrow = 100, ncol = 1, waitbar = True, test = np.array([True, True]), modelfun = predmodelfun, datapredii = datapred[0])
+        ysave = PI._calc_credible_ii(testchain = testchain, nrow = 100, ncol = 1, waitbar = True, test = np.array([True, True]), modelfun = gf.predmodelfun, datapredii = datapred[0])
         self.assertTrue(isinstance(ysave, np.ndarray), msg = 'Expect array')
         self.assertEqual(ysave.shape[0], 100, msg = 'Expect 1st dim = 100')
         self.assertEqual(PI._PredictionIntervals__wbarstatus.percentage(3), 1.5, msg = 'Expect 1.5')
         
 # --------------------------------------------
 class CalcPredii(unittest.TestCase):
-    def test_calc_predii(self):
-        PI, results, testchain, tests2chain, lims, sstype, nsample, iisample, datapred = cc_setup()
-                
-        ysave, osave = PI._calc_credible_and_prediction_ii(testchain = testchain, tests2chain = tests2chain, nrow = 100, ncol = 1, waitbar = False, sstype = 0, test = np.array([True, True]), modelfun = predmodelfun, datapredii = datapred[0])
+    def common_checks(self, ysave, osave):
         self.assertTrue(isinstance(ysave, np.ndarray), msg = 'Expect array')
         self.assertTrue(isinstance(osave, np.ndarray), msg = 'Expect array')
         self.assertEqual(ysave.shape[0], 100, msg = 'Expect 1st dim = 100')
         self.assertEqual(osave.shape[0], 100, msg = 'Expect 1st dim = 100')
         
+    def test_calc_predii(self):
+        PI, __, testchain, tests2chain, lims, sstype, nsample, iisample, datapred = cc_setup()
+                
+        ysave, osave = PI._calc_credible_and_prediction_ii(testchain = testchain, tests2chain = tests2chain, nrow = 100, ncol = 1, waitbar = False, sstype = 0, test = np.array([True, True]), modelfun = gf.predmodelfun, datapredii = datapred[0])
+        self.common_checks(ysave, osave)
+        
     def test_calc_predii_with_waitbar(self):
-        PI, results, testchain, tests2chain, lims, sstype, nsample, iisample, datapred = cc_setup()
+        PI, __, testchain, tests2chain, lims, sstype, nsample, iisample, datapred = cc_setup()
         
         PI._PredictionIntervals__wbarstatus = progress_bar(iters = 200)
         
-        ysave, osave = PI._calc_credible_and_prediction_ii(testchain = testchain, tests2chain = tests2chain, nrow = 100, ncol = 1, waitbar = True, sstype = 0, test = np.array([True, True]), modelfun = predmodelfun, datapredii = datapred[0])
-        self.assertTrue(isinstance(ysave, np.ndarray), msg = 'Expect array')
-        self.assertTrue(isinstance(osave, np.ndarray), msg = 'Expect array')
-        self.assertEqual(ysave.shape[0], 100, msg = 'Expect 1st dim = 100')
-        self.assertEqual(osave.shape[0], 100, msg = 'Expect 1st dim = 100')
+        ysave, osave = PI._calc_credible_and_prediction_ii(testchain = testchain, tests2chain = tests2chain, nrow = 100, ncol = 1, waitbar = True, sstype = 0, test = np.array([True, True]), modelfun = gf.predmodelfun, datapredii = datapred[0])
+        self.common_checks(ysave, osave)
         self.assertEqual(PI._PredictionIntervals__wbarstatus.percentage(3), 1.5, msg = 'Expect 1.5')
         
     def test_calc_predii_s2chain_none(self):
@@ -567,39 +497,39 @@ class CalcPredii(unittest.TestCase):
         tests2chain = None
         
         with self.assertRaises(TypeError, msg = 'This function should not be called in tests2chain is None'):
-            PI._calc_credible_and_prediction_ii(testchain = testchain, tests2chain = tests2chain, nrow = 100, ncol = 1, waitbar = False, sstype = 0, test = np.array([True, True]), modelfun = predmodelfun, datapredii = datapred[0])
+            PI._calc_credible_and_prediction_ii(testchain = testchain, tests2chain = tests2chain, nrow = 100, ncol = 1, waitbar = False, sstype = 0, test = np.array([True, True]), modelfun = gf.predmodelfun, datapredii = datapred[0])
                    
     def test_calc_predii_s2chain_tran(self):
         PI, results, testchain, tests2chain, lims, sstype, nsample, iisample, datapred = cc_setup(calc_pred_int = False)
         tests2chain = np.random.random_sample(size = (1,100))
         
         with self.assertRaises(SystemExit, msg = 'Unknown structure'):
-            PI._calc_credible_and_prediction_ii(testchain = testchain, tests2chain = tests2chain, nrow = 100, ncol = 1, waitbar = False, sstype = 0, test = np.array([True, True]), modelfun = predmodelfun, datapredii = datapred[0])
+            PI._calc_credible_and_prediction_ii(testchain = testchain, tests2chain = tests2chain, nrow = 100, ncol = 1, waitbar = False, sstype = 0, test = np.array([True, True]), modelfun = gf.predmodelfun, datapredii = datapred[0])
             
 # --------------------------------------------
 def pi_setup():
     PI = PredictionIntervals()
-    results = setup_pseudo_results()
-    DS = basic_data_structure()
-    PI.setup_prediction_interval_calculation(results = results, data = DS, modelfunction = predmodelfun)
+    results = gf.setup_pseudo_results()
+    DS = gf.basic_data_structure()
+    PI.setup_prediction_interval_calculation(results = results, data = DS, modelfunction = gf.predmodelfun)
     return PI, results
 
 class SetupPredictionIntervalCalculation(unittest.TestCase):
     def test_setup_pi_calc(self):
         PI, results = pi_setup()
         self.assertEqual(PI._PredictionIntervals__ndatabatches, 1, msg = 'Expect ndatabatches = 1')
-        self.assertEqual(PI.modelfunction, predmodelfun, msg = 'Functions should match')
+        self.assertEqual(PI.modelfunction, gf.predmodelfun, msg = 'Functions should match')
         self.assertTrue(np.array_equal(PI._PredictionIntervals__s2chain_index, np.array([[0,1]])), msg = str('Arrays should match: {}'.format(PI._PredictionIntervals__s2chain_index)))
         self.assertTrue(np.array_equal(PI._PredictionIntervals__chain, results['chain']), msg = 'Arrays should match')
         
     def test_setup_pi_calc_with_s2chain_none(self):
         PI = PredictionIntervals()
-        DS = basic_data_structure()
-        results = setup_pseudo_results()
+        DS = gf.basic_data_structure()
+        results = gf.setup_pseudo_results()
         results['s2chain'] = None
-        PI.setup_prediction_interval_calculation(results = results, data = DS, modelfunction = predmodelfun)
+        PI.setup_prediction_interval_calculation(results = results, data = DS, modelfunction = gf.predmodelfun)
         self.assertEqual(PI._PredictionIntervals__ndatabatches, 1, msg = 'Expect ndatabatches = 1')
-        self.assertEqual(PI.modelfunction, predmodelfun, msg = 'Functions should match')
+        self.assertEqual(PI.modelfunction, gf.predmodelfun, msg = 'Functions should match')
         self.assertFalse(hasattr(PI, '_PredictionIntervals__s2chain_index'), msg = 'Expect False')
         self.assertTrue(np.array_equal(PI._PredictionIntervals__chain, results['chain']), msg = 'Arrays should match')
 
@@ -639,37 +569,37 @@ class CalculateCIandPIForDataSets(unittest.TestCase):
         
 # --------------------------------------------
 class GeneratePredictionIntervals(unittest.TestCase):
+    def common_set_1(self, cint, pint):
+        self.assertTrue(isinstance(cint, list), msg = 'Expect list return')
+        self.assertEqual(cint[0][0].shape[0], 9, msg = 'Expect 1st dim = 9')
+        self.assertEqual(cint[0][0].shape[1], 100, msg = 'Expect 2nd dim = 100')
+        self.assertEqual(pint, None, msg = 'Expect None')
+        
     def test_generate_credible_intervals(self):
         PI = PredictionIntervals()
-        results = setup_pseudo_results()
+        results = gf.setup_pseudo_results()
         results['s2chain'] = None
-        DS = basic_data_structure()
-        PI.setup_prediction_interval_calculation(results = results, data = DS, modelfunction = predmodelfun)
+        DS = gf.basic_data_structure()
+        PI.setup_prediction_interval_calculation(results = results, data = DS, modelfunction = gf.predmodelfun)
         PI.generate_prediction_intervals(sstype = None, nsample = 500, calc_pred_int = False, waitbar = False)
         cint = PI.intervals['credible_intervals']
         pint = PI.intervals['prediction_intervals']
-        self.assertTrue(isinstance(cint, list), msg = 'Expect list return')
-        self.assertEqual(cint[0][0].shape[0], 9, msg = 'Expect 1st dim = 9')
-        self.assertEqual(cint[0][0].shape[1], 100, msg = 'Expect 2nd dim = 100')
-        self.assertEqual(pint, None, msg = 'Expect None')
+        self.common_set_1(cint, pint)
         
     def test_generate_credible_intervals_with_waitbar(self):
         PI = PredictionIntervals()
-        results = setup_pseudo_results()
+        results = gf.setup_pseudo_results()
         results['s2chain'] = None
-        DS = basic_data_structure()
-        PI.setup_prediction_interval_calculation(results = results, data = DS, modelfunction = predmodelfun)
+        DS = gf.basic_data_structure()
+        PI.setup_prediction_interval_calculation(results = results, data = DS, modelfunction = gf.predmodelfun)
         PI.generate_prediction_intervals(sstype = None, nsample = 500, calc_pred_int = False, waitbar = True)
         cint = PI.intervals['credible_intervals']
         pint = PI.intervals['prediction_intervals']
-        self.assertTrue(isinstance(cint, list), msg = 'Expect list return')
-        self.assertEqual(cint[0][0].shape[0], 9, msg = 'Expect 1st dim = 9')
-        self.assertEqual(cint[0][0].shape[1], 100, msg = 'Expect 2nd dim = 100')
-        self.assertEqual(pint, None, msg = 'Expect None')
+        self.common_set_1(cint, pint)
         self.assertEqual(PI._PredictionIntervals__wbarstatus.percentage(3), 3.0, msg = 'Expect 3.0')
         
     def test_generate_credible_and_prediction_intervals(self):
-        PI, results = pi_setup()
+        PI, __ = pi_setup()
         PI.generate_prediction_intervals(sstype = 0, nsample = 500, calc_pred_int = True, waitbar = False)
         cint = PI.intervals['credible_intervals']
         pint = PI.intervals['prediction_intervals']
@@ -685,50 +615,44 @@ class GeneratePredictionIntervals(unittest.TestCase):
         PI.generate_prediction_intervals(sstype = 0, nsample = 500, calc_pred_int = False, waitbar = False)
         cint = PI.intervals['credible_intervals']
         pint = PI.intervals['prediction_intervals']
-        self.assertTrue(isinstance(cint, list), msg = 'Expect list return')
-        self.assertEqual(cint[0][0].shape[0], 9, msg = 'Expect 1st dim = 9')
-        self.assertEqual(cint[0][0].shape[1], 100, msg = 'Expect 2nd dim = 100')
-        self.assertEqual(pint, None, msg = 'Expect None')
+        self.common_set_1(cint, pint)
         
 # --------------------------------------------
 class PlotPredictionIntervals(unittest.TestCase):
+    def common_checks(self, fighandle, axhandle):
+        self.assertTrue(isinstance(fighandle, list), msg = 'Expect list return')
+        self.assertTrue(isinstance(axhandle, list), msg = 'Expect list return')
+        self.assertEqual(fighandle[0].get_label(), 'Batch # 0 | Column # 0', msg = str('Strings should match: {}'.format(fighandle[0].get_label())))
+
+    def setup_complex_pi(self):
+        PI = PredictionIntervals()
+        results = gf.setup_pseudo_results()
+        results['s2chain'] = None
+        DS = gf.basic_data_structure()
+        PI.setup_prediction_interval_calculation(results = results, data = DS, modelfunction = gf.predmodelfun)
+        PI.generate_prediction_intervals(sstype = 0, nsample = 500, calc_pred_int = False, waitbar = False)
+        return PI
+    
     def test_plotting_credible_and_prediction_intervals(self):
         PI, results = pi_setup()
         PI.generate_prediction_intervals(sstype = 0, nsample = 500, calc_pred_int = True, waitbar = False)
         fighandle, axhandle = PI.plot_prediction_intervals(plot_pred_int = True, adddata = False, addlegend = True)
-        
-        self.assertTrue(isinstance(fighandle, list), msg = 'Expect list return')
-        self.assertTrue(isinstance(axhandle, list), msg = 'Expect list return')
-        self.assertEqual(fighandle[0].get_label(), 'Batch # 0 | Column # 0', msg = str('Strings should match: {}'.format(fighandle[0].get_label())))
+        self.common_checks(fighandle, axhandle)
         self.assertEqual(axhandle[0].get_legend_handles_labels()[1], ['model', '95% PI', '95% CI'], msg = str('Strings should match: {}'.format(axhandle[0].get_legend_handles_labels()[1])))
         plt.close()
         
     def test_plotting_credible_intervals(self):
-        PI = PredictionIntervals()
-        results = setup_pseudo_results()
-        results['s2chain'] = None
-        DS = basic_data_structure()
-        PI.setup_prediction_interval_calculation(results = results, data = DS, modelfunction = predmodelfun)
-        PI.generate_prediction_intervals(sstype = 0, nsample = 500, calc_pred_int = False, waitbar = False)
+        PI = self.setup_complex_pi()
         fighandle, axhandle = PI.plot_prediction_intervals(plot_pred_int = False, adddata = False, addlegend = True)
         
-        self.assertTrue(isinstance(fighandle, list), msg = 'Expect list return')
-        self.assertTrue(isinstance(axhandle, list), msg = 'Expect list return')
-        self.assertEqual(fighandle[0].get_label(), 'Batch # 0 | Column # 0', msg = str('Strings should match: {}'.format(fighandle[0].get_label())))
+        self.common_checks(fighandle, axhandle)
         self.assertEqual(axhandle[0].get_legend_handles_labels()[1], ['model', '99% CI', '95% CI', '90% CI', '50% CI'], msg = str('Strings should match: {}'.format(axhandle[0].get_legend_handles_labels()[1])))
         plt.close()
         
     def test_plotting_credible_intervals_with_data(self):
-        PI = PredictionIntervals()
-        results = setup_pseudo_results()
-        results['s2chain'] = None
-        DS = basic_data_structure()
-        PI.setup_prediction_interval_calculation(results = results, data = DS, modelfunction = predmodelfun)
-        PI.generate_prediction_intervals(sstype = 0, nsample = 500, calc_pred_int = False, waitbar = False)
+        PI = self.setup_complex_pi()
         fighandle, axhandle = PI.plot_prediction_intervals(plot_pred_int = False, adddata = True, addlegend = True)
         
-        self.assertTrue(isinstance(fighandle, list), msg = 'Expect list return')
-        self.assertTrue(isinstance(axhandle, list), msg = 'Expect list return')
-        self.assertEqual(fighandle[0].get_label(), 'Batch # 0 | Column # 0', msg = str('Strings should match: {}'.format(fighandle[0].get_label())))
+        self.common_checks(fighandle, axhandle)
         self.assertEqual(axhandle[0].get_legend_handles_labels()[1], ['model', 'data', '99% CI', '95% CI', '90% CI', '50% CI'], msg = str('Strings should match: {}'.format(axhandle[0].get_legend_handles_labels()[1])))
         plt.close()

@@ -10,11 +10,6 @@ from pymcmcstat.chain import ChainStatistics
 import unittest
 import numpy as np
 
-def removekey(d, key):
-        r = dict(d)
-        del r[key]
-        return r
-
 CS = ChainStatistics
 chain = np.random.random_sample(size = (1000,2))
 chain[:,1] = 1e6*chain[:,1]
@@ -79,4 +74,3 @@ class GenerateDefaultNames(unittest.TestCase):
         results = {'names': ['a1']}
         names = CS.get_parameter_names(n = 3, results = results)
         self.assertEqual(names, ['a1', '$p_{1}$', '$p_{2}$'])
-        

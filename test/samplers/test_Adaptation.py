@@ -21,6 +21,7 @@ from pymcmcstat.samplers.Adaptation import update_cov_from_covchain
 from pymcmcstat.samplers.Adaptation import setup_w_R, setup_cholupdate
 from pymcmcstat.settings.SimulationOptions import SimulationOptions
 from pymcmcstat.procedures.CovarianceProcedures import CovarianceProcedures
+import test.general_functions as gf
 import unittest
 from mock import patch
 import numpy as np
@@ -32,53 +33,8 @@ def setup_options(**kwargs):
     SO.define_simulation_options(**kwargs)
     return SO
 
-# define test model function
-def modelfun(xdata, theta):
-    m = theta[0]
-    b = theta[1]
-    nrow = xdata.shape[0]
-    y = np.zeros([nrow,1])
-    y[:,0] = m*xdata.reshape(nrow,) + b
-    return y
-
-def ssfun(theta, data, local = None):
-    xdata = data.xdata[0]
-    ydata = data.ydata[0]
-    # eval model
-    ymodel = modelfun(xdata, theta)
-    # calc sos
-    ss = sum((ymodel[:,0] - ydata[:,0])**2)
-    return ss
-
-def setup_mcmc():
-    # Initialize MCMC object
-    mcstat = MCMC()
-    # Add data
-    nds = 100
-    x = np.linspace(2, 3, num=nds)
-    y = 2.*x + 3. + 0.1*np.random.standard_normal(x.shape)
-    mcstat.data.add_data_set(x, y)
-
-    mcstat.simulation_options.define_simulation_options(nsimu = int(5.0e3), updatesigma = 1, method = 'dram', verbosity = 0)
-
-    # update model settings
-    mcstat.model_settings.define_model_settings(sos_function = ssfun)
-    
-    mcstat.parameters.add_model_parameter(name = 'm', theta0 = 2., minimum = -10, maximum = np.inf, sample = 1)
-    mcstat.parameters.add_model_parameter(name = 'b', theta0 = -5., minimum = -10, maximum = 100, sample = 0)
-    mcstat.parameters.add_model_parameter(name = 'b2', theta0 = -5., minimum = -10, maximum = 100, sample = 1)
-    
-    mcstat._initialize_simulation()
-    
-    # extract components
-    model = mcstat.model_settings
-    options = mcstat.simulation_options
-    parameters = mcstat.parameters
-    data = mcstat.data
-    return model, options, parameters, data
-
 def setup_run_adapt_settings():
-    model, options, parameters, data = setup_mcmc()
+    model, options, parameters, data = gf.setup_mcmc()
     CP = CovarianceProcedures()
     CP._initialize_covariance_settings(parameters = parameters, options = options)
     rejected = {'in_adaptation_interval': 4, 'total': 10, 'outside_bounds': 1}
@@ -328,7 +284,7 @@ class UnpackSimulationOptions(unittest.TestCase):
 # --------------------------------------------        
 class UnpackCovarianceSettings(unittest.TestCase):
     def test_unpack_covariance(self):
-        model, options, parameters, data = setup_mcmc()
+        model, options, parameters, data = gf.setup_mcmc()
         CP = CovarianceProcedures()
         CP._initialize_covariance_settings(parameters = parameters, options = options)
         
