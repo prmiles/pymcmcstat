@@ -33,7 +33,7 @@ def ssfun(theta, data, local = None):
     ss = sum((ymodel[:,0] - ydata[:,0])**2)
     return ss
 
-def setup_mcmc():
+def basic_mcmc():
     # Initialize MCMC object
     mcstat = MCMC()
     # Add data
@@ -50,7 +50,10 @@ def setup_mcmc():
     mcstat.parameters.add_model_parameter(name = 'm', theta0 = 2., minimum = -10, maximum = np.inf, sample = 1)
     mcstat.parameters.add_model_parameter(name = 'b', theta0 = -5., minimum = -10, maximum = 100, sample = 0)
     mcstat.parameters.add_model_parameter(name = 'b2', theta0 = -5., minimum = -10, maximum = 100, sample = 1)
-    
+    return mcstat
+
+def setup_mcmc():
+    mcstat = basic_mcmc()
     mcstat._initialize_simulation()
     
     # extract components
@@ -61,23 +64,7 @@ def setup_mcmc():
     return model, options, parameters, data
 
 def setup_mcmc_case_mh():
-    # Initialize MCMC object
-    mcstat = MCMC()
-    # Add data
-    nds = 100
-    x = np.linspace(2, 3, num=nds)
-    y = 2.*x + 3. + 0.1*np.random.standard_normal(x.shape)
-    mcstat.data.add_data_set(x, y)
-
-    mcstat.simulation_options.define_simulation_options(nsimu = int(5.0e3), updatesigma = 1, method = 'dram', verbosity = 0)
-
-    # update model settings
-    mcstat.model_settings.define_model_settings(sos_function = ssfun)
-    
-    mcstat.parameters.add_model_parameter(name = 'm', theta0 = 2., minimum = -10, maximum = np.inf, sample = 1)
-    mcstat.parameters.add_model_parameter(name = 'b', theta0 = -5., minimum = -10, maximum = 100, sample = 0)
-    mcstat.parameters.add_model_parameter(name = 'b2', theta0 = -5., minimum = -10, maximum = 100, sample = 1)
-    
+    mcstat = basic_mcmc()
     mcstat._initialize_simulation()
     
     # extract components
@@ -87,21 +74,7 @@ def setup_mcmc_case_mh():
     return sos_object, prior_object, parameters
 
 def setup_mcmc_case_dr():
-    # Initialize MCMC object
-    mcstat = MCMC()
-    # Add data
-    nds = 100
-    x = np.linspace(2, 3, num=nds)
-    y = 2.*x + 3. + 0.1*np.random.standard_normal(x.shape)
-    mcstat.data.add_data_set(x, y)
-
-    mcstat.simulation_options.define_simulation_options(nsimu = int(2.0e2), updatesigma = 1, method = 'dram', verbosity = 0)
-
-    # update model settings
-    mcstat.model_settings.define_model_settings(sos_function = ssfun)
-    
-    mcstat.parameters.add_model_parameter(name = 'm', theta0 = 2., minimum = -10, maximum = np.inf, sample = 1)
-    mcstat.parameters.add_model_parameter(name = 'b', theta0 = -5., minimum = -10, maximum = 100, sample = 1)
+    mcstat = basic_mcmc()
     mcstat._initialize_simulation()
     
     # extract components
@@ -160,23 +133,7 @@ def setup_pseudo_ci():
     return ci
 
 def setup_mcmc_case_cp(initialize = True):
-    # Initialize MCMC object
-    mcstat = MCMC()
-    # Add data
-    nds = 100
-    x = np.linspace(2, 3, num=nds)
-    y = 2.*x + 3. + 0.1*np.random.standard_normal(x.shape)
-    mcstat.data.add_data_set(x, y)
-
-    mcstat.simulation_options.define_simulation_options(nsimu = int(5.0e3), updatesigma = 1, method = 'dram', verbosity = 0)
-    
-    # update model settings
-    mcstat.model_settings.define_model_settings(sos_function = ssfun)
-    
-    mcstat.parameters.add_model_parameter(name = 'm', theta0 = 2., minimum = -10, maximum = np.inf, sample = 1)
-    mcstat.parameters.add_model_parameter(name = 'b', theta0 = -5., minimum = -10, maximum = 100, sample = 0)
-    mcstat.parameters.add_model_parameter(name = 'b2', theta0 = -5., minimum = -10, maximum = 100, sample = 1)
-    
+    mcstat = basic_mcmc()
     if initialize:
         mcstat._initialize_simulation()
     
