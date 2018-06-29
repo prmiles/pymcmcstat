@@ -111,7 +111,7 @@ class DelayedRejection:
         self.iacce = np.zeros(options.ntry, dtype = int)
         self.dr_step_counter = 0
 
-    # -------------------------------------------    
+    # -------------------------------------------
     def __alphafun(self, trypath, invR):
         '''
         Calculate likelihood according to DR
@@ -148,7 +148,7 @@ class DelayedRejection:
         
         return alpha
 
-# -------------------------------------------   
+# -------------------------------------------
 def qfun(iq, trypath, invR):
     '''
     Gaussian nth stage log proposal ratio.
@@ -173,7 +173,7 @@ def qfun(iq, trypath, invR):
         
     return zq
 
-# -------------------------------------------   
+# -------------------------------------------
 def extract_state_elements(iq, stage, trypath):
     '''
     Extract elements from tried paths.
@@ -188,7 +188,7 @@ def extract_state_elements(iq, stage, trypath):
     y3 = trypath[stage + 1].theta
     y4 = trypath[stage - iq].theta
     return y1, y2, y3, y4
-# -------------------------------------------   
+# -------------------------------------------
 def logposteriorratio(x1, x2):
     '''
     Calculate the logarithm of the posterior ratio.
