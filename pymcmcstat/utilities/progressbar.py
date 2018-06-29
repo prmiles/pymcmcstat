@@ -31,7 +31,6 @@ class ProgressBar(object):
         elif i == self.iterations:
             self.animate(i, elapsed)
 
-
 class TextProgressBar(ProgressBar):
 
     def __init__(self, iterations, printer):
@@ -78,7 +77,7 @@ def ipythonprint(s, flush = True):
     print('\r', s, end='')
     if flush is True:
         flush_print()
-    
+
 def flush_print():
     sys.stdout.flush()
 
