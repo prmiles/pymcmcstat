@@ -51,7 +51,7 @@ class DelayedRejection:
             itry += 1 # update dr step index
             # initialize next step parameter set
             next_set = self.initialize_next_metropolis_step(npar = parameters.npar, old_theta = old_set.theta, sigma2 = new_set.sigma2, RDR = RDR[itry-1])
-                    
+
             # Reject points outside boundaries
             outsidebounds = is_sample_outside_bounds(next_set.theta, parameters._lower_limits[parameters._parind[:]], parameters._upper_limits[parameters._parind[:]])
             if outsidebounds is True:
@@ -159,7 +159,7 @@ def qfun(iq, trypath, invR):
 
     :Returns:
         * **zq** (:py:class:`float`): Logarithm of Gaussian nth stage proposal ratio.
-    ''' 
+    '''
     stage = len(trypath) - 1 - 1 # - 1, iq;
     if stage == iq: # shift index due to 0-indexing
         zq = np.zeros(1) # we are symmetric

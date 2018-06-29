@@ -23,7 +23,7 @@ class CovarianceProcedures:
     '''
     def __init__(self):
         self.description = 'Covariance Variables and Methods'
-        
+
     def _initialize_covariance_settings(self, parameters, options):
         '''
         Initialize covariance settings.

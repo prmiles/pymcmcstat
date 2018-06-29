@@ -23,7 +23,6 @@ class SumOfSquares:
         * :meth:`mcmc_sos_function`
     '''
     def __init__(self, model, data, parameters):
-                
         # check if sos function and model function are defined
         if model.sos_function is None: #isempty(ssfun)
             if model.model_function is None: #isempty(modelfun)

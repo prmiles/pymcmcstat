@@ -10,7 +10,7 @@ import numpy as np
 import math
 from ..utilities.general import message
 
-# --------------------------------------------    
+# --------------------------------------------
 class Adaptation:
     '''
     Adaptive Metropolis (AM) algorithm based on :cite:`haario2001adaptive`.
@@ -27,7 +27,6 @@ class Adaptation:
         self.qcov_original = None
         self.invR = None
         self.iacce = None
-        
         self.covchain = None
         self.meanchain = None
         
@@ -90,8 +89,7 @@ class Adaptation:
             
             # update dram covariance matrix
             RDR, invR = update_delayed_rejection(R = R, npar = npar, ntry = ntry, drscale = drscale)          
-        
-        
+
         covariance._update_covariance_from_adaptation(R, covchain, meanchain, wsum,
                                           last_index_since_adaptation, iiadapt)
 
@@ -397,7 +395,7 @@ def check_for_singular_cov_matrix(upcov, R, npar, qcov_adjust, qcov_scale, rejec
     '''
     pos_def, pRa = is_semi_pos_def_chol(upcov)
     if pos_def == 1: # not singular!
-        return scale_cholesky_decomposition(Ra = pRa, qcov_scale = qcov_scale)      
+        return scale_cholesky_decomposition(Ra = pRa, qcov_scale = qcov_scale)
     else: # singular covariance matrix
         return adjust_cov_matrix(upcov = upcov, R = R, npar = npar, qcov_adjust = qcov_adjust, qcov_scale = qcov_scale, rejected = rejected, iiadapt = iiadapt, verbosity = verbosity)
 # --------------------------------------------

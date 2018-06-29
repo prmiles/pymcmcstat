@@ -22,11 +22,11 @@ class PriorFunction:
 
         self.mu = mu
         self.sigma = sigma
-        
+
         # Setup prior function and evaluate
         if priorfun is None:
             priorfun = self.default_priorfun
-        
+
         self.priorfun = priorfun # function handle
         
     @classmethod

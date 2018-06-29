@@ -77,7 +77,6 @@ def acceptance_test(alpha):
         accept = True
     else:
         accept = False
-        
     return accept
 
 # -------------------------------------------

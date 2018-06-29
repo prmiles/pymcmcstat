@@ -36,7 +36,6 @@ class Metropolis:
         * :meth:`~run_metropolis_step`
         * :meth:`~unpack_set`
     '''
-    
     # --------------------------------------------------------
     def run_metropolis_step(self, old_set, parameters, R, prior_object, sos_object):
         '''
