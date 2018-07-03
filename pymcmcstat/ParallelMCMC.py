@@ -8,6 +8,7 @@ Created on Tue May  1 15:58:22 2018
 
 from .MCMC import MCMC
 from .chain import ChainStatistics
+from .samplers.utilities import is_sample_outside_bounds
 from multiprocessing import Pool, cpu_count
 import numpy as np
 import sys
@@ -35,10 +36,10 @@ class ParallelMCMC:
         model = mcset.model_settings
         parameters = mcset.parameters
         self.__get_parameter_features(parameters.parameters)
-        options = self.__check_options_output(options)
+        options = check_options_output(options)
         
         # number of CPUs
-        self.__assign_number_of_cores(num_cores)
+        self.num_cores = assign_number_of_cores(num_cores)
         
         # number of chains to generate
         self.num_chain = num_chain
@@ -48,7 +49,7 @@ class ParallelMCMC:
         
         # assign parallel log file directory
         parallel_dir = options.savedir
-        self.__check_directory(parallel_dir)
+        check_directory(parallel_dir)
         self.__parallel_dir = parallel_dir
             
         # replicate features of mcstat object num_chain times
@@ -62,7 +63,6 @@ class ParallelMCMC:
             self.parmc[ii].model_settings = copy.deepcopy(model)
             # replicate simulation options and create log files for each
             self.parmc[ii].simulation_options = copy.deepcopy(options)
-#            self.parmc[ii].simulation_options.save_to_txt = True
             chain_dir = str('chain_{}'.format(ii))
             self.parmc[ii].simulation_options.savedir = str('{}{}{}'.format(self.__parallel_dir,os.sep,chain_dir))
             # replicate parameter settings and assign distributed initial values
@@ -73,22 +73,15 @@ class ParallelMCMC:
     def run_parallel_simulation(self):
         start = time.time()
         mcpool = Pool(processes=self.num_cores) # depends on available cores
-        res = mcpool.map(self._run_serial_simulation, self.parmc)
+        res = mcpool.map(run_serial_simulation, self.parmc)
         mcpool.close() # not optimal! but easy
         mcpool.join()
         end = time.time()
         self.__parsimutime = end - start
         print('Parallel simulation run time: {} sec'.format(self.__parsimutime))
-        
         # assign results to invidual simulations
         for ii in range(self.num_chain):
             self.parmc[ii].simulation_results = res[ii]
-    
-    @classmethod
-    def _run_serial_simulation(cls, mcstat):
-        print('Processing: {}'.format(mcstat.simulation_options.savedir))
-        mcstat.run_simulation()
-        return mcstat.simulation_results
         
     def display_individual_chain_statistics(self):
         CS = ChainStatistics
@@ -99,11 +92,6 @@ class ParallelMCMC:
             chain = res['chain']
             CS.chainstats(chain,res)
 
-    @classmethod
-    def __check_directory(cls, directory):
-        if not os.path.exists(directory):
-            os.makedirs(directory)
-            
     def __get_parameter_features(self, parameters):
         self.npar = len(parameters)
         self.__theta0 = np.zeros([self.npar])
@@ -121,42 +109,130 @@ class ParallelMCMC:
                 self.upp_lim[jj] = self.__theta0[jj] + 100*(np.abs(self.__theta0[jj]))
                 print('Finite upper limit required - setting upp_lim[{}] = {}'.format(jj,self.upp_lim[jj]))
      
-    @classmethod
-    def __check_options_output(cls, options):
-        if options.save_to_txt == False and options.save_to_bin == False:
-            options.save_to_bin = True
-        return options
-        
-    def __assign_number_of_cores(self, num_cores = 1):
-        if num_cores > cpu_count():
-            self.num_cores = cpu_count()
-        else:
-            self.num_cores = num_cores
-            
     def __check_initial_values(self, initial_values):
         if initial_values is None:
-            u = np.random.random_sample(size = (self.num_chain, self.npar))
-            # map sampling between lower/upper limit
-            self.initial_values = self.low_lim + (self.upp_lim - self.low_lim)*u
+            self.initial_values = generate_initial_values(num_chain = self.num_chain, npar = self.npar, low_lim = self.low_lim, upp_lim = self.upp_lim)
         else:
-            m,n = initial_values.shape
-            if m != self.num_chain:
-                print('Shape of initial values inconsistent with requested number of chains.  \n num_chain = {}, initial_values.shape -> {},{}.  Resizing num_chain to {}.'.format(self.num_chain, m, n, m))
-                self.num_chain = m
-            if n != self.npar:
-                print('Shape of initial values inconsistent with requested number of parameters.  \n npar = {}, initial_values.shape -> {},{}.  Only using first {} columns of initial_values.'.format(self.npar, m, n, self.npar))
-                initial_values = np.delete(initial_values, [range(self.npar,n+1)], axis = 1)
-            
-            outsidebounds = self.__is_sample_outside_bounds(initial_values, self.low_lim, self.upp_lim)
-            if outsidebounds is True:
-                sys.exit(str('Initial values are not within parameter limits.  Make sure they are within the following limits:\n\tLower: {}\n\tUpper: {}\nThe initial_values tested were:\n{}'.format(self.low_lim, self.upp_lim, initial_values)))
-            else:
-                self.initial_values = initial_values
-     
-    @classmethod
-    def __is_sample_outside_bounds(cls, theta, lower_limits, upper_limits):
-        if (theta < lower_limits).any() or (theta > upper_limits).any():
-            outsidebounds = True
-        else:
-            outsidebounds = False
-        return outsidebounds
+            self.num_chain, initial_values = check_shape_of_users_initial_values(initial_values = initial_values, num_chain = self.num_chain, npar = self.npar)
+            self.initial_values = check_users_initial_values_wrt_limits(initial_values = initial_values, low_lim = self.low_lim, upp_lim = self.upp_lim)
+
+# -------------------------
+def generate_initial_values(num_chain, npar, low_lim, upp_lim):
+    '''
+    Generate initial values by sampling from uniform distribution between limits
+    
+    :Args:
+        * **num_chain** (:py:class:`int`): Number of sampling chains to be generated.
+        * **npar** (:py:class:`int`): Number of model parameters.
+        * **low_lim** (:class:`~numpy.ndarray`): Lower limits.
+        * **upp_lim** (:class:`~numpy.ndarray`): Upper limits.
+        
+    :Returns:
+        * **initial_values** (:class:`~numpy.ndarray`): Array of initial parameter values - [num_chain,npar]
+    '''
+    u = np.random.random_sample(size = (num_chain, npar))
+    # map sampling between lower/upper limit
+    initial_values = low_lim + (upp_lim - low_lim)*u
+    return initial_values
+# -------------------------
+def check_shape_of_users_initial_values(initial_values, num_chain, npar):
+    '''
+    Check shape of users initial values
+    
+    :Args:
+        * **initial_values** (:class:`~numpy.ndarray`): Array of initial parameter values - expect [num_chain,npar]
+        * **num_chain** (:py:class:`int`): Number of sampling chains to be generated.
+        * **npar** (:py:class:`int`): Number of model parameters.
+        
+    :Returns:
+        * **num_chain** (:py:class:`int`): Number of sampling chains to be generated - equal to number of rows in initial values array.
+        * **initial_values**
+    '''
+    m,n = initial_values.shape
+    if m != num_chain:
+        print('Shape of initial values inconsistent with requested number of chains.  \n num_chain = {}, initial_values.shape -> {},{}.  Resizing num_chain to {}.'.format(num_chain, m, n, m))
+        num_chain = m
+    if n != npar:
+        print('Shape of initial values inconsistent with requested number of parameters.  \n npar = {}, initial_values.shape -> {},{}.  Only using first {} columns of initial_values.'.format(npar, m, n, npar))
+        initial_values = np.delete(initial_values, [range(npar,n+1)], axis = 1)
+    return num_chain, initial_values
+# -------------------------
+def check_users_initial_values_wrt_limits(initial_values, low_lim, upp_lim):
+    '''
+    Check users initial values wrt parameter limits
+    
+    :Args:
+        * **initial_values** (:class:`~numpy.ndarray`): Array of initial parameter values - expect [num_chain,npar]
+        * **low_lim** (:class:`~numpy.ndarray`): Lower limits.
+        * **upp_lim** (:class:`~numpy.ndarray`): Upper limits.
+        
+    :Returns:
+        * **initial_values**
+        
+    :Response:
+        * `SystemExit` if initial values are outside parameter bounds.
+    '''
+    outsidebounds = is_sample_outside_bounds(initial_values, low_lim, upp_lim)
+    if outsidebounds is True:
+        sys.exit(str('Initial values are not within parameter limits.  Make sure they are within the following limits:\n\tLower: {}\n\tUpper: {}\nThe initial_values tested were:\n{}'.format(low_lim, upp_lim, initial_values)))
+    else:
+        return initial_values
+# -------------------------
+def check_options_output(options):
+    '''
+    Check output settings defined in options
+    
+    :Args:
+        * **options** (:class:`.SimulationOptions`): MCMC simulation options.
+    
+    :Returns:
+        * **options** (:class:`.SimulationOptions`): MCMC simulation options with at least binary save flag set to True.
+    '''
+    if options.save_to_txt == False and options.save_to_bin == False:
+        options.save_to_bin = True
+    return options
+
+# -------------------------
+def check_directory(directory):
+    '''
+    Check and make sure directory exists
+    
+    :Args:
+        * **directory** (:py:class:`str`): Folder/directory path name.
+        
+    '''
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+        
+# -------------------------
+def run_serial_simulation(mcstat):
+    '''
+    Run serial MCMC simulation
+    
+    :Args:
+        * **mcstat** (:class:`MCMC.MCMC`): MCMC object.
+        
+    :Returns:
+        * **results** (:py:class:`dict`): Results dictionary for serial simulation.
+    '''
+    print('Processing: {}'.format(mcstat.simulation_options.savedir))
+    mcstat.run_simulation()
+    return mcstat.simulation_results
+
+# -------------------------
+def assign_number_of_cores(num_cores = 1):
+    '''
+    Assign number of cores to use in parallel process
+    
+    :Args:
+        * **num_cores** (:py:class:`int`): Number of cores designated by user.
+       
+    :Returns:
+        * **num_cores** (:py:class:`int`): Number of cores designated by user or maximum number of cores available on machine.
+        
+    '''
+    tmp = cpu_count()
+    if num_cores > tmp:
+        return tmp
+    else:
+        return num_cores
