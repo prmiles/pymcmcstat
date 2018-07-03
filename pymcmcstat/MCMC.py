@@ -229,35 +229,21 @@ class MCMC:
                 
             message(self.simulation_options.verbosity, 100, str('i: {:d}/{:d}\n'.format(isimu,nsimu)));
 
-            # METROPOLIS ALGORITHM
+            # METROPOLIS
             accept, new_set, outbound, npar_sample_from_normal = self._sampling_methods.metropolis.run_metropolis_step(
                     old_set = self.__old_set, parameters = self.parameters, R = self._covariance._R,
                     prior_object = self.__prior_object, sos_object = self.__sos_object)
 
             # DELAYED REJECTION
-            # perform a new try according to delayed rejection
             if self.simulation_options.ntry > 1 and accept == 0:
                 accept, new_set, outbound = self._sampling_methods.delayed_rejection.run_delayed_rejection(
                         old_set = self.__old_set, new_set = new_set, RDR = self._covariance._RDR, ntry = self.simulation_options.ntry,
                         parameters = self.parameters, invR = self._covariance._invR,
                         sosobj = self.__sos_object, priorobj = self.__prior_object)
 
-            # UPDATE CHAIN
+            # UPDATE CHAIN & SUM-OF-SQUARES CHAIN
             self.__update_chain(accept = accept, new_set = new_set, outsidebounds = outbound)
-            
-            # PRINT REJECTION STATISTICS
-            if self.simulation_options.printint and iiprint + 1 == self.simulation_options.printint:
-                print_rejection_statistics(rejected = self.__rejected, isimu = isimu, iiadapt = iiadapt, verbosity = self.simulation_options.verbosity)
-                iiprint = 0 # reset print counter
-                
-            # UPDATE SUM-OF-SQUARES CHAIN
             self.__sschain[self.__chain_index,:] = self.__old_set.ss
-            
-            # UPDATE ERROR VARIANCE
-            if self.simulation_options.updatesigma:
-                sigma2 = self._error_variance.update_error_variance(self.__old_set.ss, self.model_settings)
-                self.__s2chain[self.__chain_index,:] = sigma2
-                self.__old_set.sigma2 = sigma2
 
             # ADAPTATION
             if self.simulation_options.adaptint > 0 and iiadapt == self.simulation_options.adaptint:
@@ -269,28 +255,24 @@ class MCMC:
                 
                 iiadapt = 0 # reset local adaptation index
                 self.__rejected['in_adaptation_interval'] = 0 # reset local rejection index
+            
+            # UPDATE ERROR VARIANCE
+            if self.simulation_options.updatesigma:
+                sigma2 = self._error_variance.update_error_variance(self.__old_set.ss, self.model_settings)
+                self.__s2chain[self.__chain_index,:] = sigma2
+                self.__old_set.sigma2 = sigma2
                 
+            # PRINT REJECTION STATISTICS
+            if self.simulation_options.printint and iiprint + 1 == self.simulation_options.printint:
+                print_rejection_statistics(rejected = self.__rejected, isimu = isimu, iiadapt = iiadapt, verbosity = self.simulation_options.verbosity)
+                iiprint = 0 # reset print counter
+
             # SAVE TO LOG FILE
             if savecount == self.simulation_options.savesize:
-                savesize = self.simulation_options.savesize
-                start = isimu - savesize
-                end = isimu
-                if self.simulation_options.save_to_bin is True:
-                    self.__save_chains_to_bin(start, end)
-                if self.simulation_options.save_to_txt is True:
-                    self.__save_chains_to_txt(start, end)
-                    
-                # reset counter
-                savecount = 0
-                lastbin = isimu
+                savecount, lastbin = self.save_to_log_file(start = isimu - self.simulation_options.savesize, end = isimu)
        
         # SAVE REMAINING ELEMENTS TO BIN FILE
-        start = lastbin
-        end = isimu + 1
-        if self.simulation_options.save_to_bin is True:
-            self.__save_chains_to_bin(start, end)
-        if self.simulation_options.save_to_txt is True:
-            self.__save_chains_to_txt(start, end)
+        self.save_to_log_file(start = lastbin, end = isimu + 1)
            
         # update value to end value
         self.parameters._value[self.parameters._parind] = self.__old_set.theta
@@ -312,7 +294,28 @@ class MCMC:
         self.simulation_results.add_chain(chain = self.__chain)
         self.simulation_results.add_s2chain(s2chain = self.__s2chain)
         self.simulation_results.add_sschain(sschain = self.__sschain)
-    
+    # ------------------------------------------------
+    def save_to_log_file(self, start, end):
+        '''
+        Save to log files
+        
+        :Args:
+            * **start** (:py:class:`int`): Start index of chain block to save
+            * **end** (:py:class:`int`): End index of chain block to save
+            
+        :Returns:
+            * **savecount** (:py:class:`int`): Reset save counter
+            * **lastbin** (:py:class:`int`): Last index saved
+        '''
+        if self.simulation_options.save_to_bin is True:
+            self.__save_chains_to_bin(start, end)
+        if self.simulation_options.save_to_txt is True:
+            self.__save_chains_to_txt(start, end)
+            
+        # reset counter
+        savecount = 0
+        lastbin = end
+        return savecount, lastbin
     # --------------------------------------------------------
     def __save_chains_to_bin(self, start, end):
         '''
