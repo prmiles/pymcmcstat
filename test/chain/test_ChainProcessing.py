@@ -12,6 +12,7 @@ import unittest
 from mock import patch
 import numpy as np
 import os
+import shutil
 
 # --------------------------
 class CreatePathWithExtensionforAllLogs(unittest.TestCase):
@@ -111,3 +112,51 @@ class AddToLog(unittest.TestCase):
             loadstr = file.read()
         self.assertEqual(loadstr, 'hello world', msg = 'Message should match')
         os.remove(tmpfile)
+# -------------------
+class ReadInSavedirFiles(unittest.TestCase):
+    def setup_case(self):
+        mcstat = gf.basic_mcmc()
+        mcstat._MCMC__chain = np.random.random_sample(size = (100,2))
+        mcstat._MCMC__sschain = np.random.random_sample(size = (100,2))
+        mcstat._MCMC__s2chain = np.random.random_sample(size = (100,2))
+        mcstat._covariance._R = np.array([[0.5, 0.2],[0., 0.3]])
+        return mcstat
+    
+    def test_read_in_savedir_files_h5(self):
+        mcstat = self.setup_case()
+        savedir = gf.generate_temp_folder()
+        mcstat.simulation_options.savedir = savedir
+        
+        mcstat._MCMC__save_chains_to_bin(start = 0, end = 100)
+        
+        out = CP.read_in_savedir_files(savedir, extension = 'h5')
+        self.assertTrue(np.array_equal(out['chain'], mcstat._MCMC__chain), msg = str('Expect arrays to match: chain'))
+        self.assertTrue(np.array_equal(out['sschain'], mcstat._MCMC__sschain), msg = str('Expect arrays to match: sschain'))
+        self.assertTrue(np.array_equal(out['s2chain'], mcstat._MCMC__s2chain), msg = str('Expect arrays to match: s2chain'))
+        self.assertTrue(np.array_equal(out['covchain'], np.dot(mcstat._covariance._R.transpose(),mcstat._covariance._R)), msg = str('Expect arrays to match: chain'))
+        shutil.rmtree(savedir)
+        
+    def test_read_in_savedir_files_txt(self):
+        mcstat = self.setup_case()
+        savedir = gf.generate_temp_folder()
+        mcstat.simulation_options.savedir = savedir
+        
+        mcstat._MCMC__save_chains_to_txt(start = 0, end = 100)
+        
+        out = CP.read_in_savedir_files(savedir, extension = 'txt')
+        self.assertTrue(np.array_equal(out['chain'], mcstat._MCMC__chain), msg = str('Expect arrays to match: chain'))
+        self.assertTrue(np.array_equal(out['sschain'], mcstat._MCMC__sschain), msg = str('Expect arrays to match: sschain'))
+        self.assertTrue(np.array_equal(out['s2chain'], mcstat._MCMC__s2chain), msg = str('Expect arrays to match: s2chain'))
+        self.assertTrue(np.array_equal(out['covchain'], np.dot(mcstat._covariance._R.transpose(),mcstat._covariance._R)), msg = str('Expect arrays to match: chain'))
+        shutil.rmtree(savedir)
+        
+    def test_read_in_savedir_files_unknown(self):
+        mcstat = self.setup_case()
+        savedir = gf.generate_temp_folder()
+        mcstat.simulation_options.savedir = savedir
+        
+        mcstat._MCMC__save_chains_to_txt(start = 0, end = 100)
+        
+        out = CP.read_in_savedir_files(savedir, extension = 'unknown')
+        self.assertEqual(out, None, msg = 'Expect None')
+        shutil.rmtree(savedir)

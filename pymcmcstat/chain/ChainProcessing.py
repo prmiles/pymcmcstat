@@ -94,6 +94,7 @@ def read_in_savedir_files(savedir, extension = 'h5', chainfile = 'chainfile', ss
                 'covchain': read_in_txt_file(covchainfile)
                 }
     else:
+        out = None
         warnings.warn('Unknown extension specified -> log files saved as either h5 (binary) or txt (text).')
     
     return out
