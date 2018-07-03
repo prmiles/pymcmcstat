@@ -229,3 +229,4 @@ class PrintLogFiles(unittest.TestCase):
         
         self.assertTrue(isinstance(capturedOutput.getvalue(), str), msg = 'Should contain a string')
         self.assertTrue('Display log file:' in capturedOutput.getvalue(), msg = 'Expect string to contain these works')
+        shutil.rmtree(savedir)
