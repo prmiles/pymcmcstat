@@ -25,6 +25,14 @@ def setup_pseudo_results(initialize = True):
     mcstat._MCMC__simulation_time = 0.1
     return mcstat
 
+def setup_case():
+    mcstat = gf.basic_mcmc()
+    mcstat._MCMC__chain = np.random.random_sample(size = (100,2))
+    mcstat._MCMC__sschain = np.random.random_sample(size = (100,2))
+    mcstat._MCMC__s2chain = np.random.random_sample(size = (100,2))
+    mcstat._covariance._R = np.array([[0.5, 0.2],[0., 0.3]])
+    return mcstat
+
 # --------------------------
 class MCMCInitialization(unittest.TestCase):
     
@@ -284,11 +292,7 @@ class SaveChainsToTXT(unittest.TestCase):
         self.assertTrue(np.array_equal(out, chain), msg = str('Expect arrays to match: {} neq {}'.format(out, chain)))
         
     def test_save_chains_to_txt(self):
-        mcstat = gf.basic_mcmc()
-        mcstat._MCMC__chain = np.random.random_sample(size = (100,2))
-        mcstat._MCMC__sschain = np.random.random_sample(size = (100,2))
-        mcstat._MCMC__s2chain = np.random.random_sample(size = (100,2))
-        mcstat._covariance._R = np.array([[0.5, 0.2],[0., 0.3]])
+        mcstat = setup_case()
         savedir = gf.generate_temp_folder()
         mcstat.simulation_options.savedir = savedir
         
@@ -302,12 +306,9 @@ class SaveChainsToTXT(unittest.TestCase):
         shutil.rmtree(savedir)
         
     def test_save_chains_to_txt_updatesigma_off(self):
-        mcstat = gf.basic_mcmc()
+        mcstat = setup_case()
         mcstat.simulation_options.updatesigma = False
-        mcstat._MCMC__chain = np.random.random_sample(size = (100,2))
-        mcstat._MCMC__sschain = np.random.random_sample(size = (100,2))
         mcstat._MCMC__s2chain = None
-        mcstat._covariance._R = np.array([[0.5, 0.2],[0., 0.3]])
         savedir = gf.generate_temp_folder()
         mcstat.simulation_options.savedir = savedir
         
@@ -327,11 +328,7 @@ class SaveChainsToBIN(unittest.TestCase):
         self.assertTrue(np.array_equal(out, chain), msg = str('Expect arrays to match: {}'.format(file)))
         
     def test_save_chains_to_bin(self):
-        mcstat = gf.basic_mcmc()
-        mcstat._MCMC__chain = np.random.random_sample(size = (100,2))
-        mcstat._MCMC__sschain = np.random.random_sample(size = (100,2))
-        mcstat._MCMC__s2chain = np.random.random_sample(size = (100,2))
-        mcstat._covariance._R = np.array([[0.5, 0.2],[0., 0.3]])
+        mcstat = setup_case()
         savedir = gf.generate_temp_folder()
         mcstat.simulation_options.savedir = savedir
         
@@ -345,12 +342,9 @@ class SaveChainsToBIN(unittest.TestCase):
         shutil.rmtree(savedir)
         
     def test_save_chains_to_bin_updatesigma_off(self):
-        mcstat = gf.basic_mcmc()
+        mcstat = setup_case()
         mcstat.simulation_options.updatesigma = False
-        mcstat._MCMC__chain = np.random.random_sample(size = (100,2))
-        mcstat._MCMC__sschain = np.random.random_sample(size = (100,2))
         mcstat._MCMC__s2chain = None
-        mcstat._covariance._R = np.array([[0.5, 0.2],[0., 0.3]])
         savedir = gf.generate_temp_folder()
         mcstat.simulation_options.savedir = savedir
         
