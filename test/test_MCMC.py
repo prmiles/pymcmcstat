@@ -8,10 +8,14 @@ Created on Wed Jun  6 08:33:47 2018
 
 from pymcmcstat.MCMC import print_rejection_statistics, MCMC
 from pymcmcstat.structures.ParameterSet import ParameterSet
+from pymcmcstat.chain import ChainProcessing
 import test.general_functions as gf
 import unittest
+from mock import patch
 import io
 import sys
+import os
+import shutil
 import numpy as np
 
 def setup_pseudo_results(initialize = True):
@@ -197,6 +201,21 @@ class SetupSimulator(unittest.TestCase):
         self.assertEqual(mcstat._MCMC__sschain.shape, (mcstat.simulation_options.nsimu, 1), msg = str('Shape should be (nsimu,1) -> {}'.format(mcstat._MCMC__sschain.shape)))
         self.assertEqual(mcstat._MCMC__s2chain.shape, (mcstat.simulation_options.nsimu, 1), msg = str('Shape should be (nsimu,1) -> {}'.format(mcstat._MCMC__s2chain.shape)))
         
+    @patch('pymcmcstat.structures.ResultsStructure.ResultsStructure.load_json_object', return_value = {'parind': np.array([0,1,2], dtype = int), 'names': ['m', 'b', 'b2'], 'local': np.zeros([3]), 'theta': np.array([0.2, 0.5, 0.7]), 'qcov': np.array([[0.2, 0.1, 0.05],[0.1, 0.4, 0.02],[0.05, 0.02, 0.6]])})
+    def test_setup_simu_use_json_file(self, mock_json_object):
+        mcstat = gf.setup_mcmc_case_cp(initialize=False)
+        mcstat.simulation_options.json_restart_file = 1
+        mcstat._MCMC__setup_simulator(use_previous_results = False)
+        self.assertTrue(np.array_equal(mcstat.simulation_options.qcov, np.array([[0.2, 0.1, 0.05],[0.1, 0.4, 0.02],[0.05, 0.02, 0.6]])), msg = 'Expect arrays to match')
+        self.assertEqual(mcstat.parameters.parameters[0]['theta0'], 0.2, msg = 'Expect theta0 = 0.2')
+        self.assertEqual(mcstat.parameters.parameters[1]['theta0'], -5.0, msg = 'Expect theta0 = -5.0 because sample = 0')
+        self.assertEqual(mcstat.parameters.parameters[2]['theta0'], 0.7, msg = 'Expect theta0 = 0.7')
+        
+        self.assertEqual(mcstat._MCMC__chain_index, 0, msg = 'Chain index should be 0')
+        self.assertEqual(mcstat._MCMC__chain.shape, (mcstat.simulation_options.nsimu, 2), msg = str('Shape should be (nsimu,2) -> {}'.format(mcstat._MCMC__chain.shape)))
+        self.assertEqual(mcstat._MCMC__sschain.shape, (mcstat.simulation_options.nsimu, 1), msg = str('Shape should be (nsimu,1) -> {}'.format(mcstat._MCMC__sschain.shape)))
+        self.assertEqual(mcstat._MCMC__s2chain.shape, (mcstat.simulation_options.nsimu, 1), msg = str('Shape should be (nsimu,1) -> {}'.format(mcstat._MCMC__s2chain.shape)))
+        
     def test_setup_simu_use_prev_true_causes_error(self):
         mcstat = gf.setup_mcmc_case_cp(initialize=False)
         with self.assertRaises(SystemExit, msg = 'No previous results exist'):
@@ -225,3 +244,120 @@ class GenerateSimulationResults(unittest.TestCase):
         check_for_these = ['simulation_options', 'model_settings', 'chain', 's2chain', 'sschain', 'drscale', 'iacce', 'RDR']
         for cft in check_for_these:
             self.assertTrue(cft in results, msg = str('{} assigned successfully'.format(cft)))
+            
+# ------------------------------------------------
+class SaveToLogFile(unittest.TestCase):
+    @patch('pymcmcstat.MCMC.MCMC._MCMC__save_chains_to_bin', return_value = None)
+    def test_save_to_log_file_bin(self, mock_bin):
+        mcstat = gf.basic_mcmc()
+        mcstat.simulation_options.save_to_bin = True
+        mcstat.simulation_options.save_to_txt = False
+        savecount, lastbin = mcstat.save_to_log_file(start = 0, end = 100)
+        self.assertEqual(savecount, 0, msg = 'Expect 0')
+        self.assertEqual(lastbin, 100, msg = 'Expect lastbin = end = 100')
+        
+    @patch('pymcmcstat.MCMC.MCMC._MCMC__save_chains_to_txt', return_value = None)
+    def test_save_to_log_file_txt(self, mock_txt):
+        mcstat = gf.basic_mcmc()
+        mcstat.simulation_options.save_to_bin = False
+        mcstat.simulation_options.save_to_txt = True
+        savecount, lastbin = mcstat.save_to_log_file(start = 0, end = 100)
+        self.assertEqual(savecount, 0, msg = 'Expect 0')
+        self.assertEqual(lastbin, 100, msg = 'Expect lastbin = end = 100')
+        
+## -------------------
+#class AddToLog(unittest.TestCase):
+#    def test_add_to_log(self):
+#        tmpfile = gf.generate_temp_file(extension = 'txt')
+#        CP._add_to_log(filename = tmpfile, logstr = 'hello world')
+#        self.assertTrue(os.path.isfile(tmpfile), msg = 'File exists')
+#        with open(tmpfile, 'r') as file:
+#            loadstr = file.read()
+#        self.assertEqual(loadstr, 'hello world', msg = 'Message should match')
+#        os.remove(tmpfile)
+        
+# --------------------------------------------------------
+class SaveChainsToTXT(unittest.TestCase):
+    def compare_chain(self, file, chain):
+        self.assertTrue(os.path.isfile(file), msg = 'File exists')
+        out = np.loadtxt(file)
+        self.assertTrue(np.array_equal(out, chain), msg = str('Expect arrays to match: {} neq {}'.format(out, chain)))
+        
+    def test_save_chains_to_txt(self):
+        mcstat = gf.basic_mcmc()
+        mcstat._MCMC__chain = np.random.random_sample(size = (100,2))
+        mcstat._MCMC__sschain = np.random.random_sample(size = (100,2))
+        mcstat._MCMC__s2chain = np.random.random_sample(size = (100,2))
+        mcstat._covariance._R = np.array([[0.5, 0.2],[0., 0.3]])
+        savedir = gf.generate_temp_folder()
+        mcstat.simulation_options.savedir = savedir
+        
+        chainfile, s2chainfile, sschainfile, covchainfile = ChainProcessing._create_path_with_extension_for_all_logs(mcstat.simulation_options, extension = 'txt')
+        
+        mcstat._MCMC__save_chains_to_txt(start = 0, end = 100)
+        self.compare_chain(chainfile, mcstat._MCMC__chain)
+        self.compare_chain(sschainfile, mcstat._MCMC__sschain)
+        self.compare_chain(s2chainfile, mcstat._MCMC__s2chain)
+        self.compare_chain(covchainfile, np.dot(mcstat._covariance._R.transpose(),mcstat._covariance._R))
+        shutil.rmtree(savedir)
+        
+    def test_save_chains_to_txt_updatesigma_off(self):
+        mcstat = gf.basic_mcmc()
+        mcstat.simulation_options.updatesigma = False
+        mcstat._MCMC__chain = np.random.random_sample(size = (100,2))
+        mcstat._MCMC__sschain = np.random.random_sample(size = (100,2))
+        mcstat._MCMC__s2chain = None
+        mcstat._covariance._R = np.array([[0.5, 0.2],[0., 0.3]])
+        savedir = gf.generate_temp_folder()
+        mcstat.simulation_options.savedir = savedir
+        
+        chainfile, s2chainfile, sschainfile, covchainfile = ChainProcessing._create_path_with_extension_for_all_logs(mcstat.simulation_options, extension = 'txt')
+        
+        mcstat._MCMC__save_chains_to_txt(start = 0, end = 100)
+        self.compare_chain(chainfile, mcstat._MCMC__chain)
+        self.compare_chain(sschainfile, mcstat._MCMC__sschain)
+        self.compare_chain(covchainfile, np.dot(mcstat._covariance._R.transpose(),mcstat._covariance._R))
+        shutil.rmtree(savedir)
+        
+# --------------------------------------------------------
+class SaveChainsToBIN(unittest.TestCase):
+    def compare_chain(self, file, chain):
+        self.assertTrue(os.path.isfile(file), msg = 'File exists')
+        out = ChainProcessing.read_in_bin_file(file)
+        self.assertTrue(np.array_equal(out, chain), msg = str('Expect arrays to match: {}'.format(file)))
+        
+    def test_save_chains_to_bin(self):
+        mcstat = gf.basic_mcmc()
+        mcstat._MCMC__chain = np.random.random_sample(size = (100,2))
+        mcstat._MCMC__sschain = np.random.random_sample(size = (100,2))
+        mcstat._MCMC__s2chain = np.random.random_sample(size = (100,2))
+        mcstat._covariance._R = np.array([[0.5, 0.2],[0., 0.3]])
+        savedir = gf.generate_temp_folder()
+        mcstat.simulation_options.savedir = savedir
+        
+        chainfile, s2chainfile, sschainfile, covchainfile = ChainProcessing._create_path_with_extension_for_all_logs(mcstat.simulation_options, extension = 'h5')
+        
+        mcstat._MCMC__save_chains_to_bin(start = 0, end = 100)
+        self.compare_chain(chainfile, mcstat._MCMC__chain)
+        self.compare_chain(sschainfile, mcstat._MCMC__sschain)
+        self.compare_chain(s2chainfile, mcstat._MCMC__s2chain)
+        self.compare_chain(covchainfile, np.dot(mcstat._covariance._R.transpose(),mcstat._covariance._R))
+        shutil.rmtree(savedir)
+        
+    def test_save_chains_to_bin_updatesigma_off(self):
+        mcstat = gf.basic_mcmc()
+        mcstat.simulation_options.updatesigma = False
+        mcstat._MCMC__chain = np.random.random_sample(size = (100,2))
+        mcstat._MCMC__sschain = np.random.random_sample(size = (100,2))
+        mcstat._MCMC__s2chain = None
+        mcstat._covariance._R = np.array([[0.5, 0.2],[0., 0.3]])
+        savedir = gf.generate_temp_folder()
+        mcstat.simulation_options.savedir = savedir
+        
+        chainfile, s2chainfile, sschainfile, covchainfile = ChainProcessing._create_path_with_extension_for_all_logs(mcstat.simulation_options, extension = 'h5')
+        
+        mcstat._MCMC__save_chains_to_bin(start = 0, end = 100)
+        self.compare_chain(chainfile, mcstat._MCMC__chain)
+        self.compare_chain(sschainfile, mcstat._MCMC__sschain)
+        self.compare_chain(covchainfile, np.dot(mcstat._covariance._R.transpose(),mcstat._covariance._R))
+        shutil.rmtree(savedir)

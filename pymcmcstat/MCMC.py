@@ -178,30 +178,34 @@ class MCMC:
         # Initialize chain, error variance, and SS
         self.__chain = np.zeros([nsimu, npar])
         self.__sschain = np.zeros([nsimu, nsos])
-        if updatesigma:
-            self.__s2chain = np.zeros([nsimu, nsos])
-        else:
-            self.__s2chain = None
-            
         # Save initialized values to chain, s2chain, sschain
         self.__chain[chainind,:] = self.__initial_set.theta
         self.__sschain[chainind,:] = self.__initial_set.ss
+        
         if updatesigma:
+            self.__s2chain = np.zeros([nsimu, nsos])
             self.__s2chain[chainind,:] = sigma2
+        else:
+            self.__s2chain = None
         
     def __expand_chains(self, nsimu, npar, nsos, updatesigma):
+        '''
+        Expand chains for extended simulation
+
+        :Args:
+            * **nsimu** (:py:class:`int`): Number of parameter samples to simulate.  Default is 1e4.
+            * **npar** (:py:class:`int`): Number of parameters being sampled.
+            * **nsos** (:py:class:`int`): Length of output from sum-of-squares function
+            * **updatesigma** (:py:class:`bool`): Flag for updating measurement error variance. Default is 0 -> off (1 -> on).
+        '''
         # continuing simulation, so we must expand storage arrays
         zero_chain = np.zeros([nsimu-1, npar])
         zero_sschain = np.zeros([nsimu-1, nsos])
-        if updatesigma:
-            zero_s2chain = np.zeros([nsimu-1, nsos])
-        else:
-            zero_s2chain = None
-            
         # Concatenate with previous chains
         self.__chain = np.concatenate((self.__chain, zero_chain), axis = 0)
         self.__sschain = np.concatenate((self.__sschain, zero_sschain), axis = 0)
         if updatesigma:
+            zero_s2chain = np.zeros([nsimu-1, nsos])
             self.__s2chain = np.concatenate((self.__s2chain, zero_s2chain), axis = 0)
         else:
             self.__s2chain = None
