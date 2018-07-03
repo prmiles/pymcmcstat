@@ -245,6 +245,11 @@ class MCMC:
             self.__update_chain(accept = accept, new_set = new_set, outsidebounds = outbound)
             self.__sschain[self.__chain_index,:] = self.__old_set.ss
 
+            # PRINT REJECTION STATISTICS
+            if self.simulation_options.printint and iiprint + 1 == self.simulation_options.printint:
+                print_rejection_statistics(rejected = self.__rejected, isimu = isimu, iiadapt = iiadapt, verbosity = self.simulation_options.verbosity)
+                iiprint = 0 # reset print counter
+
             # ADAPTATION
             if self.simulation_options.adaptint > 0 and iiadapt == self.simulation_options.adaptint:
                 self._covariance = self._sampling_methods.adaptation.run_adaptation(
@@ -262,11 +267,6 @@ class MCMC:
                 self.__s2chain[self.__chain_index,:] = sigma2
                 self.__old_set.sigma2 = sigma2
                 
-            # PRINT REJECTION STATISTICS
-            if self.simulation_options.printint and iiprint + 1 == self.simulation_options.printint:
-                print_rejection_statistics(rejected = self.__rejected, isimu = isimu, iiadapt = iiadapt, verbosity = self.simulation_options.verbosity)
-                iiprint = 0 # reset print counter
-
             # SAVE TO LOG FILE
             if savecount == self.simulation_options.savesize:
                 savecount, lastbin = self.save_to_log_file(start = isimu - self.simulation_options.savesize, end = isimu)
