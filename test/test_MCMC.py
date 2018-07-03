@@ -272,18 +272,6 @@ class SaveToLogFile(unittest.TestCase):
         savecount, lastbin = mcstat.save_to_log_file(start = 0, end = 100)
         self.assertEqual(savecount, 0, msg = 'Expect 0')
         self.assertEqual(lastbin, 100, msg = 'Expect lastbin = end = 100')
-        
-## -------------------
-#class AddToLog(unittest.TestCase):
-#    def test_add_to_log(self):
-#        tmpfile = gf.generate_temp_file(extension = 'txt')
-#        CP._add_to_log(filename = tmpfile, logstr = 'hello world')
-#        self.assertTrue(os.path.isfile(tmpfile), msg = 'File exists')
-#        with open(tmpfile, 'r') as file:
-#            loadstr = file.read()
-#        self.assertEqual(loadstr, 'hello world', msg = 'Message should match')
-#        os.remove(tmpfile)
-        
 # --------------------------------------------------------
 class SaveChainsToTXT(unittest.TestCase):
     def compare_chain(self, file, chain):
@@ -355,3 +343,50 @@ class SaveChainsToBIN(unittest.TestCase):
         self.compare_chain(sschainfile, mcstat._MCMC__sschain)
         self.compare_chain(covchainfile, np.dot(mcstat._covariance._R.transpose(),mcstat._covariance._R))
         shutil.rmtree(savedir)
+        
+# --------------------------------------------------------
+class RunSimulation(unittest.TestCase):
+    def test_run_simulation(self):
+        mcstat = gf.basic_mcmc()
+        mcstat.simulation_options.nsimu = 100
+        mcstat.simulation_options.save_to_bin = False
+        mcstat.simulation_options.save_to_txt = False
+        mcstat.run_simulation()
+        self.assertTrue(mcstat._mcmc_status, msg = 'Expect True if successfully run')
+        
+        check_these = ['mcmcplot', 'PI', 'chainstats']
+        for ci in check_these:
+            self.assertTrue(hasattr(mcstat, ci), msg = str('object has attribute: {}'.format(ci)))
+            
+    def test_run_simulation_with_json(self):
+        mcstat = gf.basic_mcmc()
+        mcstat.simulation_options.nsimu = 100
+        mcstat.simulation_options.save_to_bin = False
+        mcstat.simulation_options.save_to_txt = False
+        tmpfile = gf.generate_temp_file(extension = 'json')
+        tmpfolder = gf.generate_temp_folder()
+        os.mkdir(tmpfolder)
+        mcstat.simulation_options.savedir = tmpfolder
+        mcstat.simulation_options.results_filename = tmpfile
+        mcstat.simulation_options.save_to_json = True
+        mcstat.run_simulation()
+        self.assertTrue(mcstat._mcmc_status, msg = 'Expect True if successfully run')
+        
+        check_these = ['mcmcplot', 'PI', 'chainstats']
+        for ci in check_these:
+            self.assertTrue(hasattr(mcstat, ci), msg = str('object has attribute: {}'.format(ci)))
+            
+        shutil.rmtree(tmpfolder)
+        
+    def test_run_simulation_verbose(self):
+        mcstat = gf.basic_mcmc()
+        mcstat.simulation_options.nsimu = 200
+        mcstat.simulation_options.save_to_bin = False
+        mcstat.simulation_options.save_to_txt = False
+        mcstat.simulation_options.verbosity = 20
+        mcstat.run_simulation()
+        self.assertTrue(mcstat._mcmc_status, msg = 'Expect True if successfully run')
+        
+        check_these = ['mcmcplot', 'PI', 'chainstats']
+        for ci in check_these:
+            self.assertTrue(hasattr(mcstat, ci), msg = str('object has attribute: {}'.format(ci)))
