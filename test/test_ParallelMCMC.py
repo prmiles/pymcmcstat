@@ -10,7 +10,7 @@ from pymcmcstat.ParallelMCMC import ParallelMCMC
 from pymcmcstat.ParallelMCMC import check_options_output, check_directory, check_initial_values
 from pymcmcstat.ParallelMCMC import run_serial_simulation, assign_number_of_cores, generate_initial_values
 from pymcmcstat.ParallelMCMC import check_shape_of_users_initial_values, check_users_initial_values_wrt_limits
-from pymcmcstat.ParallelMCMC import get_parameter_features
+from pymcmcstat.ParallelMCMC import get_parameter_features, unpack_mcmc_set
 from pymcmcstat.samplers.utilities import is_sample_outside_bounds
 from pymcmcstat.settings.ModelParameters import ModelParameters
 import test.general_functions as gf
@@ -20,6 +20,11 @@ import os
 import shutil
 import numpy as np
 
+def setup_par_mcmc_basic():
+    mcstat = gf.basic_mcmc()
+    tmpfolder = gf.generate_temp_folder()
+    mcstat.simulation_options.savedir = tmpfolder
+    return mcstat, tmpfolder
 # -------------------------
 class CheckOptionsOutput(unittest.TestCase):
     def test_check_options_output(self):
@@ -190,9 +195,70 @@ class GetParameterFeatures(unittest.TestCase):
         self.assertTrue(np.array_equal(upp_lim, expect_upp_lim), msg = str('Expect upp_lim finite: {} neq {}'.format(upp_lim,expect_upp_lim)))
         
 # -------------------------
+class UnpackMCMCSet(unittest.TestCase):
+    def test_unpack_mcmc_set(self):
+        mcstat = gf.basic_mcmc()
+        data, options, model, parameters = unpack_mcmc_set(mcset = mcstat)
+        self.assertEqual(data, mcstat.data, msg = 'Expect structures to match')
+        self.assertEqual(options, mcstat.simulation_options, msg = 'Expect structures to match')
+        self.assertEqual(model, mcstat.model_settings, msg = 'Expect structures to match')
+        self.assertEqual(parameters, mcstat.parameters, msg = 'Expect structures to match')
+
+# -------------------------
 class ParallelMCMCInit(unittest.TestCase):
     def test_par_mc_init(self):
         PMC = ParallelMCMC()
         check_these = ['setup_parallel_simulation', 'run_parallel_simulation', 'display_individual_chain_statistics', 'description']
         for ct in check_these:
             self.assertTrue(hasattr(PMC, ct), msg = str('Expect class to have attribute: {}'.format(ct)))
+            
+# -------------------------
+class SetupParallelMCMC(unittest.TestCase):
+    def test_setup_parmc(self):
+        PMC = ParallelMCMC()
+        mcstat, tmpfolder = setup_par_mcmc_basic()
+        PMC.setup_parallel_simulation(mcset = mcstat)
+        self.assertEqual(PMC.num_cores, 1, msg = 'Default cores = 1')
+        self.assertEqual(PMC.num_chain, 1, msg = 'Default chains = 1')
+        self.assertTrue(isinstance(PMC.parmc, list), msg = 'Expect list')
+        self.assertEqual(len(PMC.parmc), 1, msg = 'Expect length of 1')
+        shutil.rmtree(tmpfolder)
+        
+    def test_setup_parmc_with_initial_values(self):
+        PMC = ParallelMCMC()
+        mcstat, tmpfolder = setup_par_mcmc_basic()
+        initial_values = np.array([[0.5, 0.5, 0.5]])
+        PMC.setup_parallel_simulation(mcset = mcstat, initial_values = initial_values)
+        self.assertEqual(PMC.num_cores, 1, msg = 'Default cores = 1')
+        self.assertEqual(PMC.num_chain, 1, msg = 'Default chains = 1')
+        self.assertTrue(isinstance(PMC.parmc, list), msg = 'Expect list')
+        self.assertEqual(len(PMC.parmc), 1, msg = 'Expect length of 1')
+        self.assertTrue(np.array_equal(PMC.initial_values, initial_values), msg = str('Expect arrays to match: {} neq {}'.format(PMC.initial_values, initial_values)))
+        shutil.rmtree(tmpfolder)
+        
+    @patch('pymcmcstat.ParallelMCMC.cpu_count', return_value = 2)    
+    def test_setup_parmc_with_initial_values_num_cores_chain_2(self, mock_cpu_count):
+        PMC = ParallelMCMC()
+        mcstat, tmpfolder = setup_par_mcmc_basic()
+        initial_values = np.array([[0.5, 0.5, 0.5], [0.5, 0.5, 0.5]])
+        PMC.setup_parallel_simulation(mcset = mcstat, initial_values = initial_values, num_cores = 2, num_chain = 2)
+        self.assertEqual(PMC.num_cores, 2, msg = 'Default cores = 2')
+        self.assertEqual(PMC.num_chain, 2, msg = 'Default chains = 2')
+        self.assertTrue(isinstance(PMC.parmc, list), msg = 'Expect list')
+        self.assertEqual(len(PMC.parmc), 2, msg = 'Expect length of 2')
+        self.assertTrue(np.array_equal(PMC.initial_values, initial_values), msg = str('Expect arrays to match: {} neq {}'.format(PMC.initial_values, initial_values)))
+        shutil.rmtree(tmpfolder)
+# -------------------------
+class RunParallelMCMC(unittest.TestCase):
+    def test_setup_parmc(self):
+        PMC = ParallelMCMC()
+        mcstat, tmpfolder = setup_par_mcmc_basic()
+        PMC.setup_parallel_simulation(mcset = mcstat)
+        PMC.run_parallel_simulation()
+        self.assertEqual(PMC.num_cores, 1, msg = 'Default cores = 1')
+        self.assertEqual(PMC.num_chain, 1, msg = 'Default chains = 1')
+        self.assertTrue(isinstance(PMC.parmc, list), msg = 'Expect list')
+        self.assertEqual(len(PMC.parmc), 1, msg = 'Expect length of 1')
+        self.assertTrue(hasattr(PMC.parmc[0], 'simulation_results'), msg = 'Expect results added')
+        self.assertEqual(PMC.parmc[0].simulation_results.results['nsimu'], 5000, msg = 'Expect nsimu = 5000')
+        shutil.rmtree(tmpfolder)

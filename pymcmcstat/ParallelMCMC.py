@@ -31,10 +31,7 @@ class ParallelMCMC:
     def setup_parallel_simulation(self, mcset, initial_values = None, num_cores = 1, num_chain = 1):
     
         # extract settings from mcset
-        data = mcset.data
-        options = mcset.simulation_options
-        model = mcset.model_settings
-        parameters = mcset.parameters
+        data, options, model, parameters = unpack_mcmc_set(mcset = mcset)
         npar, low_lim, upp_lim = get_parameter_features(parameters.parameters)
         options = check_options_output(options)
         
@@ -92,7 +89,27 @@ class ParallelMCMC:
             res = mc.simulation_results.results
             chain = res['chain']
             CS.chainstats(chain,res)
-# -------------------------        
+
+# -------------------------
+def unpack_mcmc_set(mcset):
+    '''
+    Unpack attributes of MCMC object.
+    
+    :Args:
+        * **mcset** (`~.MCMC`): MCMC object.
+        
+    :Returns:
+        * **data** (`~.DataStructure`): MCMC data structure.
+        * **options** (`~.SimulationOptions`): MCMC simulation options.
+        * **model** (`~.ModelSettings`): MCMC model settings.
+        * **parameters** (`~.ModelParameters`): MCMC model parameters.
+    '''
+    data = mcset.data
+    options = mcset.simulation_options
+    model = mcset.model_settings
+    parameters = mcset.parameters
+    return data, options, model, parameters
+# -------------------------
 def get_parameter_features(parameters):
     '''
     Get features of model parameters.
