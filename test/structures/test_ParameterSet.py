@@ -9,13 +9,9 @@ features in the 'ParameterSet.py" class of the pymcmcstat module.
 @author: prmiles
 """
 from pymcmcstat.structures.ParameterSet import ParameterSet
+import test.general_functions as gf
 import unittest
-#import numpy as np
 
-def removekey(d, key):
-        r = dict(d)
-        del r[key]
-        return r
 # --------------------------
 # ParameterSet
 # --------------------------
@@ -26,14 +22,14 @@ class Initialize_Parameter_Set(unittest.TestCase):
         PSD = PS.__dict__
         for (k,v) in PSD.items():
             self.assertEqual(v, None, msg = str('Default {} is None'.format(k)))
-            
+
     def test_PS_set_theta(self):
         x = 1.2
         key = 'theta'
         PS = ParameterSet(theta = x)
         PSD = PS.__dict__
         self.assertEqual(PSD[key], x, msg = str('Expected {} = {}'.format(key, x)))
-        PSD = removekey(PSD, key)
+        PSD = gf.removekey(PSD, key)
         for (k,v) in PSD.items():
             self.assertEqual(v, None, msg = str('Default {} is None'.format(k)))
         
@@ -43,7 +39,7 @@ class Initialize_Parameter_Set(unittest.TestCase):
         PS = ParameterSet(ss = x)
         PSD = PS.__dict__
         self.assertEqual(PSD[key], x, msg = str('Expected {} = {}'.format(key, x)))
-        PSD = removekey(PSD, key)
+        PSD = gf.removekey(PSD, key)
         for (k,v) in PSD.items():
             self.assertEqual(v, None, msg = str('Default {} is None'.format(k)))
         
@@ -53,7 +49,7 @@ class Initialize_Parameter_Set(unittest.TestCase):
         PS = ParameterSet(prior = x)
         PSD = PS.__dict__
         self.assertEqual(PSD[key], x, msg = str('Expected {} = {}'.format(key, x)))
-        PSD = removekey(PSD, key)
+        PSD = gf.removekey(PSD, key)
         for (k,v) in PSD.items():
             self.assertEqual(v, None, msg = str('Default {} is None'.format(k)))
             
@@ -63,7 +59,7 @@ class Initialize_Parameter_Set(unittest.TestCase):
         PS = ParameterSet(sigma2 = x)
         PSD = PS.__dict__
         self.assertEqual(PSD[key], x, msg = str('Expected {} = {}'.format(key, x)))
-        PSD = removekey(PSD, key)
+        PSD = gf.removekey(PSD, key)
         for (k,v) in PSD.items():
             self.assertEqual(v, None, msg = str('Default {} is None'.format(k)))
             
@@ -73,7 +69,7 @@ class Initialize_Parameter_Set(unittest.TestCase):
         PS = ParameterSet(alpha = x)
         PSD = PS.__dict__
         self.assertEqual(PSD[key], x, msg = str('Expected {} = {}'.format(key, x)))
-        PSD = removekey(PSD, key)
+        PSD = gf.removekey(PSD, key)
         for (k,v) in PSD.items():
             self.assertEqual(v, None, msg = str('Default {} is None'.format(k)))
             
@@ -85,7 +81,6 @@ class Initialize_Parameter_Set(unittest.TestCase):
         for key in keys:
             self.assertEqual(PSD[key], x, msg = str('Expected {} = {}'.format(key, x)))
         for key in keys:
-            PSD = removekey(PSD, key)
+            PSD = gf.removekey(PSD, key)
         for (k,v) in PSD.items():
             self.assertEqual(v, None, msg = str('Default {} is None'.format(k)))
-    

@@ -31,7 +31,6 @@ class ProgressBar(object):
         elif i == self.iterations:
             self.animate(i, elapsed)
 
-
 class TextProgressBar(ProgressBar):
 
     def __init__(self, iterations, printer):
@@ -78,7 +77,7 @@ def ipythonprint(s, flush = True):
     print('\r', s, end='')
     if flush is True:
         flush_print()
-    
+
 def flush_print():
     sys.stdout.flush()
 
@@ -93,21 +92,21 @@ def run_from_ipython():
 def progress_bar(iters):
     '''
     Simulation progress bar.
-    
+
     A simple progress bar to monitor MCMC sampling progress.
     Modified from original code by Corey Goldberg (2010).
-    
+
     :Args:
         * **iters** (:py:class:`int`): Number of iterations in simulation.
-        
+
     Example display:
-        
+
     ::
-        
+
         [--------         21%                  ] 2109 of 10000 complete in 0.5 sec
-        
+
     .. note::
-        
+
         Will display a progress bar as simulation runs, providing
         feedback as to the status of the simulation.  Depending on the available
         resources, the appearance of the progress bar may differ.

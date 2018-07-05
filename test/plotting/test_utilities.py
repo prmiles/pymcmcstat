@@ -8,8 +8,63 @@ Created on Wed May 30 05:57:34 2018
 
 from pymcmcstat.plotting import utilities
 import unittest
+from mock import patch
 import numpy as np
+import math
 
+# --------------------------
+class GenerateSubplotGrid(unittest.TestCase):
+    def test_generate_subplot_grid(self):
+        nparam = 5
+        ns1, ns2 = utilities.generate_subplot_grid(nparam = nparam)
+        self.assertEqual(ns1, math.ceil(math.sqrt(nparam)), msg = 'Expect 3')
+        self.assertEqual(ns2, round(math.sqrt(nparam)), msg = 'Expect 2')
+
+    def test_generate_subplot_grid_1(self):
+        nparam = 1
+        ns1, ns2 = utilities.generate_subplot_grid(nparam = nparam)
+        self.assertEqual(ns1, math.ceil(math.sqrt(nparam)), msg = 'Expect 1')
+        self.assertEqual(ns2, round(math.sqrt(nparam)), msg = 'Expect 1')
+
+# --------------------------
+class GenerateNames(unittest.TestCase):
+    
+    def test_default_names(self):
+        nparam = 8
+        names = utilities.generate_names(nparam = nparam, names = None)
+        self.assertEqual(len(names), nparam, msg = 'Length of names should match number of parameters')
+        for ii in range(nparam):
+            self.assertEqual(names[ii], str('$p_{{{}}}$'.format(ii)))
+
+    def test_names_partial(self):
+        nparam = 8
+        names = ['hi']
+        names = utilities.generate_names(nparam = nparam, names = names)
+        self.assertEqual(names[0], 'hi', msg = 'First name is hi')
+        for ii in range(1, nparam):
+            self.assertEqual(names[ii], str('$p_{{{}}}$'.format(ii)))
+ 
+# --------------------------
+class SetupPlotFeatures(unittest.TestCase):
+    def test_default_features(self):
+        nparam = 2
+        ns1, ns2, names, figsizeinches = utilities.setup_plot_features(nparam = nparam, names = None, figsizeinches = None)
+        self.assertEqual(ns1, math.ceil(math.sqrt(nparam)), msg = 'Expect 3')
+        self.assertEqual(ns2, round(math.sqrt(nparam)), msg = 'Expect 2')
+        for ii in range(nparam):
+            self.assertEqual(names[ii], str('$p_{{{}}}$'.format(ii)))
+        self.assertEqual(figsizeinches, [5,4], msg = 'Default figure size is [5,4]')
+        
+    def test_nondefault_features(self):
+        nparam = 2
+        ns1, ns2, names, figsizeinches = utilities.setup_plot_features(nparam = nparam, names = ['hi'], figsizeinches = [7,2])
+        self.assertEqual(ns1, math.ceil(math.sqrt(nparam)), msg = 'Expect 3')
+        self.assertEqual(ns2, round(math.sqrt(nparam)), msg = 'Expect 2')
+        self.assertEqual(names[0], 'hi', msg = 'First name is hi')
+        for ii in range(1, nparam):
+            self.assertEqual(names[ii], str('$p_{{{}}}$'.format(ii)))
+        self.assertEqual(figsizeinches, [7,2], msg = 'Default figure size is [7,2]')
+        
 # --------------------------
 class GenerateDefaultNames(unittest.TestCase):
     
@@ -39,9 +94,9 @@ class ExtendNamesToMatchNparam(unittest.TestCase):
         names = ['aa']
         names = utilities.extend_names_to_match_nparam(names = names, nparam = nparam)
         expected_names = ['aa','$p_{1}$','$p_{2}$']
-        self.assertEqual(names, expected_names, 
+        self.assertEqual(names, expected_names,
                          msg = str('Names do not match: Expected - {}, Received - {}'.format(expected_names, names)))
-        
+
     def test_double_entry_name_set(self):
         nparam = 3
         names = ['aa', 'zz']
@@ -150,4 +205,68 @@ class ScaleBandWidth(unittest.TestCase):
         x = np.random.random_sample(size = (1,100))
         s = utilities.scale_bandwidth(x = x)
         self.assertTrue(isinstance(s, np.ndarray), msg = 'Expected array return - received {}'.format(type(s)))
+    
+    @patch('pymcmcstat.plotting.utilities.iqrange', return_value = -1.0)
+    def test_array_return_with_iqrange_lt_0(self, mock_iqrange):
+        x = np.random.random_sample(size = (1,100))
+        s = utilities.scale_bandwidth(x = x)
+        self.assertTrue(isinstance(s, np.ndarray), msg = 'Expected array return - received {}'.format(type(s)))
+
+# --------------------------
+class AppendToNrowNcolBasedOnShape(unittest.TestCase):
+    def test_shape_is_2d(self):
+        nrow = []
+        ncol = []
+        sh = (2,1)
+        nrow, ncol = utilities.append_to_nrow_ncol_based_on_shape(sh = sh, nrow = nrow, ncol = ncol)
+        self.assertEqual(nrow, [2], msg = 'Expect [2]')
+        self.assertEqual(ncol, [1], msg = 'Expect [1]')
         
+    def test_shape_is_1d(self):
+        nrow = []
+        ncol = []
+        sh = (2,)
+        nrow, ncol = utilities.append_to_nrow_ncol_based_on_shape(sh = sh, nrow = nrow, ncol = ncol)
+        self.assertEqual(nrow, [2], msg = 'Expect [2]')
+        self.assertEqual(ncol, [1], msg = 'Expect [1]')
+        
+# --------------------------
+class ConvertFlagToBoolean(unittest.TestCase):
+    def test_boolean_conversion(self):
+        self.assertTrue(utilities.convert_flag_to_boolean(flag = 'on'), msg = 'on -> True')
+        self.assertFalse(utilities.convert_flag_to_boolean(flag = 'off'), msg = 'off -> False')
+        
+# --------------------------
+class SetLocalParameters(unittest.TestCase):
+    def test_set_local_parameters(self):
+        slp = utilities.set_local_parameters
+        self.assertTrue(np.array_equal(slp(ii = 0, local = np.array([0, 0])), np.array([True, True])), msg = 'Expect Array [True, True]')
+        self.assertTrue(np.array_equal(slp(ii = 0, local = np.array([0, 1])), np.array([True, False])), msg = 'Expect Array [True, False]')
+        self.assertTrue(np.array_equal(slp(ii = 0, local = np.array([1, 0])), np.array([False, True])), msg = 'Expect Array [False, True]')
+
+        self.assertTrue(np.array_equal(slp(ii = 1, local = np.array([0, 1])), np.array([True, True])), msg = 'Expect Array [True, True]')
+        self.assertTrue(np.array_equal(slp(ii = 1, local = np.array([1, 0])), np.array([True, True])), msg = 'Expect Array [True, True]')
+        
+        self.assertTrue(np.array_equal(slp(ii = 1, local = np.array([2, 2])), np.array([False, False])), msg = 'Expect Array [False, False]')
+        self.assertTrue(np.array_equal(slp(ii = 2, local = np.array([1, 2])), np.array([False, True])), msg = 'Expect Array [False, True]')
+        
+# --------------------------------------------
+class Empirical_Quantiles_Test(unittest.TestCase):
+
+    def test_does_default_empirical_quantiles_return_3_element_array(self):
+        test_out = utilities.empirical_quantiles(np.random.rand(10,1))
+        self.assertEqual(test_out.shape, (3,1), msg = 'Default output shape is (3,1)')
+        
+    def test_does_non_default_empirical_quantiles_return_2_element_array(self):
+        test_out = utilities.empirical_quantiles(np.random.rand(10,1), p = np.array([0.2, 0.5]))
+        self.assertEqual(test_out.shape, (2,1), msg = 'Non-default output shape should be (2,1)')
+        
+    def test_empirical_quantiles_should_not_support_list_input(self):
+        with self.assertRaises(AttributeError):
+            utilities.empirical_quantiles([-1,0,1])
+            
+    def test_empirical_quantiles_vector(self):
+        out = utilities.empirical_quantiles(np.linspace(10,20, num = 10).reshape(10,1), p = np.array([0.22, 0.57345]))
+        exact = np.array([[12.2], [15.7345]])
+        comp = np.linalg.norm(out - exact)
+        self.assertAlmostEqual(comp, 0)

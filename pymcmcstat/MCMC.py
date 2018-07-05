@@ -45,6 +45,7 @@ from .chain import ChainStatistics
 from .chain import ChainProcessing
 
 from .utilities.progressbar import progress_bar
+from .utilities.general import message
 
 class MCMC:
     def __init__(self, rngseed = None):
@@ -59,34 +60,19 @@ class MCMC:
         self._sampling_methods = SamplingMethods()
         self._mcmc_status = False
         np.random.seed(seed = rngseed)
-        
+
     # --------------------------------------------------------
-    def run_simulation(self, use_previous_results = False, rngseed = None):
+    def run_simulation(self, use_previous_results = False):
         '''
         Run MCMC Simulation
-        
+
         :Args:
             * **use_previous_results** (:py:class:`bool`): Flag to indicate whether simulation is being restarted.
         '''
         start_time = time.time()
         
-        if use_previous_results == True:
-            if self._mcmc_status == True:
-                self.parameters._results_to_params(self.simulation_results.results, 1)
-                self._initialize_simulation()
-                self.__expand_chains()
-            else:
-                sys.exit('No previous results found.  Set ''use_previous_results'' to ''False''')
-        else:
-            if self.simulation_options.json_restart_file is not None:
-                RS = ResultsStructure()
-                res = RS.load_json_object(self.simulation_options.json_restart_file)
-                self.parameters._results_to_params(res, 1)
-                self.simulation_options.qcov = np.array(res['qcov'])
-                
-            self.__chain_index = 0 # start index at zero
-            self._initialize_simulation()
-            self.__initialize_chains(chainind = self.__chain_index)
+        self.__setup_simulator(use_previous_results = use_previous_results)
+        
         # ---------------------
         # setup progress bar
         if self.simulation_options.waitbar:
@@ -113,6 +99,28 @@ class MCMC:
         self.PI = PredictionIntervals()
         self.chainstats = ChainStatistics.chainstats
         self._mcmc_status = True # simulation has been performed
+    
+    # --------------------------------------------------------
+    def __setup_simulator(self, use_previous_results):
+        
+        if use_previous_results == True:
+            if self._mcmc_status == True:
+                self.parameters._results_to_params(self.simulation_results.results, 1)
+                self._initialize_simulation()
+                self.__expand_chains(nsimu = self.simulation_options.nsimu, npar = self.parameters.npar, nsos = self.model_settings.nsos, updatesigma=self.simulation_options.updatesigma)
+            else:
+                sys.exit('No previous results found.  Set ''use_previous_results'' to ''False''')
+        else:
+            if self.simulation_options.json_restart_file is not None:
+                RS = ResultsStructure()
+                res = RS.load_json_object(self.simulation_options.json_restart_file)
+                self.parameters._results_to_params(res, 1)
+                self.simulation_options.qcov = np.array(res['qcov'])
+                
+            self.__chain_index = 0 # start index at zero
+            self._initialize_simulation()
+            self.__initialize_chains(chainind = self.__chain_index, nsimu = self.simulation_options.nsimu, npar = self.parameters.npar, nsos = self.model_settings.nsos, updatesigma=self.simulation_options.updatesigma, sigma2 = self.model_settings.sigma2)
+            
     # --------------------------------------------------------
     def _initialize_simulation(self):
         # ---------------------------------
@@ -155,41 +163,49 @@ class MCMC:
             self._sampling_methods.delayed_rejection._initialize_dr_metrics(self.simulation_options)
 
     # --------------------------------------------------------
-    def __initialize_chains(self, chainind):
+    def __initialize_chains(self, chainind, nsimu, npar, nsos, updatesigma, sigma2):
         '''
         Initialize chains
-        
+
         :Args:
             * **chainind** (:py:class:`int`): Where to store initial parameter value
-
+            * **nsimu** (:py:class:`int`): Number of parameter samples to simulate.  Default is 1e4.
+            * **npar** (:py:class:`int`): Number of parameters being sampled.
+            * **nsos** (:py:class:`int`): Length of output from sum-of-squares function
+            * **updatesigma** (:py:class:`bool`): Flag for updating measurement error variance. Default is 0 -> off (1 -> on).
+            * **sigma2** (:class:`numpy.ndarray`): Initial error observations.
         '''
         # Initialize chain, error variance, and SS
-        self.__chain = np.zeros([self.simulation_options.nsimu, self.parameters.npar])
-        self.__sschain = np.zeros([self.simulation_options.nsimu, self.model_settings.nsos])
-        if self.simulation_options.updatesigma:
-            self.__s2chain = np.zeros([self.simulation_options.nsimu, self.model_settings.nsos])
-        else:
-            self.__s2chain = None
-            
+        self.__chain = np.zeros([nsimu, npar])
+        self.__sschain = np.zeros([nsimu, nsos])
         # Save initialized values to chain, s2chain, sschain
         self.__chain[chainind,:] = self.__initial_set.theta
         self.__sschain[chainind,:] = self.__initial_set.ss
-        if self.simulation_options.updatesigma:
-            self.__s2chain[chainind,:] = self.model_settings.sigma2
         
-    def __expand_chains(self):
-        # continuing simulation, so we must expand storage arrays
-        zero_chain = np.zeros([self.simulation_options.nsimu-1, self.parameters.npar])
-        zero_sschain = np.zeros([self.simulation_options.nsimu-1, self.model_settings.nsos])
-        if self.simulation_options.updatesigma:
-            zero_s2chain = np.zeros([self.simulation_options.nsimu-1, self.model_settings.nsos])
+        if updatesigma:
+            self.__s2chain = np.zeros([nsimu, nsos])
+            self.__s2chain[chainind,:] = sigma2
         else:
-            zero_s2chain = None
-            
+            self.__s2chain = None
+        
+    def __expand_chains(self, nsimu, npar, nsos, updatesigma):
+        '''
+        Expand chains for extended simulation
+
+        :Args:
+            * **nsimu** (:py:class:`int`): Number of parameter samples to simulate.  Default is 1e4.
+            * **npar** (:py:class:`int`): Number of parameters being sampled.
+            * **nsos** (:py:class:`int`): Length of output from sum-of-squares function
+            * **updatesigma** (:py:class:`bool`): Flag for updating measurement error variance. Default is 0 -> off (1 -> on).
+        '''
+        # continuing simulation, so we must expand storage arrays
+        zero_chain = np.zeros([nsimu-1, npar])
+        zero_sschain = np.zeros([nsimu-1, nsos])
         # Concatenate with previous chains
         self.__chain = np.concatenate((self.__chain, zero_chain), axis = 0)
         self.__sschain = np.concatenate((self.__sschain, zero_sschain), axis = 0)
-        if self.simulation_options.updatesigma:
+        if updatesigma:
+            zero_s2chain = np.zeros([nsimu-1, nsos])
             self.__s2chain = np.concatenate((self.__s2chain, zero_s2chain), axis = 0)
         else:
             self.__s2chain = None
@@ -215,37 +231,28 @@ class MCMC:
             if self.simulation_options.waitbar:
                 self.__wbarstatus.update(isimu)
                 
-            self.__message(self.simulation_options.verbosity, 100, str('i: {:d}/{:d}\n'.format(isimu,nsimu)));
+            message(self.simulation_options.verbosity, 100, str('i: {:d}/{:d}\n'.format(isimu,nsimu)));
 
-            # METROPOLIS ALGORITHM
+            # METROPOLIS
             accept, new_set, outbound, npar_sample_from_normal = self._sampling_methods.metropolis.run_metropolis_step(
                     old_set = self.__old_set, parameters = self.parameters, R = self._covariance._R,
                     prior_object = self.__prior_object, sos_object = self.__sos_object)
 
             # DELAYED REJECTION
-            # perform a new try according to delayed rejection
             if self.simulation_options.ntry > 1 and accept == 0:
                 accept, new_set, outbound = self._sampling_methods.delayed_rejection.run_delayed_rejection(
                         old_set = self.__old_set, new_set = new_set, RDR = self._covariance._RDR, ntry = self.simulation_options.ntry,
                         parameters = self.parameters, invR = self._covariance._invR,
                         sosobj = self.__sos_object, priorobj = self.__prior_object)
 
-            # UPDATE CHAIN
+            # UPDATE CHAIN & SUM-OF-SQUARES CHAIN
             self.__update_chain(accept = accept, new_set = new_set, outsidebounds = outbound)
-            
+            self.__sschain[self.__chain_index,:] = self.__old_set.ss
+
             # PRINT REJECTION STATISTICS
             if self.simulation_options.printint and iiprint + 1 == self.simulation_options.printint:
-                self.__print_rejection_statistics(rejected = self.__rejected, isimu = isimu, iiadapt = iiadapt, verbosity = self.simulation_options.verbosity)
+                print_rejection_statistics(rejected = self.__rejected, isimu = isimu, iiadapt = iiadapt, verbosity = self.simulation_options.verbosity)
                 iiprint = 0 # reset print counter
-                
-            # UPDATE SUM-OF-SQUARES CHAIN
-            self.__sschain[self.__chain_index,:] = self.__old_set.ss
-            
-            # UPDATE ERROR VARIANCE
-            if self.simulation_options.updatesigma:
-                sigma2 = self._error_variance.update_error_variance(self.__old_set.ss, self.model_settings)
-                self.__s2chain[self.__chain_index,:] = sigma2
-                self.__old_set.sigma2 = sigma2
 
             # ADAPTATION
             if self.simulation_options.adaptint > 0 and iiadapt == self.simulation_options.adaptint:
@@ -253,32 +260,23 @@ class MCMC:
                         covariance = self._covariance, options = self.simulation_options,
                         isimu = isimu, iiadapt = iiadapt, rejected = self.__rejected,
                         chain = self.__chain, chainind = self.__chain_index, u = npar_sample_from_normal,
-                        npar = self.parameters.npar, new_set = new_set)
+                        npar = self.parameters.npar, alpha = new_set.alpha)
                 
                 iiadapt = 0 # reset local adaptation index
                 self.__rejected['in_adaptation_interval'] = 0 # reset local rejection index
+            
+            # UPDATE ERROR VARIANCE
+            if self.simulation_options.updatesigma:
+                sigma2 = self._error_variance.update_error_variance(self.__old_set.ss, self.model_settings)
+                self.__s2chain[self.__chain_index,:] = sigma2
+                self.__old_set.sigma2 = sigma2
                 
             # SAVE TO LOG FILE
             if savecount == self.simulation_options.savesize:
-                savesize = self.simulation_options.savesize
-                start = isimu - savesize
-                end = isimu
-                if self.simulation_options.save_to_bin is True:
-                    self.__save_chains_to_bin(start, end)
-                if self.simulation_options.save_to_txt is True:
-                    self.__save_chains_to_txt(start, end)
-                    
-                # reset counter
-                savecount = 0
-                lastbin = isimu
+                savecount, lastbin = self.save_to_log_file(start = isimu - self.simulation_options.savesize, end = isimu)
        
         # SAVE REMAINING ELEMENTS TO BIN FILE
-        start = lastbin
-        end = isimu + 1
-        if self.simulation_options.save_to_bin is True:
-            self.__save_chains_to_bin(start, end)
-        if self.simulation_options.save_to_txt is True:
-            self.__save_chains_to_txt(start, end)
+        self.save_to_log_file(start = lastbin, end = isimu + 1)
            
         # update value to end value
         self.parameters._value[self.parameters._parind] = self.__old_set.theta
@@ -300,18 +298,37 @@ class MCMC:
         self.simulation_results.add_chain(chain = self.__chain)
         self.simulation_results.add_s2chain(s2chain = self.__s2chain)
         self.simulation_results.add_sschain(sschain = self.__sschain)
+    # ------------------------------------------------
+    def save_to_log_file(self, start, end):
+        '''
+        Save to log files
         
-#        self.simulation_results.results # assign dictionary
-    
+        :Args:
+            * **start** (:py:class:`int`): Start index of chain block to save
+            * **end** (:py:class:`int`): End index of chain block to save
+            
+        :Returns:
+            * **savecount** (:py:class:`int`): Reset save counter
+            * **lastbin** (:py:class:`int`): Last index saved
+        '''
+        if self.simulation_options.save_to_bin is True:
+            self.__save_chains_to_bin(start, end)
+        if self.simulation_options.save_to_txt is True:
+            self.__save_chains_to_txt(start, end)
+            
+        # reset counter
+        savecount = 0
+        lastbin = end
+        return savecount, lastbin
     # --------------------------------------------------------
     def __save_chains_to_bin(self, start, end):
         '''
         Save chain segment to binary file
-        
+
         :Args:
             * **start** (:py:class:`int`): Starting index of chain to save to file
             * **end** (:py:class:`int`): Ending index of chain to save to file
-            
+
         If you specify a `savesize` of 100, then every 100 simulations the last 100
         chain sets will be appended to the file.  That is to say, if you are on
         simulation 1000, the chain elements 900-999 will be appended to the file.
@@ -339,11 +356,11 @@ class MCMC:
     def __save_chains_to_txt(self, start, end):
         '''
         Save chain segment to text file
-        
+
         :Args:
             * **start** (:py:class:`int`): Starting index of chain to save to file
             * **end** (:py:class:`int`): Ending index of chain to save to file
-            
+
         If you specify a `savesize` of 100, then every 100 simulations the last 100
         chain sets will be appended to the file.  That is to say, if you are on
         simulation 1000, the chain elements 900-999 will be appended to the file.
@@ -368,7 +385,7 @@ class MCMC:
     def __update_chain(self, accept, new_set, outsidebounds):
         '''
         Update chain
-        
+
         :Args:
             * **accept** (:py:class:`str`): Flag to indicate whether :math:`q^*` is accepted or rejected
             * **new_set** (:class:`~.ParameterSet`): Features of :math:`q^*`
@@ -382,35 +399,6 @@ class MCMC:
             # reject
             self.__chain[self.__chain_index,:] = self.__old_set.theta
             self.__update_rejected(outsidebounds = outsidebounds)
-            
-    def __print_rejection_statistics(self, rejected, isimu, iiadapt, verbosity):
-        '''
-        Print Rejection Statistics
-        
-        :Args:
-            * **isimu** (:py:class:`int`): Simulation counter
-            * **iiadapt** (:py:class:`int`): Adaptation counter
-            * **verbosity** (:py:class:`int`): Verbosity of display output.
-        '''
-        self.__message(verbosity, 2, str('i:{} ({},{},{})\n'.format(
-                isimu, rejected['total']*isimu**(-1)*100, rejected['in_adaptation_interval']*iiadapt**(-1)*100,
-                rejected['outside_bounds']*isimu**(-1)*100)))
-     
-    @classmethod
-    def __message(cls, verbosity, level, printthis):
-        '''
-        Display message
-        
-        :Args:
-            * **verbosity** (:py:class:`int`): Verbosity of display output.
-            * **level** (:py:class:`int`): Print level relative to verbosity.
-            * **printthis** (:py:class:`str'): String to be printed.
-        '''
-        printed = False
-        if verbosity >= level:
-            print(printthis)
-            printed = True
-        return printed
     
     def __display_current_mcmc_settings(self):
         self.model_settings.display_model_settings()
@@ -420,7 +408,7 @@ class MCMC:
     def __update_rejected(self, outsidebounds):
         '''
         Update rejection counters
-        
+
         :Args:
             * **outsidebounds** (:py:class:`bool`): Flag to indicate whether rejection occured due to sampling outside limits
         '''
@@ -428,3 +416,16 @@ class MCMC:
         self.__rejected['in_adaptation_interval'] += 1
         if outsidebounds:
             self.__rejected['outside_bounds'] += 1
+            
+def print_rejection_statistics(rejected, isimu, iiadapt, verbosity):
+    '''
+    Print Rejection Statistics
+
+    :Args:
+        * **isimu** (:py:class:`int`): Simulation counter
+        * **iiadapt** (:py:class:`int`): Adaptation counter
+        * **verbosity** (:py:class:`int`): Verbosity of display output.
+    '''
+    message(verbosity, 2, str('i:{} ({},{},{})\n'.format(
+            isimu, rejected['total']*isimu**(-1)*100, rejected['in_adaptation_interval']*iiadapt**(-1)*100,
+            rejected['outside_bounds']*isimu**(-1)*100)))

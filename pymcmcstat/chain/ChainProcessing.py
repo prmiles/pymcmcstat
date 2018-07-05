@@ -14,7 +14,7 @@ import warnings
 def print_log_files(savedir):
     '''
     Print log files to screen.
-    
+
     :Args:
         * **savedir** (:py:class:`str`): Directory where log files are saved.
         
@@ -94,6 +94,7 @@ def read_in_savedir_files(savedir, extension = 'h5', chainfile = 'chainfile', ss
                 'covchain': read_in_txt_file(covchainfile)
                 }
     else:
+        out = None
         warnings.warn('Unknown extension specified -> log files saved as either h5 (binary) or txt (text).')
     
     return out
@@ -150,7 +151,10 @@ def read_in_bin_file(filename):
             out[a:b,:] = np.array(hf.get(dsii))
             
         hf.close()
-    except:
+    except Exception as ex:
+        template = "An exception of type {0} occurred. Arguments:\n{1!r}"
+        message = template.format(type(ex).__name__, ex.args)
+        print(message)
         warnings.warn('Exception raised reading {} - does not exist - check path/file name.  Assigning to empty list.'.format(filename))
         out = []
     
@@ -165,7 +169,10 @@ def read_in_txt_file(filename):
     '''
     try:
         out = np.loadtxt(filename)
-    except:
+    except Exception as ex:
+        template = "An exception of type {0} occurred. Arguments:\n{1!r}"
+        message = template.format(type(ex).__name__, ex.args)
+        print(message)
         warnings.warn('Exception raised reading {} - does not exist - check path/file name.  Assigning to empty list.'.format(filename))
         out = []
     
@@ -187,8 +194,8 @@ def _create_path_without_extension(savedir, file):
     return file
     
 def _add_to_log(filename, logstr):
-        with open(filename, 'a') as logfile:
-            logfile.write(logstr)
+    with open(filename, 'a') as logfile:
+        logfile.write(logstr)
     
 def _save_to_bin_file(filename, datasetname, mtx):
     hf = h5py.File(filename, 'a')
@@ -196,7 +203,7 @@ def _save_to_bin_file(filename, datasetname, mtx):
     hf.close()
         
 def _save_to_txt_file(filename, mtx):
-    handle = open(filename, 'a')
+    handle = open(filename, 'ab')
     np.savetxt(handle,mtx)
     handle.close()
     

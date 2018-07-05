@@ -9,9 +9,9 @@ Created on Wed Jan 31 12:54:16 2018
 # import required packages
 from __future__ import division
 import math
-import matplotlib.pyplot as pyplot
+import matplotlib.pyplot as plt
 from pylab import hist
-from .utilities import generate_default_names, extend_names_to_match_nparam, make_x_grid
+from .utilities import generate_names, setup_plot_features, make_x_grid
 
 import warnings
 
@@ -22,156 +22,113 @@ except ImportError as e:
 
 # --------------------------------------------
 def plot_density_panel(chains, names = None, hist_on = False, figsizeinches = None):
-    """
+    '''
     Plot marginal posterior densities
-    
+
     :Args:
         * **chains** (:class:`~numpy.ndarray`): Sampling chain for each parameter
         * **names** (:py:class:`list`): List of strings - name of each parameter
         * **hist_on** (:py:class:`bool`): Flag to include histogram on density plot
         * **figsizeinches** (:py:class:`list`): Specify figure size in inches [Width, Height]
+    '''
+    nsimu, nparam = chains.shape # number of rows, number of columns
+    ns1, ns2, names, figsizeinches = setup_plot_features(nparam = nparam, names = names, figsizeinches = figsizeinches)
 
-    """
-    nrow, ncol = chains.shape # number of rows, number of columns
-    
-    nparam = ncol # number of parameter chains
-    ns1 = math.ceil(math.sqrt(nparam))
-    ns2 = round(math.sqrt(nparam))
-
-    # Check if names defined
-    if names == None:
-        names = generate_default_names(nparam)
-        
-    # Check if enough names defined
-    if len(names) != nparam:
-        names = extend_names_to_match_nparam(names, nparam)
-    
-    if figsizeinches is None:
-        figsizeinches = [5,4]
-        
-    pyplot.figure(dpi=100, figsize=(figsizeinches)) # initialize figure
+    f = plt.figure(dpi=100, figsize=(figsizeinches)) # initialize figure
     for ii in range(nparam):
         # define chain
-        chain = chains[:,ii] # check indexing
-        chain = chain.reshape(nrow,1)
+        chain = chains[:,ii].reshape(nsimu,1) # check indexing
         
         # define x grid
         chain_grid = make_x_grid(chain)
         
-        # Compuate kernel density estimate
+        # Compute kernel density estimate
         kde = KDEMultivariate(chain, bw = 'normal_reference', var_type = 'c')
 
         # plot density on subplot
-        pyplot.subplot(ns1,ns2,ii+1)
+        plt.subplot(ns1,ns2,ii+1)
              
         if hist_on == True: # include histograms
             hist(chain, normed=True)
             
-        pyplot.plot(chain_grid, kde.pdf(chain_grid), 'k')
+        plt.plot(chain_grid, kde.pdf(chain_grid), 'k')
         # format figure
-        pyplot.xlabel(names[ii])
-        pyplot.ylabel(str('$\pi$({}$|M^{}$)'.format(names[ii], '{data}')))
-        pyplot.tight_layout(rect=[0, 0.03, 1, 0.95],h_pad=1.0) # adjust spacing
+        plt.xlabel(names[ii])
+        plt.ylabel(str('$\pi$({}$|M^{}$)'.format(names[ii], '{data}')))
+        plt.tight_layout(rect=[0, 0.03, 1, 0.95],h_pad=1.0) # adjust spacing
+
+    return f
 
 # --------------------------------------------
 def plot_histogram_panel(chains, names = None, figsizeinches = None):
     """
     Plot histogram from each parameter's sampling history
-    
+
     :Args:
         * **chains** (:class:`~numpy.ndarray`): Sampling chain for each parameter
         * **names** (:py:class:`list`): List of strings - name of each parameter
         * **hist_on** (:py:class:`bool`): Flag to include histogram on density plot
         * **figsizeinches** (:py:class:`list`): Specify figure size in inches [Width, Height]
     """
-    nrow, ncol = chains.shape # number of rows, number of columns
-    
-    nparam = ncol # number of parameter chains
-    ns1 = math.ceil(math.sqrt(nparam))
-    ns2 = round(math.sqrt(nparam))
-    
-    # Check if names defined
-    if names == None:
-        names = generate_default_names(nparam)
-    
-    # Check if enough names defined
-    if len(names) != nparam:
-        names = extend_names_to_match_nparam(names, nparam)
-       
-    if figsizeinches is None:
-        figsizeinches = [5,4]
+    nsimu, nparam = chains.shape # number of rows, number of columns
+    ns1, ns2, names, figsizeinches = setup_plot_features(nparam = nparam, names = names, figsizeinches = figsizeinches)
         
-    f = pyplot.figure(dpi=100, figsize=(figsizeinches)) # initialize figure
+    f = plt.figure(dpi=100, figsize=(figsizeinches)) # initialize figure
     for ii in range(nparam):
         # define chain
-        chain = chains[:,ii] # check indexing
-        chain = chain.reshape(nrow,1)
+        chain = chains[:,ii].reshape(nsimu,1) # check indexing
         
         # plot density on subplot
-        ax = pyplot.subplot(ns1,ns2,ii+1)
+        ax = plt.subplot(ns1,ns2,ii+1)
         hist(chain, normed=True)
         # format figure
-        pyplot.xlabel(names[ii])
+        plt.xlabel(names[ii])
         ax.set_yticklabels([])
-        pyplot.tight_layout(rect=[0, 0.03, 1, 0.95],h_pad=1.0) # adjust spacing
+        plt.tight_layout(rect=[0, 0.03, 1, 0.95],h_pad=1.0) # adjust spacing
         
     return f
         
 # --------------------------------------------
-def plot_chain_panel(chains, names = None, figsizeinches = None):
+def plot_chain_panel(chains, names = None, figsizeinches = None, maxpoints = 500):
     """
     Plot sampling chain for each parameter
-    
+
     :Args:
         * **chains** (:class:`~numpy.ndarray`): Sampling chain for each parameter
         * **names** (:py:class:`list`): List of strings - name of each parameter
         * **figsizeinches** (:py:class:`list`): Specify figure size in inches [Width, Height]
+        * **maxpoints** (:py:class:`int`): Max number of display points - keeps scatter plot from becoming overcrowded
     """
     nsimu, nparam = chains.shape # number of rows, number of columns
-
+    ns1, ns2, names, figsizeinches = setup_plot_features(nparam = nparam, names = names, figsizeinches = figsizeinches)
+    
     skip = 1
-    maxpoints = 500 # max number of display points - keeps scatter plot from becoming overcrowded
     if nsimu > maxpoints:
         skip = int(math.floor(nsimu/maxpoints))
     
-    ns1 = math.ceil(math.sqrt(nparam))
-    ns2 = round(math.sqrt(nparam))
-    
-    # Check if names defined
-    if names == None:
-        names = generate_default_names(nparam)
-    
-    # Check if enough names defined
-    if len(names) != nparam:
-        names = extend_names_to_match_nparam(names, nparam)
-        
-    if figsizeinches is None:
-        figsizeinches = [5,4]
-        
-    f = pyplot.figure(dpi=100, figsize=(figsizeinches)) # initialize figure
+    f = plt.figure(dpi=100, figsize=(figsizeinches)) # initialize figure
     for ii in range(nparam):
         # define chain
-        chain = chains[:,ii] # check indexing
-        chain = chain.reshape(nsimu,1)
+        chain = chains[:,ii].reshape(nsimu,1) # check indexing
         
-        # plot density on subplot
-        pyplot.subplot(ns1,ns2,ii+1)
-        pyplot.plot(range(0,nsimu,skip), chain[range(0,nsimu,skip),0], '.b')
+        # plot chain on subplot
+        plt.subplot(ns1,ns2,ii+1)
+        plt.plot(range(0,nsimu,skip), chain[range(0,nsimu,skip),0], '.b')
         # format figure
-        pyplot.xlabel('Iteration')
-        pyplot.ylabel(str('{}'.format(names[ii])))
+        plt.xlabel('Iteration')
+        plt.ylabel(str('{}'.format(names[ii])))
         if ii+1 <= ns1*ns2 - ns2:
-            pyplot.xlabel('')
+            plt.xlabel('')
             
-        pyplot.tight_layout(rect=[0, 0.03, 1, 0.95],h_pad=1.0) # adjust spacing
+        plt.tight_layout(rect=[0, 0.03, 1, 0.95],h_pad=1.0) # adjust spacing
         
     return f
         
 # --------------------------------------------
-def plot_pairwise_correlation_panel(chains, names = None, figsizeinches = None, skip=1):
+def plot_pairwise_correlation_panel(chains, names = None, figsizeinches = None, skip = 1):
     """
     Plot pairwise correlation for each parameter
-    
+
     :Args:
         * **chains** (:class:`~numpy.ndarray`): Sampling chain for each parameter
         * **names** (:py:class:`list`): List of strings - name of each parameter
@@ -182,18 +139,12 @@ def plot_pairwise_correlation_panel(chains, names = None, figsizeinches = None, 
     
     inds = range(0,nsimu,skip)
     
-    # Check if names defined
-    if names == None:
-        names = generate_default_names(nparam)
-        
-    # Check if enough names defined
-    if len(names) != nparam:
-        names = extend_names_to_match_nparam(names, nparam)
+    names = generate_names(nparam = nparam, names = names)
         
     if figsizeinches is None:
         figsizeinches = [7,5]
         
-    f = pyplot.figure(dpi=100, figsize=(figsizeinches)) # initialize figure
+    f = plt.figure(dpi=100, figsize=(figsizeinches)) # initialize figure
     for jj in range(2,nparam+1):
         for ii in range(1,jj):
             chain1 = chains[inds,ii-1]
@@ -202,8 +153,8 @@ def plot_pairwise_correlation_panel(chains, names = None, figsizeinches = None, 
             chain2 = chain2.reshape(nsimu,1)
             
             # plot density on subplot
-            ax = pyplot.subplot(nparam-1,nparam-1,(jj-2)*(nparam-1)+ii)
-            pyplot.plot(chain1, chain2, '.b')
+            ax = plt.subplot(nparam-1,nparam-1,(jj-2)*(nparam-1)+ii)
+            plt.plot(chain1, chain2, '.b')
             
             # format figure
             if jj != nparam: # rm xticks
@@ -211,23 +162,23 @@ def plot_pairwise_correlation_panel(chains, names = None, figsizeinches = None, 
             if ii != 1: # rm yticks
                 ax.set_yticklabels([])
             if ii == 1: # add ylabels
-                pyplot.ylabel(str('{}'.format(names[jj-1])))
+                plt.ylabel(str('{}'.format(names[jj-1])))
             if ii == jj - 1:
                 if nparam == 2: # add xlabels
-                    pyplot.xlabel(str('{}'.format(names[ii-1])))
+                    plt.xlabel(str('{}'.format(names[ii-1])))
                 else: # add title
-                    pyplot.title(str('{}'.format(names[ii-1])))
+                    plt.title(str('{}'.format(names[ii-1])))
          
     # adjust figure margins
-    pyplot.tight_layout(rect=[0, 0.03, 1, 0.95],h_pad=1.0) # adjust spacing
+    plt.tight_layout(rect=[0, 0.03, 1, 0.95],h_pad=1.0) # adjust spacing
     
     return f
  
 # --------------------------------------------
-def plot_chain_metrics(chain, name, figsizeinches = None):
-    """
+def plot_chain_metrics(chain, name = None, figsizeinches = None):
+    '''
     Plot chain metrics for individual chain
-    
+
     - Scatter plot of chain
     - Histogram of chain
     
@@ -235,38 +186,40 @@ def plot_chain_metrics(chain, name, figsizeinches = None):
         * **chains** (:class:`~numpy.ndarray`): Sampling chain for specific parameter
         * **names** (:py:class:`str`): Name of each parameter
         * **figsizeinches** (:py:class:`list`): Specify figure size in inches [Width, Height]
-    """
+    '''
+    name = generate_names(nparam = 1, names = name)
     
     if figsizeinches is None:
         figsizeinches = [7,5]
         
-    pyplot.figure(dpi=100, figsize=(figsizeinches)) # initialize figure
-    pyplot.suptitle('Chain metrics for {}'.format(name), fontsize='12')
-    pyplot.subplot(2,1,1)
-    pyplot.scatter(range(0,len(chain)),chain, marker='.')
+    f = plt.figure(dpi=100, figsize=(figsizeinches)) # initialize figure
+    plt.suptitle('Chain metrics for {}'.format(name), fontsize='12')
+    plt.subplot(2,1,1)
+    plt.plot(range(0,len(chain)),chain, marker='.')
     # format figure
-    pyplot.xlabel('Iterations')
+    plt.xlabel('Iterations')
     ystr = str('{}-chain'.format(name))
-    pyplot.ylabel(ystr)
+    plt.ylabel(ystr)
     # Add histogram
-    pyplot.subplot(2,1,2)
+    plt.subplot(2,1,2)
     hist(chain)
     # format figure
-    pyplot.xlabel(name)
-    pyplot.ylabel(str('Histogram of {}-chain'.format(name)))
-    pyplot.tight_layout(rect=[0, 0.03, 1, 0.95],h_pad=1.0) # adjust spacing
+    plt.xlabel(name)
+    plt.ylabel(str('Histogram of {}-chain'.format(name)))
+    plt.tight_layout(rect=[0, 0.03, 1, 0.95],h_pad=1.0) # adjust spacing
+    return f
     
 class Plot:
-    """
+    '''
     Plotting routines for analyzing sampling chains from MCMC process.
-    
+
     :Attributes:
         - :meth:`~plot_density_panel`
         - :meth:`~plot_chain_panel`
         - :meth:`~plot_pairwise_correlation_panel`
         - :meth:`~plot_histogram_panel`
         - :meth:`~plot_chain_metrics`
-    """
+    '''
     def __init__(self):
         self.plot_density_panel = plot_density_panel
         self.plot_chain_panel = plot_chain_panel

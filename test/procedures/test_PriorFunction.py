@@ -10,12 +10,8 @@ features in the 'PriorFunction.py" class of the pymcmcstat module.
 """
 from pymcmcstat.procedures.PriorFunction import PriorFunction
 import unittest
-#import numpy as np
+import test.general_functions as gf
 
-def removekey(d, key):
-        r = dict(d)
-        del r[key]
-        return r
 # --------------------------
 # PriorFunction
 # --------------------------
@@ -24,11 +20,11 @@ class Initialize_Prior_Function(unittest.TestCase):
     def test_PF_default_mu_sigma(self):
         PF = PriorFunction()
         PFD = PF.__dict__
-        PFD = removekey(PFD, 'priorfun')
+        PFD = gf.removekey(PFD, 'priorfun')
         defaults = {'mu': None, 'sigma': None}
         for (k,v) in PFD.items():
             self.assertEqual(v, defaults[k], msg = str('Default {} is {}'.format(k, defaults[k])))
-            
+
     def test_PS_defaul_priorfun(self):
         key = 'priorfun'
         PF = PriorFunction()

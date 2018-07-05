@@ -14,7 +14,7 @@ def setup_options(**kwargs):
     SO = SimulationOptions()
     SO.define_simulation_options(**kwargs)
     return SO
-    
+
 MS = ModelSettings()
 MS.define_model_settings()
 

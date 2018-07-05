@@ -37,8 +37,7 @@ class Model_Settings_Initialization(unittest.TestCase):
     def test_does_initialization_yield_description(self):
         ms = ModelSettings()
         self.assertTrue(hasattr(ms,'description'))
-        
-        
+
 # --------------------------
 # define_model_settings
 # --------------------------

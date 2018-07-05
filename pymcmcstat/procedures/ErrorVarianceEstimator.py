@@ -11,39 +11,38 @@ import numpy as np
 class ErrorVarianceEstimator:
     '''
     Estimate observation errors.
-    
+
     :Attributes:
         * :meth:`~update_error_variance`
         * :meth:`~gammar`
         * :meth:`~gammar_mt`
     '''
-    
     def __init__(self):
         self.description = 'Estimate error variance.'
-    
+
     def update_error_variance(self, sos, model):
         '''
         Update observation error variance.
-        
+
         **Strategy:** Treat error variance :math:`\\sigma^2` as parameter to be sampled.
-        
+
         **Definition:** The property that the prior and posterior distributions have the
         same parametric form is termed conjugacy.
-        
+
         Starting from the likelihood function, it can be shown
-        
+
         .. math::
-            
+
             \\sigma^2|(\\nu, q) \sim \\text{Inv-Gamma}\\Big(\\frac{N_s + N}{2}, \\frac{N_s\\sigma_{s}^2+ SS_q}{2}\\Big)
-        
+
         where :math:`N_s` and :math:`\\sigma_{s}^2` are shape and scaling parameters,
         :math:`N` is the number of observations, and :math:`SS_q` is the sum-of-squares error.
-        
+
         .. note::
-            
+
             The variables :math:`N_s` and :math:`\\sigma_{s}^2` correspond
             to :code:`N0` and :code:`S20` in the :class:`~.ModelSettings` class, respectively.
-        
+
         :Args:
             * **sos** (:class:`~numpy.ndarray`): Return argument from evaluation of sum-of-squares function.
             * **model** (:class:`~.ModelSettings`): MCMC model settings.
@@ -63,20 +62,19 @@ class ErrorVarianceEstimator:
     def gammar(self, m, n, a, b = 1):
         '''
         Random deviates from gamma distribution.
-        
+
         Returns a m x n matrix of random deviates from the Gamma
           distribution with shape parameter A and scale parameter B:
-        
+
         .. math::
-            
+
             p(x|A,B) = \\frac{B^{-A}}{\\Gamma(A)}*x^{A-1}*\\exp(-x/B)
-            
+
         :Args:
             * **m** (:py:class:`int`): Number of rows in return
             * **n** (:py:class:`int`): Number of columns in return
             * **a** (:py:class:`float`): Shape parameter
             * **b** (:py:class:`float`): Scaling parameter
-        
         '''
         if a <= 0: # special case
             y = np.zeros([m,n])
@@ -89,13 +87,12 @@ class ErrorVarianceEstimator:
         '''
         Wrapper routine for calculating random deviates from gamma distribution
         using method of Marsaglia and Tsang (2000) :cite:`marsaglia2000simple`.
-        
+
         :Args:
             * **m** (:py:class:`int`): Number of rows in return
             * **n** (:py:class:`int`): Number of columns in return
             * **a** (:py:class:`float`): Shape parameter
             * **b** (:py:class:`float`): Scaling parameter
-            
         '''
         y = np.zeros([m,n])
         for jj in range(0,n):
@@ -108,7 +105,7 @@ class ErrorVarianceEstimator:
         '''
         Calculates random deviate from gamma distribution using method of
         Marsaglia and Tsang (2000).
-        
+
         :Args:
             * **a** (:py:class:`float`): Shape parameter
             * **b** (:py:class:`float`): Scaling parameter
