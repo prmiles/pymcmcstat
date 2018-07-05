@@ -65,7 +65,7 @@ class DelayedRejection:
             next_set.ss = sosobj.evaluate_sos_function(next_set.theta)
             next_set.prior = priorobj.evaluate_prior(next_set.theta)
             trypath.append(next_set) # add set to trypath
-            alpha = self.__alphafun(trypath, invR)
+            alpha = self.alphafun(trypath, invR)
             trypath[-1].alpha = alpha # add propability ratio
                            
             # check results of delayed rejection
@@ -109,7 +109,7 @@ class DelayedRejection:
         self.dr_step_counter = 0
 
     # -------------------------------------------
-    def __alphafun(self, trypath, invR):
+    def alphafun(self, trypath, invR):
         '''
         Calculate likelihood according to DR
 
@@ -125,28 +125,28 @@ class DelayedRejection:
         self.dr_step_counter += 1
         stage = len(trypath) - 1 # The stage we're in, elements in trypath - 1
         # recursively compute past alphas
-        a1 = 1 # initialize
-        a2 = 1 # initialize
+        a1 = 1.0 # initialize
+        a2 = 1.0 # initialize
         for kk in range(0,stage-1):
-            tmp1 = self.__alphafun(trypath[0:(kk+2)], invR)
+            tmp1 = self.alphafun(trypath[0:(kk+2)], invR)
             a1 = a1*(1 - tmp1)
-            tmp2 = self.__alphafun(trypath[stage:stage-kk-2:-1], invR)
+            tmp2 = self.alphafun(trypath[stage:stage-kk-2:-1], invR)
             a2 = a2*(1 - tmp2)
             if a2 == 0: # we will come back with prob 1
                 alpha = np.zeros(1)
                 return alpha
             
-        y = logposteriorratio(trypath[0], trypath[-1])
+        y = log_posterior_ratio(trypath[0], trypath[-1])
         
         for kk in range(stage):
-            y = y + qfun(kk, trypath, invR)
+            y = y + nth_stage_log_proposal_ratio(kk, trypath, invR)
             
         alpha = min(np.ones(1), np.exp(y)*a2*(a1**(-1)))
         
         return alpha
 
 # -------------------------------------------
-def qfun(iq, trypath, invR):
+def nth_stage_log_proposal_ratio(iq, trypath, invR):
     '''
     Gaussian nth stage log proposal ratio.
 
@@ -186,7 +186,7 @@ def extract_state_elements(iq, stage, trypath):
     y4 = trypath[stage - iq].theta
     return y1, y2, y3, y4
 # -------------------------------------------
-def logposteriorratio(x1, x2):
+def log_posterior_ratio(x1, x2):
     '''
     Calculate the logarithm of the posterior ratio.
 
