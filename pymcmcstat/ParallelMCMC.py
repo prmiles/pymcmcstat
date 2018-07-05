@@ -35,17 +35,14 @@ class ParallelMCMC:
         options = mcset.simulation_options
         model = mcset.model_settings
         parameters = mcset.parameters
-        self.__get_parameter_features(parameters.parameters)
+        npar, low_lim, upp_lim = get_parameter_features(parameters.parameters)
         options = check_options_output(options)
         
         # number of CPUs
         self.num_cores = assign_number_of_cores(num_cores)
         
-        # number of chains to generate
-        self.num_chain = num_chain
-        
-        # check initial values
-        self.__check_initial_values(initial_values)
+        # check initial values and number of chains to be generated
+        self.initial_values, self.num_chain = check_initial_values(initial_values = initial_values, num_chain = num_chain, npar = npar, low_lim = low_lim, upp_lim = upp_lim)
         
         # assign parallel log file directory
         parallel_dir = options.savedir
@@ -67,7 +64,7 @@ class ParallelMCMC:
             self.parmc[ii].simulation_options.savedir = str('{}{}{}'.format(self.__parallel_dir,os.sep,chain_dir))
             # replicate parameter settings and assign distributed initial values
             self.parmc[ii].parameters = copy.deepcopy(parameters)
-            for jj in range(self.npar):
+            for jj in range(npar):
                 self.parmc[ii].parameters.parameters[jj]['theta0'] = self.initial_values[ii,jj]
             
     def run_parallel_simulation(self):
@@ -82,40 +79,70 @@ class ParallelMCMC:
         # assign results to invidual simulations
         for ii in range(self.num_chain):
             self.parmc[ii].simulation_results = res[ii]
-        
+
+    # -------------------------
     def display_individual_chain_statistics(self):
+        '''
+        Display chain statistics for different chains in parallel simulation.
+        '''
         CS = ChainStatistics
-        dividestr = '*********************'
-        for ii in range(self.num_chain):
-            print('\n{}\nDisplaying results for chain {}\nFiles: {}'.format(dividestr,ii,self.parmc[ii].simulation_options.savedir))
-            res = self.parmc[ii].simulation_results.results
+        dividestr = '*'
+        for ii, mc in enumerate(self.parmc):
+            print('\n{}\nDisplaying results for chain {}\nFiles: {}'.format(40*dividestr,ii,mc.simulation_options.savedir))
+            res = mc.simulation_results.results
             chain = res['chain']
             CS.chainstats(chain,res)
-
-    def __get_parameter_features(self, parameters):
-        self.npar = len(parameters)
-        self.__theta0 = np.zeros([self.npar])
-        self.low_lim = np.zeros([self.npar])
-        self.upp_lim = np.zeros([self.npar])
-        for jj in range(self.npar):
-            self.__theta0[jj] = parameters[jj]['theta0']
-            self.low_lim[jj] = parameters[jj]['minimum']
-            self.upp_lim[jj] = parameters[jj]['maximum']
-            # check if infinity - needs to be finite for default mapping
-            if self.low_lim[jj] == -np.inf:
-                self.low_lim[jj] = self.__theta0[jj] - 100*(np.abs(self.__theta0[jj]))
-                print('Finite lower limit required - setting low_lim[{}] = {}'.format(jj,self.low_lim[jj]))
-            if self.upp_lim[jj] == np.inf:
-                self.upp_lim[jj] = self.__theta0[jj] + 100*(np.abs(self.__theta0[jj]))
-                print('Finite upper limit required - setting upp_lim[{}] = {}'.format(jj,self.upp_lim[jj]))
-     
-    def __check_initial_values(self, initial_values):
-        if initial_values is None:
-            self.initial_values = generate_initial_values(num_chain = self.num_chain, npar = self.npar, low_lim = self.low_lim, upp_lim = self.upp_lim)
-        else:
-            self.num_chain, initial_values = check_shape_of_users_initial_values(initial_values = initial_values, num_chain = self.num_chain, npar = self.npar)
-            self.initial_values = check_users_initial_values_wrt_limits(initial_values = initial_values, low_lim = self.low_lim, upp_lim = self.upp_lim)
-
+# -------------------------        
+def get_parameter_features(parameters):
+    '''
+    Get features of model parameters.
+    
+    :Args:
+        * **parameters** (:py:class:`list`): List of MCMC model parameter dictionaries.
+        
+    :Returns:
+        * **npar** (:py:class:`int`): Number of model parameters.
+        * **low_lim** (:class:`~numpy.ndarray`): Lower limits.
+        * **upp_lim** (:class:`~numpy.ndarray`): Upper limits.
+    '''
+    npar = len(parameters)
+    theta0 = np.zeros([npar])
+    low_lim = np.zeros([npar])
+    upp_lim = np.zeros([npar])
+    for jj in range(npar):
+        theta0[jj] = parameters[jj]['theta0']
+        low_lim[jj] = parameters[jj]['minimum']
+        upp_lim[jj] = parameters[jj]['maximum']
+        # check if infinity - needs to be finite for default mapping
+        if low_lim[jj] == -np.inf:
+            low_lim[jj] = theta0[jj] - 100*(np.abs(theta0[jj]))
+            print('Finite lower limit required - setting low_lim[{}] = {}'.format(jj,low_lim[jj]))
+        if upp_lim[jj] == np.inf:
+            upp_lim[jj] = theta0[jj] + 100*(np.abs(theta0[jj]))
+            print('Finite upper limit required - setting upp_lim[{}] = {}'.format(jj,upp_lim[jj]))
+    return npar, low_lim, upp_lim
+# -------------------------
+def check_initial_values(initial_values, num_chain, npar, low_lim, upp_lim):
+    '''
+    Check if initial values satisfy requirements.
+    
+    :Args:
+        * **initial_values** (:class:`~numpy.ndarray`): Array of initial parameter values - [num_chain,npar].
+        * **num_chain** (:py:class:`int`): Number of sampling chains to be generated.
+        * **npar** (:py:class:`int`): Number of model parameters.
+        * **low_lim** (:class:`~numpy.ndarray`): Lower limits.
+        * **upp_lim** (:class:`~numpy.ndarray`): Upper limits.
+        
+    :Returns:
+        * **initial_values** (:class:`~numpy.ndarray`): Array of initial parameter values - [num_chain,npar].
+        * **num_chain** (:py:class:`int`): Number of sampling chains to be generated.
+    '''
+    if initial_values is None:
+        initial_values = generate_initial_values(num_chain = num_chain, npar = npar, low_lim = low_lim, upp_lim = upp_lim)
+    else:
+        num_chain, initial_values = check_shape_of_users_initial_values(initial_values = initial_values, num_chain = num_chain, npar = npar)
+        initial_values = check_users_initial_values_wrt_limits(initial_values = initial_values, low_lim = low_lim, upp_lim = upp_lim)
+    return initial_values, num_chain
 # -------------------------
 def generate_initial_values(num_chain, npar, low_lim, upp_lim):
     '''

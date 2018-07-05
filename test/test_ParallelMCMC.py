@@ -7,10 +7,12 @@ Created on Tue Jul  3 14:30:05 2018
 """
 
 from pymcmcstat.ParallelMCMC import ParallelMCMC
-from pymcmcstat.ParallelMCMC import check_options_output, check_directory
+from pymcmcstat.ParallelMCMC import check_options_output, check_directory, check_initial_values
 from pymcmcstat.ParallelMCMC import run_serial_simulation, assign_number_of_cores, generate_initial_values
 from pymcmcstat.ParallelMCMC import check_shape_of_users_initial_values, check_users_initial_values_wrt_limits
+from pymcmcstat.ParallelMCMC import get_parameter_features
 from pymcmcstat.samplers.utilities import is_sample_outside_bounds
+from pymcmcstat.settings.ModelParameters import ModelParameters
 import test.general_functions as gf
 import unittest
 from mock import patch
@@ -130,3 +132,67 @@ class GenerateInitialValues(unittest.TestCase):
         upp_lim = np.ones([3])
         initial_values = generate_initial_values(num_chain = num_chain, npar = npar, low_lim = low_lim, upp_lim = upp_lim)
         self.assertFalse(is_sample_outside_bounds(initial_values, low_lim, upp_lim), msg = 'Expect initial values to be inside bounds')
+
+# -------------------------
+class CheckInitialValues(unittest.TestCase):
+    def test_check_initial_values_none(self):
+        num_chain = 3
+        npar = 3
+        low_lim = np.zeros([3])
+        upp_lim = np.ones([3])
+        initial_values, num_chain_out = check_initial_values(initial_values = None, num_chain = num_chain, npar = npar, low_lim = low_lim, upp_lim = upp_lim)
+        self.assertFalse(is_sample_outside_bounds(initial_values, low_lim, upp_lim), msg = 'Expect initial values to be inside bounds')
+        self.assertEqual(initial_values.shape, (3,3), msg = 'Expect initial values array shape = (3,3)')
+        self.assertEqual(num_chain_out, num_chain, msg = 'Expect num_chain to be unchanged')
+        
+    def test_check_shape_of_uiv(self):
+        initial_values = np.random.random_sample(size = (4,3))
+        num_chain = 4
+        npar = 3
+        low_lim = np.zeros([npar])
+        upp_lim = np.ones([npar])
+        out = check_initial_values(initial_values = initial_values, num_chain = num_chain, npar = npar, low_lim = low_lim, upp_lim = upp_lim)
+        self.assertEqual(out[1], num_chain, msg = str('Expect no change to num_chain: {} neq {}'.format(out[1],num_chain)))
+        self.assertTrue(np.array_equal(out[0], initial_values), msg = str('Expect no change to initial_values: {} neq {}'.format(out[0],initial_values)))
+        
+    def test_check_shape_of_uiv_not_same(self):
+        initial_values = np.random.random_sample(size = (4,3))
+        num_chain = 3
+        npar = 2
+        low_lim = np.zeros([npar])
+        upp_lim = np.ones([npar])
+        out = check_initial_values(initial_values = initial_values, num_chain = num_chain, npar = npar, low_lim = low_lim, upp_lim = upp_lim)
+        self.assertEqual(out[1], 4, msg = str('Expect change to num_chain: {} neq {}'.format(out[1],4)))
+        self.assertTrue(np.array_equal(out[0], initial_values[:,:npar]), msg = str('Expect change to initial_values: {} neq {}'.format(out[0],initial_values[:,:npar])))
+
+# -------------------------
+class GetParameterFeatures(unittest.TestCase):
+    def test_get_parameter_features(self):
+        MP = ModelParameters()
+        MP.add_model_parameter(name = 'a1', theta0=0.1, minimum=0, maximum=1)
+        MP.add_model_parameter(name = 'a2', theta0=0.2, minimum=0, maximum=1)
+        MP.add_model_parameter(name = 'a3', theta0=0.3, minimum=0, maximum=1)
+        npar, low_lim, upp_lim = get_parameter_features(MP.parameters)
+        self.assertEqual(npar, 3, msg = 'Expect to find 3 parameters')
+        self.assertTrue(np.array_equal(low_lim, np.zeros([3])), msg = str('Expect low_lim all zero: {} neq {}'.format(low_lim,np.zeros([3]))))
+        self.assertTrue(np.array_equal(upp_lim, np.ones([3])), msg = str('Expect upp_lim all one: {} neq {}'.format(upp_lim,np.ones([3]))))
+        
+    def test_get_parameter_features_with_inf_bounds(self):
+        MP = ModelParameters()
+        MP.add_model_parameter(name = 'a1', theta0=0.1, minimum=-np.inf, maximum=1)
+        MP.add_model_parameter(name = 'a2', theta0=0.2, minimum=0, maximum=1)
+        MP.add_model_parameter(name = 'a3', theta0=0.3, minimum=0, maximum=np.inf)
+        npar, low_lim, upp_lim = get_parameter_features(MP.parameters)
+        expect_low_lim = np.array([0.1 - 100*0.1, 0, 0])
+        expect_upp_lim = np.array([1, 1, 0.3 + 100*0.3])
+        self.assertEqual(npar, 3, msg = 'Expect to find 3 parameters')
+        self.assertTrue(np.array_equal(low_lim, expect_low_lim), msg = str('Expect low_lim finite: {} neq {}'.format(low_lim,expect_low_lim)))
+        self.assertTrue(np.array_equal(upp_lim, expect_upp_lim), msg = str('Expect upp_lim finite: {} neq {}'.format(upp_lim,expect_upp_lim)))
+        
+# -------------------------
+class ParallelMCMCInit(unittest.TestCase):
+    def test_par_mc_init(self):
+        PMC = ParallelMCMC()
+        check_these = ['setup_parallel_simulation', 'run_parallel_simulation', 'display_individual_chain_statistics', 'description']
+        for ct in check_these:
+            self.assertTrue(hasattr(PMC, ct), msg = str('Expect class to have attribute: {}'.format(ct)))
