@@ -236,7 +236,7 @@ class SetupParallelMCMC(unittest.TestCase):
         self.assertTrue(np.array_equal(PMC.initial_values, initial_values), msg = str('Expect arrays to match: {} neq {}'.format(PMC.initial_values, initial_values)))
         shutil.rmtree(tmpfolder)
         
-    @patch('pymcmcstat.ParallelMCMC.cpu_count', return_value = 2)    
+    @patch('pymcmcstat.ParallelMCMC.cpu_count', return_value = 2)
     def test_setup_parmc_with_initial_values_num_cores_chain_2(self, mock_cpu_count):
         PMC = ParallelMCMC()
         mcstat, tmpfolder = setup_par_mcmc_basic()
