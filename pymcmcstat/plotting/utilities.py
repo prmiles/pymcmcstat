@@ -186,7 +186,7 @@ def gaussian_density_function(x, mu = 0, sigma2 = 1):
 
 def scale_bandwidth(x):
     n = len(x)
-    if iqrange(x) <=0:
+    if iqrange(x) <= 0:
         s = 1.06*np.array([np.std(x, ddof=1)*n**(-1/5)])
     else:
         s = 1.06*np.array([min(np.std(x, ddof=1),iqrange(x)/1.34)*n**(-1/5)])

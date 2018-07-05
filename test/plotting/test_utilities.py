@@ -8,6 +8,7 @@ Created on Wed May 30 05:57:34 2018
 
 from pymcmcstat.plotting import utilities
 import unittest
+from mock import patch
 import numpy as np
 import math
 
@@ -204,7 +205,13 @@ class ScaleBandWidth(unittest.TestCase):
         x = np.random.random_sample(size = (1,100))
         s = utilities.scale_bandwidth(x = x)
         self.assertTrue(isinstance(s, np.ndarray), msg = 'Expected array return - received {}'.format(type(s)))
-        
+    
+    @patch('pymcmcstat.plotting.utilities.iqrange', return_value = -1.0)
+    def test_array_return_with_iqrange_lt_0(self, mock_iqrange):
+        x = np.random.random_sample(size = (1,100))
+        s = utilities.scale_bandwidth(x = x)
+        self.assertTrue(isinstance(s, np.ndarray), msg = 'Expected array return - received {}'.format(type(s)))
+
 # --------------------------
 class AppendToNrowNcolBasedOnShape(unittest.TestCase):
     def test_shape_is_2d(self):
