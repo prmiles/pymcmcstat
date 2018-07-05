@@ -7,7 +7,7 @@ Created on Tue May  1 15:58:22 2018
 """
 
 from .MCMC import MCMC
-from .chain import ChainStatistics
+from .chain import ChainStatistics as CS
 from .samplers.utilities import is_sample_outside_bounds
 from multiprocessing import Pool, cpu_count
 import numpy as np
@@ -82,13 +82,9 @@ class ParallelMCMC:
         '''
         Display chain statistics for different chains in parallel simulation.
         '''
-        CS = ChainStatistics
-        dividestr = '*'
         for ii, mc in enumerate(self.parmc):
-            print('\n{}\nDisplaying results for chain {}\nFiles: {}'.format(40*dividestr,ii,mc.simulation_options.savedir))
-            res = mc.simulation_results.results
-            chain = res['chain']
-            CS.chainstats(chain,res)
+            print('\n{}\nDisplaying results for chain {}\nFiles: {}'.format(40*'*',ii,mc.simulation_options.savedir))
+            CS.chainstats(mc.simulation_results.results['chain'],mc.simulation_results.results)
 
 # -------------------------
 def unpack_mcmc_set(mcset):
