@@ -103,6 +103,8 @@ def unpack_simulation_options(options):
     :Args:
         * **options** (:class:`~.SimulationOptions`): Options for MCMC simulation
 
+    \\
+
     :Returns:
         * **burnintime** (:py:class:`int`):
         * **burnin_scale** (:py:class:`float`): Scale for burnin.
@@ -131,6 +133,8 @@ def unpack_covariance_settings(covariance):
 
     :Args:
         * **covariance** (:class:`~.CovarianceProcedures`): Covariance methods and variables
+
+    \\
 
     :Returns:
         * **last_index_since_adaptation** (:py:class:`int`): Last index since adaptation occured.
@@ -164,6 +168,8 @@ def below_burnin_threshold(rejected, iiadapt, R, burnin_scale, verbosity):
         * **R** (:class:`~numpy.ndarray`): Cholesky decomposition of covariance matrix.
         * **burnin_scale** (:py:class:`float`): Scale for burnin.
         * **verbosity** (:py:class:`int`): Verbosity of display output.
+
+    \\
 
     :Returns:
         * **R** (:class:`~numpy.ndarray`): Scaled Cholesky matrix.
@@ -239,6 +245,8 @@ def setup_w_R(w, oldR, n):
         * **oldmean** (:class:`~numpy.ndarray`): Previous mean chain values
         * **oldwsum** (:class:`~numpy.ndarray`): Previous weighted sum
         * **oldR** (:class:`~numpy.ndarray`): Previous Cholesky decomposition matrix
+
+    \\
 
     :Returns:
         * **w** (:class:`~numpy.ndarray`): Weights
@@ -349,6 +357,8 @@ def update_cov_via_ram(u, isimu, etaparam, npar, alphatarget, alpha, R):
         * **alpha** (:py:class:`float`): Latest Likelihood evaluation
         * **R** (:class:`~numpy.ndarray`): Cholesky decomposition of covariance matrix.
 
+    \\
+
     :Returns:
         * **upcov** (:class:`~numpy.ndarray`): Updated parameter covariance matrix.
     '''
@@ -366,6 +376,8 @@ def update_cov_from_covchain(covchain, qcov, no_adapt_index):
         * **covchain** (:class:`~numpy.ndarray`): Covariance matrix history.
         * **qcov** (:class:`~numpy.ndarray'): Parameter covariance matrix
         * **no_adapt_index** (:class:`numpy.ndarray'): Indices of parameters not being adapted.
+
+    \\
 
     :Returns:
         * **upcov** (:class:`~numpy.ndarray'): Updated covariance matrix
@@ -388,6 +400,8 @@ def check_for_singular_cov_matrix(upcov, R, npar, qcov_adjust, qcov_scale, rejec
         * **rejected** (:py:class:`dict`): Rejection counters.
         * **iiadapt** (:py:class:`int`): Adaptation counter.
         * **verbosity** (:py:class:`int`): Verbosity of display output.
+
+    \\
 
     :Returns:
         * **R** (:class:`~numpy.ndarray`): Adjusted Cholesky decomposition of covariance matrix.
@@ -427,6 +441,8 @@ def scale_cholesky_decomposition(Ra, qcov_scale):
         * **R** (:class:`~numpy.ndarray`): Cholesky decomposition of covariance matrix.
         * **qcov_scale** (:py:class:`float`): Scale factor
 
+    \\
+
     :Returns:
         * **R** (:class:`~numpy.ndarray`): Scaled Cholesky decomposition of covariance matrix.
     '''
@@ -445,6 +461,8 @@ def adjust_cov_matrix(upcov, R, npar, qcov_adjust, qcov_scale, rejected, iiadapt
         * **rejected** (:py:class:`dict`): Rejection counters.
         * **iiadapt** (:py:class:`int`): Adaptation counter.
         * **verbosity** (:py:class:`int`): Verbosity of display output.
+
+    \\
 
     :Returns:
         * **R** (:class:`~numpy.ndarray`): Cholesky decomposition of covariance matrix.
@@ -471,6 +489,8 @@ def update_delayed_rejection(R, npar, ntry, drscale):
         * **npar** (:py:class:`int`): Number of parameters.
         * **ntry** (:py:class:`int`): Number of tries to take before rejection. Default is method dependent.
         * **drscale** (:class:`~numpy.ndarray`): Reduced scale for sampling in DR algorithm. Default is [5,4,3].
+
+    \\
 
     :Returns:
         * **RDR** (:py:class:`list`): List of Cholesky decomposition of covariance matrices for each stage of DR.

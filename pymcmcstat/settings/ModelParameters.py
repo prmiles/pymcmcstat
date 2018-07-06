@@ -209,8 +209,10 @@ def replace_list_elements(x, testfunction, value):
 
     :Args:
         * **x** (:py:class:`list`): List of numbers to be tested
-        * **testfunction** (:meth:): Test function
+        * **testfunction** (:py:func:`testfunction`): Test function
         * **value** (:py:class:`float`): Value to assign if test function return True
+
+    \\
 
     :Returns:
         * **x** (:py:class:`list`): Updated list
@@ -244,6 +246,8 @@ def check_verbosity(verbosity):
     :Args:
         * **verbosity** (:py:class:`int`): Verbosity level
 
+    \\
+
     :Returns:
         * **verbosity** (:py:class:`int`): Returns 0 if verbosity was initially `None`
     '''
@@ -259,8 +263,10 @@ def check_noadaptind(noadaptind):
     :Args:
         * **noadaptind** (:py:class:`list`): Indices not to be adapted in covariance matrix.
 
+    \\
+    
     :Returns:
-        * * **noadaptind** (:py:class:`list`): Indices not to be adapted in covariance matrix.
+        * **noadaptind** (:py:class:`list`): Indices not to be adapted in covariance matrix.
     '''
     if noadaptind is None:
         noadaptind = []
@@ -272,7 +278,9 @@ def noadapt_display_setting(ii, noadaptind):
 
     :Args:
         * **ii** (:py:class:`int`): Current index number
-        * **noadaptind** (:py:class`list`): List of indices not being adapted.
+        * **noadaptind** (:py:class:`list`): List of indices not being adapted.
+
+    \\
 
     :Returns:
         * **st** (:py:class:`str`): String to be displayed, depending on if in `noadaptind`.
@@ -290,6 +298,8 @@ def prior_display_setting(x):
     :Args:
         * **x** (:py:class:`float`): Prior mean
 
+    \\
+
     :Returns:
         * **h2** (:py:class:`str`): String to be displayed, depending on if `x` is infinity.
     '''
@@ -306,6 +316,8 @@ def format_number_to_str(number):
     :Args:
         * **number** (:py:class:`float`): Number to be formatted
 
+    \\
+
     :Returns:
         * (:py:class:`str`): Formatted string display
     '''
@@ -320,6 +332,8 @@ def less_than_or_equal_to_zero(x):
 
     :Args:
         * **x** (:py:class:`float`): Number to be tested
+
+    \\
 
     :Returns:
         * (:py:class:`bool`): Result of test: `x<=0`
