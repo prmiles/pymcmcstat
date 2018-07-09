@@ -217,6 +217,13 @@ class ScaleBandWidth(unittest.TestCase):
         self.assertTrue(isinstance(s, np.ndarray), msg = 'Expected array return - received {}'.format(type(s)))
         self.assertEqual(s.size, 1, msg = 'Expect single element array')
         
+    @patch('pymcmcstat.plotting.utilities.iqrange', return_value = 1.0)
+    def test_array_return_with_iqrange_gt_0(self, mock_iqrange):
+        x = np.random.random_sample(size = (1,100))
+        s = utilities.scale_bandwidth(x = x)
+        self.assertTrue(isinstance(s, np.ndarray), msg = 'Expected array return - received {}'.format(type(s)))
+        self.assertEqual(s.size, 1, msg = 'Expect single element array')
+        
 # --------------------------
 class AppendToNrowNcolBasedOnShape(unittest.TestCase):
     def test_shape_is_2d(self):
