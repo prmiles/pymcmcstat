@@ -32,7 +32,7 @@ class ModelParameters:
         m         :   1.00 [-10.00,  10.00] N(0.00, inf)
         b         :  -5.00 [-10.00, 100.00] N(0.00, inf)
 
-    :Attributes:
+    Attributes:
         * :meth:`~add_model_parameter`
         * :meth:`~display_parameter_settings`
     '''
@@ -46,7 +46,7 @@ class ModelParameters:
         '''
         Add model parameter to MCMC simulation.
 
-        :Args:
+        Args:
             * name (:py:class:`str`): Parameter name
             * theta0 (:py:class:`float`): Initial value
             * minimum (:py:class:`float`): Lower parameter bound
@@ -166,7 +166,7 @@ class ModelParameters:
         '''
         Display parameter settings
 
-        :Args:
+        Args:
             * **verbosity** (:py:class:`int`): Verbosity of display output. :code:`0`
             * **noadaptind** (:py:class:`int`): Indices not to be adapted in covariance matrix. :code:`[]`
         '''
@@ -207,14 +207,14 @@ def replace_list_elements(x, testfunction, value):
     '''
     Replace list elements based on results from testfunction.
 
-    :Args:
+    Args:
         * **x** (:py:class:`list`): List of numbers to be tested
         * **testfunction** (:py:func:`testfunction`): Test function
         * **value** (:py:class:`float`): Value to assign if test function return True
 
     \\
 
-    :Returns:
+    Returns:
         * **x** (:py:class:`list`): Updated list
     '''
     for ii, xii in enumerate(x):
@@ -229,12 +229,12 @@ def generate_default_name(nparam):
 
         names = 'p_{3}'
 
-    :Args:
+    Args:
         * **nparam** (:py:class:`int`): Number of parameter names to generate
 
     \\
 
-    :Returns:
+    Returns:
         * **name** (:py:class:`str`): Name based on size of parameter list
     '''
     return (str('$p_{{{}}}$'.format(nparam)))
@@ -243,12 +243,12 @@ def check_verbosity(verbosity):
     '''
     Check if verbosity is None -> 0
 
-    :Args:
+    Args:
         * **verbosity** (:py:class:`int`): Verbosity level
 
     \\
 
-    :Returns:
+    Returns:
         * **verbosity** (:py:class:`int`): Returns 0 if verbosity was initially `None`
     '''
     if verbosity is None:
@@ -260,12 +260,12 @@ def check_noadaptind(noadaptind):
     '''
     Check if noadaptind is None -> Empty List
 
-    :Args:
+    Args:
         * **noadaptind** (:py:class:`list`): Indices not to be adapted in covariance matrix.
 
     \\
     
-    :Returns:
+    Returns:
         * **noadaptind** (:py:class:`list`): Indices not to be adapted in covariance matrix.
     '''
     if noadaptind is None:
@@ -276,13 +276,13 @@ def noadapt_display_setting(ii, noadaptind):
     '''
     Define display settins if index not being adapted.
 
-    :Args:
+    Args:
         * **ii** (:py:class:`int`): Current index number
         * **noadaptind** (:py:class:`list`): List of indices not being adapted.
 
     \\
 
-    :Returns:
+    Returns:
         * **st** (:py:class:`str`): String to be displayed, depending on if in `noadaptind`.
     '''
     if ii in noadaptind: # THIS PARAMETER IS FIXED
@@ -295,12 +295,12 @@ def prior_display_setting(x):
     '''
     Define display string for prior.
 
-    :Args:
+    Args:
         * **x** (:py:class:`float`): Prior mean
 
     \\
 
-    :Returns:
+    Returns:
         * **h2** (:py:class:`str`): String to be displayed, depending on if `x` is infinity.
     '''
     if math.isinf(x):
@@ -313,12 +313,12 @@ def format_number_to_str(number):
     '''
     Format number for display
 
-    :Args:
+    Args:
         * **number** (:py:class:`float`): Number to be formatted
 
     \\
 
-    :Returns:
+    Returns:
         * (:py:class:`str`): Formatted string display
     '''
     if abs(number) >= 1e4 or abs(number) <= 1e-2:
@@ -330,12 +330,12 @@ def less_than_or_equal_to_zero(x):
     '''
     Return result of test on number based on less than or equal to
 
-    :Args:
+    Args:
         * **x** (:py:class:`float`): Number to be tested
 
     \\
 
-    :Returns:
+    Returns:
         * (:py:class:`bool`): Result of test: `x<=0`
     '''
     return (x<=0)

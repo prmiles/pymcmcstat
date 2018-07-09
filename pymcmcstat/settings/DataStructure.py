@@ -13,8 +13,9 @@ import numpy as np
 # -------------------------
 class DataStructure:
     '''
-    Structure for storing data in MCMC object.  The following random data sets
-    will be referenced in examples for the different class methods:
+    Structure for storing data in MCMC object.  
+    The following random data sets will be referenced in examples for the 
+    different class methods:
     ::
 
         x1 = np.random.random_sample(size = (5, 1))
@@ -23,7 +24,7 @@ class DataStructure:
         x2 = np.random.random_sample(size = (10, 1))
         y2 = np.random.random_sample(size = (10, 3))
 
-    :Attributes:
+    Attributes:
         * :meth:`~add_data_set`
         * :meth:`~get_number_of_batches`
         * :meth:`~get_number_of_data_sets`
@@ -39,8 +40,10 @@ class DataStructure:
 
     def add_data_set(self, x, y, n = None, weight = 1, user_defined_object = 0):
         '''
-        Add data set to MCMC object.  This method must be called first before using
-        any of the other methods within :class:`~DataStructure`.
+        Add data set to MCMC object.  
+        
+        This method must be called first before using any of the other methods 
+        within :class:`~DataStructure`.
         ::
 
             mcstat = MCMC()
@@ -60,7 +63,7 @@ class DataStructure:
         * `weight` (:py:class:`list`): List of weights. :code:`weight = [1, 1]`
         * `user_defined_object` (:py:class:`list`): List of objects. :code:`user_defined_object = [0,0]`
 
-        :Args:
+        Args:
             * **x** (:class:`~numpy.ndarray`): Independent data
             * **y** (:class:`~numpy.ndarray`): Dependent data
             * **n** (:py:class:`list`): List of integers denoting number of data points
@@ -105,12 +108,12 @@ class DataStructure:
         '''
         Convert variable to numpy array.
 
-        :Args:
+        Args:
             * **xy** (`Unknown`): Variable to be converted
 
         \\
 
-        :Returns:
+        Returns:
             * **xy** (:class:`~numpy.ndarray`): Variable as numpy array
         '''
         if isinstance(xy, np.ndarray) is False:
@@ -123,12 +126,12 @@ class DataStructure:
         '''
         Convert numpy array to at least 2d numpy array.
 
-        :Args:
+        Args:
             * **xy** (:class:`~numpy.ndarray`): Variable to be checked/converted
 
         \\
 
-        :Returns:
+        Returns:
             * **xy** (:class:`~numpy.ndarray`): Variable as at least 2d numpy array
         '''
         if xy.ndim != 2: # numpy array is (xy.size,) -> Convert to (xy.size,1)
@@ -148,7 +151,7 @@ class DataStructure:
 
         should return :code:`nb = 2` because :code:`len(mcstat.data.ydata) = 2`.
 
-        :Returns:
+        Returns:
             * **nbatch** (:py:class:`int`): Number of batches.
         '''
         self.nbatch = len(self.shape)
@@ -166,7 +169,7 @@ class DataStructure:
         should return :code:`nds = 2 + 3 = 5` because the number of columns in `y1` is
         2 and the number of columns in `y2` is 3.
 
-        :Returns:
+        Returns:
             * Number of columns in `ydata` (:py:class:`int`)
         '''
         dshapes = self.shape
@@ -193,7 +196,7 @@ class DataStructure:
         should return :code:`nobs = 5 + 10 = 15` because the number of rows in `y1` is
         5 and the number of rows in `y2` is 10.
 
-        :Returns:
+        Returns:
             * Number of rows in `ydata` (:class:`~numpy.ndarray`)
         '''
         n = np.sum(self.n)
