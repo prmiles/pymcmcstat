@@ -1,9 +1,6 @@
 pymcmcstat.structures package
 =============================
 
-Submodules
-----------
-
 pymcmcstat.structures.ParameterSet module
 -----------------------------------------
 
@@ -16,15 +13,6 @@ pymcmcstat.structures.ResultsStructure module
 ---------------------------------------------
 
 .. automodule:: pymcmcstat.structures.ResultsStructure
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-
-Module contents
----------------
-
-.. automodule:: pymcmcstat.structures
     :members:
     :undoc-members:
     :show-inheritance:

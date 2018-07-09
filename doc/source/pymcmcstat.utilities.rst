@@ -1,9 +1,6 @@
 pymcmcstat.utilities package
 ============================
 
-Submodules
-----------
-
 pymcmcstat.utilities.NumpyEncoder module
 ----------------------------------------
 
@@ -12,19 +9,18 @@ pymcmcstat.utilities.NumpyEncoder module
     :undoc-members:
     :show-inheritance:
 
-pymcmcstat.utilities.progressbar module
----------------------------------------
+pymcmcstat.utilities.general module
+-----------------------------------
 
-.. automodule:: pymcmcstat.utilities.progressbar
+.. automodule:: pymcmcstat.utilities.general
     :members:
     :undoc-members:
     :show-inheritance:
 
+pymcmcstat.utilities.progressbar module
+---------------------------------------
 
-Module contents
----------------
-
-.. automodule:: pymcmcstat.utilities
+.. automodule:: pymcmcstat.utilities.progressbar
     :members:
     :undoc-members:
     :show-inheritance:
