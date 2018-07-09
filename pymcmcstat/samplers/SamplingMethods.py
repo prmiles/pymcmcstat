@@ -12,6 +12,14 @@ from .Adaptation import Adaptation
 from .DelayedRejection import DelayedRejection
 
 class SamplingMethods:
+    '''
+    Metropolis sampling methods.
+    
+    Attributes:
+        * :class:`~.Metropolis`
+        * :class:`~.DelayedRejection`
+        * :class:`~.Adaptation`
+    '''
     def __init__(self):
         self.metropolis = Metropolis()
         self.delayed_rejection = DelayedRejection()

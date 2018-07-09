@@ -1,9 +1,6 @@
 pymcmcstat.samplers package
 ===========================
 
-Submodules
-----------
-
 pymcmcstat.samplers.Adaptation module
 -------------------------------------
 
@@ -36,11 +33,10 @@ pymcmcstat.samplers.SamplingMethods module
     :undoc-members:
     :show-inheritance:
 
+pymcmcstat.samplers.utilities module
+------------------------------------
 
-Module contents
----------------
-
-.. automodule:: pymcmcstat.samplers
+.. automodule:: pymcmcstat.samplers.utilities
     :members:
     :undoc-members:
     :show-inheritance:

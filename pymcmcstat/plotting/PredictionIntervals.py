@@ -19,7 +19,7 @@ class PredictionIntervals:
     '''
     Prediction/Credible interval methods.
 
-    :Attributes:
+    Attributes:
         - :meth:`~setup_prediction_interval_calculation`
         - :meth:`~generate_prediction_intervals`
         - :meth:`~plot_prediction_intervals`
@@ -30,7 +30,7 @@ class PredictionIntervals:
         '''
         Setup calculation for prediction interval generation
 
-        :Args:
+        Args:
             * results (:class:`~.ResultsStructure`): MCMC results structure
             * data (:class:`~.DataStructure`): MCMC data structure
             * modelfunction: Model function handle
@@ -60,10 +60,10 @@ class PredictionIntervals:
         '''
         Analyze data structure.
 
-        :Args:
+        Args:
             * **data** (:class:`~.DataStructure`): Data structure.
 
-        :Returns:
+        Returns:
             * **ndatabatches** (:py:class:`int`): Number of batch data sets.
             * **ncols** (:py:class:`list`): List containing number of columns in each set.
         '''
@@ -83,11 +83,11 @@ class PredictionIntervals:
         '''
         Setup data structure for generating quantile.
 
-        :Args:
+        Args:
             * **data** (:class:`~.DataStructure`): Data structure.
             * **ndatabatches** (:py:class:`int`): Number of batch data sets.
 
-        :Returns:
+        Returns:
             * **datapred** (:py:class:`list`): Data structure for interval generation.
         '''
         datapred = []
@@ -104,7 +104,7 @@ class PredictionIntervals:
         '''
         Define variables based on items extracted from results dictionary.
 
-        :Args:
+        Args:
             * **results** (:py:class:`dict`): Results dictionary from MCMC simulation.
         '''
         # assign required features from the results structure
@@ -130,7 +130,7 @@ class PredictionIntervals:
         '''
         Determine shape of model function repsonse.
 
-        :Args:
+        Args:
             * **modelfun** (:py:class:`func`): Model function handle.
         '''
         # evaluate model function to determine shape of response
@@ -160,7 +160,7 @@ class PredictionIntervals:
         equal or different size vectors.  Creating distinct list elements of matrices
         will generate an error when trying to plot prediction intervals.
 
-        :Args:
+        Args:
             * **ndatabatches** (:py:class:`int`): Number of batch data sets.
         '''
         # shape of s2chain
@@ -203,7 +203,7 @@ class PredictionIntervals:
         '''
         Generate prediction/credible interval.
 
-        :Args:
+        Args:
             * **sstype** (:py:class:`int`): Sum-of-squares type
             * **nsample** (:py:class:`int`): Number of samples to use in generating intervals.
             * **calc_pred_int** (:py:class:`bool`): Flag to turn on prediction interval calculation.
@@ -239,12 +239,12 @@ class PredictionIntervals:
         '''
         Check if number of samples is defined - default to number of simulations.
 
-        :Args:
+        Args:
             * **nsample** (:py:class:`int`): Number of samples to draw from posterior.
             * **calc_pred_int** (:py:class:`bool`): User defined flag as to whether or not they want PI plotted.
             * **sstype** (:py:class:`int`): Flag to specify sstype.
 
-        :Returns:
+        Returns:
             * **chain** (:class:`~numpy.ndarray`): Chain of posterior density.
             * **s2chain** (:class:`~numpy.ndarray`): Chain of observation errors.
             * **lims** (:class:`~numpy.ndarray`): Quantile limits.
@@ -290,12 +290,12 @@ class PredictionIntervals:
         interpreted as lower/upper limits of quantiles.  So, a 99% quantile will
         have the limits [0.005, ..., 0.995].
 
-        :Args:
+        Args:
             * **sigma2** (:class:`~numpy.ndarray` or `None`): Observation error chain.
 
         \\
 
-        :Returns:
+        Returns:
             * **lims** (:class:`~numpy.ndarray`): Lower/Upper limits of quantiles.
         '''
         if s2chain is None:
@@ -308,17 +308,17 @@ class PredictionIntervals:
         '''
         Setup sstype and check value.
 
-        Cases:
+        :Cases:
             - `sstype = 0`: Standard normal.
             - `sstype = 1`: Square root.
             - `sstype = 2`: Logarithmic.
 
         See example usage in :meth:`~._observation_sample`.
 
-        :Args:
+        Args:
             * **sstype** (:py:class:`int`): Flag to specify sstype.
 
-        :Returns:
+        Returns:
             * **sstype** (:py:class:`int`): Flag to specify sstype
         '''
         if sstype is None:
@@ -332,11 +332,11 @@ class PredictionIntervals:
         '''
         Check if number of samples is defined - default to number of simulations.
 
-        :Args:
+        Args:
             * **nsample** (:py:class:`int`): Number of samples to draw from posterior.
             * **nsimu** (:py:class:`int`): Number of MCMC simulations.
 
-        :Returns:
+        Returns:
             * **nsample** (:py:class:`int`): Number of samples to draw from posterior.
         '''
         # check value of nsample
@@ -349,11 +349,11 @@ class PredictionIntervals:
         '''
         Define indices to sample from posteriors.
 
-        :Args:
+        Args:
             * **nsample** (:py:class:`int`): Number of samples to draw from posterior.
             * **nsimu** (:py:class:`int`): Number of MCMC simulations.
 
-        :Returns:
+        Returns:
             * **iisample** (:class:`~numpy.ndarray`): Array of indices in posterior set.
             * **nsample** (:py:class:`int`): Number of samples to draw from posterior.
         '''
@@ -372,13 +372,15 @@ class PredictionIntervals:
         '''
         Calculate credible intervals.
 
-        :Args:
+        Args:
             * **testchain** (:class:`~numpy.ndarray`): Sample points from posterior density.
             * **iisample** (:class:`~numpy.ndarray`): Array of indices in posterior set.
             * **waitbar** (:py:class:`bool`): Flag to turn on progress bar.
             * **sstype** (:py:class:`int`): Flag to specify sstype.
 
-        :Returns:
+        \\
+        
+        Returns:
             * **credible_intervals(:py:class:`list`): List of credible intervals.
         '''
         credible_intervals = []
@@ -401,14 +403,14 @@ class PredictionIntervals:
         '''
         Calculate prediction/credible intervals.
 
-        :Args:
+        Args:
             * **testchain** (:class:`~numpy.ndarray`): Sample points from posterior density.
             * **s2chain** (:class:`~numpy.ndarray`): Chain of observation errors.
             * **iisample** (:class:`~numpy.ndarray`): Array of indices in posterior set.
             * **waitbar** (:py:class:`bool`): Flag to turn on progress bar.
             * **sstype** (:py:class:`int`): Flag to specify sstype.
 
-        :Returns:
+        Returns:
             * **credible_intervals(:py:class:`list`): List of credible intervals.
             * **prediction_intervals(:py:class:`list`): List of prediction intervals.
         '''
@@ -440,14 +442,14 @@ class PredictionIntervals:
         '''
         Setup value for interval ii.
 
-        :Args:
+        Args:
             * **ii** (:py:class:`int`): Iteration number.
             * **datapred** (:py:class:`list`): List of data sets.
             * **nrow** (:py:class:`list`): List of rows in each data set.
             * **ncol** (:py:class:`list`): List of columns in each data set.
             * **modelfun** (:py:class:`func` or :py:class:`list`): Model function handle.
 
-        :Returns:
+        Returns:
             * **datapredii** (:class:`~numpy.ndarray`): Data set.
             * **nrow** (:py:class:`int`): Number of rows in data set.
             * **ncol** (:py:class:`int`): Number of columns in data set.
@@ -471,7 +473,7 @@ class PredictionIntervals:
         '''
         Calculate response for set ii.
 
-        :Args:
+        Args:
             * **testchain** (:class:`~numpy.ndarray`): Sample points from posterior density.
             * **nrow** (:py:class:`int`): Number of rows in data set.
             * **ncol** (:py:class:`int`): Number of columns in data set.
@@ -480,7 +482,7 @@ class PredictionIntervals:
             * **modelfun** (:py:class:`func`): Model function handle.
             * **datapredii** (:class:`~numpy.ndarray`): Data set.
 
-        :Returns:
+        Returns:
             * **ysave** (:class:`~numpy.ndarray`): Model responses.
         '''
         nsample = testchain.shape[0]
@@ -507,7 +509,7 @@ class PredictionIntervals:
         '''
         Calculate response and observations for set ii.
 
-        :Args:
+        Args:
             * **testchain** (:class:`~numpy.ndarray`): Sample points from posterior density.
             * **tests2chain** (:class:`~numpy.ndarray`): Sample points from observation errors.
             * **nrow** (:py:class:`int`): Number of rows in data set.
@@ -518,7 +520,7 @@ class PredictionIntervals:
             * **modelfun** (:py:class:`func`): Model function handle.
             * **datapredii** (:class:`~numpy.ndarray`): Data set.
 
-        :Returns:
+        Returns:
             * **ysave** (:class:`~numpy.ndarray`): Model responses.
             * **osave** (:class:`~numpy.ndarray`): Model responses with observation errors.
         '''
@@ -554,12 +556,12 @@ class PredictionIntervals:
         '''
         Calculate model response with observation errors.
 
-        :Args:
+        Args:
             * **s2elem** (:class:`~numpy.ndarray`): Observation error(s).
             * **ypred** (:class:`~numpy.ndarray`): Model responses.
             * **sstype** (:py:class:`int`): Flag to specify sstype.
 
-        :Returns:
+        Returns:
             * **opred** (:class:`~numpy.ndarray`): Model responses with observation errors.
         '''
         # check shape of s2elem and ypred
@@ -589,12 +591,12 @@ class PredictionIntervals:
         '''
         Generate quantiles based on observations.
 
-        :Args:
+        Args:
             * **response** (:class:`~numpy.ndarray`): Array of model responses.
             * **lims** (:class:`~numpy.ndarray`): Array of quantile limits.
             * **ncol** (:py:class:`int`): Number of columns in `ysave`.
 
-        :Returns:
+        Returns:
             * **quantiles** (:py:class:`list`): Quantiles for intervals.
         '''
         # generate quantiles
@@ -610,7 +612,7 @@ class PredictionIntervals:
         '''
         Plot prediction/credible intervals.
 
-        :Args:
+        Args:
             * **plot_pred_int** (:py:class:`bool`): Flag to include PI on plot.
             * **adddata** (:py:class:`bool`): Flag to include data on plot.
             * **addlegend** (:py:class:`bool`): Flag to include legend on plot.
@@ -680,7 +682,7 @@ class PredictionIntervals:
         '''
         Initialize plot for prediction/credible intervals.
 
-        :Args:
+        Args:
             * **ii** (:py:class:`int`): Batch #
             * **jj** (:py:class:`int`): Column #
             * **ny** (:py:class:`ny`): Number of intervals
@@ -703,7 +705,7 @@ class PredictionIntervals:
         '''
         Add title to plot based on batch/column number.
 
-        :Args:
+        Args:
             * **nbatch** (:py:class:`nbatch`): Number of batches
             * **ny** (:py:class:`ny`): Number of intervals
             * **ii** (:py:class:`int`): Batch #
@@ -720,13 +722,13 @@ class PredictionIntervals:
         '''
         Setup variables for interval plotting
 
-        :Args:
+        Args:
             * **plot_pred_int** (:py:class:`bool`): Flag to plot prediction interval
             * **prediction_intervals** (:py:class:`list`): Prediction intervals
             * **credible_intervals** (:py:class:`list`): Credible intervals
             * **figsizeinches** (:py:class:`list`): Specify figure size in inches [Width, Height].
 
-        :Returns:
+        Returns:
             * **prediction_intervals** (:py:class:`list` or `None`): Prediction intervals
             * **figsizeinches** (:py:class:`list`): Specify figure size in inches [Width, Height].
             * **nbatch** (:py:class:`int`): Number of batches
@@ -751,11 +753,11 @@ class PredictionIntervals:
         '''
         Check prediction interval flag.
 
-        :Args:
+        Args:
             * **plot_pred_int** (:py:class:`bool`): Flag to plot prediction interval
             * **prediction_intervals** (:py:class:`list`): Prediction intervals
 
-        :Returns:
+        Returns:
             * **prediction_intervals** (:py:class:`list` or `None`): Prediction intervals
         '''
         # check if prediction intervals exist and if user wants to plot them
@@ -769,11 +771,11 @@ class PredictionIntervals:
         '''
         Setup labels for prediction/credible intervals.
 
-        :Args:
+        Args:
             * **prediction_intervals** (:py:class:`list`): Prediction intervals
             * **nlines** (:py:class:`int`): Number of lines
 
-        :Returns:
+        Returns:
             * **clabels** (:py:class:`list`): List of label strings for credible intervals.
             * **plabels** (:py:class:`list`): List of label strings for prediction intervals.
         '''
@@ -794,10 +796,10 @@ class PredictionIntervals:
         '''
         Setup counting metrics for prediction/credible intervals.
 
-        :Args:
+        Args:
             * **credible_intervals** (:py:class:`list`): Credible intervals
 
-        :Returns:
+        Returns:
             * **nbatch** (:py:class:`int`): Number of batches
             * **nn** (:py:class:`int`): Line number corresponding to median.
             * **nlines** (:py:class:`int`): Number of lines

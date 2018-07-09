@@ -53,7 +53,7 @@ class DisplayCurrentMCMCSettings(unittest.TestCase):
         mcstat = gf.setup_mcmc_case_cp()
         capturedOutput = io.StringIO()                  # Create StringIO object
         sys.stdout = capturedOutput                     #  and redirect stdout.
-        mcstat._MCMC__display_current_mcmc_settings()
+        mcstat.display_current_mcmc_settings()
         sys.stdout = sys.__stdout__                     # Reset redirect.
         self.assertTrue(isinstance(capturedOutput.getvalue(), str), msg = 'Caputured string')
         
@@ -260,7 +260,7 @@ class SaveToLogFile(unittest.TestCase):
         mcstat = gf.basic_mcmc()
         mcstat.simulation_options.save_to_bin = True
         mcstat.simulation_options.save_to_txt = False
-        savecount, lastbin = mcstat.save_to_log_file(start = 0, end = 100)
+        savecount, lastbin = mcstat._MCMC__save_to_log_file(start = 0, end = 100)
         self.assertEqual(savecount, 0, msg = 'Expect 0')
         self.assertEqual(lastbin, 100, msg = 'Expect lastbin = end = 100')
         
@@ -269,7 +269,7 @@ class SaveToLogFile(unittest.TestCase):
         mcstat = gf.basic_mcmc()
         mcstat.simulation_options.save_to_bin = False
         mcstat.simulation_options.save_to_txt = True
-        savecount, lastbin = mcstat.save_to_log_file(start = 0, end = 100)
+        savecount, lastbin = mcstat._MCMC__save_to_log_file(start = 0, end = 100)
         self.assertEqual(savecount, 0, msg = 'Expect 0')
         self.assertEqual(lastbin, 100, msg = 'Expect lastbin = end = 100')
 # --------------------------------------------------------

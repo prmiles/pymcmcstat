@@ -125,8 +125,16 @@ def read_in_bin_file(filename):
     '''
     Read in information from file containing binary data.
     
+    If file exists, it will read in the array elements.  Otherwise, it will return
+    and empty list.
+    
     :Args:
         * **filename** (:py:class:`str`): Name of file to read.
+        
+    \\
+    
+    :Returns:
+        * **out** (:class:`~numpy.ndarray`): Array of chain elements.
     '''
     try:
         hf = h5py.File(filename, 'r')
@@ -164,8 +172,16 @@ def read_in_txt_file(filename):
     '''
     Read in information from file containing text data.
     
+    If file exists, it will read in the array elements.  Otherwise, it will return
+    and empty list.
+    
     :Args:
         * **filename** (:py:class:`str`): Name of file to read.
+        
+    \\
+    
+    :Returns:
+        * **out** (:class:`~numpy.ndarray`): Array of chain elements.
     '''
     try:
         out = np.loadtxt(filename)

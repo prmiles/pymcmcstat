@@ -1,9 +1,6 @@
 pymcmcstat.procedures package
 =============================
 
-Submodules
-----------
-
 pymcmcstat.procedures.CovarianceProcedures module
 -------------------------------------------------
 
@@ -32,15 +29,6 @@ pymcmcstat.procedures.SumOfSquares module
 -----------------------------------------
 
 .. automodule:: pymcmcstat.procedures.SumOfSquares
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-
-Module contents
----------------
-
-.. automodule:: pymcmcstat.procedures
     :members:
     :undoc-members:
     :show-inheritance:

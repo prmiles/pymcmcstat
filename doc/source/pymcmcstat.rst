@@ -1,22 +1,6 @@
 pymcmcstat package
 ==================
 
-Subpackages
------------
-
-.. toctree::
-
-    pymcmcstat.chain
-    pymcmcstat.plotting
-    pymcmcstat.procedures
-    pymcmcstat.samplers
-    pymcmcstat.settings
-    pymcmcstat.structures
-    pymcmcstat.utilities
-
-Submodules
-----------
-
 pymcmcstat.MCMC module
 ----------------------
 
@@ -32,12 +16,16 @@ pymcmcstat.ParallelMCMC module
     :members:
     :undoc-members:
     :show-inheritance:
+    
+Subpackages
+-----------
 
+.. toctree::
 
-Module contents
----------------
-
-.. automodule:: pymcmcstat
-    :members:
-    :undoc-members:
-    :show-inheritance:
+   pymcmcstat.chain
+   pymcmcstat.plotting
+   pymcmcstat.procedures
+   pymcmcstat.samplers
+   pymcmcstat.settings
+   pymcmcstat.structures
+   pymcmcstat.utilities

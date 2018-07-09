@@ -16,17 +16,17 @@ class DelayedRejection:
     '''
     Delayed Rejection (DR) algorithm based on :cite:`haario2006dram`.
 
-    :Attributes:
-        * :meth:`~acceptance_test`
-        * :meth:`~initialize_next_metropolis_step`
+    Attributes:
         * :meth:`~run_delayed_rejection`
+        * :meth:`~initialize_next_metropolis_step`
+        * :meth:`~alphafun`        
     '''
     # -------------------------------------------
     def run_delayed_rejection(self, old_set, new_set, RDR, ntry, parameters, invR, sosobj, priorobj):
         '''
         Perform delayed rejection step - occurs in standard metropolis is not accepted.
 
-        :Args:
+        Args:
             * **old_set** (:class:`~.ParameterSet`): Features of :math:`q^{k-1}`
             * **new_set** (:class:`~.ParameterSet`): Features of :math:`q^*`
             * **RDR** (:class:`~numpy.ndarray`): Cholesky decomposition of parameter covariance matrix for DR steps
@@ -38,7 +38,7 @@ class DelayedRejection:
 
         \\
 
-        :Returns:
+        Returns:
             * **accept** (:py:class:`int`): 0 - reject, 1 - accept
             * **out_set** (:class:`~.ParameterSet`): If accept == 1, then latest DR set; Else, :math:`q^k=q^{k-1}`
             * **outbound** (:py:class:`int`): 1 - rejected due to sampling outside of parameter bounds
@@ -80,7 +80,7 @@ class DelayedRejection:
         '''
         Take metropolis step according to DR
 
-        :Args:
+        Args:
             * **npar** (:py:class:`int`): Number of parameters
             * **old_theta** (:class:`~numpy.ndarray`): `q^{k-1}`
             * **sigma2** (:py:class:`float`): Observation error variance
@@ -89,7 +89,7 @@ class DelayedRejection:
 
         \\
 
-        :Returns:
+        Returns:
             * **next_set** (:class:`~.ParameterSet`): New proposal set
             * **u** (:class:`numpy.ndarray`): Numbers sampled from standard normal distributions (:code:`u.shape = (1,npar)`)
         '''
@@ -102,7 +102,7 @@ class DelayedRejection:
         '''
         Initialize counting metrics for delayed rejection algorithm.
 
-        :Args:
+        Args:
             * **options** (:class:`~.SimulationOptions`): MCMC simulation options
         '''
         self.iacce = np.zeros(options.ntry, dtype = int)
@@ -113,13 +113,13 @@ class DelayedRejection:
         '''
         Calculate likelihood according to DR
 
-        :Args:
+        Args:
             * **trypath** (:py:class:`list`): Sequence of DR steps
             * **invR** (:class:`~numpy.ndarray`): Inverse Cholesky decomposition matrix
 
         \\
 
-        :Returns:
+        Returns:
             * **alpha** (:py:class:`float`): Result of likelihood function according to delayed rejection
         '''
         self.dr_step_counter += 1
@@ -150,14 +150,14 @@ def nth_stage_log_proposal_ratio(iq, trypath, invR):
     '''
     Gaussian nth stage log proposal ratio.
 
-    Logarithm of :math:'q_i(y_n,...,y_{n-j})/q_i(x,y_1,...,y_j)`
+    Logarithm of :math:`q_i(y_n,...,y_{n-j})/q_i(x,y_1,...,y_j)`
 
-    :Args:
+    Args:
         * **iq** (:py:class:`int`): Stage number.
         * **trypath** (:py:class:`list`): Sequence of DR steps
         * **invR** (:class:`~numpy.ndarray`): Inverse Cholesky decomposition matrix
 
-    :Returns:
+    Returns:
         * **zq** (:py:class:`float`): Logarithm of Gaussian nth stage proposal ratio.
     '''
     stage = len(trypath) - 1 - 1 # - 1, iq;
@@ -175,7 +175,7 @@ def extract_state_elements(iq, stage, trypath):
     '''
     Extract elements from tried paths.
 
-    :Args:
+    Args:
         * **iq** (:py:class:`int`): Stage number.
         * **stage** (:py:class:`int`): Number of stages - 2
         * **trypath** (:py:class:`list`): Sequence of DR steps
@@ -190,11 +190,11 @@ def log_posterior_ratio(x1, x2):
     '''
     Calculate the logarithm of the posterior ratio.
 
-    :Args:
+    Args:
         * **x1** (:class:`~.ParameterSet`): Old set - :math:`q^{k-1}`
         * **x2** (:class:`~.ParameterSet`): New set - :math:`q^*`
 
-    :Returns:
+    Returns:
         * **zq** (:py:class:`float`): Logarithm of posterior ratio.
     '''
     zq = -0.5*(sum((x2.ss*(x2.sigma2**(-1.0)) - x1.ss*(x1.sigma2**(-1.0)))) + x2.prior - x1.prior)
@@ -215,14 +215,14 @@ def update_set_based_on_acceptance(accept, old_set, next_set):
 
         & \\quad \\text{Set}~q^k = q^{k-1},~SS_{q^k} = SS_{q^{k-1}}
 
-    :Args:
+    Args:
         * **accept** (:py:class:`int`): 0 - reject, 1 - accept
         * **old_set** (:class:`~.ParameterSet`): Features of :math:`q^{k-1}`
         * **next_set** (:class:`~.ParameterSet`): New proposal set
 
     \\
 
-    :Returns:
+    Returns:
         * **out_set** (:class:`~.ParameterSet`): If accept == 1, then latest DR set; Else, :math:`q^k=q^{k-1}`
     '''
     if accept is True:

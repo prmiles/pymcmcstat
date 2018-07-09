@@ -13,7 +13,7 @@ class SimulationOptions:
     '''
     MCMC simulation options.
 
-    :Attributes:
+    Attributes:
        * :meth:`~define_simulation_options`
        * :meth:`~display_simulation_options`
     '''
@@ -37,7 +37,7 @@ class SimulationOptions:
         '''
         Define simulation options.
 
-       :Args:
+        Args:
             * **nsimu** (:py:class:`int`): Number of parameter samples to simulate.  Default is 1e4.
             * **adaptint** (:py:class:`int`): Number of interates between adaptation. Default is method dependent.
             * **ntry** (:py:class:`int`): Number of tries to take before rejection. Default is method dependent.
@@ -187,7 +187,7 @@ class SimulationOptions:
         - Update :code:`printint` based on size of :code:`adaptint`.
         - If :code:`N0` not None, turn on :code:`updatesigma`.
 
-        :Args:
+        Args:
             * **model**: (:class:`~.ModelSettings`): MCMC model settings.
         '''
         # save options
@@ -214,7 +214,7 @@ class SimulationOptions:
         '''
         Display subset of the simulation options.
         
-        :Args:
+        Args:
             * **print_these** (:py:class:`list`): List of strings corresponding to keywords.  Default below.
 
         ::

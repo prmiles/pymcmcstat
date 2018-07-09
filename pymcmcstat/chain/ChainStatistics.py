@@ -13,6 +13,7 @@ import sys
 import scipy
 import scipy.stats
 from scipy.fftpack import fft
+from ..plotting.utilities import generate_default_names, extend_names_to_match_nparam
 
 # display chain statistics
 def chainstats(chain = None, results = None, returnstats = False):
@@ -192,7 +193,12 @@ def spectral_estimate_for_variance(x):
     Spectral density at frequency zero.
 
     :Args:
-        x: portion of chain
+        * **x** (:class:`~numpy.ndarray`): Array of points - portion of chain.
+        
+    \\
+    
+    :Returns:
+        * **s** (:class:`~numpy.ndarray`): Spectral estimate for variance.
     '''
     m,n = x.shape
     s = np.zeros([n,])
@@ -204,7 +210,17 @@ def spectral_estimate_for_variance(x):
             
 def power_spectral_density_using_hanning_window(x, nfft = None, nw = None):
     '''
-    Power spectral density using Hanning window
+    Power spectral density using Hanning window.
+    
+    :Args:
+        * **x** (:class:`~numpy.ndarray`): Array of points - portion of chain.
+        * **nfft** (:py:class:`int`): Length of Fourier transform.
+        * **nw** (:py:class:`int`): Size of window.
+        
+    \\
+    
+    :Returns:
+        * **y** (:class:`~numpy.ndarray`): Power spectral density.
     '''
     if nfft is None:
         nfft = min(len(x),256)
@@ -285,25 +301,27 @@ def integrated_autocorrelation_time(chain):
     return tau, m
                 
 # ----------------------------------------------------
-def get_parameter_names(n, results):
+def get_parameter_names(nparam, results):
+    '''
+    Get parameter names from results dictionary.
+    
+    If no results found, then default names are generated.  If some results are
+    found, then an extended set is generated to complete the list requirement.
+    Uses the functions: :func:`~.plotting.utilities.generate_default_names` and
+    :func:`~.plotting.utilities.extend_names_to_match_nparam`
+    
+    :Args:
+        * **nparam** (:py:class:`int`): Number of parameter names needed
+        
+    \\
+    
+    :Returns:
+        * **names** (:py:class:`list`): List of length `nparam` with strings.
+    '''
     if results is None: # results not specified
-        names = generate_default_names(n)
+        names = generate_default_names(nparam)
     else:
         names = results['names']
-        names = extend_names_to_match_nparam(names, n)
+        names = extend_names_to_match_nparam(names, nparam)
             
-    return names
-    
-def generate_default_names(nparam):
-    # generate generic parameter name set
-    names = []
-    for ii in range(nparam):
-        names.append(str('$p_{{{}}}$'.format(ii)))
-    return names
-    
-def extend_names_to_match_nparam(names, nparam):
-    # generate generic parameter name set
-    n0 = len(names)
-    for ii in range(n0,nparam):
-        names.append(str('$p_{{{}}}$'.format(ii)))
     return names

@@ -15,12 +15,12 @@ def sample_candidate_from_gaussian_proposal(npar, oldpar, R):
     '''
     Sample candidate from Gaussian proposal distribution
 
-    :Args:
+    Args:
         * **npar** (:py:class:`int`): Number of parameters being samples
-        * **oldpar** (:class:`~numpy.ndarray'): :math:`q^{k-1}` Old parameter set.
+        * **oldpar** (:class:`~numpy.ndarray`): :math:`q^{k-1}` Old parameter set.
         * **R** (:class:`~numpy.ndarray`): Cholesky decomposition of parameter covariance matrix.
 
-    :Returns:
+    Returns:
         * **newpar** (:class:`~numpy.ndarray`): :math:`q^*` - candidate
         * **npar_sample_from_sample** (:class:`~numpy.ndarray`): Sampled values from normal distibution: :math:`N(0,1)`.
     '''
@@ -34,14 +34,14 @@ def is_sample_outside_bounds(theta, lower_limits, upper_limits):
     '''
     Check whether proposal value is outside parameter limits
 
-    :Args:
+    Args:
         * **theta** (:class:`~numpy.ndarray`): Value of sampled model parameters
         * **lower_limits** (:class:`~numpy.ndarray`): Lower limits
         * **upper_limits** (:class:`~numpy.ndarray`): Upper limits
 
     \\
 
-    :Returns:
+    Returns:
         * **outsidebounds** (:py:class:`bool`): True -> Outside of parameter limits
     '''
     if (theta < lower_limits).any() or (theta > upper_limits).any():
@@ -65,12 +65,12 @@ def acceptance_test(alpha):
 
         & \\quad \\text{Set}~q^k = q^{k-1},~SS_{q^k} = SS_{q^{k-1}}
 
-    :Args:
+    Args:
         * **alpha** (:py:class:`float`): Result of likelihood function
 
     \\
 
-    :Returns:
+    Returns:
         * **accept** (:py:class:`bool`): False - reject, True - accept
     '''
     if alpha >= 1 or alpha > np.random.rand(1,1):
@@ -84,10 +84,10 @@ def set_outside_bounds(next_set):
     '''
     Assign set features based on being outside bounds
 
-    :Args:
+    Args:
         * **next_set** (:class:`~.ParameterSet`): :math:`q^*`
 
-    :Returns:
+    Returns:
         * **next_set** (:class:`~.ParameterSet`): :math:`q^*` with updated features
         * **outbound** (:class:`bool`): True
     '''

@@ -29,10 +29,8 @@ class Metropolis:
            Else
             Set :math:`q^k = q^{k-1},~SS_{q^k} = SS_{q^{k-1}}`
 
-    :Attributes:
+    Attributes:
         * :meth:`~acceptance_test`
-        * :meth:`~evaluate_likelihood_function`
-        * :meth:`~is_sample_outside_bounds`
         * :meth:`~run_metropolis_step`
         * :meth:`~unpack_set`
     '''
@@ -41,7 +39,7 @@ class Metropolis:
         '''
         Run Metropolis step.
 
-        :Args:
+        Args:
             * **old_set** (:class:`~.ParameterSet`): Features of :math:`q^{k-1}`
             * **parameters** (:class:`~.ModelParameters`): Model parameters
             * **R** (:class:`~numpy.ndarray`): Cholesky decomposition of parameter covariance matrix
@@ -50,7 +48,7 @@ class Metropolis:
 
         \\
 
-        :Returns:
+        Returns:
             * **accept** (:py:class:`int`): 0 - reject, 1 - accept
             * **newset** (:class:`~.ParameterSet`): Features of :math:`q^*`
             * **outbound** (:py:class:`int`): 1 - rejected due to sampling outside of parameter bounds
@@ -92,12 +90,12 @@ class Metropolis:
         '''
         Unpack parameter set
 
-        :Args:
+        Args:
             * **parset** (:class:`~.ParameterSet`): Parameter set to unpack
 
         \\
 
-        :Returns:
+        Returns:
             * **theta** (:class:`~numpy.ndarray`): Value of sampled model parameters
             * **ss** (:class:`~numpy.ndarray`): Sum-of-squares error using sampled value
             * **prior** (:class:`~numpy.ndarray`): Value of prior
@@ -118,7 +116,7 @@ class Metropolis:
 
             \\alpha = \\exp\\Big[-0.5\\Big(\sum\\Big(\\frac{ SS_{q^*} - SS_{q^{k-1}} }{ \\sigma_{k-1}^2 }\\Big) + p_1 - p_2\\Big)\\Big]
 
-        :Args:
+        Args:
             * **ss1** (:class:`~numpy.ndarray`): SS error from proposed candidate, :math:`q^*`
             * **ss2** (:class:`~numpy.ndarray`): SS error from previous sample point, :math:`q^{k-1}`
             * **sigma2** (:class:`~numpy.ndarray`): Error variance estimate from previous sample point, :math:`\\sigma_{k-1}^2`
@@ -127,7 +125,7 @@ class Metropolis:
 
         \\
 
-        :Returns:
+        Returns:
             * **alpha** (:py:class:`float`): Result of likelihood function
         '''
         alpha = np.exp(-0.5*(sum((ss1 - ss2)*(sigma2**(-1))) + newprior - oldprior))

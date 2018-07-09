@@ -12,7 +12,7 @@ class ParameterSet:
 
     **Description:** Storage device for passing parameter sets back and forth between sampling methods.
 
-    :Args:
+    Args:
         * **theta** (:class:`~numpy.ndarray`): Sampled values.
         * **ss** (:class:`~numpy.ndarray`): Sum-of-squares error(s).
         * **prior** (:class:`~numpy.ndarray`): Result from prior function.

@@ -1,9 +1,6 @@
 pymcmcstat.plotting package
 ===========================
 
-Submodules
-----------
-
 pymcmcstat.plotting.MCMCPlotting module
 ---------------------------------------
 
@@ -24,15 +21,6 @@ pymcmcstat.plotting.utilities module
 ------------------------------------
 
 .. automodule:: pymcmcstat.plotting.utilities
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-
-Module contents
----------------
-
-.. automodule:: pymcmcstat.plotting
     :members:
     :undoc-members:
     :show-inheritance:

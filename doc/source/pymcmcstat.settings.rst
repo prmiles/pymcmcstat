@@ -1,9 +1,6 @@
 pymcmcstat.settings package
 ===========================
 
-Submodules
-----------
-
 pymcmcstat.settings.DataStructure module
 ----------------------------------------
 
@@ -32,15 +29,6 @@ pymcmcstat.settings.SimulationOptions module
 --------------------------------------------
 
 .. automodule:: pymcmcstat.settings.SimulationOptions
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-
-Module contents
----------------
-
-.. automodule:: pymcmcstat.settings
     :members:
     :undoc-members:
     :show-inheritance:
