@@ -96,7 +96,7 @@ def progress_bar(iters):
     A simple progress bar to monitor MCMC sampling progress.
     Modified from original code by Corey Goldberg (2010).
 
-    :Args:
+    Args:
         * **iters** (:py:class:`int`): Number of iterations in simulation.
 
     Example display:

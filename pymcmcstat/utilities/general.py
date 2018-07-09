@@ -12,7 +12,7 @@ def message(verbosity, level, printthis):
     '''
     Display message
 
-    :Args:
+    Args:
         * **verbosity** (:py:class:`int`): Verbosity of display output.
         * **level** (:py:class:`int`): Print level relative to verbosity.
         * **printthis** (:py:class:`str`): String to be printed.
