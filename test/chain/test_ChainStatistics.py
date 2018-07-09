@@ -63,14 +63,3 @@ class PowerSpectralDensity(unittest.TestCase):
         nfft = min(len(x),256)
         n2 = int(np.floor(nfft/2))
         self.assertEqual(n2, len(y))
-        
-class GenerateDefaultNames(unittest.TestCase):
-    
-    def test_names_results_none(self):
-        names = CS.get_parameter_names(n = 3, results = None)
-        self.assertEqual(names, ['$p_{0}$', '$p_{1}$', '$p_{2}$'])
-        
-    def test_names_results_short(self):
-        results = {'names': ['a1']}
-        names = CS.get_parameter_names(n = 3, results = results)
-        self.assertEqual(names, ['a1', '$p_{1}$', '$p_{2}$'])
