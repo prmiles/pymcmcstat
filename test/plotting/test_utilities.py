@@ -187,11 +187,13 @@ class IQrange(unittest.TestCase):
         x = np.random.random_sample(size = (100,1))
         q = utilities.iqrange(x = x)
         self.assertTrue(isinstance(q, np.ndarray), msg = 'Expected array return - received {}'.format(type(q)))
+        self.assertEqual(q.size, 1, msg = 'Expect single element array')
         
     def test_array_return_with_row_vector_input(self):
         x = np.random.random_sample(size = (1,100))
         q = utilities.iqrange(x = x)
         self.assertTrue(isinstance(q, np.ndarray), msg = 'Expected array return - received {}'.format(type(q)))
+        self.assertEqual(q.size, 1, msg = 'Expect single element array')
         
 # --------------------------
 class ScaleBandWidth(unittest.TestCase):
@@ -200,18 +202,21 @@ class ScaleBandWidth(unittest.TestCase):
         x = np.random.random_sample(size = (100,1))
         s = utilities.scale_bandwidth(x = x)
         self.assertTrue(isinstance(s, np.ndarray), msg = 'Expected array return - received {}'.format(type(s)))
+        self.assertEqual(s.size, 1, msg = 'Expect single element array')
         
     def test_array_return_with_row_vector_input(self):
         x = np.random.random_sample(size = (1,100))
         s = utilities.scale_bandwidth(x = x)
         self.assertTrue(isinstance(s, np.ndarray), msg = 'Expected array return - received {}'.format(type(s)))
-    
+        self.assertEqual(s.size, 1, msg = 'Expect single element array')
+        
     @patch('pymcmcstat.plotting.utilities.iqrange', return_value = -1.0)
     def test_array_return_with_iqrange_lt_0(self, mock_iqrange):
         x = np.random.random_sample(size = (1,100))
         s = utilities.scale_bandwidth(x = x)
         self.assertTrue(isinstance(s, np.ndarray), msg = 'Expected array return - received {}'.format(type(s)))
-
+        self.assertEqual(s.size, 1, msg = 'Expect single element array')
+        
 # --------------------------
 class AppendToNrowNcolBasedOnShape(unittest.TestCase):
     def test_shape_is_2d(self):
