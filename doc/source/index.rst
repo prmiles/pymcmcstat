@@ -9,15 +9,15 @@ Contents:
 =========
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    
-   modules
-   pymcmcstat.settings
-   pymcmcstat.procedures
-   pymcmcstat.structures
-   pymcmcstat.plotting
-   pymcmcstat.samplers
+   pymcmcstat
    pymcmcstat.chain
+   pymcmcstat.plotting
+   pymcmcstat.procedures
+   pymcmcstat.samplers
+   pymcmcstat.settings
+   pymcmcstat.structures
    pymcmcstat.utilities
 
 References

@@ -22,10 +22,10 @@ Subpackages
 
 .. toctree::
 
-    pymcmcstat.chain
-    pymcmcstat.plotting
-    pymcmcstat.procedures
-    pymcmcstat.samplers
-    pymcmcstat.settings
-    pymcmcstat.structures
-    pymcmcstat.utilities
+   pymcmcstat.chain
+   pymcmcstat.plotting
+   pymcmcstat.procedures
+   pymcmcstat.samplers
+   pymcmcstat.settings
+   pymcmcstat.structures
+   pymcmcstat.utilities
