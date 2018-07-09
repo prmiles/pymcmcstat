@@ -60,18 +60,11 @@ class MCMC:
     
     Attributes:
         * :meth:`~run_simulation`
-        * :meth:`~setup_simulator`
-        * :meth:`~initialize_simulation`
-        * :meth:`~initialize_chains`
-        * :meth:`~expand_chains`
-        * :meth:`~execute_simulator`
-        * :meth:`~generate_simulation_results`
-        * :meth:`~save_to_log_file`
-        * :meth:`~save_chains_to_bin`
-        * :meth:`~save_chains_to_txt`
-        * :meth:`~update_chain`
-        * :meth:`~update_rejected`
-        * :meth:`~update_rejected`
+        * :meth:`~display_current_mcmc_settings`
+        * **data** (:class:`~.DataStructure`): MCMC data structure.
+        * **simulation_options** (:class:`~.SimulationOptions`): MCMC simulation options.
+        * **model_settings** (:class:`~.ModelSettings`): MCMC model settings.
+        * **parameters** (:class:`~.ModelParameters`): MCMC model parameters.
     '''
     def __init__(self, rngseed = None):
         # public variables
@@ -101,7 +94,7 @@ class MCMC:
         '''
         start_time = time.time()
         
-        self.setup_simulator(use_previous_results = use_previous_results)
+        self.__setup_simulator(use_previous_results = use_previous_results)
         
         # ---------------------
         # setup progress bar
@@ -115,13 +108,13 @@ class MCMC:
             
         # ---------------------
         # Execute main simulator
-        self.execute_simulator()
+        self.__execute_simulator()
         
         end_time = time.time()
         self.__simulation_time = end_time - start_time
         # --------------------
         # Generate Results
-        self.generate_simulation_results()
+        self.__generate_simulation_results()
         if self.simulation_options.save_to_json == True:
             if self.simulation_results.basic == True: # check that results structure has been created
                 self.simulation_results.export_simulation_results_to_json_file(results = self.simulation_results.results)
@@ -130,7 +123,7 @@ class MCMC:
         self.chainstats = ChainStatistics.chainstats
         self._mcmc_status = True # simulation has been performed
     # --------------------------------------------------------
-    def setup_simulator(self, use_previous_results):
+    def __setup_simulator(self, use_previous_results):
         '''
         Setup simulator.
         
@@ -146,8 +139,8 @@ class MCMC:
         if use_previous_results == True:
             if self._mcmc_status == True:
                 self.parameters._results_to_params(self.simulation_results.results, 1)
-                self.initialize_simulation()
-                self.expand_chains(nsimu = self.simulation_options.nsimu, npar = self.parameters.npar, nsos = self.model_settings.nsos, updatesigma=self.simulation_options.updatesigma)
+                self._initialize_simulation()
+                self.__expand_chains(nsimu = self.simulation_options.nsimu, npar = self.parameters.npar, nsos = self.model_settings.nsos, updatesigma=self.simulation_options.updatesigma)
             else:
                 sys.exit('No previous results found.  Set ''use_previous_results'' to ''False''')
         else:
@@ -158,10 +151,10 @@ class MCMC:
                 self.simulation_options.qcov = np.array(res['qcov'])
                 
             self.__chain_index = 0 # start index at zero
-            self.initialize_simulation()
-            self.initialize_chains(chainind = self.__chain_index, nsimu = self.simulation_options.nsimu, npar = self.parameters.npar, nsos = self.model_settings.nsos, updatesigma=self.simulation_options.updatesigma, sigma2 = self.model_settings.sigma2)
+            self._initialize_simulation()
+            self.__initialize_chains(chainind = self.__chain_index, nsimu = self.simulation_options.nsimu, npar = self.parameters.npar, nsos = self.model_settings.nsos, updatesigma=self.simulation_options.updatesigma, sigma2 = self.model_settings.sigma2)
     # --------------------------------------------------------
-    def initialize_simulation(self):
+    def _initialize_simulation(self):
         '''
         Initialize all dependent settings for simulation.
         '''
@@ -204,7 +197,7 @@ class MCMC:
         if self.simulation_options.ntry > 1:
             self._sampling_methods.delayed_rejection._initialize_dr_metrics(self.simulation_options)
     # --------------------------------------------------------
-    def initialize_chains(self, chainind, nsimu, npar, nsos, updatesigma, sigma2):
+    def __initialize_chains(self, chainind, nsimu, npar, nsos, updatesigma, sigma2):
         '''
         Initialize chains
 
@@ -229,7 +222,7 @@ class MCMC:
         else:
             self.__s2chain = None
     # --------------------------------------------------------    
-    def expand_chains(self, nsimu, npar, nsos, updatesigma):
+    def __expand_chains(self, nsimu, npar, nsos, updatesigma):
         '''
         Expand chains for extended simulation
 
@@ -251,7 +244,7 @@ class MCMC:
         else:
             self.__s2chain = None
     # --------------------------------------------------------
-    def execute_simulator(self):
+    def __execute_simulator(self):
         '''
         Execute MCMC simulation.
         
@@ -291,7 +284,7 @@ class MCMC:
                         sosobj = self.__sos_object, priorobj = self.__prior_object)
 
             # UPDATE CHAIN & SUM-OF-SQUARES CHAIN
-            self.update_chain(accept = accept, new_set = new_set, outsidebounds = outbound)
+            self.__update_chain(accept = accept, new_set = new_set, outsidebounds = outbound)
             self.__sschain[self.__chain_index,:] = self.__old_set.ss
 
             # PRINT REJECTION STATISTICS
@@ -318,15 +311,15 @@ class MCMC:
                 
             # SAVE TO LOG FILE
             if savecount == self.simulation_options.savesize:
-                savecount, lastbin = self.save_to_log_file(start = isimu - self.simulation_options.savesize, end = isimu)
+                savecount, lastbin = self.__save_to_log_file(start = isimu - self.simulation_options.savesize, end = isimu)
        
         # SAVE REMAINING ELEMENTS TO BIN FILE
-        self.save_to_log_file(start = lastbin, end = isimu + 1)
+        self.__save_to_log_file(start = lastbin, end = isimu + 1)
            
         # update value to end value
         self.parameters._value[self.parameters._parind] = self.__old_set.theta
     # ------------------------------------------------
-    def generate_simulation_results(self):
+    def __generate_simulation_results(self):
         '''
         Generate simulation results dictionary.
         
@@ -354,7 +347,7 @@ class MCMC:
         self.simulation_results.add_s2chain(s2chain = self.__s2chain)
         self.simulation_results.add_sschain(sschain = self.__sschain)
     # ------------------------------------------------
-    def save_to_log_file(self, start, end):
+    def __save_to_log_file(self, start, end):
         '''
         Save to log files
         
@@ -367,16 +360,16 @@ class MCMC:
             * **lastbin** (:py:class:`int`): Last index saved
         '''
         if self.simulation_options.save_to_bin is True:
-            self.save_chains_to_bin(start, end)
+            self.__save_chains_to_bin(start, end)
         if self.simulation_options.save_to_txt is True:
-            self.save_chains_to_txt(start, end)
+            self.__save_chains_to_txt(start, end)
             
         # reset counter
         savecount = 0
         lastbin = end
         return savecount, lastbin
     # --------------------------------------------------------
-    def save_chains_to_bin(self, start, end):
+    def __save_chains_to_bin(self, start, end):
         '''
         Save chain segment to binary file
 
@@ -407,7 +400,7 @@ class MCMC:
         if self.simulation_options.updatesigma == 1:
             ChainProcessing._save_to_bin_file(s2chainfile, datasetname = datasetname, mtx = self.__s2chain[start:end,:])
     # --------------------------------------------------------
-    def save_chains_to_txt(self, start, end):
+    def __save_chains_to_txt(self, start, end):
         '''
         Save chain segment to text file
 
@@ -436,7 +429,7 @@ class MCMC:
             ChainProcessing._save_to_txt_file(s2chainfile, self.__s2chain[start:end,:])
     
     # --------------------------------------------------------
-    def update_chain(self, accept, new_set, outsidebounds):
+    def __update_chain(self, accept, new_set, outsidebounds):
         '''
         Update chain
 
@@ -452,9 +445,9 @@ class MCMC:
         else:
             # reject
             self.__chain[self.__chain_index,:] = self.__old_set.theta
-            self.update_rejected(outsidebounds = outsidebounds)
+            self.__update_rejected(outsidebounds = outsidebounds)
     # --------------------------------------------------------
-    def update_rejected(self, outsidebounds):
+    def __update_rejected(self, outsidebounds):
         '''
         Update rejection counters
 

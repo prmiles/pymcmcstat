@@ -79,7 +79,7 @@ class ParallelMCMC:
         '''
         Run MCMC simulations in parallel.
         
-        The code is run in parallel by using :class:`~Pool`.  While
+        The code is run in parallel by using :class:`~.Pool`.  While
         running, you can expect a display similar to
 
         ::
