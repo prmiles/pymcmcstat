@@ -17,7 +17,7 @@ def sample_candidate_from_gaussian_proposal(npar, oldpar, R):
 
     Args:
         * **npar** (:py:class:`int`): Number of parameters being samples
-        * **oldpar** (:class:`~numpy.ndarray'): :math:`q^{k-1}` Old parameter set.
+        * **oldpar** (:class:`~numpy.ndarray`): :math:`q^{k-1}` Old parameter set.
         * **R** (:class:`~numpy.ndarray`): Cholesky decomposition of parameter covariance matrix.
 
     Returns:

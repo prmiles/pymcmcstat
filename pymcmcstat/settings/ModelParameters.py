@@ -225,7 +225,7 @@ def replace_list_elements(x, testfunction, value):
 def generate_default_name(nparam):
     '''
     Generate generic parameter name.
-    For example, if :code:`nparam = 4`, then the generated name are::
+    For example, if :code:`nparam = 4`, then the generated name is::
 
         names = 'p_{3}'
 

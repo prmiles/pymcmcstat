@@ -18,6 +18,23 @@ class ResultsStructure:
     Results from MCMC simulation.
 
     **Description:** Class used to organize results of MCMC simulation.
+    
+    Attributes:
+        * :meth:`~export_simulation_results_to_json_file`
+        * :meth:`~determine_filename`
+        * :meth:`~save_json_object`
+        * :meth:`~load_json_object`
+        * :meth:`~add_basic`
+        * :meth:`~add_updatesigma`
+        * :meth:`~add_dram`
+        * :meth:`~add_prior`
+        * :meth:`~add_options`
+        * :meth:`~add_model`
+        * :meth:`~add_chain`
+        * :meth:`~add_s2chain`
+        * :meth:`~add_sschain`
+        * :meth:`~add_time_stats`
+        * :meth:`~add_random_number_sequence`
     '''
     def __init__(self):
         self.results = {} # initialize empty dictionary

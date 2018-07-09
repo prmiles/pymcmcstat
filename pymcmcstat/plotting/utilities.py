@@ -326,7 +326,7 @@ def convert_flag_to_boolean(flag):
     Convert flag to boolean for backwards compatibility.
 
     Args:
-        * **flag** (:py:class:`bool' or :py:class:'int`): Flag to specify something.
+        * **flag** (:py:class:`bool` or :py:class:`int`): Flag to specify something.
 
     Returns:
         * **flag** (:py:class:`bool`): Flag to converted to boolean.

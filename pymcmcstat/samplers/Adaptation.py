@@ -16,7 +16,6 @@ class Adaptation:
     Adaptive Metropolis (AM) algorithm based on :cite:`haario2001adaptive`.
 
     Attributes:
-        * :meth:`~covupd`
         * :meth:`~run_adaptation`
     '''
     def __init__(self):
@@ -142,9 +141,9 @@ def unpack_covariance_settings(covariance):
         * **oldcovchain** (:class:`~numpy.ndarray`): Covariance matrix history.
         * **oldmeanchain** (:class:`~numpy.ndarray`): Current mean chain values.
         * **oldwsum** (:class:`~numpy.ndarray`): Weights
-        * **no_adapt_index** (:class:`numpy.ndarray'): Indices of parameters not being adapted.
+        * **no_adapt_index** (:class:`numpy.ndarray`): Indices of parameters not being adapted.
         * **qcov_scale** (:py:class:`float`): Scale parameter
-        * **qcov** (:class:`~numpy.ndarray'): Covariance matrix
+        * **qcov** (:class:`~numpy.ndarray`): Covariance matrix
     '''
     # unpack covariance
     last_index_since_adaptation = covariance._last_index_since_adaptation
@@ -374,13 +373,13 @@ def update_cov_from_covchain(covchain, qcov, no_adapt_index):
 
     Args:
         * **covchain** (:class:`~numpy.ndarray`): Covariance matrix history.
-        * **qcov** (:class:`~numpy.ndarray'): Parameter covariance matrix
-        * **no_adapt_index** (:class:`numpy.ndarray'): Indices of parameters not being adapted.
+        * **qcov** (:class:`~numpy.ndarray`): Parameter covariance matrix
+        * **no_adapt_index** (:class:`numpy.ndarray`): Indices of parameters not being adapted.
 
     \\
 
     Returns:
-        * **upcov** (:class:`~numpy.ndarray'): Updated covariance matrix
+        * **upcov** (:class:`~numpy.ndarray`): Updated covariance matrix
     '''
     upcov = covchain.copy()
     upcov[no_adapt_index, :] = qcov[no_adapt_index,:]

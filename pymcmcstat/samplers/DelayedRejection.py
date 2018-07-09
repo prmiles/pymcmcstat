@@ -17,9 +17,9 @@ class DelayedRejection:
     Delayed Rejection (DR) algorithm based on :cite:`haario2006dram`.
 
     Attributes:
-        * :meth:`~acceptance_test`
-        * :meth:`~initialize_next_metropolis_step`
         * :meth:`~run_delayed_rejection`
+        * :meth:`~initialize_next_metropolis_step`
+        * :meth:`~alphafun`        
     '''
     # -------------------------------------------
     def run_delayed_rejection(self, old_set, new_set, RDR, ntry, parameters, invR, sosobj, priorobj):
@@ -150,7 +150,7 @@ def nth_stage_log_proposal_ratio(iq, trypath, invR):
     '''
     Gaussian nth stage log proposal ratio.
 
-    Logarithm of :math:'q_i(y_n,...,y_{n-j})/q_i(x,y_1,...,y_j)`
+    Logarithm of :math:`q_i(y_n,...,y_{n-j})/q_i(x,y_1,...,y_j)`
 
     Args:
         * **iq** (:py:class:`int`): Stage number.

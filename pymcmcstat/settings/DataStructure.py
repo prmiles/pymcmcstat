@@ -64,11 +64,11 @@ class DataStructure:
         * `user_defined_object` (:py:class:`list`): List of objects. :code:`user_defined_object = [0,0]`
 
         Args:
-            * **x** (:class:`~numpy.ndarray`): Independent data
-            * **y** (:class:`~numpy.ndarray`): Dependent data
-            * **n** (:py:class:`list`): List of integers denoting number of data points
-            * **weight** (:py:class:`list`): Weight of each data set
-            * **user_defined_object** (`User Defined`): Any object can be stored in this variable
+            * **x** (:class:`~numpy.ndarray`): Independent data.  Recommend input as column vectors.
+            * **y** (:class:`~numpy.ndarray`): Dependent data.  Recommend input as column vectors.
+            * **n** (:py:class:`list`): List of integers denoting number of data points.
+            * **weight** (:py:class:`list`): Weight of each data set.
+            * **user_defined_object** (`User Defined`): Any object can be stored in this variable.
 
         .. note::
             In general, it is recommended that user's format their data as a column

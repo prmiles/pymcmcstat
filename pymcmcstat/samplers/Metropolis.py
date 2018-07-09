@@ -31,8 +31,6 @@ class Metropolis:
 
     Attributes:
         * :meth:`~acceptance_test`
-        * :meth:`~evaluate_likelihood_function`
-        * :meth:`~is_sample_outside_bounds`
         * :meth:`~run_metropolis_step`
         * :meth:`~unpack_set`
     '''

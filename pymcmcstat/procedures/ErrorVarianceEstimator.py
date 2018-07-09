@@ -12,7 +12,7 @@ class ErrorVarianceEstimator:
     '''
     Estimate observation errors.
 
-    :Attributes:
+    Attributes:
         * :meth:`~update_error_variance`
         * :meth:`~gammar`
         * :meth:`~gammar_mt`
