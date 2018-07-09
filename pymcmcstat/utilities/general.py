@@ -22,3 +22,20 @@ def message(verbosity, level, printthis):
         print(printthis)
         printed = True
     return printed
+
+def removekey(d, key):
+    '''
+    Removed elements from dictionary and return the remainder.
+
+    Args:
+        * **d** (:py:class:`dict`): Original dictionary.
+        * **key** (:py:class:`str`): Keyword to be removed.
+
+    \\
+
+    Returns:
+        * **r** (:py:class:`dict`): Updated dictionary without the keyword, value pair.
+    '''
+    r = dict(d)
+    del r[key]
+    return r
