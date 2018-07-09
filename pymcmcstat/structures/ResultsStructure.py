@@ -37,6 +37,21 @@ class ResultsStructure:
     
     @classmethod
     def determine_filename(cls, options):
+        '''
+        Determine results filename.
+        
+        If not specified by `results_filename` in the simulation options, then
+        a default naming format is generated using the date string associated
+        with the initialization of the simulation.
+        
+        :Args:
+            * **options** (:class:`~.SimulationOptions`): MCMC simulation options.
+            
+        \\
+        
+        :Returns:
+            * **filename** (:py:class:`str`): Filename string.
+        '''
         results_filename = options['results_filename']
         if results_filename is None:
             dtstr = options['datestr']
