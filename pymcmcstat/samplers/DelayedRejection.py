@@ -36,8 +36,6 @@ class DelayedRejection:
             * **sosobj** (:class:`~.SumOfSquares`): Sum-of-Squares function
             * **priorobj** (:class:`~.PriorFunction`): Prior function
 
-        \\
-
         Returns:
             * **accept** (:py:class:`int`): 0 - reject, 1 - accept
             * **out_set** (:class:`~.ParameterSet`): If accept == 1, then latest DR set; Else, :math:`q^k=q^{k-1}`
@@ -87,8 +85,6 @@ class DelayedRejection:
             * **RDR** (:class:`~numpy.ndarray`): Cholesky decomposition of parameter covariance matrix for DR steps
             * **itry** (:py:class:`int`): DR step counter
 
-        \\
-
         Returns:
             * **next_set** (:class:`~.ParameterSet`): New proposal set
             * **u** (:class:`numpy.ndarray`): Numbers sampled from standard normal distributions (:code:`u.shape = (1,npar)`)
@@ -116,8 +112,6 @@ class DelayedRejection:
         Args:
             * **trypath** (:py:class:`list`): Sequence of DR steps
             * **invR** (:class:`~numpy.ndarray`): Inverse Cholesky decomposition matrix
-
-        \\
 
         Returns:
             * **alpha** (:py:class:`float`): Result of likelihood function according to delayed rejection
@@ -219,8 +213,6 @@ def update_set_based_on_acceptance(accept, old_set, next_set):
         * **accept** (:py:class:`int`): 0 - reject, 1 - accept
         * **old_set** (:class:`~.ParameterSet`): Features of :math:`q^{k-1}`
         * **next_set** (:class:`~.ParameterSet`): New proposal set
-
-    \\
 
     Returns:
         * **out_set** (:class:`~.ParameterSet`): If accept == 1, then latest DR set; Else, :math:`q^k=q^{k-1}`

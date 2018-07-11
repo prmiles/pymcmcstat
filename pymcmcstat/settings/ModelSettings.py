@@ -176,12 +176,8 @@ class ModelSettings:
             * **x** (:class:`~numpy.ndarray`): Array to be checked
             * **nsos** (:py:class:`int`): Length of output from sum-of-squares function
 
-        \\
-
         Returns:
             * **x** (:class:`~numpy.ndarray`): Array returned with shape = :code:`(nsos,1)`
-
-        \\
 
         Raises:
             * Dimension mismatch if :code:`len(x) > nsos` or :code:`len(x) < nsos and len(x) != 1`.

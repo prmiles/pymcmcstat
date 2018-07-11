@@ -64,8 +64,6 @@ class ResultsStructure:
         
         Args:
             * **options** (:class:`~.SimulationOptions`): MCMC simulation options.
-            
-        \\
         
         Returns:
             * **filename** (:py:class:`str`): Filename string.
@@ -105,8 +103,6 @@ class ResultsStructure:
 
         Args:
             * **filename** (:py:class:`str`): Load object from file with this name.
-
-        \\
 
         Returns:
             * **results** (:py:class:`dict`): Object loaded from file.

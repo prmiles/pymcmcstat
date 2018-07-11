@@ -53,11 +53,9 @@ class MCMC:
     of the code.  It was found that setting the random seed at object initialization
     was the simplest interface.
     
-    :Args:
+    Args:
         * **rngseed** (:py:class:`float`): Seed for numpy's random number generator.
 
-    \\
-    
     Attributes:
         * :meth:`~run_simulation`
         * :meth:`~display_current_mcmc_settings`
@@ -355,7 +353,7 @@ class MCMC:
             * **start** (:py:class:`int`): Start index of chain block to save
             * **end** (:py:class:`int`): End index of chain block to save
             
-        :Returns:
+        Returns:
             * **savecount** (:py:class:`int`): Reset save counter
             * **lastbin** (:py:class:`int`): Last index saved
         '''

@@ -31,8 +31,6 @@ def removekey(d, key):
         * **d** (:py:class:`dict`): Original dictionary.
         * **key** (:py:class:`str`): Keyword to be removed.
 
-    \\
-
     Returns:
         * **r** (:py:class:`dict`): Updated dictionary without the keyword, value pair.
     '''

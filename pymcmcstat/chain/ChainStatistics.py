@@ -20,12 +20,12 @@ def chainstats(chain = None, results = None, returnstats = False):
     '''
     Calculate chain statistics.
 
-    :Args:
+    Args:
         * **chain** (:class:`~numpy.ndarray`): Sampling chain.
         * **results** (:py:class:`dict`): Results from MCMC simulation.
         * **returnstats** (:py:class:`bool`): Flag to return statistics.
 
-    :Returns:
+    Returns:
         * **stats** (:py:class:`dict`): Statistical measures of chain convergence.
     '''
     if chain is None:
@@ -72,7 +72,7 @@ def print_chain_statistics(names, meanii, stdii, mcerr, tau, p):
     '''
     Print chain statistics to terminal window.
 
-    :Args:
+    Args:
         * **names** (:py:class:`list`): List of parameter names.
         * **meanii** (:py:class:`list`): Parameter mean values.
         * **stdii** (:py:class:`list`): Parameter standard deviation.
@@ -106,13 +106,11 @@ def batch_mean_standard_deviation(chain, b = None):
     '''
     Standard deviation calculated from batch means
 
-    :Args:
+    Args:
         * **chain** (:class:`~numpy.ndarray`): Sampling chain.
         * **b** (:py:class:`int`): Step size.
 
-    \\
-
-    :Returns:
+    Returns:
         * **s** (:class:`~numpy.ndarray`): Batch mean standard deviation.
     '''
     
@@ -147,14 +145,12 @@ def geweke(chain, a = 0.1, b = 0.5):
     Test for equality of the means of the first a% (default 10%) and
     last b% (50%) of a Markov chain - see :cite:`brooks1998assessing`.
 
-    :Args:
+    Args:
         * **chain** (:class:`~numpy.ndarray`): Sampling chain.
         * **a** (:py:class:`float`): First a% of chain.
         * **b** (:py:class:`float`): Last b% of chain.
 
-    \\
-
-    :Returns:
+    Returns:
         * **z** (:class:`~numpy.ndarray`): Convergence diagnostic prior to CDF.
         * **p** (:class:`~numpy.ndarray`): Geweke's MCMC convergence diagnostic.
 
@@ -192,12 +188,10 @@ def spectral_estimate_for_variance(x):
     '''
     Spectral density at frequency zero.
 
-    :Args:
+    Args:
         * **x** (:class:`~numpy.ndarray`): Array of points - portion of chain.
-        
-    \\
     
-    :Returns:
+    Returns:
         * **s** (:class:`~numpy.ndarray`): Spectral estimate for variance.
     '''
     m,n = x.shape
@@ -212,14 +206,12 @@ def power_spectral_density_using_hanning_window(x, nfft = None, nw = None):
     '''
     Power spectral density using Hanning window.
     
-    :Args:
+    Args:
         * **x** (:class:`~numpy.ndarray`): Array of points - portion of chain.
         * **nfft** (:py:class:`int`): Length of Fourier transform.
         * **nw** (:py:class:`int`): Size of window.
-        
-    \\
     
-    :Returns:
+    Returns:
         * **y** (:class:`~numpy.ndarray`): Power spectral density.
     '''
     if nfft is None:
@@ -262,12 +254,10 @@ def integrated_autocorrelation_time(chain):
     Estimates the integrated autocorrelation time using Sokal's
     adaptive truncated periodogram estimator.
 
-    :Args:
+    Args:
         * **chain** (:class:`~numpy.ndarray`): Sampling chain.
 
-    \\
-
-    :Returns:
+    Returns:
         * **tau** (:class:`~numpy.ndarray`): Autocorrelation time.
         * **m** (:class:`~numpy.ndarray`): Counter.
     '''
@@ -310,12 +300,10 @@ def get_parameter_names(nparam, results):
     Uses the functions: :func:`~.plotting.utilities.generate_default_names` and
     :func:`~.plotting.utilities.extend_names_to_match_nparam`
     
-    :Args:
+    Args:
         * **nparam** (:py:class:`int`): Number of parameter names needed
-        
-    \\
     
-    :Returns:
+    Returns:
         * **names** (:py:class:`list`): List of length `nparam` with strings.
     '''
     if results is None: # results not specified

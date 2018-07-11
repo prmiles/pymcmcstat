@@ -34,7 +34,6 @@ class PredictionIntervals:
             * results (:class:`~.ResultsStructure`): MCMC results structure
             * data (:class:`~.DataStructure`): MCMC data structure
             * modelfunction: Model function handle
-
         '''
         # Analyze data structure
         self.__ndatabatches, ncols = self._analyze_data_structure(data = data)
@@ -296,8 +295,6 @@ class PredictionIntervals:
         Args:
             * **sigma2** (:class:`~numpy.ndarray` or `None`): Observation error chain.
 
-        \\
-
         Returns:
             * **lims** (:class:`~numpy.ndarray`): Lower/Upper limits of quantiles.
         '''
@@ -381,8 +378,6 @@ class PredictionIntervals:
             * **waitbar** (:py:class:`bool`): Flag to turn on progress bar.
             * **sstype** (:py:class:`int`): Flag to specify sstype.
 
-        \\
-        
         Returns:
             * **credible_intervals(:py:class:`list`): List of credible intervals.
         '''
@@ -696,9 +691,7 @@ class PredictionIntervals:
             * **interval_display** (:py:class:`dict`): User defined settings for interval display.
             * **model_display** (:py:class:`dict`): User defined settings for model display.
             * **data_display** (:py:class:`dict`): User defined settings for data display.
-            
-        \\
-        
+
         Returns:
             * **interval_display** (:py:class:`dict`): Settings for interval display.
             * **model_display** (:py:class:`dict`): Settings for model display.
