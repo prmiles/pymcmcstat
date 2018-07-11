@@ -31,7 +31,7 @@ setup(
               'pymcmcstat.utilities'],
 #    dependency_links=['http://github.com/prmiles/pymcmcstat/tarball/master#egg=package-1.0'],
     zip_safe=False,
-    install_requires=['numpy>=1.7', 'scipy>=0.16', 'matplotlib'],
+    install_requires=['numpy>=1.7', 'scipy>=0.16', 'matplotlib', 'h5py', 'statsmodels'],
     extras_require = {'docs':['sphinx'], 'plotting':['matplotlib', 'plotly'],},
     classifiers=['License :: OSI Approved :: MIT License',
                    'Natural Language :: English',
