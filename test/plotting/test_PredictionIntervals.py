@@ -618,6 +618,18 @@ class GeneratePredictionIntervals(unittest.TestCase):
         cint = PI.intervals['credible_intervals']
         pint = PI.intervals['prediction_intervals']
         self.common_set_1(cint, pint)
+
+# --------------------------------------------
+class SetupDisplaySettings(unittest.TestCase):
+    def test_setup_display_settings(self):
+        PI = PredictionIntervals()
+        model_display = {'label': 'hello'}
+        data_display = {'linewidth': 7}
+        interval_display = {'edgecolor': 'b'}
+        intd, modd, datd = PI._setup_display_settings(interval_display = interval_display, model_display = model_display, data_display = data_display)
+        self.assertEqual(modd['label'], model_display['label'], msg = 'Expect label to match')
+        self.assertEqual(intd['edgecolor'], interval_display['edgecolor'], msg = 'Expect edgecolor to match')
+        self.assertEqual(datd['linewidth'], data_display['linewidth'], msg = 'Expect linewidth to match')
         
 # --------------------------------------------
 class PlotPredictionIntervals(unittest.TestCase):

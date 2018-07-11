@@ -386,3 +386,22 @@ def empirical_quantiles(x, p = np.array([0.25, 0.5, 0.75])):
     itpoints = (n-1)*p
     
     return interpfun(itpoints)
+
+# --------------------------------------------    
+def check_defaults(kwargs, defaults):
+    '''
+    Check if defaults are defined in kwargs
+    
+    Args:
+        * **kwargs** (:py:class:`dict`): Keyword arguments.
+        * **defaults** (:py:class:`dict`): Default settings.
+        
+    \\
+    
+    Returns:
+        * **kwargs** (:py:class:`dict`): Updated keyword arguments with at least defaults set.
+    '''
+    for ii in defaults:
+        if ii not in kwargs:
+            kwargs[ii] = defaults[ii]
+    return kwargs
