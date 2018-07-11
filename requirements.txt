@@ -4,3 +4,5 @@ matplotlib
 coveralls
 h5py
 statsmodels
+numpy
+scipy
