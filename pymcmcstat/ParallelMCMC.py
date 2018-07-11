@@ -166,8 +166,6 @@ def get_parameter_features(parameters):
     Args:
         * **parameters** (:py:class:`list`): List of MCMC model parameter dictionaries.
 
-    \\
-
     Returns:
         * **npar** (:py:class:`int`): Number of model parameters.
         * **low_lim** (:class:`~numpy.ndarray`): Lower limits.
@@ -201,8 +199,6 @@ def check_initial_values(initial_values, num_chain, npar, low_lim, upp_lim):
         * **low_lim** (:class:`~numpy.ndarray`): Lower limits.
         * **upp_lim** (:class:`~numpy.ndarray`): Upper limits.
 
-    \\
-
     Returns:
         * **initial_values** (:class:`~numpy.ndarray`): Array of initial parameter values - [num_chain,npar].
         * **num_chain** (:py:class:`int`): Number of sampling chains to be generated.
@@ -224,8 +220,6 @@ def generate_initial_values(num_chain, npar, low_lim, upp_lim):
         * **low_lim** (:class:`~numpy.ndarray`): Lower limits.
         * **upp_lim** (:class:`~numpy.ndarray`): Upper limits.
 
-    \\
-
     Returns:
         * **initial_values** (:class:`~numpy.ndarray`): Array of initial parameter values - [num_chain,npar]
     '''
@@ -242,8 +236,6 @@ def check_shape_of_users_initial_values(initial_values, num_chain, npar):
         * **initial_values** (:class:`~numpy.ndarray`): Array of initial parameter values - expect [num_chain,npar]
         * **num_chain** (:py:class:`int`): Number of sampling chains to be generated.
         * **npar** (:py:class:`int`): Number of model parameters.
-
-    \\
 
     Returns:
         * **num_chain** (:py:class:`int`): Number of sampling chains to be generated - equal to number of rows in initial values array.
@@ -267,13 +259,9 @@ def check_users_initial_values_wrt_limits(initial_values, low_lim, upp_lim):
         * **low_lim** (:class:`~numpy.ndarray`): Lower limits.
         * **upp_lim** (:class:`~numpy.ndarray`): Upper limits.
 
-    \\
-
     Returns:
         * **initial_values** (:class:`~numpy.ndarray`): Array of initial parameter values - expect [num_chain,npar]
-    
-    \\
-    
+
     Raises:
         * `SystemExit` if initial values are outside parameter bounds.
     '''
@@ -289,9 +277,7 @@ def check_options_output(options):
     
     Args:
         * **options** (:class:`.SimulationOptions`): MCMC simulation options.
-    
-    \\
-    
+
     Returns:
         * **options** (:class:`.SimulationOptions`): MCMC simulation options with at least binary save flag set to True.
     '''
@@ -318,8 +304,6 @@ def run_serial_simulation(mcstat):
     Args:
         * **mcstat** (:class:`MCMC.MCMC`): MCMC object.
 
-    \\
-    
     Returns:
         * **results** (:py:class:`dict`): Results dictionary for serial simulation.
     '''
@@ -334,8 +318,6 @@ def assign_number_of_cores(num_cores = 1):
     
     Args:
         * **num_cores** (:py:class:`int`): Number of cores designated by user.
-
-    \\
 
     Returns:
         * **num_cores** (:py:class:`int`): Number of cores designated by user or maximum number of cores available on machine.
