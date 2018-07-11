@@ -1,10 +1,16 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 import codecs
 
 def read(fname):
     with codecs.open(fname, 'r', 'latin') as f:
         return f.read()
-
+    
+# read the contents of your README file
+from os import path
+this_directory = path.abspath(path.dirname(__file__))
+with codecs.open(path.join(this_directory, 'README.rst'), encoding='utf-8') as f:
+    long_description = f.read()
+    
 # read in version number
 version_dummy = {}
 exec(read('pymcmcstat/__version__.py'), version_dummy)
@@ -14,22 +20,15 @@ del version_dummy
 setup(
     name='pymcmcstat',
     version=__version__,
-    description='A library to perform mcmc simulations',
+    description=('A library to perform MCMC simulations using DRAM'),
+    long_description=long_description
     url='https://github.com/prmiles/pymcmcstat',
     download_url='https://github.com/prmiles/pymcmcstat',
     author='Paul Miles',
     author_email='prmiles@ncsu.edu',
     license='MIT',
     package_dir={'pymcmcstat': 'pymcmcstat'},
-    packages=['pymcmcstat',
-              'pymcmcstat.chain',
-              'pymcmcstat.plotting',
-              'pymcmcstat.procedures',
-              'pymcmcstat.samplers',
-              'pymcmcstat.settings',
-              'pymcmcstat.structures',
-              'pymcmcstat.utilities'],
-#    dependency_links=['http://github.com/prmiles/pymcmcstat/tarball/master#egg=package-1.0'],
+    packages=find_packages(),
     zip_safe=False,
     install_requires=['numpy>=1.7', 'scipy>=0.16', 'matplotlib', 'h5py', 'statsmodels'],
     extras_require = {'docs':['sphinx'], 'plotting':['matplotlib', 'plotly'],},
