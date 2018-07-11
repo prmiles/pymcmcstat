@@ -47,8 +47,6 @@ class SumOfSquares:
         Args:
             * **theta** (:class:`~numpy.ndarray`): Parameter values.
 
-        \\
-
         Returns:
             * **ss** (:class:`~numpy.ndarray`): Sum-of-squares error(s)
         '''
@@ -88,6 +86,9 @@ class SumOfSquares:
 
         Args:
             * **theta** (:class:`~numpy.ndarray`): Parameter values.
+
+        Returns:
+            * **ss** (:class:`~numpy.ndarray`): Sum-of-squares error(s)           
         '''
         # initialize
         ss = np.zeros(nbatch)
