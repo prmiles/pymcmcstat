@@ -20,8 +20,6 @@ def generate_subplot_grid(nparam = 2):
     Args:
         * **nparam** (:py:class:`int`): Number of parameters
 
-    \\
-
     Returns:
         * **ns1** (:py:class:`int`): Number of rows in subplot
         * **ns2** (:py:class:`int`): Number of columns in subplot
@@ -41,8 +39,6 @@ def generate_names(nparam, names):
     Args:
         * **nparam** (:py:class:`int`): Number of parameter names to generate
         * **names** (:py:class:`list`): Names of parameters provided by user
-
-    \\
 
     Returns:
         * **names** (:py:class:`list`): List of strings - parameter names
@@ -64,8 +60,6 @@ def setup_plot_features(nparam, names, figsizeinches):
         * **nparam** (:py:class:`int`): Number of parameters
         * **names** (:py:class:`list`): Names of parameters provided by user
         * **figsizeinches** (:py:class:`list`): [Width, Height]
-
-    \\
 
     Returns:
         * **ns1** (:py:class:`int`): Number of rows in subplot
@@ -93,8 +87,6 @@ def generate_default_names(nparam):
     Args:
         * **nparam** (:py:class:`int`): Number of parameter names to generate
 
-    \\
-
     Returns:
         * **names** (:py:class:`list`): List of strings - parameter names
     '''
@@ -117,8 +109,6 @@ def extend_names_to_match_nparam(names, nparam):
     Args:
         * **names** (:py:class:`list`): Names of parameters provided by user
         * **nparam** (:py:class:`int`): Number of parameter names to generate
-
-    \\
 
     Returns:
         * **names** (:py:class:`list`): List of strings - extended list of parameter names
@@ -146,8 +136,6 @@ def make_x_grid(x, npts = 100):
         * **x** (:class:`~numpy.ndarray`): Array of points
         * **npts** (:py:class:`int`): Number of points to use in generated grid
 
-    \\
-
     Returns:
         * Uniformly spaced array of points with shape :code:`=(npts,1)`. (:class:`~numpy.ndarray`)
     '''
@@ -168,9 +156,7 @@ def iqrange(x):
     
     Args:
         * **x** (:class:`~numpy.ndarray`): Array of points.
-        
-    \\
-    
+
     Returns:
         * (:class:`~numpy.ndarray`): Interquantile range - single element array, `q3 - q1`.
     '''
@@ -199,9 +185,7 @@ def gaussian_density_function(x, mu = 0, sigma2 = 1):
         * **x** (:py:class:`float`): Value of which to calculate probability.
         * **mu** (:py:class:`float`): Mean of Gaussian distribution.
         * **sigma2** (:py:class:`float`): Variance of Gaussian distribution.
-    
-    \\
-    
+
     Returns:
         * **y** (:py:class:`float`): Likelihood of `x`.
     '''
@@ -214,9 +198,7 @@ def scale_bandwidth(x):
     
     Args:
         * **x** (:class:`~numpy.ndarray`): Array of points - column of chain.
-        
-    \\
-    
+
     Returns:
         * **s** (:class:`~numpy.ndarray`): Scaled bandwidth - single element array.
     '''
@@ -236,8 +218,6 @@ def generate_ellipse(mu, cmat, ndp = 100):
         * **mu** (:class:`~numpy.ndarray`): Mean values
         * **cmat** (:class:`~numpy.ndarray`): Covariance matrix
         * **npd** (:py:class:`int`): Number of points to generate
-
-    \\
 
     Returns:
         * **x** (:class:`~numpy.ndarray`): x-points
@@ -271,9 +251,7 @@ def check_symmetric(a, tol=1e-8):
     Args:
         * **a** (:class:`~numpy.ndarray`): Array to test.
         * **tol** (:py:class:`float`): Tolerance for testing equality.
-        
-    \\
-    
+
     Returns:
         * (:py:class:`bool`): True -> symmetric, False -> not symmetric.
     '''
@@ -285,8 +263,6 @@ def is_semi_pos_def_chol(x):
 
     Args:
         * **x** (:class:`~numpy.ndarray`): Matrix to check
-
-    \\
 
     Returns:
         * If matrix is `not` semi positive definite return :code:`False, None`
@@ -351,9 +327,7 @@ def set_local_parameters(ii, local):
     Args:
         * **ii** (:py:class:`int`): Index.
         * **local** (:class:`~numpy.ndarray`): Local flags.
-        
-    \\
-    
+
     Returns:
         * **test** (:class:`~numpy.ndarray`): Array of Booleans indicated test results.
     '''
@@ -395,9 +369,7 @@ def check_defaults(kwargs, defaults):
     Args:
         * **kwargs** (:py:class:`dict`): Keyword arguments.
         * **defaults** (:py:class:`dict`): Default settings.
-        
-    \\
-    
+
     Returns:
         * **kwargs** (:py:class:`dict`): Updated keyword arguments with at least defaults set.
     '''
