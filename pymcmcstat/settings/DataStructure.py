@@ -111,8 +111,6 @@ class DataStructure:
         Args:
             * **xy** (`Unknown`): Variable to be converted
 
-        \\
-
         Returns:
             * **xy** (:class:`~numpy.ndarray`): Variable as numpy array
         '''
@@ -128,8 +126,6 @@ class DataStructure:
 
         Args:
             * **xy** (:class:`~numpy.ndarray`): Variable to be checked/converted
-
-        \\
 
         Returns:
             * **xy** (:class:`~numpy.ndarray`): Variable as at least 2d numpy array
