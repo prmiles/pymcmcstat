@@ -39,8 +39,6 @@ def is_sample_outside_bounds(theta, lower_limits, upper_limits):
         * **lower_limits** (:class:`~numpy.ndarray`): Lower limits
         * **upper_limits** (:class:`~numpy.ndarray`): Upper limits
 
-    \\
-
     Returns:
         * **outsidebounds** (:py:class:`bool`): True -> Outside of parameter limits
     '''
@@ -67,8 +65,6 @@ def acceptance_test(alpha):
 
     Args:
         * **alpha** (:py:class:`float`): Result of likelihood function
-
-    \\
 
     Returns:
         * **accept** (:py:class:`bool`): False - reject, True - accept

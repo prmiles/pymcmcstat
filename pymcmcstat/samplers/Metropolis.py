@@ -46,8 +46,6 @@ class Metropolis:
             * **priorobj** (:class:`~.PriorFunction`): Prior function
             * **sosobj** (:class:`~.SumOfSquares`): Sum-of-Squares function
 
-        \\
-
         Returns:
             * **accept** (:py:class:`int`): 0 - reject, 1 - accept
             * **newset** (:class:`~.ParameterSet`): Features of :math:`q^*`
@@ -93,8 +91,6 @@ class Metropolis:
         Args:
             * **parset** (:class:`~.ParameterSet`): Parameter set to unpack
 
-        \\
-
         Returns:
             * **theta** (:class:`~numpy.ndarray`): Value of sampled model parameters
             * **ss** (:class:`~numpy.ndarray`): Sum-of-squares error using sampled value
@@ -122,8 +118,6 @@ class Metropolis:
             * **sigma2** (:class:`~numpy.ndarray`): Error variance estimate from previous sample point, :math:`\\sigma_{k-1}^2`
             * **newprior** (:class:`~numpy.ndarray`): Prior for proposal candidate
             * **oldprior** (:class:`~numpy.ndarray`): Prior for previous sample
-
-        \\
 
         Returns:
             * **alpha** (:py:class:`float`): Result of likelihood function
