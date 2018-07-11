@@ -57,7 +57,7 @@ page <https://github.com/prmiles/pymcmcstat/graphs/contributors>`_
 .. |license| image:: https://img.shields.io/badge/License-MIT-yellow.svg
     :target: https://github.com/prmiles/pymcmcstat/blob/master/LICENSE.txt
 
-.. |coverage| image:: https://coveralls.io/repos/github/prmiles/pymcmcstat/badge.svg?branch=master
+.. |coverage| image:: https://img.shields.io/coveralls/github/prmiles/pymcmcstat.svg
     :target: https://coveralls.io/github/prmiles/pymcmcstat?branch=master
 
 .. |codacy| image:: https://api.codacy.com/project/badge/Grade/b1a33340c57a47648f993e124c75e93a    
