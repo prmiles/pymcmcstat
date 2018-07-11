@@ -15,7 +15,7 @@ def print_log_files(savedir):
     '''
     Print log files to screen.
 
-    :Args:
+    Args:
         * **savedir** (:py:class:`str`): Directory where log files are saved.
         
     The output display will include a date/time stamp, as well as indices of
@@ -57,7 +57,7 @@ def read_in_savedir_files(savedir, extension = 'h5', chainfile = 'chainfile', ss
     '''
     Read in log files from directory.
     
-    :Args:
+    Args:
         * **savedir** (:py:class:`str`): Directory where log files are saved.
         * **extension** (:py:class:`str`): Extension of files being loaded.
         * **chainfile** (:py:class:`str`): Name of chain log file.
@@ -103,7 +103,7 @@ def read_in_parallel_savedir_files(parallel_dir, extension = 'h5', chainfile = '
     '''
     Read in log files from directory containing results from parallel MCMC simulation.
     
-    :Args:
+    Args:
         * **parallel_dir** (:py:class:`str`): Directory where parallel log files are saved.
         * **extension** (:py:class:`str`): Extension of files being loaded.
         * **chainfile** (:py:class:`str`): Name of chain log file.
@@ -128,12 +128,10 @@ def read_in_bin_file(filename):
     If file exists, it will read in the array elements.  Otherwise, it will return
     and empty list.
     
-    :Args:
+    Args:
         * **filename** (:py:class:`str`): Name of file to read.
-        
-    \\
-    
-    :Returns:
+
+    Returns:
         * **out** (:class:`~numpy.ndarray`): Array of chain elements.
     '''
     try:
@@ -175,12 +173,10 @@ def read_in_txt_file(filename):
     If file exists, it will read in the array elements.  Otherwise, it will return
     and empty list.
     
-    :Args:
+    Args:
         * **filename** (:py:class:`str`): Name of file to read.
-        
-    \\
     
-    :Returns:
+    Returns:
         * **out** (:class:`~numpy.ndarray`): Array of chain elements.
     '''
     try:
