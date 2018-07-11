@@ -12,7 +12,7 @@ from ..settings.DataStructure import DataStructure
 from ..settings.ModelSettings import ModelSettings
 from ..utilities.progressbar import progress_bar
 from ..plotting.utilities import append_to_nrow_ncol_based_on_shape, convert_flag_to_boolean, set_local_parameters
-from ..plotting.utilities import empirical_quantiles
+from ..plotting.utilities import empirical_quantiles, check_defaults
 import matplotlib.pyplot as plt
 
 class PredictionIntervals:
@@ -26,7 +26,7 @@ class PredictionIntervals:
     '''
     # ******************************************************************************
     # --------------------------------------------
-    def setup_prediction_interval_calculation(self, results, data, modelfunction):
+    def setup_prediction_interval_calculation(self, results, data, modelfunction, burnin = 0):
         '''
         Setup calculation for prediction interval generation
 
@@ -46,7 +46,7 @@ class PredictionIntervals:
         self.modelfunction = modelfunction
 
         # assign required features from the results structure
-        self._assign_features_from_results_structure(results = results)
+        self._assign_features_from_results_structure(results = results, burnin = burnin)
 
         # evaluate model function to determine shape of response
         self.__nrow, self.__ncol = self._determine_shape_of_response(modelfunction = modelfunction, ndatabatches = self.__ndatabatches, datapred = self.datapred, theta = self.__theta)
@@ -100,7 +100,7 @@ class PredictionIntervals:
             
         return datapred
     # --------------------------------------------
-    def _assign_features_from_results_structure(self, results):
+    def _assign_features_from_results_structure(self, results, burnin = 0):
         '''
         Define variables based on items extracted from results dictionary.
 
@@ -108,8 +108,11 @@ class PredictionIntervals:
             * **results** (:py:class:`dict`): Results dictionary from MCMC simulation.
         '''
         # assign required features from the results structure
-        self.__chain = results['chain']
+        self.__chain = results['chain'][burnin:,:]
         self.__s2chain = results['s2chain']
+        if self.__s2chain is not None:
+            self.__s2chain = self.__s2chain[burnin:,:]
+            
         self.__parind = results['parind']
         self.__local = results['local']
         # Check how 'model' object was saved in results structure
@@ -299,7 +302,7 @@ class PredictionIntervals:
             * **lims** (:class:`~numpy.ndarray`): Lower/Upper limits of quantiles.
         '''
         if s2chain is None:
-            lims = np.array([0.005,0.025,0.05,0.25,0.5,0.75,0.9,0.975,0.995])
+            lims = np.array([0.005, 0.025, 0.05, 0.25, 0.5, 0.75, 0.9, 0.975, 0.995])
         else:
             lims = np.array([0.025, 0.5, 0.975])
         return lims
@@ -524,7 +527,7 @@ class PredictionIntervals:
             * **ysave** (:class:`~numpy.ndarray`): Model responses.
             * **osave** (:class:`~numpy.ndarray`): Model responses with observation errors.
         '''
-        nsample, npar = testchain.shape
+        nsample = testchain.shape[0]
         theta = self.__theta
         ysave = np.zeros([nsample, nrow, ncol])
         osave = np.zeros([nsample, nrow, ncol])
@@ -608,7 +611,7 @@ class PredictionIntervals:
     
     # ******************************************************************************
     # --------------------------------------------
-    def plot_prediction_intervals(self, plot_pred_int = True, adddata = False, addlegend = True, figsizeinches = None):
+    def plot_prediction_intervals(self, plot_pred_int = True, adddata = False, addlegend = True, figsizeinches = None, model_display = {}, data_display = {}, interval_display = {}):
         '''
         Plot prediction/credible intervals.
 
@@ -617,6 +620,14 @@ class PredictionIntervals:
             * **adddata** (:py:class:`bool`): Flag to include data on plot.
             * **addlegend** (:py:class:`bool`): Flag to include legend on plot.
             * **figsizeinches** (:py:class:`list`): Specify figure size in inches [Width, Height].
+            * **model_display** (:py:class:`dict`): Model display settings.
+            * **data_display** (:py:class:`dict`): Data display settings.
+            * **interval_display** (:py:class:`dict`): Interval display settings.
+            
+        Available display options (defaults in parantheses):
+            * **model_display**: `linestyle` (:code:`'-'`), `marker` (:code:`''`), `color` (:code:`'r'`), `linewidth` (:code:`2`), `markersize` (:code:`5`), `label` (:code:`model`), `alpha` (:code:`1.0`)
+            * **data_display**: `linestyle` (:code:`''`), `marker` (:code:`'.'`), `color` (:code:`'b'`), `linewidth` (:code:`1`), `markersize` (:code:`5`), `label` (:code:`data`), `alpha` (:code:`1.0`)
+            * **data_display**: `linestyle` (:code:`':'`), `linewidth` (:code:`1`), `alpha` (:code:`1.0`), `edgecolor` (:code:`'k'`)
         '''
         # unpack dictionary
         credible_intervals = self.intervals['credible_intervals']
@@ -624,6 +635,12 @@ class PredictionIntervals:
         
         prediction_intervals, figsizeinches, nbatch, nn, clabels, plabels = self._setup_interval_plotting(
                 plot_pred_int, prediction_intervals, credible_intervals, figsizeinches)
+        
+        # setup display settings
+        interval_display, model_display, data_display = self._setup_display_settings(interval_display, model_display, data_display)
+        
+        # Define colors
+        cicolor, picolor = self._setup_interval_colors(nn = nn, prediction_intervals = prediction_intervals)
         
         # initialize figure handle
         fighandle = []
@@ -644,28 +661,21 @@ class PredictionIntervals:
                 fighandle.append(htmp)
                 axhandle.append(ax)
 
-                intcol = [0.85, 0.85, 0.85] # dimmest (lightest) color
-                
                 # add prediction intervals - if applicable
                 if prediction_intervals is not None:
                     ax.fill_between(time, prediction_intervals[ii][jj][0], prediction_intervals[ii][jj][-1],
-                                    facecolor = intcol, alpha = 0.5, label = plabels[0])
-                    intcol = [0.75, 0.75, 0.75]
-                
-                # add first credible interval
-                ax.fill_between(time, credlims[jj][0], credlims[jj][-1], facecolor = intcol, alpha = 0.5, label = clabels[0])
+                                    facecolor = picolor[0], label = plabels[0], **interval_display)
                 
                 # add range of credible intervals - if applicable
-                for kk in range(1,int(nn)-1):
-                    tmpintcol = np.array(intcol)*0.9**(kk)
-                    ax.fill_between(time, credlims[jj][kk], credlims[jj][-kk - 1], facecolor = tmpintcol, alpha = 0.5, label = clabels[kk])
+                for kk in range(0,int(nn)-1):
+                    ax.fill_between(time, credlims[jj][kk], credlims[jj][-kk - 1], facecolor = cicolor[kk], label = clabels[kk], **interval_display)
                     
                 # add model (median parameter values)
-                ax.plot(time, credlims[jj][int(nn)-1], '-k', linewidth=2, label = 'model')
+                ax.plot(time, credlims[jj][int(nn)-1], **model_display)
                 
                 # add data to plot
                 if adddata is True:
-                    plt.plot(dataii.xdata[0], dataii.ydata[0][:,jj], '.b', linewidth=1, label = 'data')
+                    plt.plot(dataii.xdata[0], dataii.ydata[0][:,jj], **data_display)
                     
                 # add title
                 self._add_batch_column_title(nbatch, ny, ii, jj)
@@ -673,9 +683,51 @@ class PredictionIntervals:
                 # add legend
                 if addlegend is True:
                     handles, labels = ax.get_legend_handles_labels()
-                    ax.legend(handles, labels, loc='upper left')
+                    ax.legend(handles, labels, loc = 'upper left')
     
         return fighandle, axhandle
+    
+    @classmethod
+    def _setup_display_settings(cls, interval_display, model_display, data_display):
+        '''
+        Compare user defined display settings with defaults and merge.
+        
+        Args:
+            * **interval_display** (:py:class:`dict`): User defined settings for interval display.
+            * **model_display** (:py:class:`dict`): User defined settings for model display.
+            * **data_display** (:py:class:`dict`): User defined settings for data display.
+            
+        \\
+        
+        Returns:
+            * **interval_display** (:py:class:`dict`): Settings for interval display.
+            * **model_display** (:py:class:`dict`): Settings for model display.
+            * **data_display** (:py:class:`dict`): Settings for data display.
+        '''
+        # Setup interval display
+        default_interval_display = {'linestyle': ':', 'linewidth': 1, 'alpha': 0.5, 'edgecolor': 'k'}
+        interval_display = check_defaults(interval_display, default_interval_display)
+        # Setup model display
+        default_model_display = {'linestyle': '-', 'marker': '', 'color': 'r', 'linewidth': 2, 'markersize': 5, 'label': 'model', 'alpha': 1.0}
+        model_display = check_defaults(model_display, default_model_display)
+        # Setup data display
+        default_data_display = {'linestyle': '', 'marker': '.', 'color': 'b', 'linewidth': 1, 'markersize': 5, 'label': 'data', 'alpha': 1.0}
+        data_display = check_defaults(data_display, default_data_display)
+        return interval_display, model_display, data_display
+        
+    @classmethod
+    def _setup_interval_colors(cls, nn, prediction_intervals = None):
+        ci = []
+        pi = []
+        if prediction_intervals is not None:
+            ci.append('#c7e9b4')
+            pi.append('#225ea8')
+        else:
+            ci.append('#253494')
+            ci.append('#1d91c0')
+            ci.append('#7fcdbb')
+            ci.append('#c7e9b4')
+        return ci, pi
     
     @classmethod
     def _initialize_plot_features(cls, ii, jj, ny, figsizeinches):

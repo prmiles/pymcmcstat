@@ -282,3 +282,19 @@ class Empirical_Quantiles_Test(unittest.TestCase):
         exact = np.array([[12.2], [15.7345]])
         comp = np.linalg.norm(out - exact)
         self.assertAlmostEqual(comp, 0)
+        
+# --------------------------------------------
+class CheckDefaults(unittest.TestCase):
+    def test_check_defaults(self):
+        defaults = {'model_display': '-r'}
+        kwargs = {'model_display': '--k', 'hi': 3}
+        kwargsout = utilities.check_defaults(kwargs, defaults)
+        self.assertEqual(kwargsout['model_display'], '--k', msg = 'Expect --k')
+        self.assertEqual(kwargsout['hi'], 3, msg = 'Expect 3')
+        
+    def test_check_defaults_used_defaults(self):
+        defaults = {'model_display': '-r'}
+        kwargs = {'hi': 3}
+        kwargsout = utilities.check_defaults(kwargs, defaults)
+        self.assertEqual(kwargsout['model_display'], '-r', msg = 'Expect --k')
+        self.assertEqual(kwargsout['hi'], 3, msg = 'Expect 3')
