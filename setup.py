@@ -21,7 +21,7 @@ setup(
     name='pymcmcstat',
     version=__version__,
     description=('A library to perform MCMC simulations using DRAM'),
-    long_description=long_description
+    long_description=long_description,
     url='https://github.com/prmiles/pymcmcstat',
     download_url='https://github.com/prmiles/pymcmcstat',
     author='Paul Miles',
