@@ -21,7 +21,8 @@ Subpackages
 -----------
 
 .. toctree::
-
+   :maxdepth: 2
+   
    pymcmcstat.chain
    pymcmcstat.plotting
    pymcmcstat.procedures
