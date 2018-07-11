@@ -18,7 +18,7 @@ import warnings
 try:
     from statsmodels.nonparametric.kernel_density import KDEMultivariate
 except ImportError as e:
-    warnings.warn("Exception raised importing statsmodels.nonparametric.kernel_density - plot_density_panel will not work.)", ImportWarning)
+    warnings.warn(str("Exception raised importing statsmodels.nonparametric.kernel_density - plot_density_panel will not work. {}".format(e)))
 
 # --------------------------------------------
 def plot_density_panel(chains, names = None, hist_on = False, figsizeinches = None):
