@@ -20,14 +20,16 @@ The user interface is designed to be as similar to the Matlab version as possibl
 Installation
 ============
 
-This code can be found on the `Github project page <https://github.com/prmiles/pymcmcstat>`_.  It is open sources and provided under the MIT license.
+This code can be found on the `Github project page <https://github.com/prmiles/pymcmcstat>`_.  It is open source and provided under the MIT license.
 To install directly from Github,
 ::
     pip install git+https://github.com/prmiles/pymcmcstat.git
 
 You can also clone the repository and run ``python  setup.py install``.
 
-Package is currently in the process of being added to the PyPI distribution site.
+Package is also available on the PyPI distribution site.
+::
+    pip install pymcmcstat
 
 Getting Started
 ===============
