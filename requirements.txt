@@ -4,5 +4,5 @@ matplotlib
 coveralls
 h5py
 statsmodels
-numpy
-scipy
+numpy>=1.7
+scipy>=0.16
