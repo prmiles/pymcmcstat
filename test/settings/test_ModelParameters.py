@@ -184,3 +184,55 @@ class FormatNumberToStr(unittest.TestCase):
         self.assertEqual(str('{:9.2f}'.format(1.0)), format_number_to_str(1.0), msg = str('Exect: {:9.2f}'.format(1.0)))
         self.assertEqual(str('{:9.2e}'.format(1.0e4)), format_number_to_str(1.0e4), msg = str('Exect: {:9.2f}'.format(1.0e4)))
         self.assertEqual(str('{:9.2e}'.format(1.0e-2)), format_number_to_str(1.0e-2), msg = str('Exect: {:9.2f}'.format(1.0e-2)))
+            
+# --------------------------
+class SetupPriorMu(unittest.TestCase):
+    def test_setup_prior_mu(self):
+        MP = ModelParameters()
+        self.assertEqual(MP.setup_prior_mu(mu = np.array([0.1]), value = np.array([0.3])), np.array([0.1]), msg = 'Expect = mu')
+        self.assertEqual(MP.setup_prior_mu(mu = np.nan, value = np.array([0.3])), np.array([0.3]), msg = 'Expect = value')
+        
+# --------------------------
+class SetupPriorSigma(unittest.TestCase):
+    def test_setup_prior_sigma(self):
+        MP = ModelParameters()
+        self.assertEqual(MP.setup_prior_sigma(sigma = np.array([0.1])), np.array([0.1]), msg = 'Expect = sigma')
+        self.assertEqual(MP.setup_prior_sigma(sigma = 0.), np.inf, msg = 'Expect = inf')
+        
+# --------------------------
+class ScanForLocalVariables(unittest.TestCase):
+    def test_scan_for_local_variables(self):
+        MP = ModelParameters()
+        MP.add_model_parameter(name = 'm', theta0 = 0.2, local = 0)
+        MP.add_model_parameter(name = 'b', theta0 = -0.5, local = 1)
+        local = MP.scan_for_local_variables(nbatch = 2, parameters = MP.parameters)
+        self.assertTrue(np.array_equal(local, np.array([0, 1, 2])), msg = str('Expect arrays to match: {} neq {}'.format(local, np.array([0,1,2]))))
+        
+    def test_scan_for_local_variables_with_sample_false(self):
+        MP = ModelParameters()
+        MP.add_model_parameter(name = 'm', theta0 = 0.2, local = 0, sample = False)
+        MP.add_model_parameter(name = 'b', theta0 = -0.5, local = 1)
+        local = MP.scan_for_local_variables(nbatch = 2, parameters = MP.parameters)
+        self.assertTrue(np.array_equal(local, np.array([1, 2])), msg = str('Expect arrays to match: {} neq {}'.format(local, np.array([1,2]))))
+        
+    def test_scan_for_mixed_local_variables(self):
+        MP = ModelParameters()
+        MP.add_model_parameter(name = 'm', theta0 = 0.2, local = 0)
+        MP.add_model_parameter(name = 'b', theta0 = -0.5, local = 0)
+        MP.add_model_parameter(name = 'm', theta0 = 0.2, local = 0)
+        MP.add_model_parameter(name = 'b', theta0 = -0.5, local = 1)
+        MP.add_model_parameter(name = 'm', theta0 = 0.2, local = 0)
+        MP.add_model_parameter(name = 'b', theta0 = -0.5, local = 1)
+        local = MP.scan_for_local_variables(nbatch = 2, parameters = MP.parameters)
+        self.assertTrue(np.array_equal(local, np.array([0, 0, 0, 1, 2, 0, 1, 2])), msg = str('Expect arrays to match: {} neq {}'.format(local, np.array([0, 0, 0, 1, 2, 0, 1, 2]))))
+        
+    def test_scan_for_mixed_local_variables_with_sample_false(self):
+        MP = ModelParameters()
+        MP.add_model_parameter(name = 'm', theta0 = 0.2, local = 1)
+        MP.add_model_parameter(name = 'b', theta0 = -0.5, local = 0)
+        MP.add_model_parameter(name = 'm', theta0 = 0.2, local = 0, sample = False)
+        MP.add_model_parameter(name = 'b', theta0 = -0.5, local = 1)
+        MP.add_model_parameter(name = 'm', theta0 = 0.2, local = 0)
+        MP.add_model_parameter(name = 'b', theta0 = -0.5, local = 1, sample = False)
+        local = MP.scan_for_local_variables(nbatch = 2, parameters = MP.parameters)
+        self.assertTrue(np.array_equal(local, np.array([1, 2, 0, 1, 2, 0])), msg = str('Expect arrays to match: {} neq {}'.format(local, np.array([1, 2, 0, 1, 2, 0]))))

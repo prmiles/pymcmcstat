@@ -109,13 +109,8 @@ class ModelParameters:
                 # define upper limits
                 self._upper_limits[ii] = parameters[kk]['maximum']
                 # define prior mean
-                self._thetamu[ii] = parameters[kk]['prior_mu']
-                if np.isnan(self._thetamu[ii]):
-                    self._thetamu[ii] = self.value[ii]
-                # define prior standard deviation
-                self._thetasigma[ii] = parameters[kk]['prior_sigma']
-                if self._thetasigma[ii] == 0:
-                    self._thetasigma[ii] = np.inf
+                self._thetamu[ii] = self.setup_prior_mu(mu = parameters[kk]['prior_mu'], value = self._value[ii])
+                self._thetasigma[ii] = self.setup_prior_sigma(sigma = parameters[kk]['prior_sigma'])
                 # turn sampling on/off
                 self._parind[ii] = parameters[kk]['sample']
             ii += 1 # update counter
@@ -124,7 +119,65 @@ class ModelParameters:
         self._parind = np.flatnonzero(self._parind)
         
         self.npar = len(self._parind) # append number of parameters to structure
-    # --------------------------            
+    
+    @classmethod
+    def scan_for_local_variables(cls, nbatch, parameters):
+        '''
+        Scan for local variables
+        
+        Args:
+            * **nbatch** (:py:class:`int`): Number of data batches
+            * **parameters** (:py:class:`list`): List of model parameters.
+        
+        Returns:
+            * **local** (:class:`~numpy.ndarray`): Array with local flag indices.
+        '''
+        local = np.array([], dtype = int)
+        for kk in range(len(parameters)):
+            if parameters[kk]['sample'] is True:
+                if parameters[kk]['local'] != 0:
+                    local = np.concatenate((local, range(1,nbatch+1)))
+                else:
+                    local = np.concatenate((local, np.zeros([1])))
+        
+        return local
+  
+    # --------------------------
+    @classmethod
+    def setup_prior_mu(cls, mu, value):
+        '''
+        Setup prior mean.
+        
+        Args:
+            * **mu** (:py:class:`float`): defined mean
+            * **value** (:py:class:`float`): default value
+            
+        Returns:
+            * Prior mean
+        '''
+        if np.isnan(mu):
+            return value
+        else:
+            return mu
+        
+    # --------------------------
+    @classmethod
+    def setup_prior_sigma(cls, sigma):
+        '''
+        Setup prior variance.
+        
+        Args:
+            * **sigma** (:py:class:`float`): defined variance
+            
+        Returns:
+            * Prior mean
+        '''
+        if sigma == 0:
+            return np.inf
+        else:
+            return sigma
+        
+    # --------------------------        
     def _results_to_params(self, results, use_local = 1):
     
         # unpack results dictionary
