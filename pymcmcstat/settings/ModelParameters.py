@@ -87,6 +87,9 @@ class ModelParameters:
         self._thetasigma = np.ones(npar)*np.inf
                 
         # scan for local variables
+        # ***************************
+        # UPDATING THIS SECTION
+#        self._local = self.scan_for_local_variables(nbatch = nbatch, parameters = parameters)
         ii = 0
         for kk in range(npar):
             if parameters[kk]['sample'] == 0:
@@ -96,6 +99,7 @@ class ModelParameters:
                     ii = ii + nbatch - 1
 
             ii += 1 # update counter
+        # ***************************
             
         ii = 0
         for kk in range(npar):
