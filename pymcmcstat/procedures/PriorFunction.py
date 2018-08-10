@@ -32,7 +32,7 @@ class PriorFunction:
     @classmethod
     def default_priorfun(cls, theta, mu, sigma):
         '''
-        Default prior function.
+        Default prior function - Gaussian.
 
         .. math::
 
@@ -44,18 +44,21 @@ class PriorFunction:
             * **sigma** (:class:`~numpy.ndarray`): Prior standard deviation.
         '''
         # consider converting everything to numpy array - should allow for optimized performance
-        n = len(theta)
-        
-        if mu is None:
-            mu = np.zeros([n,1])
-        
-        if sigma is None:
-            sigma = np.ones([n,1])
-        
-        pf = np.zeros(1)
-        for ii in range(n):
-            pf = pf + ((theta[ii]-mu[ii])*(sigma[ii]**(-1)))**2
+#        n = len(theta)
+#        
+#        if mu is None:
+#            mu = np.zeros([n,1])
+#        
+#        if sigma is None:
+#            sigma = np.ones([n,1])
+#        
+#        pf = np.zeros(1)
+#        for ii in range(n):
+#            pf = pf + ((theta[ii]-mu[ii])*(sigma[ii]**(-1)))**2
 
+        # proposed numpy implementation
+        res = (mu - theta)/sigma
+        pf = np.dot(res.reshape(1,res.size), res.reshape(res.size,1))
         return pf
         
     def evaluate_prior(self, theta):
