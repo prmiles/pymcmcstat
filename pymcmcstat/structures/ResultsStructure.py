@@ -209,25 +209,20 @@ class ResultsStructure:
             print('Cannot add DRAM settings to results structure before running ''add_basic''')
             return False
     
-    def add_prior(self, mu, sig, priorfun, priortype, priorpars):
+    def add_prior(self, mu, sigma, priortype):
         '''
         Add results specific to prior function.
 
         Args:
-            * **mu** (:py:class:`float`): Prior mean.
-            * **sig** (:py:class:`float`): Prior standard deviation.
-            * **priorfun**: Handle for prior function.
+            * **mu** (:class:`~numpy.ndarray`): Prior mean.
+            * **sigma** (:class:`~numpy.ndarray`): Prior standard deviation.
             * **priortype** (:py:class:`int`): Flag identifying type of prior.
-            * **priorpars** (:py:class:`float`): Prior parameter for prior update function.
 
         .. note::
 
             This feature is not currently implemented.
         '''
-        self.results['prior'] = [mu, sig]
-        self.results['priorfun'] = priorfun
-        self.results['priortype'] = priortype
-        self.results['priorpars'] = priorpars
+        self.results['prior'] = dict(mu = mu, sigma = sigma, priortype = priortype)
         
     def add_options(self, options = None):
         '''
