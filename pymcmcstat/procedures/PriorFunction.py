@@ -18,7 +18,7 @@ class PriorFunction:
         * :meth:`default_priorfun`
         * :meth:`evaluate_prior`
     '''
-    def __init__(self, priorfun = None, mu = None, sigma = None):
+    def __init__(self, priorfun = None, mu = np.array([0]), sigma = np.array([np.inf])):
 
         self.mu = mu
         self.sigma = sigma
