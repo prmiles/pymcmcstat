@@ -340,6 +340,8 @@ class MCMC:
         self.simulation_results.add_options(options = self.simulation_options)
         self.simulation_results.add_model(model = self.model_settings)
         
+        # add prior information
+        self.simulation_results.add_prior(mu = self.parameters._thetamu, sigma = self.parameters._thetasigma, priortype = self.model_settings.prior_type)
         # add chain, s2chain, and sschain
         self.simulation_results.add_chain(chain = self.__chain)
         self.simulation_results.add_s2chain(s2chain = self.__s2chain)
