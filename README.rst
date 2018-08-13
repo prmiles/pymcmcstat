@@ -3,7 +3,7 @@
 
 |docs| |build| |coverage| |license| |codacy| |zenodo| |pypi| |pyversion|
 
-The `pymcmcstat <https://prmiles.wordpress.ncsu.edu/codes/python-packages/pymcmcstat/>`_ package is a Python program for running Markov Chain Monte Carlo (MCMC) simulations.
+The `pymcmcstat <https://prmiles.wordpress.ncsu.edu/codes/python-packages/pymcmcstat/>`__ package is a Python program for running Markov Chain Monte Carlo (MCMC) simulations.
 Included in this package is the ability to use different Metropolis based sampling techniques:
 
 * Metropolis-Hastings (MH): Primary sampling method.
@@ -49,7 +49,7 @@ See the `GitHub contributor page <https://github.com/prmiles/pymcmcstat/graphs/c
 Citing pymcmcstat
 =================
 
-Please see the `pymcmcstat homepage <https://prmiles.wordpress.ncsu.edu/codes/python-packages/pymcmcstat/>`_ or follow the DOI badge above to find the appropriate citation information.
+Please see the `pymcmcstat homepage <https://prmiles.wordpress.ncsu.edu/codes/python-packages/pymcmcstat/>`__ or follow the DOI badge above to find the appropriate citation information.
 
 Feedback
 ========
