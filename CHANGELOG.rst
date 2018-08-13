@@ -5,7 +5,7 @@ v1.6.0rc1 ()
 ----------------------
 - Added optimal handling of prior function used numpy array multiplication.
 - Fixed bug with saving results to json file - output directory now automatically made
-
+- Updated PI plotting to allow any valid matplotlib input
 
 v1.5.0 (July 27, 2018)
 ----------------------
