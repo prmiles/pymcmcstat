@@ -283,18 +283,28 @@ class Empirical_Quantiles_Test(unittest.TestCase):
         comp = np.linalg.norm(out - exact)
         self.assertAlmostEqual(comp, 0)
         
-# --------------------------------------------
-class CheckDefaults(unittest.TestCase):
-    def test_check_defaults(self):
-        defaults = {'model_display': '-r'}
-        kwargs = {'model_display': '--k', 'hi': 3}
-        kwargsout = utilities.check_defaults(kwargs, defaults)
-        self.assertEqual(kwargsout['model_display'], '--k', msg = 'Expect --k')
-        self.assertEqual(kwargsout['hi'], 3, msg = 'Expect 3')
+# --------------------------
+class CheckSettings(unittest.TestCase):
+    def test_settings_with_subdict(self):
+        user_settings = dict(a = True, fontsize = 12)
+        default_settings = dict(a = False, linewidth = 3, marker = dict(markersize = 5, color = 'g'))
+        settings = utilities.check_settings(default_settings = default_settings, user_settings = user_settings)
+        self.assertEqual(settings['a'], user_settings['a'], msg = 'Expect user setting to overwrite')
+        self.assertEqual(settings['marker'], default_settings['marker'], msg = 'Expect default to persist')
         
-    def test_check_defaults_used_defaults(self):
-        defaults = {'model_display': '-r'}
-        kwargs = {'hi': 3}
-        kwargsout = utilities.check_defaults(kwargs, defaults)
-        self.assertEqual(kwargsout['model_display'], '-r', msg = 'Expect --k')
-        self.assertEqual(kwargsout['hi'], 3, msg = 'Expect 3')
+    def test_settings_with_subdict_user_ow(self):
+        user_settings = dict(a = True, fontsize = 12, marker = dict(color = 'b'))
+        default_settings = dict(a = False, linewidth = 3, marker = dict(markersize = 5, color = 'g'))
+        settings = utilities.check_settings(default_settings = default_settings, user_settings = user_settings)
+        self.assertEqual(settings['a'], user_settings['a'], msg = 'Expect user setting to overwrite')
+        self.assertEqual(settings['marker']['color'], user_settings['marker']['color'], msg = 'Expect user to overwrite')
+        self.assertEqual(settings['marker']['markersize'], default_settings['marker']['markersize'], msg = 'Expect default to persist')
+        
+    def test_settings_with_subdict_user_has_new_setting(self):
+        user_settings = dict(a = True, fontsize = 12, marker = dict(color = 'b'), linestyle = '--')
+        default_settings = dict(a = False, linewidth = 3, marker = dict(markersize = 5, color = 'g'))
+        settings = utilities.check_settings(default_settings = default_settings, user_settings = user_settings)
+        self.assertEqual(settings['a'], user_settings['a'], msg = 'Expect user setting to overwrite')
+        self.assertEqual(settings['marker']['color'], user_settings['marker']['color'], msg = 'Expect user to overwrite')
+        self.assertEqual(settings['marker']['markersize'], default_settings['marker']['markersize'], msg = 'Expect default to persist')
+        self.assertEqual(settings['linestyle'], user_settings['linestyle'], msg = 'Expect user setting to be added')
