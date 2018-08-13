@@ -285,6 +285,12 @@ class Empirical_Quantiles_Test(unittest.TestCase):
         
 # --------------------------
 class CheckSettings(unittest.TestCase):
+    def test_settings_with_user_none(self):
+        user_settings = None
+        default_settings = dict(a = False, linewidth = 3, marker = dict(markersize = 5, color = 'g'))
+        settings = utilities.check_settings(default_settings = default_settings, user_settings = user_settings)
+        self.assertEqual(settings, default_settings, msg = str('Expect dictionaries to match: {} neq {}'.format(settings, default_settings)))
+        
     def test_settings_with_subdict(self):
         user_settings = dict(a = True, fontsize = 12)
         default_settings = dict(a = False, linewidth = 3, marker = dict(markersize = 5, color = 'g'))
