@@ -51,6 +51,12 @@ Citing pymcmcstat
 
 Please see the `pymcmcstat homepage <https://prmiles.wordpress.ncsu.edu/codes/python-packages/pymcmcstat/>`_ or follow the DOI badge above to find the appropriate citation information.
 
+Feedback
+========
+
+- `Feature Request <https://github.com/prmiles/pymcmcstat/issues/new?template=feature_request.md>`_
+- `Bug Report <https://github.com/prmiles/pymcmcstat/issues/new?template=bug_report.md>`_
+
    
 .. |docs| image:: https://readthedocs.org/projects/pymcmcstat/badge/?version=latest
     :target: https://pymcmcstat.readthedocs.io/en/latest/?badge=latest
