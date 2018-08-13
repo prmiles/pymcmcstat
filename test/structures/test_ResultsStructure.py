@@ -198,11 +198,6 @@ class AddPrior(unittest.TestCase):
         RS = ResultsStructure()
         mu = 0.0
         sigma = 1.0
-        priorfun = 'priorfun'
         priortype = 1
-        priorpars = 3
-        RS.add_prior(mu = mu, sig = sigma, priorfun = priorfun, priorpars = priorpars, priortype = priortype)
-        self.assertEqual(RS.results['prior'], [mu, sigma], msg = str('Expected [{},{}]'.format(mu, sigma)))
-        self.assertEqual(RS.results['priorfun'], priorfun, msg = str('Expected {}'.format(priorfun)))
-        self.assertEqual(RS.results['priortype'], priortype, msg = str('Expected {}'.format(priortype)))
-        self.assertEqual(RS.results['priorpars'], priorpars, msg = str('Expected {}'.format(priorpars)))
+        RS.add_prior(mu = mu, sigma = sigma, priortype = priortype)
+        self.assertEqual(RS.results['prior'], dict(mu = mu, sigma = sigma, priortype = priortype), msg = str('{} neq {}'.format(RS.results['prior'], dict(mu = mu, sigma = sigma, priortype = priortype))))
