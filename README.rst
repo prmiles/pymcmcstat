@@ -1,9 +1,9 @@
 `pymcmcstat`
 ============
 
-|docs| |build| |coverage| |license| |codacy| |zenodo|
+|docs| |build| |coverage| |license| |codacy| |zenodo| |pypi| |pyversion|
 
-The `pymcmcstat` package is a Python program for running Markov Chain Monte Carlo (MCMC) simulations.
+The `pymcmcstat <https://prmiles.wordpress.ncsu.edu/codes/python-packages/pymcmcstat/>`_ package is a Python program for running Markov Chain Monte Carlo (MCMC) simulations.
 Included in this package is the ability to use different Metropolis based sampling techniques:
 
 * Metropolis-Hastings (MH): Primary sampling method.
@@ -11,29 +11,24 @@ Included in this package is the ability to use different Metropolis based sampli
 * Delayed-Rejection (DR): Delays rejection by sampling from a narrower distribution.  Capable of `n`-stage delayed rejection.
 * Delayed Rejection Adaptive Metropolis (DRAM): DR + AM
 
-The `pymcmcstat homepage <https://prmiles.wordpress.ncsu.edu/codes/python-packages/pymcmcstat/>`_ contains tutorials for users as well as installation instructions.
-
-Python implementation of MATLAB toolbox "mcmcstat".  This code is designed to replicate the functionality of the MATLAB routines developed and posted here: http://helios.fmi.fi/~lainema/mcmc/
-
-The user interface is designed to be as similar to the MATLAB version as possible, but this implementation has taken advantage of certain data structure concepts more amenable to Python.  
+This package is an adaptation of the MATLAB toolbox `mcmcstat <http://helios.fmi.fi/~lainema/mcmc/>`_.  The user interface is designed to be as similar to the MATLAB version as possible, but this implementation has taken advantage of certain data structure concepts more amenable to Python.  
 
 Installation
 ============
 
-This code can be found on the `Github project page <https://github.com/prmiles/pymcmcstat>`_.  It is open source and provided under the MIT license.
-To install directly from Github,
+This code can be found on the `Github project page <https://github.com/prmiles/pymcmcstat>`_.  This package is available on the PyPI distribution site and the latest version can be installed via
+
+::
+
+    pip install pymcmcstat
+    
+The master branch on Github typically matches the latest version on the PyPI distribution site.  To install the master branch directly from Github,
 
 ::
 
     pip install git+https://github.com/prmiles/pymcmcstat.git
 
 You can also clone the repository and run ``python  setup.py install``.
-
-Package is also available on the PyPI distribution site.
-
-::
-
-    pip install pymcmcstat
 
 Getting Started
 ===============
@@ -49,8 +44,13 @@ License
 Contributors
 ============
 
-See the `GitHub contributor
-page <https://github.com/prmiles/pymcmcstat/graphs/contributors>`_
+See the `GitHub contributor page <https://github.com/prmiles/pymcmcstat/graphs/contributors>`_
+
+Citing pymcmcstat
+=================
+
+Please see the `pymcmcstat homepage <https://prmiles.wordpress.ncsu.edu/codes/python-packages/pymcmcstat/>`_ or follow the DOI badge above to find the appropriate citation information.
+
    
 .. |docs| image:: https://readthedocs.org/projects/pymcmcstat/badge/?version=latest
     :target: https://pymcmcstat.readthedocs.io/en/latest/?badge=latest
@@ -71,3 +71,9 @@ page <https://github.com/prmiles/pymcmcstat/graphs/contributors>`_
 
 .. |zenodo| image:: https://zenodo.org/badge/107596954.svg
     :target: https://zenodo.org/badge/latestdoi/107596954
+    
+.. |pypi| image:: https://img.shields.io/pypi/v/pymcmcstat.svg
+    :target: https://pypi.org/project/pymcmcstat/
+    
+.. |pyversion| image:: https://img.shields.io/pypi/pyversions/pymcmcstat.svg
+    :target: https://pypi.org/project/pymcmcstat/
