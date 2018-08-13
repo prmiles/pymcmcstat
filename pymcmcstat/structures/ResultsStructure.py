@@ -11,7 +11,7 @@ import json
 import numpy as np
 from ..utilities.NumpyEncoder import NumpyEncoder
 from ..utilities.general import removekey
-import os
+from ..chain.ChainProcessing import _check_directory, _create_path_without_extension
 
 class ResultsStructure:
     '''
@@ -50,8 +50,12 @@ class ResultsStructure:
         '''
         savedir = results['simulation_options']['savedir']
         filename = self.determine_filename(options = results['simulation_options'])
+        
+        _check_directory(savedir) # make sure output directory exists
+        
+        file = _create_path_without_extension(savedir, filename)
             
-        self.save_json_object(results, os.path.join(savedir, filename))
+        self.save_json_object(results, file)
     
     @classmethod
     def determine_filename(cls, options):
@@ -209,25 +213,20 @@ class ResultsStructure:
             print('Cannot add DRAM settings to results structure before running ''add_basic''')
             return False
     
-    def add_prior(self, mu, sig, priorfun, priortype, priorpars):
+    def add_prior(self, mu, sigma, priortype):
         '''
         Add results specific to prior function.
 
         Args:
-            * **mu** (:py:class:`float`): Prior mean.
-            * **sig** (:py:class:`float`): Prior standard deviation.
-            * **priorfun**: Handle for prior function.
+            * **mu** (:class:`~numpy.ndarray`): Prior mean.
+            * **sigma** (:class:`~numpy.ndarray`): Prior standard deviation.
             * **priortype** (:py:class:`int`): Flag identifying type of prior.
-            * **priorpars** (:py:class:`float`): Prior parameter for prior update function.
 
         .. note::
 
             This feature is not currently implemented.
         '''
-        self.results['prior'] = [mu, sig]
-        self.results['priorfun'] = priorfun
-        self.results['priortype'] = priortype
-        self.results['priorpars'] = priorpars
+        self.results['prior'] = dict(mu = mu, sigma = sigma, priortype = priortype)
         
     def add_options(self, options = None):
         '''

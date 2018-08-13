@@ -175,7 +175,7 @@ class MCMC:
         self.__sos_object = SumOfSquares(self.model_settings, self.data, self.parameters)
         # ---------------------
         # define prior object
-        self.__prior_object = PriorFunction(priorfun = self.model_settings.prior_function, mu = self.parameters._thetamu, sigma = self.parameters._thetasigma)
+        self.__prior_object = PriorFunction(priorfun = self.model_settings.prior_function, mu = self.parameters._thetamu[self.parameters._parind[:]], sigma = self.parameters._thetasigma[self.parameters._parind[:]])
         # ---------------------
         # Define initial parameter set
         self.__initial_set = ParameterSet(theta = self.parameters._initial_value[self.parameters._parind[:]])
@@ -340,6 +340,8 @@ class MCMC:
         self.simulation_results.add_options(options = self.simulation_options)
         self.simulation_results.add_model(model = self.model_settings)
         
+        # add prior information
+        self.simulation_results.add_prior(mu = self.parameters._thetamu, sigma = self.parameters._thetasigma, priortype = self.model_settings.prior_type)
         # add chain, s2chain, and sschain
         self.simulation_results.add_chain(chain = self.__chain)
         self.simulation_results.add_s2chain(s2chain = self.__s2chain)

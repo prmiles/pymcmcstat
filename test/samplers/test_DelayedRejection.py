@@ -161,9 +161,9 @@ class RunDelayedRejection(unittest.TestCase):
         model, options, parameters, data, covariance, __, __, __, __ = gf.setup_mcmc_case_dr()
         RDR = covariance._RDR
         invR = covariance._invR
-        old_set = ParameterSet(theta = 0.1, ss = np.array([10.2]), sigma2 = np.array([0.5]), prior = np.array([0.5]))
-        new_set = ParameterSet(theta = 0.2, ss = np.array([8.2]), sigma2 = np.array([0.5]), prior = np.array([0.5]))
-        priorobj = PriorFunction(priorfun = model.prior_function, mu = parameters._thetamu, sigma = parameters._thetasigma)
+        old_set = ParameterSet(theta = np.random.rand(2), ss = np.array([10.2]), sigma2 = np.array([0.5]), prior = np.array([0.5]))
+        new_set = ParameterSet(theta = np.random.rand(2), ss = np.array([8.2]), sigma2 = np.array([0.5]), prior = np.array([0.5]))
+        priorobj = PriorFunction(priorfun = model.prior_function, mu = parameters._thetamu[parameters._parind[:]], sigma = parameters._thetasigma[parameters._parind[:]])
         sosobj = SumOfSquares(model, data, parameters)
         DR = DelayedRejection()
         DR._initialize_dr_metrics(options = options)
@@ -175,9 +175,9 @@ class RunDelayedRejection(unittest.TestCase):
         model, options, parameters, data, covariance, __, __, __, __ = gf.setup_mcmc_case_dr()
         RDR = covariance._RDR
         invR = covariance._invR
-        old_set = ParameterSet(theta = 0.1, ss = np.array([10.2]), sigma2 = np.array([0.5]), prior = np.array([0.5]))
-        new_set = ParameterSet(theta = 0.2, ss = np.array([8.2]), sigma2 = np.array([0.5]), prior = np.array([0.5]))
-        priorobj = PriorFunction(priorfun = model.prior_function, mu = parameters._thetamu, sigma = parameters._thetasigma)
+        old_set = ParameterSet(theta = np.random.rand(2), ss = np.array([10.2]), sigma2 = np.array([0.5]), prior = np.array([0.5]))
+        new_set = ParameterSet(theta = np.random.rand(2), ss = np.array([8.2]), sigma2 = np.array([0.5]), prior = np.array([0.5]))
+        priorobj = PriorFunction(priorfun = model.prior_function, mu = parameters._thetamu[parameters._parind[:]], sigma = parameters._thetasigma[parameters._parind[:]])
         sosobj = SumOfSquares(model, data, parameters)
         DR = DelayedRejection()
         DR._initialize_dr_metrics(options = options)
