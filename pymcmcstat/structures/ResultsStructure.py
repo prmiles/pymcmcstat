@@ -11,7 +11,7 @@ import json
 import numpy as np
 from ..utilities.NumpyEncoder import NumpyEncoder
 from ..utilities.general import removekey
-import os
+from ..chain.ChainProcessing import _check_directory, _create_path_without_extension
 
 class ResultsStructure:
     '''
@@ -50,8 +50,12 @@ class ResultsStructure:
         '''
         savedir = results['simulation_options']['savedir']
         filename = self.determine_filename(options = results['simulation_options'])
+        
+        _check_directory(savedir) # make sure output directory exists
+        
+        file = _create_path_without_extension(savedir, filename)
             
-        self.save_json_object(results, os.path.join(savedir, filename))
+        self.save_json_object(results, file)
     
     @classmethod
     def determine_filename(cls, options):
