@@ -61,7 +61,7 @@ class DelayedRejection:
             # Evaluate new proposals
             outbound = 0
             next_set.ss = sosobj.evaluate_sos_function(next_set.theta)
-            next_set.prior = priorobj.evaluate_prior(next_set.theta)
+            next_set.prior = priorobj.evaluate_prior(theta = next_set.theta)
             trypath.append(next_set) # add set to trypath
             alpha = self.alphafun(trypath, invR)
             trypath[-1].alpha = alpha # add propability ratio

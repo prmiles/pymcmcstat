@@ -175,7 +175,7 @@ class MCMC:
         self.__sos_object = SumOfSquares(self.model_settings, self.data, self.parameters)
         # ---------------------
         # define prior object
-        self.__prior_object = PriorFunction(priorfun = self.model_settings.prior_function, mu = self.parameters._thetamu, sigma = self.parameters._thetasigma)
+        self.__prior_object = PriorFunction(priorfun = self.model_settings.prior_function, mu = self.parameters._thetamu[self.parameters._parind[:]], sigma = self.parameters._thetasigma[self.parameters._parind[:]])
         # ---------------------
         # Define initial parameter set
         self.__initial_set = ParameterSet(theta = self.parameters._initial_value[self.parameters._parind[:]])
