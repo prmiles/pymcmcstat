@@ -49,7 +49,7 @@ def plot_density_panel(chains, names = None, hist_on = False, figsizeinches = No
         plt.subplot(ns1,ns2,ii+1)
              
         if hist_on == True: # include histograms
-            hist(chain, normed=True)
+            hist(chain, density=True)
             
         plt.plot(chain_grid, kde.pdf(chain_grid), 'k')
         # format figure
