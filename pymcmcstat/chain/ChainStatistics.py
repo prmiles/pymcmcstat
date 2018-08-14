@@ -290,7 +290,7 @@ def integrated_autocorrelation_time(chain):
             
     return tau, m
 # ----------------------------------------------------
-def gelman_rubin(chains, names = None, results = None, returnstats = False):
+def gelman_rubin(chains, names = None, results = None):
     '''
     Gelman-Rubin diagnostic for multiple chains :cite:`gelman1992inference`.
     
@@ -302,28 +302,13 @@ def gelman_rubin(chains, names = None, results = None, returnstats = False):
     of distinct chains that have all been initialized at different points within
     the parameter space.
     
-    The between-chains and within-chain variances are given by
-    
-    .. math::
-        
-        B = \\frac{n}{m-1}\\sum_{j=1}^m(\\hat{\\theta}_j - \\hat{\\theta})^2
-        W = \\frac{1}{m}\\sum_{j=1}^M\\hat{\\sigma}_j^2
-        
-    The pooled variance is
-    
-    .. math::
-        
-        V = \\frac{n-1}{n}W + \frac{1}{n}B
-        
-    
     Args:
         * **chains** (:py:class:`list`): List of arrays - each array corresponds to different chain set.
         * **names** (:py:class:`list`): List of strings - corresponds to parameter names.
         * **results** (:py:class:`dict`): Results from MCMC simulation.
-        * **returnstats** (:py:class:`bool`): True - return stats in dictionary.  Otherwise, display results.
     
     Returns:
-        * (:py:class:`dict`): If requested, the information will be returned.  Otherwise, it will be displayed.
+        * (:py:class:`dict`): Keywords of the dictionary correspond to the parameter names.  Each keyword corresponds to a dictionary outputted from :meth:`calculate_psrf`.
     '''
 
     nchains = len(chains)
@@ -346,31 +331,55 @@ def gelman_rubin(chains, names = None, results = None, returnstats = False):
 
     psrf = dict()
     for name in names:
-        psrf[name] = calculate_rhat(par[name], nsimu, nchains)
+        psrf[name] = calculate_psrf(par[name], nsimu, nchains)
 
     return psrf
 
-def calculate_rhat(x, nsimu, nchains):
-    # Calculate between-chain variance
-    B = calculate_between_chain_variance(x, nsimu, nchains)
+def calculate_psrf(x, nsimu, nchains):
+    '''
+    Calculate Potential Scale Reduction Factor (PSRF)
+    
+    Performs analysis of variances for set of chains corresponding to a single parameter.
+    This code follows the MATLAB implementation found here:
+        
+        https://users.aalto.fi/~ave/code/mcmcdiag/
+    
+    Args:
+        * **x** (:class:`~numpy.ndarray`): Expect an [nsimu x nchains] array.
+        * **nsimu** (:py:class:`int`): Number of simulations in each chain.
+        * **nchains** (:py:class:`int`): Number of chains.
+    
+    Returns:
+        * :py:class:`dict` \\
+            - R - PSRF \\
+            - B - Between Sequence Variances \\
+            - W - Within Sequence Variances \\
+            - V - Mixture-of-Sequences Variances \\
+            - neff - Effective number of samples
+    '''
+    # Estimated Between Sequence Variances Per Number of Simulations
+    Bpn = np.var(np.mean(x, axis=0), axis=0, ddof=1)
 
-    # Calculate within-chain variance
-    W = calculate_within_chain_variance(x, nsimu, nchains)
+    # Estimated Within Sequence Variances
+    W = np.mean(np.var(x, axis=0, ddof=1), axis=0)
 
-    # Estimate of marginal posterior variance
-    Vhat = estimate_marginal_posterior_variance(W, B, nsimu, nchains)
+    S = (nsimu - 1)/nsimu * W + Bpn;
+    
+    R = (nchains + 1) / nchains * S / W - (nsimu - 1) / nchains / nsimu
 
-    return dict(Rhat = np.sqrt(Vhat / W), B = B, W = W, Vhat = Vhat)
+    # Estimated Mixture-of-Sequences Variances
+    V = R * W
+    
+    # Potential Scale Reduction Factor - PSRF
+    R = np.sqrt(R)
+    
+    # Estimated Between Sequence Variances
+    B = Bpn * nsimu
+    
+    # estimated effective number of samples
+    neff = min(nchains * nsimu * V / B, nchains * nsimu);
 
-def calculate_between_chain_variance(x, nsimu, nchains):
-    return (nsimu / (nchains - 1)) * np.var(np.mean(x, axis=1), axis=0, ddof=1)
-
-def calculate_within_chain_variance(x, nsimu, nchains):
-    return (1 / nchains) * np.mean(np.var(x, axis=1, ddof=1), axis=0)
-
-def estimate_marginal_posterior_variance(W, B, nsimu, nchains):
-    return W * (nsimu - 1) / nsimu + B * (nchains + 1) / (nsimu * nchains)
-
+    return dict(R = R, B = B, W = W, V = V, neff = neff)
 # ----------------------------------------------------
 def get_parameter_names(nparam, results):
     '''
