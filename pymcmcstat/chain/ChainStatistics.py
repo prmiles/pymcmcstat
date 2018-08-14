@@ -289,7 +289,88 @@ def integrated_autocorrelation_time(chain):
                 break
             
     return tau, m
-                
+# ----------------------------------------------------
+def gelman_rubin(chains, names = None, results = None, returnstats = False):
+    '''
+    Gelman-Rubin diagnostic for multiple chains :cite:`gelman1992inference`.
+    
+    This diagnostic technique compares the variance within a single change to the
+    variance between multiple chains.  This process serves as a method for testing
+    whether or not the chain has converged.  If the chain has converged, we would
+    expect the variance within and the variance between to be equal.  This
+    diagnostic tool pairs well with the ParallelMCMC module, which generates a set
+    of distinct chains that have all been initialized at different points within
+    the parameter space.
+    
+    The between-chains and within-chain variances are given by
+    
+    .. math::
+        
+        B = \\frac{n}{m-1}\\sum_{j=1}^m(\\hat{\\theta}_j - \\hat{\\theta})^2
+        W = \\frac{1}{m}\\sum_{j=1}^M\\hat{\\sigma}_j^2
+        
+    The pooled variance is
+    
+    .. math::
+        
+        V = \\frac{n-1}{n}W + \frac{1}{n}B
+        
+    
+    Args:
+        * **chains** (:py:class:`list`): List of arrays - each array corresponds to different chain set.
+        * **names** (:py:class:`list`): List of strings - corresponds to parameter names.
+        * **results** (:py:class:`dict`): Results from MCMC simulation.
+        * **returnstats** (:py:class:`bool`): True - return stats in dictionary.  Otherwise, display results.
+    
+    Returns:
+        * (:py:class:`dict`): If requested, the information will be returned.  Otherwise, it will be displayed.
+    '''
+
+    nchains = len(chains)
+    
+    nsimu, nparam = chains[0].shape
+    
+    if names is None:
+        names = get_parameter_names(nparam, results)
+        
+    if nchains < 2:
+        raise ValueError('Diagnostic method requires multiple chains')
+        
+    # assemble arrays for separate parameters
+    par = dict()
+    for ii, name in enumerate(names):
+        tmp = np.zeros([nsimu, nchains])
+        for jj in range(nchains):
+            tmp[:,jj] = chains[jj][:,ii]
+        par[name] = tmp
+
+    psrf = dict()
+    for name in names:
+        psrf[name] = calculate_rhat(par[name], nsimu, nchains)
+
+    return psrf
+
+def calculate_rhat(x, nsimu, nchains):
+    # Calculate between-chain variance
+    B = calculate_between_chain_variance(x, nsimu, nchains)
+
+    # Calculate within-chain variance
+    W = calculate_within_chain_variance(x, nsimu, nchains)
+
+    # Estimate of marginal posterior variance
+    Vhat = estimate_marginal_posterior_variance(W, B, nsimu, nchains)
+
+    return dict(Rhat = np.sqrt(Vhat / W), B = B, W = W, Vhat = Vhat)
+
+def calculate_between_chain_variance(x, nsimu, nchains):
+    return (nsimu / (nchains - 1)) * np.var(np.mean(x, axis=1), axis=0, ddof=1)
+
+def calculate_within_chain_variance(x, nsimu, nchains):
+    return (1 / nchains) * np.mean(np.var(x, axis=1, ddof=1), axis=0)
+
+def estimate_marginal_posterior_variance(W, B, nsimu, nchains):
+    return W * (nsimu - 1) / nsimu + B * (nchains + 1) / (nsimu * nchains)
+
 # ----------------------------------------------------
 def get_parameter_names(nparam, results):
     '''
