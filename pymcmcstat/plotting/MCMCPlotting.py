@@ -80,7 +80,7 @@ def plot_histogram_panel(chains, names = None, figsizeinches = None):
         
         # plot density on subplot
         ax = plt.subplot(ns1,ns2,ii+1)
-        hist(chain, normed=True)
+        hist(chain, density=True)
         # format figure
         plt.xlabel(names[ii])
         ax.set_yticklabels([])
