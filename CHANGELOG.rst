@@ -1,35 +1,30 @@
 Changelog
 =========
 
-v1.6.0rc1 ()
+v1.6.0 ()
 ----------------------
 - Added optimal handling of prior function used numpy array multiplication.
-- Fixed bug with saving results to json file - output directory now automatically made
-- Updated PI plotting to allow any valid matplotlib input
+- Fixed bug with saving results to json file - output directory now automatically made.
+- Updated PI plotting to allow any valid matplotlib input.
+- Added Gelman-Rubin diagnostics to ChainStatistics module.
 
 v1.5.0 (July 27, 2018)
 ----------------------
-- Final release of 1.5.0
-- First release with complete test coverage
-
-v1.5.0rc2 (July 27, 2018)
--------------------------
-- Added link to Zenodo DOI
-
-v1.5.0rc1 (July 23, 2018)
--------------------------
-- Updated analysis options and diagnostics
-- Improved workflow on remote OS
+- Final release of 1.5.0.
+- First release with complete test coverage.
+- Updated analysis options and diagnostics.
+- Improved workflow on remote OS.
+- Added link to Zenodo DOI.
 
 v1.4.0 (July 11, 2018)
 ----------------------
-- Added extensive unit tests
+- Added extensive unit tests.
 
 v1.3.1 (April 20, 2018)
 -----------------------
-- Fixed sample feature (allows for fixed variables)
-- automatic naming (and expansion) for plot labels
-- added covariance matrix to log file output
+- Fixed sample feature (allows for fixed variables).
+- automatic naming (and expansion) for plot labels.
+- added covariance matrix to log file output.
 
 v1.3.0 (April 3, 2018)
 ----------------------
@@ -39,7 +34,7 @@ v1.3.0 (April 3, 2018)
 v1.2.0 (April 3, 2018)
 ----------------------
 - Added ellipse contour routine for pairwise plots.
-- Added progress bar to prediction interval generation (as it can be time consuming)
+- Added progress bar to prediction interval generation (as it can be time consuming).
 - Added log file saving so you can periodically dump the latest set of samples to file.
 
 v1.1.1 (February 26, 2018)
