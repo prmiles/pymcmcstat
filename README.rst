@@ -62,11 +62,9 @@ Feedback
    
 .. |docs| image:: https://readthedocs.org/projects/pymcmcstat/badge/?version=latest
     :target: https://pymcmcstat.readthedocs.io/en/latest/?badge=latest
-    :scale: 100%
     
 .. |build| image:: https://travis-ci.org/prmiles/pymcmcstat.svg?branch=master
     :target: https://travis-ci.org/prmiles/pymcmcstat
-    :scale: 100%
     
 .. |license| image:: https://img.shields.io/badge/License-MIT-yellow.svg
     :target: https://github.com/prmiles/pymcmcstat/blob/master/LICENSE.txt
