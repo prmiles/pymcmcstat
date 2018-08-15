@@ -76,6 +76,7 @@ class MCMC:
         self._sampling_methods = SamplingMethods()
         self._mcmc_status = False
         np.random.seed(seed = rngseed)
+        np.seterr(over = 'ignore', under = 'ignore')
     # --------------------------------------------------------
     def run_simulation(self, use_previous_results = False):
         '''
