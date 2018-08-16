@@ -64,7 +64,7 @@ class MCMC:
         * **model_settings** (:class:`~.ModelSettings`): MCMC model settings.
         * **parameters** (:class:`~.ModelParameters`): MCMC model parameters.
     '''
-    def __init__(self, rngseed = None):
+    def __init__(self, rngseed = None, seterr = dict(over = 'ignore', under = 'ignore')):
         # public variables
         self.data = DataStructure()
         self.model_settings = ModelSettings()
@@ -76,6 +76,7 @@ class MCMC:
         self._sampling_methods = SamplingMethods()
         self._mcmc_status = False
         np.random.seed(seed = rngseed)
+        np.seterr(**seterr)
     # --------------------------------------------------------
     def run_simulation(self, use_previous_results = False):
         '''
