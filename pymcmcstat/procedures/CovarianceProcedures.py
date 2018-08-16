@@ -45,7 +45,7 @@ class CovarianceProcedures:
         self._wsum = options.initqcovn
         
         # define noadaptind as a boolean - inputted as list of index values not updated
-        self.__setup_no_adapt_index(noadaptind = options.noadaptind, parind = parameters._parind)
+        self._no_adapt_index = parameters._no_adapt
         
         # ----------------
         # setup covariance matrix
@@ -189,17 +189,6 @@ class CovarianceProcedures:
             self._R = RDR[0]
         
         self._RDR = RDR
-        
-    def __setup_no_adapt_index(self, noadaptind, parind):
-        # define noadaptind as a boolean - inputted as list of index values not updated
-        no_adapt_index = np.zeros([len(parind)],dtype=bool)
-        if len(noadaptind) == 0:
-            no_adapt_index = np.zeros([len(parind)],dtype=bool)
-        else:
-            c = list(set.intersection(set(noadaptind), set(parind)))
-            no_adapt_index[c] = np.ones([1], dtype = bool)
-    
-        self._no_adapt_index = no_adapt_index
         
     def display_covariance_settings(self, print_these = None):
         '''
