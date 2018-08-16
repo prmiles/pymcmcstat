@@ -45,7 +45,22 @@ class MCMCInitialization(unittest.TestCase):
             self.assertTrue(hasattr(MC, ct), msg = str('Object missing attribute: {}'.format(ct)))
         
         self.assertFalse(MC._mcmc_status, msg = 'Status is False')
-
+        
+    def test_numpy_error_set(self):
+        MCMC(seterr = {});
+        a = np.geterr()
+        self.assertEqual(a['over'], 'ignore', msg = 'Expect default ignore')
+        self.assertEqual(a['under'], 'ignore', msg = 'Expect default ignore')
+        MCMC(seterr = dict(over = 'warn', under = 'ignore'));
+        a = np.geterr()
+        self.assertEqual(a['over'], 'warn', msg = 'Expect overwrite to warn')
+        self.assertEqual(a['under'], 'ignore', msg = 'Expect default ignore') 
+        
+    def test_set_seed(self):
+        MCMC(rngseed = 1);
+        a = np.random.rand(1)
+        self.assertAlmostEqual(a[0], 0.417022, msg = str('Expect seed to cause consistent random draw: {} neq {}'.format(a, np.array([0.417022]))))
+        
 # --------------------------
 class DisplayCurrentMCMCSettings(unittest.TestCase):
     
