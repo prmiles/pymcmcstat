@@ -7,6 +7,7 @@ v1.6.0 ()
 - Fixed bug with saving results to json file - output directory now automatically made.
 - Updated PI plotting to allow any valid matplotlib input.
 - Added Gelman-Rubin diagnostics to ChainStatistics module.
+- Added numpy error settings option to MCMC initialization.
 
 v1.5.0 (July 27, 2018)
 ----------------------
