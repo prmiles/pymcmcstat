@@ -144,26 +144,6 @@ class SetupRBasedOnCovarianceMatrix(unittest.TestCase):
         CP._CovarianceProcedures__setup_R_based_on_covariance_matrix(parind = parind)
         self.assertTrue(np.array_equal(CP._R, np.linalg.cholesky(testmtx[np.ix_(parind,parind)]).T), msg = 'Expect sqrt of variance')
         self.assertTrue(np.array_equal(CP._qcovorig, testmtx), msg = 'Expect sqrt of variance')
-
-# -------------------------------------------
-class SetupNoAdaptIndex(unittest.TestCase):
-    def test_noadapt_empty(self):
-        model, options, parameters, data = gf.setup_mcmc()
-        CP = CovarianceProcedures()
-        CP._initialize_covariance_settings(parameters = parameters, options = options)
-        CP._no_adapt_index = []
-        CP._CovarianceProcedures__setup_no_adapt_index(noadaptind = [], parind = [0, 1])
-        self.assertTrue(np.array_equal(CP._no_adapt_index, np.zeros([2],dtype=bool)), msg = 'Arrays should match')
-        
-    def test_noadapt_not_empty(self):
-        model, options, parameters, data = gf.setup_mcmc()
-        CP = CovarianceProcedures()
-        CP._initialize_covariance_settings(parameters = parameters, options = options)
-        CP._no_adapt_index = []
-        CP._CovarianceProcedures__setup_no_adapt_index(noadaptind = [1], parind = [0, 1])
-        self.assertTrue(np.array_equal(CP._no_adapt_index, np.array([0, 1],dtype=bool)), msg = 'Arrays should match')
-        CP._CovarianceProcedures__setup_no_adapt_index(noadaptind = [0,2], parind = [0, 1, 2])
-        self.assertTrue(np.array_equal(CP._no_adapt_index, np.array([1, 0, 1],dtype=bool)), msg = 'Arrays should match')
         
 # -------------------------------------------
 class DisplayCovarianceSettings(unittest.TestCase):
