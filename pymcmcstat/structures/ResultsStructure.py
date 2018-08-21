@@ -140,6 +140,7 @@ class ResultsStructure:
         self.results['R'] = covariance._R
         self.results['qcov'] = np.dot(covariance._R.transpose(),covariance._R)
         self.results['cov'] = covariance._covchain
+        self.results['qcov_scale'] = covariance._qcov_scale
         self.results['mean'] = covariance._meanchain
         self.results['names'] = [parameters._names[ii] for ii in parameters._parind]
         self.results['limits'] = [parameters._lower_limits[parameters._parind[:]], parameters._upper_limits[parameters._parind[:]]]

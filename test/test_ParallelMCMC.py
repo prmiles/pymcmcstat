@@ -10,9 +10,11 @@ from pymcmcstat.ParallelMCMC import ParallelMCMC
 from pymcmcstat.ParallelMCMC import check_options_output, check_directory, check_initial_values
 from pymcmcstat.ParallelMCMC import run_serial_simulation, assign_number_of_cores, generate_initial_values
 from pymcmcstat.ParallelMCMC import check_shape_of_users_initial_values, check_users_initial_values_wrt_limits
-from pymcmcstat.ParallelMCMC import get_parameter_features, unpack_mcmc_set
+from pymcmcstat.ParallelMCMC import get_parameter_features, unpack_mcmc_set, check_for_restart_file
+from pymcmcstat.ParallelMCMC import load_parallel_simulation_results
 from pymcmcstat.samplers.utilities import is_sample_outside_bounds
 from pymcmcstat.settings.ModelParameters import ModelParameters
+from pymcmcstat.structures.ResultsStructure import ResultsStructure
 import test.general_functions as gf
 import unittest
 from mock import patch
@@ -262,3 +264,48 @@ class RunParallelMCMC(unittest.TestCase):
         self.assertTrue(hasattr(PMC.parmc[0], 'simulation_results'), msg = 'Expect results added')
         self.assertEqual(PMC.parmc[0].simulation_results.results['nsimu'], 5000, msg = 'Expect nsimu = 5000')
         shutil.rmtree(tmpfolder)
+        
+# -------------------------
+class CheckForRestartFile(unittest.TestCase):
+    def test_check_for_restart_file(self):
+        jrf = None
+        jrf = check_for_restart_file(json_restart_file = jrf, chain_dir = '1')
+        self.assertEqual(jrf, None, msg = 'Expect None return')
+     
+    @patch('os.path.exists', return_value = True)
+    def test_check_for_restart_file_not_none(self, mock_path):
+        jrf = 'chain'
+        jrf = check_for_restart_file(json_restart_file = jrf, chain_dir = '1')
+        self.assertEqual(jrf, 'chain/1/1.json', msg = 'Expect strings to match')
+        
+    @patch('os.path.exists', return_value = False)
+    def test_check_for_restart_file_not_none_but_does_not_exist(self, mock_path):
+        jrf = 'chain'
+        jrf = check_for_restart_file(json_restart_file = jrf, chain_dir = '1')
+        self.assertEqual(jrf, None, msg = 'Expect None return')
+        
+# -------------------------
+class LoadParallelSimulationResults(unittest.TestCase):
+    def test_load_par_sim_res(self):
+        tmpfolder = gf.generate_temp_folder()
+        tmpfolder0 = os.path.join(tmpfolder, 'chain_0')
+        os.makedirs(tmpfolder0)
+        tmpfolder1 = os.path.join(tmpfolder, 'chain_1')
+        os.makedirs(tmpfolder1)
+        tmpfile0 = 'chain_0.json'
+        tmpfile0 = os.path.join(tmpfolder0, tmpfile0)
+        tmpfile1 = 'chain_1.json'
+        tmpfile1 = os.path.join(tmpfolder1, tmpfile1)
+        results = dict(a = [0, 1], b = 'hello')
+        RS = ResultsStructure()
+        RS.save_json_object(results, tmpfile0)
+        RS.save_json_object(results, tmpfile1)
+        pres = load_parallel_simulation_results(tmpfolder)
+        shutil.rmtree(tmpfolder)
+        self.assertTrue(isinstance(pres[0]['a'], np.ndarray))
+        self.assertTrue(isinstance(pres[1]['a'], np.ndarray))
+        self.assertTrue(isinstance(pres[0]['b'], str))
+        self.assertTrue(isinstance(pres[1]['b'], str))
+        self.assertEqual(pres[0]['b'], 'hello')
+        self.assertEqual(pres[1]['b'], 'hello')
+        
