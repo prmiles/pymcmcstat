@@ -9,6 +9,7 @@ v1.6.0 ()
 - Added Gelman-Rubin diagnostics to ChainStatistics module.
 - Added numpy error settings option to MCMC initialization.
 - Setup no adaptation feature.  Can sample parameters without adapting them.
+- Added restart routine to ParallelMCMC.  Can restart from json files.
 
 v1.5.0 (July 27, 2018)
 ----------------------
