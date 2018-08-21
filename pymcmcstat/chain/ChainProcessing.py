@@ -5,6 +5,7 @@ Created on Tue May  1 09:12:06 2018
 
 @author: prmiles
 """
+import json
 import h5py
 import numpy as np
 import os
@@ -120,6 +121,22 @@ def read_in_parallel_savedir_files(parallel_dir, extension = 'h5', chainfile = '
         out.append(read_in_savedir_files(savedir, extension = extension, chainfile = chainfile, sschainfile = sschainfile, s2chainfile = s2chainfile, covchainfile = covchainfile))
         
     return out
+
+def read_in_parallel_json_results_files(parallel_dir):
+    '''
+    Read in json results files from directory containing results from parallel MCMC simulation.
+    
+    Args:
+        * **parallel_dir** (:py:class:`str`): Directory where parallel log files are saved.
+    '''
+    # find folders in parallel_dir with name 'chain_#'
+    chainfolders = os.listdir(parallel_dir)
+    parallel_results = []
+    for folder in chainfolders:
+        filename = os.path.join(parallel_dir, folder, str('{}.json'.format(folder)))
+        parallel_results.append(load_json_object(filename = filename))
+        
+    return parallel_results
     
 def read_in_bin_file(filename):
     '''
@@ -222,3 +239,21 @@ def _save_to_txt_file(filename, mtx):
 def _check_directory(directory):
     if not os.path.exists(directory):
         os.makedirs(directory)
+        
+def load_json_object(filename):
+    '''
+    Load object stored in json file.
+
+    .. note::
+
+        Filename should include extension.
+
+    Args:
+        * **filename** (:py:class:`str`): Load object from file with this name.
+
+    Returns:
+        * **results** (:py:class:`dict`): Object loaded from file.
+    '''
+    with open(filename, 'r') as obj:
+        results = json.load(obj)
+    return results
