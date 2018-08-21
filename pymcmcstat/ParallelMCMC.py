@@ -333,18 +333,22 @@ def assign_number_of_cores(num_cores = 1):
     
 # -------------------------
 def load_parallel_simulation_results(savedir):
+    '''
+    Load results from parallel simulation directory json files.
     
+    Lists in json files are converted to numpy arrays.
+    
+    Args:
+        * **savedir** (:py:class:`str`): String indicated path to parallel directory.
+    
+    Returns:
+        * **pres** (:py:class:`list`): Each element of list is an MCMC result dictionary.
+    '''
     pres = CP.read_in_parallel_json_results_files(savedir)
     for ii, pr in enumerate(pres):
         for key in pr.keys():
             if isinstance(pres[ii][key], list):
-                pres[ii][key] = np.array(pres[ii][key])
-#        results = pres[ii]
-#        pres[ii]['chain'] = np.array(results['chain'])
-#        pres[ii]['s2chain'] = np.array(results['s2chain'])
-#        pres[ii]['sschain'] = np.array(results['sschain'])
-#        pres[ii]['qcov'] = np.array([results['qcov']])
-        
+                pres[ii][key] = np.array(pres[ii][key])    
     return pres
 
 def check_for_restart_file(json_restart_file, chain_dir):
