@@ -20,7 +20,7 @@ MS.define_model_settings()
 
 # --------------------------
 class DisplaySimulationOptions(unittest.TestCase):
-    
+
     def test_print_these_none(self):
         SO = setup_options()
         print_these = SO.display_simulation_options(print_these = None)

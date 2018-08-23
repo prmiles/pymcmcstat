@@ -31,7 +31,7 @@ class Initialize_Prior_Function(unittest.TestCase):
         PF = PriorFunction()
         PFD = PF.__dict__
         self.assertEqual(PFD[key], PF.default_priorfun, msg = str('Expected {} = {}'.format(key, 'PriorFunction.default_priorfun')))
-        
+
 class Evaluation_Default_Prior_Function(unittest.TestCase):
     
     def test_PF_evaluation_with_single_set(self):

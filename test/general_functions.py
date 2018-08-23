@@ -55,7 +55,6 @@ def basic_mcmc():
 def setup_mcmc():
     mcstat = basic_mcmc()
     mcstat._initialize_simulation()
-    
     # extract components
     model = mcstat.model_settings
     options = mcstat.simulation_options

@@ -19,7 +19,7 @@ class MessageDisplay(unittest.TestCase):
         sys.stdout = sys.__stdout__                     # Reset redirect.
         self.assertEqual(capturedOutput.getvalue(), 'test\n', msg = 'Expected string')
         self.assertTrue(flag, msg = 'Statement was printed')
-        
+
     def test_no_print(self):
         capturedOutput = io.StringIO()                  # Create StringIO object
         sys.stdout = capturedOutput                     #  and redirect stdout.

@@ -38,8 +38,8 @@ class OutsideBounds(unittest.TestCase):
         self.assertFalse(is_sample_outside_bounds(theta = np.array([1, 1.5]), lower_limits = np.array([0,1]), upper_limits=np.array([1,2])), msg = 'p1 on upp lim')
         self.assertFalse(is_sample_outside_bounds(theta = np.array([0.5, 2]), lower_limits = np.array([0,1]), upper_limits=np.array([1,2])), msg = 'p2 on upp lim')
         self.assertFalse(is_sample_outside_bounds(theta = np.array([0.5, 1.5]), lower_limits = np.array([0,1]), upper_limits=np.array([1,2])), msg = 'all outside')
-        
-# --------------------------        
+
+# --------------------------
 class Acceptance(unittest.TestCase):
     
     def test_accept_alpha_gt_1(self):
@@ -52,7 +52,7 @@ class Acceptance(unittest.TestCase):
         np.random.seed(0)
         self.assertEqual(acceptance_test(alpha = 0.6), 1, msg = 'Accept alpha > u (0.6 > 0.5488135)')
         
-# --------------------------        
+# --------------------------
 class SetOutsideBounds(unittest.TestCase):
     def test_set_outsidebounds(self):
         next_set = ParameterSet()
