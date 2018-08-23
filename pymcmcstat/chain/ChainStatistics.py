@@ -291,7 +291,7 @@ def integrated_autocorrelation_time(chain):
             
     return tau, m
 # ----------------------------------------------------
-def gelman_rubin(chains, names = None, results = None):
+def gelman_rubin(chains, names = None, results = None, display = True):
     '''
     Gelman-Rubin diagnostic for multiple chains :cite:`gelman1992inference`.
     
@@ -337,7 +337,10 @@ def gelman_rubin(chains, names = None, results = None):
     psrf = dict()
     for name in names:
         psrf[name] = calculate_psrf(par[name], nsimu, nchains)
-
+        
+    if display is True:
+        display_gelman_rubin(psrf)
+            
     return psrf
 
 def calculate_psrf(x, nsimu, nchains):
@@ -385,6 +388,18 @@ def calculate_psrf(x, nsimu, nchains):
     neff = min(nchains * nsimu * V / B, nchains * nsimu);
 
     return dict(R = R, B = B, W = W, V = V, neff = neff)
+# ----------------------------------------------------
+def display_gelman_rubin(psrf):
+    '''
+    Display results of Gelman-Rubin diagnostic
+    
+    Args:
+        * **psrf** (:class:`dict`): Results from GR diagnostic
+    '''
+    for ii, ps in enumerate(psrf):
+        print('Parameter: {}'.format(ps))
+        for jj, k in enumerate(psrf[ps].keys()):
+            print('  {} = {}'.format(k, psrf[ps][k]))
 # ----------------------------------------------------
 def get_parameter_names(nparam, results):
     '''
