@@ -6,10 +6,11 @@ v1.6.0 ()
 - Added optimal handling of prior function used numpy array multiplication.
 - Fixed bug with saving results to json file - output directory now automatically made.
 - Updated PI plotting to allow any valid matplotlib input.
-- Added Gelman-Rubin diagnostics to ChainStatistics module.
+- Added Gelman-Rubin diagnostics to ChainStatistics module, with display feature.
 - Added numpy error settings option to MCMC initialization.
 - Setup no adaptation feature.  Can sample parameters without adapting them.
 - Added restart routine to ParallelMCMC.  Can restart from json files.
+- Added parallel chain organization routines to the chain subpackage.
 
 v1.5.0 (July 27, 2018)
 ----------------------
