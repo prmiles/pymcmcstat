@@ -308,4 +308,3 @@ class LoadParallelSimulationResults(unittest.TestCase):
         self.assertTrue(isinstance(pres[1]['b'], str))
         self.assertEqual(pres[0]['b'], 'hello')
         self.assertEqual(pres[1]['b'], 'hello')
-        

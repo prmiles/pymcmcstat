@@ -257,3 +257,44 @@ def load_json_object(filename):
     with open(filename, 'r') as obj:
         results = json.load(obj)
     return results
+# -------------------------
+def generate_combined_chain_with_index(pres, burnin_percentage = 50):
+    '''
+    Generate combined chain with index.
+    
+    Args:
+        * **pres** (:py:class:`list`): Parallel results list.
+        * **burnin_percentage** (:py:class:`int`): Percentage of chain to remove for burnin.
+        
+    Returns:
+        * (:class:`~numpy.ndarray`, :py:class:`list`): Combined chain array, index label
+    '''
+    index = []
+    for ii in range(len(pres)):
+        burnin = int(pres[ii]['nsimu']*burnin_percentage/100)
+        if ii == 0:
+            combined_chain = pres[ii]['chain'][burnin:,:]
+        else:
+            combined_chain = np.concatenate((combined_chain, pres[ii]['chain'][burnin:,:]))
+        for jj in range(pres[ii]['chain'][burnin:,:].shape[0]):
+            index.append(str('Chain {}'.format(ii)))
+            
+    return combined_chain, index
+            
+# -------------------------
+def generate_chain_list(pres, burnin_percentage = 50):
+    '''
+    Generate list of chains.
+    
+    Args:
+        * **pres** (:py:class:`list`): Parallel results list.
+        * **burnin_percentage** (:py:class:`int`): Percentage of chain to remove for burnin.
+    
+    Returns:
+        * (:py:class:`list`): Each element of list corresponds to different chain set.
+    '''
+    chains = []
+    for ii in range(len(pres)):
+        burnin = int(pres[ii]['nsimu']*burnin_percentage/100)
+        chains.append(pres[ii]['chain'][burnin:,:]);
+    return chains
