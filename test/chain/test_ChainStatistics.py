@@ -9,6 +9,8 @@ Created on Fri May  4 10:22:54 2018
 from pymcmcstat.chain import ChainStatistics
 import unittest
 import numpy as np
+import io
+import sys
 
 CS = ChainStatistics
 chain = np.random.random_sample(size = (1000,2))
@@ -81,7 +83,21 @@ class GelmanRubin(unittest.TestCase):
     
     def test_gelman_rubin(self):
         chains = self.setup_chains()
-        psrf = CS.gelman_rubin(chains = chains)
+        capturedOutput = io.StringIO()                  # Create StringIO object
+        sys.stdout = capturedOutput                     #  and redirect stdout.
+        psrf = CS.gelman_rubin(chains = chains, display = False)
+        sys.stdout = sys.__stdout__                     # Reset redirect.
+        self.assertTrue(isinstance(capturedOutput.getvalue(), str), msg = 'Caputured string')
+        self.standard_check(psrf)
+    
+    def test_gelman_rubin_no_display(self):
+        chains = self.setup_chains()
+        capturedOutput = io.StringIO()                  # Create StringIO object
+        sys.stdout = capturedOutput                     #  and redirect stdout.
+        psrf = CS.gelman_rubin(chains = chains, display = False)
+        sys.stdout = sys.__stdout__                     # Reset redirect.
+        self.assertTrue(isinstance(capturedOutput.getvalue(), str), msg = 'Caputured string')
+        self.assertEqual(capturedOutput.getvalue(), '', msg = 'Caputured string')
         self.standard_check(psrf)
         
     def test_gelman_rubin_with_pres(self):
