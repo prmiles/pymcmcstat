@@ -83,6 +83,15 @@ class GelmanRubin(unittest.TestCase):
         chains = self.setup_chains()
         psrf = CS.gelman_rubin(chains = chains)
         self.standard_check(psrf)
+        
+    def test_gelman_rubin_with_pres(self):
+        chains = self.setup_chains()
+        pres = []
+        for ii, chain in enumerate(chains):
+            pres.append(dict(chain = chain, nsimu = chain.shape[0]))
+            
+        psrf = CS.gelman_rubin(chains = pres)
+        self.standard_check(psrf)
                 
     def test_gelman_rubin_with_names(self):
         chains = self.setup_chains()

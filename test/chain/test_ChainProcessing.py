@@ -230,3 +230,41 @@ class PrintLogFiles(unittest.TestCase):
         self.assertTrue(isinstance(capturedOutput.getvalue(), str), msg = 'Should contain a string')
         self.assertTrue('Display log file:' in capturedOutput.getvalue(), msg = 'Expect string to contain these works')
         shutil.rmtree(savedir)
+# -------------------------
+def setup_pres():
+    pres = []
+    pres.append(dict(chain = np.array(np.random.random_sample(size = (100,3))), nsimu = 100))
+    pres.append(dict(chain = np.array(np.random.random_sample(size = (100,3))), nsimu = 100))
+    return pres
+
+class GenerateCombinedChainWithIndex(unittest.TestCase):
+    def test_generate_combined_chain(self):
+        pres = setup_pres()
+        combined_chain, index = CP.generate_combined_chain_with_index(pres = pres)
+        self.assertEqual(combined_chain.shape, (100,3), msg = 'Default burnin should yield (100,3) array shape')
+        self.assertEqual(len(index), 100, msg = 'index should have length 100')
+        self.assertTrue(np.array_equal(combined_chain[0:50,:], pres[0]['chain'][50:,:]))
+        self.assertTrue(np.array_equal(combined_chain[50:,:], pres[1]['chain'][50:,:]))
+        
+    def test_generate_combined_chain_non_default_burnin(self):
+        pres = setup_pres()
+        combined_chain, index = CP.generate_combined_chain_with_index(pres = pres, burnin_percentage = 0)
+        self.assertEqual(combined_chain.shape, (200,3), msg = 'Default burnin should yield (200,3) array shape')
+        self.assertEqual(len(index), 200, msg = 'index should have length 100')
+        self.assertTrue(np.array_equal(combined_chain[0:100,:], pres[0]['chain']))
+        self.assertTrue(np.array_equal(combined_chain[100:,:], pres[1]['chain']))
+# -------------------------
+class GenerateChainList(unittest.TestCase):
+    def test_generate_chain_list(self):
+        pres = setup_pres()
+        chains = CP.generate_chain_list(pres = pres)
+        self.assertEqual(len(chains), 2, msg = 'expect length of 2')
+        self.assertTrue(np.array_equal(chains[0], pres[0]['chain'][50:,:]))
+        self.assertTrue(np.array_equal(chains[1], pres[1]['chain'][50:,:]))
+        
+    def test_generate_chain_list_with_non_default_burnin(self):
+        pres = setup_pres()
+        chains = CP.generate_chain_list(pres = pres, burnin_percentage = 0)
+        self.assertEqual(len(chains), 2, msg = 'expect length of 2')
+        self.assertTrue(np.array_equal(chains[0], pres[0]['chain']))
+        self.assertTrue(np.array_equal(chains[1], pres[1]['chain']))

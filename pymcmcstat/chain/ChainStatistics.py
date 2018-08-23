@@ -14,6 +14,7 @@ import scipy
 import scipy.stats
 from scipy.fftpack import fft
 from ..plotting.utilities import generate_default_names, extend_names_to_match_nparam
+from .ChainProcessing import generate_chain_list
 
 # display chain statistics
 def chainstats(chain = None, results = None, returnstats = False):
@@ -311,6 +312,10 @@ def gelman_rubin(chains, names = None, results = None):
         * (:py:class:`dict`): Keywords of the dictionary correspond to the parameter names.  Each keyword corresponds to a dictionary outputted from :meth:`calculate_psrf`.
     '''
 
+    # check what chains is
+    if isinstance(chains[0], dict):
+        chains = generate_chain_list(chains)
+        
     nchains = len(chains)
     
     nsimu, nparam = chains[0].shape
