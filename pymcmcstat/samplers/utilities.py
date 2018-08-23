@@ -91,5 +91,5 @@ def set_outside_bounds(next_set):
     next_set.prior = 0
     next_set.ss = np.inf
     outbound = True
-    
+
     return next_set, outbound

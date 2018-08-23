@@ -52,10 +52,10 @@ class Adaptation:
         '''
         # unpack options
         burnintime, burnin_scale, ntry, drscale, alphatarget, etaparam, qcov_adjust, doram, verbosity = unpack_simulation_options(options = options)
-        
+
         # unpack covariance
         last_index_since_adaptation, R, oldcovchain, oldmeanchain, oldwsum, no_adapt_index, qcov_scale, qcov = unpack_covariance_settings(covariance = covariance)
-        
+
         if isimu < burnintime:
             R = below_burnin_threshold(rejected = rejected, iiadapt = iiadapt, R = R, burnin_scale = burnin_scale, verbosity = verbosity)
             covchain = oldcovchain
