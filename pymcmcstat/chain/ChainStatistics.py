@@ -396,9 +396,9 @@ def display_gelman_rubin(psrf):
     Args:
         * **psrf** (:class:`dict`): Results from GR diagnostic
     '''
-    for ps in enumerate(psrf):
+    for _, ps in enumerate(psrf):
         print('Parameter: {}'.format(ps))
-        for k in enumerate(psrf[ps].keys()):
+        for _, k in enumerate(psrf[ps].keys()):
             print('  {} = {}'.format(k, psrf[ps][k]))
 # ----------------------------------------------------
 def get_parameter_names(nparam, results):
