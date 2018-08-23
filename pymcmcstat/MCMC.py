@@ -45,11 +45,11 @@ from .utilities.general import message
 class MCMC:
     '''
     Markov Chain Monte Carlo (MCMC) simulation object.
-    
+
     This class type is the primary feature of this Python package.  All simulations
     are run through this class type, and for the most part the user will interact
-    with an object of this type.  The class initialization provides the option for 
-    setting the random seed, which can be very useful for testing the functionality 
+    with an object of this type.  The class initialization provides the option for
+    setting the random seed, which can be very useful for testing the functionality
     of the code.  It was found that setting the random seed at object initialization
     was the simplest interface.
     
@@ -64,7 +64,7 @@ class MCMC:
         * **model_settings** (:class:`~.ModelSettings`): MCMC model settings.
         * **parameters** (:class:`~.ModelParameters`): MCMC model parameters.
     '''
-    def __init__(self, rngseed = None, seterr = dict(over = 'ignore', under = 'ignore')):
+    def __init__(self, rngseed = None, seterr = {'over': 'ignore', 'under': 'ignore'}):
         # public variables
         self.data = DataStructure()
         self.model_settings = ModelSettings()
@@ -220,7 +220,7 @@ class MCMC:
             self.__s2chain[chainind,:] = sigma2
         else:
             self.__s2chain = None
-    # --------------------------------------------------------    
+    # --------------------------------------------------------
     def __expand_chains(self, nsimu, npar, nsos, updatesigma):
         '''
         Expand chains for extended simulation

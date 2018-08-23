@@ -32,7 +32,7 @@ class ParallelMCMC:
     def setup_parallel_simulation(self, mcset, initial_values = None, num_cores = 1, num_chain = 1):
         '''
         Setup simulation to run in parallel.
-        
+
         Settings defined in `mcset` object will be copied into different instances in
         order to run parallel chains.
         
@@ -348,7 +348,7 @@ def load_parallel_simulation_results(savedir):
     for ii, pr in enumerate(pres):
         for key in pr.keys():
             if isinstance(pres[ii][key], list):
-                pres[ii][key] = np.array(pres[ii][key])    
+                pres[ii][key] = np.array(pres[ii][key])
     return pres
 # -------------------------
 def check_for_restart_file(json_restart_file, chain_dir):
