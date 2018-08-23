@@ -350,7 +350,7 @@ def load_parallel_simulation_results(savedir):
             if isinstance(pres[ii][key], list):
                 pres[ii][key] = np.array(pres[ii][key])    
     return pres
-
+# -------------------------
 def check_for_restart_file(json_restart_file, chain_dir):
     '''
     Check if restart directory was specified.
