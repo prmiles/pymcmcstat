@@ -54,7 +54,7 @@ class ErrorVarianceEstimator:
         N = model.N
         sigma2 = model.sigma2 # initializes it as array
         nsos = len(sos)
-        
+
         for jj in range(0,nsos):
             sigma2[jj] = (self.gammar(1, 1, 0.5*(N0[jj]+N[jj]),
                           2*((N0[jj]*S20[jj]+sos[jj])**(-1))))**(-1)
