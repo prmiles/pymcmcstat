@@ -70,11 +70,10 @@ class ModelParameters:
                                 'sample': bool(sample), 'local': local, 'adapt': bool(adapt)})
     # --------------------------
     def _openparameterstructure(self, nbatch):
-        
         # unpack input object
         parameters = self.parameters
         npar = len(parameters)
-        
+
         # initialize arrays - as lists and numpy arrays (improved functionality)
         self._names = []
         self._initial_value = np.zeros(npar)
@@ -187,9 +186,9 @@ class ModelParameters:
             * **local** (:class:`~numpy.ndarray`): Array with local flag indices.
         '''
         local = np.array([], dtype = int)
-        for kk in range(len(parameters)):
-            if parameters[kk]['sample'] is True:
-                if parameters[kk]['local'] != 0:
+        for kk, par in enumerate(parameters):
+            if par['sample'] is True:
+                if par['local'] != 0:
                     local = np.concatenate((local, range(1,nbatch+1)))
                 else:
                     local = np.concatenate((local, np.zeros([1])))
@@ -231,7 +230,7 @@ class ModelParameters:
         else:
             return sigma
         
-    # --------------------------        
+    # --------------------------
     def _results_to_params(self, results, use_local = 1):
     
         # unpack results dictionary
