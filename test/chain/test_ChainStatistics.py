@@ -20,7 +20,7 @@ chain[:,1] = 1e6*chain[:,1]
 # chainstats
 # --------------------------
 class Chainstats_Eval(unittest.TestCase):
-    
+
     def test_cs_eval_with_return(self):
         stats = CS.chainstats(chain = chain, returnstats = True)
         self.assertTrue(isinstance(stats,dict))
@@ -32,7 +32,7 @@ class Chainstats_Eval(unittest.TestCase):
     def test_cs_eval_with_no_chain(self):
         stats = CS.chainstats(chain = None, returnstats = True)
         self.assertTrue(isinstance(stats, str))
-# --------------------------        
+# --------------------------
 class BatchMeanSTD(unittest.TestCase):
     
     def test_len_s(self):
@@ -42,7 +42,7 @@ class BatchMeanSTD(unittest.TestCase):
     def test_too_few_batches(self):
         with self.assertRaises(SystemExit, msg = 'too few batches'):
             CS.batch_mean_standard_deviation(chain, b = chain.shape[0])
-# --------------------------            
+# --------------------------
 class PowerSpectralDensity(unittest.TestCase):
     
     def test_nfft_none_size(self):
@@ -67,22 +67,22 @@ class PowerSpectralDensity(unittest.TestCase):
         self.assertEqual(n2, len(y))
         
 # --------------------------
+def setup_chains(self):
+    chains = []
+    for ii in range(4):
+        chains.append(np.concatenate((ii*np.linspace(0, 1, 1000).reshape(1000,1), ii*np.linspace(2.5, 3.3, 1000).reshape(1000,1)), axis = 1))
+    return chains
+
 class GelmanRubin(unittest.TestCase):
-    def setup_chains(self):
-        chains = []
-        for ii in range(4):
-            chains.append(np.concatenate((ii*np.linspace(0, 1, 1000).reshape(1000,1), ii*np.linspace(2.5, 3.3, 1000).reshape(1000,1)), axis = 1))
-        return chains
-    
     def standard_check(self, psrf):
         self.assertTrue(isinstance(psrf, dict), msg = 'Expect dictionary output')
         check_these = ['B', 'W', 'V', 'R', 'neff']
-        for ii, ps in enumerate(psrf):
+        for _, ps in enumerate(psrf):
             for ct in check_these:
                 self.assertTrue(ct in psrf[ps], msg = str('{} not in {}'.format(ct, ps)))
     
     def test_gelman_rubin(self):
-        chains = self.setup_chains()
+        chains = setup_chains()
         capturedOutput = io.StringIO()                  # Create StringIO object
         sys.stdout = capturedOutput                     #  and redirect stdout.
         psrf = CS.gelman_rubin(chains = chains, display = False)
@@ -91,7 +91,7 @@ class GelmanRubin(unittest.TestCase):
         self.standard_check(psrf)
     
     def test_gelman_rubin_no_display(self):
-        chains = self.setup_chains()
+        chains = setup_chains()
         capturedOutput = io.StringIO()                  # Create StringIO object
         sys.stdout = capturedOutput                     #  and redirect stdout.
         psrf = CS.gelman_rubin(chains = chains, display = False)
@@ -101,22 +101,22 @@ class GelmanRubin(unittest.TestCase):
         self.standard_check(psrf)
         
     def test_gelman_rubin_with_pres(self):
-        chains = self.setup_chains()
+        chains = setup_chains()
         pres = []
-        for ii, chain in enumerate(chains):
+        for _, chain in enumerate(chains):
             pres.append(dict(chain = chain, nsimu = chain.shape[0]))
             
         psrf = CS.gelman_rubin(chains = pres)
         self.standard_check(psrf)
                 
     def test_gelman_rubin_with_names(self):
-        chains = self.setup_chains()
+        chains = setup_chains()
         psrf = CS.gelman_rubin(chains = chains, names = ['a', 'b'])
         self.standard_check(psrf)
         
     def test_gelman_rubin_raise_error(self):
-        chains = self.setup_chains()
-        for ii in range(len(chains)-1):
+        chains = setup_chains()
+        for _ in range(len(chains)-1):
             chains.pop(-1)
         with self.assertRaises(ValueError, msg = 'Must have multiple chains'):
             CS.gelman_rubin(chains = chains)
