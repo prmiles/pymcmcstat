@@ -60,7 +60,7 @@ def setup_initialize_chains(CL, updatesigma = True, nsos = 1):
     mcstat._MCMC__old_set = ParameterSet(theta = CL['theta'], ss = CL['ss'], prior = CL['prior'], sigma2 = CL['sigma2'])
     mcstat._MCMC__chain_index = mcstat.simulation_options.nsimu - 1
     mcstat._MCMC__initialize_chains(chainind = 0, nsimu = mcstat.simulation_options.nsimu, npar = mcstat.parameters.npar, nsos = mcstat.model_settings.nsos, updatesigma = mcstat.simulation_options.updatesigma, sigma2 = mcstat.model_settings.sigma2)
-    return mcstat   
+    return mcstat
         
 def setup_case():
     mcstat = basic_mcmc()

@@ -22,12 +22,12 @@ import numpy as np
 class InitializeDRMetrics(unittest.TestCase):
     def test_dr_metrics(self):
         DR = DelayedRejection()
-        __, options, parameters, data, covariance, rejected, chain, s2chain, sschain = gf.setup_mcmc_case_dr()
+        __, options, __, data, covariance, rejected, chain, s2chain, sschain = gf.setup_mcmc_case_dr()
         DR._initialize_dr_metrics(options = options)
         self.assertTrue(np.array_equal(DR.iacce, np.zeros(options.ntry, dtype = int)), msg = 'Arrays should match')
         self.assertEqual(DR.dr_step_counter, 0, msg = 'Counter initialized to zero')
-        
-# --------------------------        
+
+# --------------------------
 class InitializeNextMetropolisStep(unittest.TestCase):
     @patch('numpy.random.randn', return_value = np.array([0.2, 0.5]))
     def test_next_set(self, mock_1):
@@ -56,8 +56,7 @@ class UpdateSetBasedOnAcceptance(unittest.TestCase):
         
 # -------------------------------------------
 class ExtractStateElements(unittest.TestCase):
-    def test_extract_state_elements_iq_eq_0(self):
-        iq = 0
+    def setup_trypath(self, iq = 0):
         trypath = []
         trypath.append(ParameterSet(theta = 0.1))
         trypath.append(ParameterSet(theta = 0.2))
@@ -65,34 +64,23 @@ class ExtractStateElements(unittest.TestCase):
         trypath.append(ParameterSet(theta = 0.4))
         stage = len(trypath) - 2
         y1, y2, y3, y4 = extract_state_elements(iq = iq, stage = stage, trypath = trypath)
+        return trypath, y1, y2, y3, y4
+    def test_extract_state_elements_iq_eq_0(self):
+        trypath, y1, y2, y3, y4 = self.setup_trypath(iq = 0)
         self.assertEqual(y1, trypath[0].theta, msg = 'Expect [0]')
         self.assertEqual(y2, trypath[1].theta, msg = 'Expect [1]')
         self.assertEqual(y3, trypath[3].theta, msg = 'Expect [3]')
         self.assertEqual(y4, trypath[2].theta, msg = 'Expect [2]')
         
     def test_extract_state_elements_iq_eq_1(self):
-        iq = 1
-        trypath = []
-        trypath.append(ParameterSet(theta = 0.1))
-        trypath.append(ParameterSet(theta = 0.2))
-        trypath.append(ParameterSet(theta = 0.3))
-        trypath.append(ParameterSet(theta = 0.4))
-        stage = len(trypath) - 2
-        y1, y2, y3, y4 = extract_state_elements(iq = iq, stage = stage, trypath = trypath)
+        trypath, y1, y2, y3, y4 = self.setup_trypath(iq = 1)
         self.assertEqual(y1, trypath[0].theta, msg = 'Expect [0]')
         self.assertEqual(y2, trypath[2].theta, msg = 'Expect [2]')
         self.assertEqual(y3, trypath[3].theta, msg = 'Expect [3]')
         self.assertEqual(y4, trypath[1].theta, msg = 'Expect [1]')
         
     def test_extract_state_elements_iq_eq_2(self):
-        iq = 2
-        trypath = []
-        trypath.append(ParameterSet(theta = 0.1))
-        trypath.append(ParameterSet(theta = 0.2))
-        trypath.append(ParameterSet(theta = 0.3))
-        trypath.append(ParameterSet(theta = 0.4))
-        stage = len(trypath) - 2
-        y1, y2, y3, y4 = extract_state_elements(iq = iq, stage = stage, trypath = trypath)
+        trypath, y1, y2, y3, y4 = self.setup_trypath(iq = 2)
         self.assertEqual(y1, trypath[0].theta, msg = 'Expect [0]')
         self.assertEqual(y2, trypath[3].theta, msg = 'Expect [3]')
         self.assertEqual(y3, trypath[3].theta, msg = 'Expect [3]')
@@ -156,8 +144,7 @@ class AlphaFunction(unittest.TestCase):
         
 # -------------------------------------------
 class RunDelayedRejection(unittest.TestCase):
-    @patch('pymcmcstat.samplers.DelayedRejection.acceptance_test', return_value = True)
-    def test_run_dr(self, mock_accept):
+    def setup_dr(self):
         model, options, parameters, data, covariance, __, __, __, __ = gf.setup_mcmc_case_dr()
         RDR = covariance._RDR
         invR = covariance._invR
@@ -168,20 +155,15 @@ class RunDelayedRejection(unittest.TestCase):
         DR = DelayedRejection()
         DR._initialize_dr_metrics(options = options)
         accept, out_set, outbound = DR.run_delayed_rejection(old_set = old_set, new_set = new_set, RDR = RDR, ntry = 2, parameters = parameters, invR = invR, sosobj = sosobj, priorobj = priorobj)
+        return accept, out_set, outbound
+    @patch('pymcmcstat.samplers.DelayedRejection.acceptance_test', return_value = True)
+    def test_run_dr(self, mock_accept):
+        accept, __, __ = self.setup_dr()
         self.assertTrue(accept, msg = 'Expect return True')
         
     @patch('pymcmcstat.samplers.DelayedRejection.is_sample_outside_bounds', return_value = True)
     def test_run_dr_outside(self, mock_outside):
-        model, options, parameters, data, covariance, __, __, __, __ = gf.setup_mcmc_case_dr()
-        RDR = covariance._RDR
-        invR = covariance._invR
-        old_set = ParameterSet(theta = np.random.rand(2), ss = np.array([10.2]), sigma2 = np.array([0.5]), prior = np.array([0.5]))
-        new_set = ParameterSet(theta = np.random.rand(2), ss = np.array([8.2]), sigma2 = np.array([0.5]), prior = np.array([0.5]))
-        priorobj = PriorFunction(priorfun = model.prior_function, mu = parameters._thetamu[parameters._parind[:]], sigma = parameters._thetasigma[parameters._parind[:]])
-        sosobj = SumOfSquares(model, data, parameters)
-        DR = DelayedRejection()
-        DR._initialize_dr_metrics(options = options)
-        accept, out_set, outbound = DR.run_delayed_rejection(old_set = old_set, new_set = new_set, RDR = RDR, ntry = 2, parameters = parameters, invR = invR, sosobj = sosobj, priorobj = priorobj)
+        accept, out_set, outbound = self.setup_dr()
         self.assertFalse(accept, msg = 'Expect return False')
         self.assertTrue(outbound, msg = 'Expect return True')
         self.assertIsInstance(out_set, ParameterSet, msg = 'Expect structure')

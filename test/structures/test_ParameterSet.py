@@ -16,6 +16,14 @@ import unittest
 # ParameterSet
 # --------------------------
 class Initialize_Parameter_Set(unittest.TestCase):
+    def standard_check(self, keys, x, PS):
+        PSD = PS.__dict__
+        for key in keys:
+            self.assertEqual(PSD[key], x, msg = str('Expected {} = {}'.format(key, x)))
+        for key in keys:
+            PSD = gf.removekey(PSD, key)
+        for (k,v) in PSD.items():
+            self.assertEqual(v, None, msg = str('Default {} is None'.format(k)))
 
     def test_PS_default_match(self):
         PS = ParameterSet()
@@ -25,62 +33,36 @@ class Initialize_Parameter_Set(unittest.TestCase):
 
     def test_PS_set_theta(self):
         x = 1.2
-        key = 'theta'
+        key = ['theta']
         PS = ParameterSet(theta = x)
-        PSD = PS.__dict__
-        self.assertEqual(PSD[key], x, msg = str('Expected {} = {}'.format(key, x)))
-        PSD = gf.removekey(PSD, key)
-        for (k,v) in PSD.items():
-            self.assertEqual(v, None, msg = str('Default {} is None'.format(k)))
-        
+        self.standard_check(key, x, PS)
+
     def test_PS_set_ss(self):
         x = 1.2
-        key = 'ss'
+        key = ['ss']
         PS = ParameterSet(ss = x)
-        PSD = PS.__dict__
-        self.assertEqual(PSD[key], x, msg = str('Expected {} = {}'.format(key, x)))
-        PSD = gf.removekey(PSD, key)
-        for (k,v) in PSD.items():
-            self.assertEqual(v, None, msg = str('Default {} is None'.format(k)))
+        self.standard_check(key, x, PS)
         
     def test_PS_set_prior(self):
         x = 1.2
-        key = 'prior'
+        key = ['prior']
         PS = ParameterSet(prior = x)
-        PSD = PS.__dict__
-        self.assertEqual(PSD[key], x, msg = str('Expected {} = {}'.format(key, x)))
-        PSD = gf.removekey(PSD, key)
-        for (k,v) in PSD.items():
-            self.assertEqual(v, None, msg = str('Default {} is None'.format(k)))
+        self.standard_check(key, x, PS)
             
     def test_PS_set_sigma2(self):
         x = 1.2
-        key = 'sigma2'
+        key = ['sigma2']
         PS = ParameterSet(sigma2 = x)
-        PSD = PS.__dict__
-        self.assertEqual(PSD[key], x, msg = str('Expected {} = {}'.format(key, x)))
-        PSD = gf.removekey(PSD, key)
-        for (k,v) in PSD.items():
-            self.assertEqual(v, None, msg = str('Default {} is None'.format(k)))
+        self.standard_check(key, x, PS)
             
     def test_PS_set_alpha(self):
         x = 1.2
-        key = 'alpha'
+        key = ['alpha']
         PS = ParameterSet(alpha = x)
-        PSD = PS.__dict__
-        self.assertEqual(PSD[key], x, msg = str('Expected {} = {}'.format(key, x)))
-        PSD = gf.removekey(PSD, key)
-        for (k,v) in PSD.items():
-            self.assertEqual(v, None, msg = str('Default {} is None'.format(k)))
+        self.standard_check(key, x, PS)
             
     def test_PS_set_theta_and_prior(self):
         x = 1.2
         keys = ['theta', 'prior']
         PS = ParameterSet(theta = x, prior = x)
-        PSD = PS.__dict__
-        for key in keys:
-            self.assertEqual(PSD[key], x, msg = str('Expected {} = {}'.format(key, x)))
-        for key in keys:
-            PSD = gf.removekey(PSD, key)
-        for (k,v) in PSD.items():
-            self.assertEqual(v, None, msg = str('Default {} is None'.format(k)))
+        self.standard_check(keys, x, PS)

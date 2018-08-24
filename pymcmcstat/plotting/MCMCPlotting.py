@@ -38,7 +38,7 @@ def plot_density_panel(chains, names = None, hist_on = False, figsizeinches = No
     for ii in range(nparam):
         # define chain
         chain = chains[:,ii].reshape(nsimu,1) # check indexing
-        
+
         # define x grid
         chain_grid = make_x_grid(chain)
         

@@ -36,7 +36,7 @@ class PredictionIntervals:
             * modelfunction: Model function handle
         '''
         # Analyze data structure
-        self.__ndatabatches, ncols = self._analyze_data_structure(data = data)
+        self.__ndatabatches, _ = self._analyze_data_structure(data = data)
 
         # setup data structure for prediction
         self.datapred = self._setup_data_structure_for_prediction(data = data, ndatabatches = self.__ndatabatches)
@@ -96,7 +96,7 @@ class PredictionIntervals:
             datapred.append(DataStructure())
             datapred[ii].add_data_set(x = data.xdata[ii], y = data.ydata[ii],
                          user_defined_object = data.user_defined_object[ii])
-            
+
         return datapred
     # --------------------------------------------
     def _assign_features_from_results_structure(self, results, burnin = 0):
