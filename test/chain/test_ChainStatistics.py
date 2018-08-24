@@ -24,7 +24,7 @@ class Chainstats_Eval(unittest.TestCase):
     def test_cs_eval_with_return(self):
         stats = CS.chainstats(chain = chain, returnstats = True)
         self.assertTrue(isinstance(stats,dict))
-        
+
     def test_cs_eval_with_no_return(self):
         stats = CS.chainstats(chain = chain, returnstats = False)
         self.assertEqual(stats, None)
@@ -85,7 +85,7 @@ class GelmanRubin(unittest.TestCase):
         chains = setup_chains()
         capturedOutput = io.StringIO()                  # Create StringIO object
         sys.stdout = capturedOutput                     #  and redirect stdout.
-        psrf = CS.gelman_rubin(chains = chains, display = False)
+        psrf = CS.gelman_rubin(chains = chains, display = True)
         sys.stdout = sys.__stdout__                     # Reset redirect.
         self.assertTrue(isinstance(capturedOutput.getvalue(), str), msg = 'Caputured string')
         self.standard_check(psrf)
