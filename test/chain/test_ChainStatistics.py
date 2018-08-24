@@ -67,7 +67,7 @@ class PowerSpectralDensity(unittest.TestCase):
         self.assertEqual(n2, len(y))
         
 # --------------------------
-def setup_chains(self):
+def setup_chains():
     chains = []
     for ii in range(4):
         chains.append(np.concatenate((ii*np.linspace(0, 1, 1000).reshape(1000,1), ii*np.linspace(2.5, 3.3, 1000).reshape(1000,1)), axis = 1))
