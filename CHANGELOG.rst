@@ -1,7 +1,7 @@
 Changelog
 =========
 
-v1.6.0 ()
+v1.6.0 (August 31, 2018)
 ----------------------
 - Added optimal handling of prior function used numpy array multiplication.
 - Fixed bug with saving results to json file - output directory now automatically made.
