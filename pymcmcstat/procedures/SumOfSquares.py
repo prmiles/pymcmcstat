@@ -30,7 +30,7 @@ class SumOfSquares:
             sos_style = 4
         else:
             sos_style = 1
-        
+
         self.sos_function = model.sos_function
         self.sos_style = sos_style
         self.model_function = model.model_function
@@ -88,7 +88,7 @@ class SumOfSquares:
             * **theta** (:class:`~numpy.ndarray`): Parameter values.
 
         Returns:
-            * **ss** (:class:`~numpy.ndarray`): Sum-of-squares error(s)           
+            * **ss** (:class:`~numpy.ndarray`): Sum-of-squares error(s)
         '''
         # initialize
         ss = np.zeros(nbatch)

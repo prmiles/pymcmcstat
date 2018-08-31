@@ -16,17 +16,9 @@ import shutil
 import io
 import sys
 
-def setup_case():
-    mcstat = gf.basic_mcmc()
-    mcstat._MCMC__chain = np.random.random_sample(size = (100,2))
-    mcstat._MCMC__sschain = np.random.random_sample(size = (100,2))
-    mcstat._MCMC__s2chain = np.random.random_sample(size = (100,2))
-    mcstat._covariance._R = np.array([[0.5, 0.2],[0., 0.3]])
-    return mcstat
-
 # --------------------------
 class CreatePathWithExtensionforAllLogs(unittest.TestCase):
-    
+
     def test_cpwe_creation_with_h5(self):
         mcstat = gf.setup_mcmc_case_cp()
         mcstat.simulation_options.savedir = 'test'
@@ -35,7 +27,7 @@ class CreatePathWithExtensionforAllLogs(unittest.TestCase):
         self.assertEqual(s2chainfile, 'test/s2chainfile.h5', msg = 'Expect matching string')
         self.assertEqual(sschainfile, 'test/sschainfile.h5', msg = 'Expect matching string')
         self.assertEqual(covchainfile, 'test/covchainfile.h5', msg = 'Expect matching string')
-        
+
     def test_cpwe_creation_with_txt(self):
         mcstat = gf.setup_mcmc_case_cp()
         mcstat.simulation_options.savedir = 'test'
@@ -44,7 +36,7 @@ class CreatePathWithExtensionforAllLogs(unittest.TestCase):
         self.assertEqual(s2chainfile, 'test/s2chainfile.txt', msg = 'Expect matching string')
         self.assertEqual(sschainfile, 'test/sschainfile.txt', msg = 'Expect matching string')
         self.assertEqual(covchainfile, 'test/covchainfile.txt', msg = 'Expect matching string')
-        
+
 # --------------------------
 class CreatePathWithExtension(unittest.TestCase):
     def test_cpwe_basic_h5(self):
@@ -123,91 +115,76 @@ class AddToLog(unittest.TestCase):
         self.assertEqual(loadstr, 'hello world', msg = 'Message should match')
         os.remove(tmpfile)
 # -------------------
-class ReadInSavedirFiles(unittest.TestCase):
-    
-    def test_read_in_savedir_files_h5(self):
-        mcstat = setup_case()
-        savedir = gf.generate_temp_folder()
-        mcstat.simulation_options.savedir = savedir
-        
-        mcstat._MCMC__save_chains_to_bin(start = 0, end = 100)
-        
-        out = CP.read_in_savedir_files(savedir, extension = 'h5')
+class StandardCheck(unittest.TestCase):
+    def __init__(self, out, mcstat):
         self.assertTrue(np.array_equal(out['chain'], mcstat._MCMC__chain), msg = str('Expect arrays to match: chain'))
         self.assertTrue(np.array_equal(out['sschain'], mcstat._MCMC__sschain), msg = str('Expect arrays to match: sschain'))
         self.assertTrue(np.array_equal(out['s2chain'], mcstat._MCMC__s2chain), msg = str('Expect arrays to match: s2chain'))
         self.assertTrue(np.array_equal(out['covchain'], np.dot(mcstat._covariance._R.transpose(),mcstat._covariance._R)), msg = str('Expect arrays to match: chain'))
+
+# -------------------
+class ReadInSavedirFiles(unittest.TestCase):
+    def test_read_in_savedir_files_h5(self):
+        mcstat = gf.setup_case()
+        savedir = gf.generate_temp_folder()
+        mcstat.simulation_options.savedir = savedir
+        mcstat._MCMC__save_chains_to_bin(start = 0, end = 100)
+        out = CP.read_in_savedir_files(savedir, extension = 'h5')
+        StandardCheck(out, mcstat)
         shutil.rmtree(savedir)
         
     def test_read_in_savedir_files_txt(self):
-        mcstat = setup_case()
+        mcstat = gf.setup_case()
         savedir = gf.generate_temp_folder()
         mcstat.simulation_options.savedir = savedir
-        
         mcstat._MCMC__save_chains_to_txt(start = 0, end = 100)
-        
         out = CP.read_in_savedir_files(savedir, extension = 'txt')
-        self.assertTrue(np.array_equal(out['chain'], mcstat._MCMC__chain), msg = str('Expect arrays to match: chain'))
-        self.assertTrue(np.array_equal(out['sschain'], mcstat._MCMC__sschain), msg = str('Expect arrays to match: sschain'))
-        self.assertTrue(np.array_equal(out['s2chain'], mcstat._MCMC__s2chain), msg = str('Expect arrays to match: s2chain'))
-        self.assertTrue(np.array_equal(out['covchain'], np.dot(mcstat._covariance._R.transpose(),mcstat._covariance._R)), msg = str('Expect arrays to match: chain'))
+        StandardCheck(out, mcstat)
         shutil.rmtree(savedir)
         
     def test_read_in_savedir_files_unknown(self):
-        mcstat = setup_case()
+        mcstat = gf.setup_case()
         savedir = gf.generate_temp_folder()
         mcstat.simulation_options.savedir = savedir
-        
         mcstat._MCMC__save_chains_to_txt(start = 0, end = 100)
-        
         out = CP.read_in_savedir_files(savedir, extension = 'unknown')
         self.assertEqual(out, None, msg = 'Expect None')
         shutil.rmtree(savedir)
 
 # -------------------
-class ReadInParallelSavedirFiles(unittest.TestCase):
-    def chain_comp(self, out, mcstat):
-        self.assertTrue(np.array_equal(out['chain'], mcstat._MCMC__chain), msg = str('Expect arrays to match: chain'))
-        self.assertTrue(np.array_equal(out['sschain'], mcstat._MCMC__sschain), msg = str('Expect arrays to match: sschain'))
-        self.assertTrue(np.array_equal(out['s2chain'], mcstat._MCMC__s2chain), msg = str('Expect arrays to match: s2chain'))
-        self.assertTrue(np.array_equal(out['covchain'], np.dot(mcstat._covariance._R.transpose(),mcstat._covariance._R)), msg = str('Expect arrays to match: chain'))
-
-    def test_read_in_parallel_bin(self):
-        mcstat = setup_case()
-        parallel_dir = gf.generate_temp_folder()
-        for ii in range(3):
-            chain_dir = str('chain_{}'.format(ii))
-            mcstat.simulation_options.savedir = str('{}{}{}'.format(parallel_dir,os.sep,chain_dir))
+def setup_problem(parallel_dir, case = 'binary'):
+    mcstat = gf.setup_case()
+    parallel_dir = gf.generate_temp_folder()
+    for ii in range(3):
+        chain_dir = str('chain_{}'.format(ii))
+        mcstat.simulation_options.savedir = str('{}{}{}'.format(parallel_dir,os.sep,chain_dir))
+        if case is 'binary':
             mcstat._MCMC__save_chains_to_bin(start = 0, end = 100)
-        
+        else:
+            mcstat._MCMC__save_chains_to_txt(start = 0, end = 100)
+    return mcstat
+class ReadInParallelSavedirFiles(unittest.TestCase):
+    def test_read_in_parallel_bin(self):
+        parallel_dir = gf.generate_temp_folder()
+        mcstat = setup_problem(parallel_dir, case = 'binary')
         out = CP.read_in_parallel_savedir_files(parallel_dir = parallel_dir, extension = 'h5')
-        self.chain_comp(out[0], mcstat)
-        self.chain_comp(out[1], mcstat)
-        self.chain_comp(out[2], mcstat)
+        StandardCheck(out[0], mcstat)
+        StandardCheck(out[1], mcstat)
+        StandardCheck(out[2], mcstat)
         shutil.rmtree(parallel_dir)
         
     def test_read_in_parallel_txt(self):
-        mcstat = setup_case()
         parallel_dir = gf.generate_temp_folder()
-        for ii in range(3):
-            chain_dir = str('chain_{}'.format(ii))
-            mcstat.simulation_options.savedir = str('{}{}{}'.format(parallel_dir,os.sep,chain_dir))
-            mcstat._MCMC__save_chains_to_txt(start = 0, end = 100)
-        
+        mcstat = setup_problem(parallel_dir, case = 'text')
         out = CP.read_in_parallel_savedir_files(parallel_dir = parallel_dir, extension = 'txt')
-        self.chain_comp(out[0], mcstat)
-        self.chain_comp(out[1], mcstat)
-        self.chain_comp(out[2], mcstat)
+        StandardCheck(out[0], mcstat)
+        StandardCheck(out[1], mcstat)
+        StandardCheck(out[2], mcstat)
         shutil.rmtree(parallel_dir)
         
     def test_read_in_parallel_unknown(self):
-        mcstat = setup_case()
         parallel_dir = gf.generate_temp_folder()
-        for ii in range(3):
-            chain_dir = str('chain_{}'.format(ii))
-            mcstat.simulation_options.savedir = str('{}{}{}'.format(parallel_dir,os.sep,chain_dir))
-            mcstat._MCMC__save_chains_to_bin(start = 0, end = 100)
-        
+        setup_problem(parallel_dir, case = 'binary')
         out = CP.read_in_parallel_savedir_files(parallel_dir = parallel_dir, extension = 'unknown')
         self.assertEqual(out[0], None)
         self.assertEqual(out[1], None)
@@ -216,7 +193,7 @@ class ReadInParallelSavedirFiles(unittest.TestCase):
 # -------------------
 class PrintLogFiles(unittest.TestCase):
     def test_print_log_files(self):
-        mcstat = setup_case()
+        mcstat = gf.setup_case()
         savedir = gf.generate_temp_folder()
         mcstat.simulation_options.savedir = savedir
         

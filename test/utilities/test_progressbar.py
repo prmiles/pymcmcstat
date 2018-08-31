@@ -19,7 +19,7 @@ class InitializeProgress_Bar(unittest.TestCase):
     def test_PB_iteration_assignment(self):
         PB = pbar.progress_bar(iters = 100)
         self.assertEqual(PB.iterations, 100, msg = 'Iteration assignment should be 100')
-        
+
     def test_PB_animation_interval(self):
         PB = pbar.progress_bar(iters = 100)
         self.assertEqual(PB.animation_interval, 0.5, msg = 'Animation interval should be 0.5')

@@ -84,7 +84,6 @@ class SimulationOptions:
             For the log file names :code:`chainfile, sschainfile, s2chainfile` and :code:`covchainfile` do not include the extension.
             By specifying whether to save to text or to binary, the appropriate extension will be added.
         '''
-        
         method_dictionary = {
             'mh': {'adaptint': 0, 'ntry': 1, 'doram': 0, 'adascale': adascale},
             'am': {'adaptint': 100, 'ntry': 1, 'doram': 0, 'adascale': adascale},
@@ -92,7 +91,7 @@ class SimulationOptions:
             'dram': {'adaptint': 100, 'ntry': 2, 'doram': 0, 'adascale': adascale},
             'ram': {'adaptint': 1, 'ntry': 1, 'doram': 1, 'adascale': 1.},
             }
-        
+
         # define items from dictionary
         if adaptint is None:
             self.adaptint = method_dictionary[method]['adaptint']  # update interval for adaptation

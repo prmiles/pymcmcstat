@@ -43,7 +43,7 @@ def chainstats(chain = None, results = None, returnstats = False):
         for ii in range(npar):
             meanii.append(np.mean(chain[:,ii]))
             stdii.append(np.std(chain[:,ii]))
-            
+
         # calculate batch mean standard deviation
         bmstd = batch_mean_standard_deviation(chain)
         mcerr = bmstd/np.sqrt(nsimu)
@@ -396,9 +396,9 @@ def display_gelman_rubin(psrf):
     Args:
         * **psrf** (:class:`dict`): Results from GR diagnostic
     '''
-    for ii, ps in enumerate(psrf):
+    for _, ps in enumerate(psrf):
         print('Parameter: {}'.format(ps))
-        for jj, k in enumerate(psrf[ps].keys()):
+        for _, k in enumerate(psrf[ps].keys()):
             print('  {} = {}'.format(k, psrf[ps][k]))
 # ----------------------------------------------------
 def get_parameter_names(nparam, results):

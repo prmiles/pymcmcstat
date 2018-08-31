@@ -18,7 +18,7 @@ class ResultsStructure:
     Results from MCMC simulation.
 
     **Description:** Class used to organize results of MCMC simulation.
-    
+
     Attributes:
         * :meth:`~export_simulation_results_to_json_file`
         * :meth:`~determine_filename`

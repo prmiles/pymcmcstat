@@ -17,7 +17,7 @@ class InitializeCP(unittest.TestCase):
     def test_init_CP(self):
         CP = CovarianceProcedures()
         self.assertTrue(hasattr(CP, 'description'))
-        
+
 # --------------------------
 class UpdateCovarianceFromAdaptation(unittest.TestCase):
 
@@ -49,7 +49,7 @@ class UpdateCovarianceFromAdaptation(unittest.TestCase):
 class UpdateCovarianceFromDelayedRejection(unittest.TestCase):
 
     def test_update_cov(self):
-        __, options, parameters, data = gf.setup_mcmc()
+        __, options, parameters, __ = gf.setup_mcmc()
         CP = CovarianceProcedures()
         CP._initialize_covariance_settings(parameters = parameters, options = options)
         
@@ -68,7 +68,7 @@ class UpdateCovarianceFromDelayedRejection(unittest.TestCase):
 class UpdateCovarianceSettings(unittest.TestCase):
 
     def test_update_cov_wsum_none(self):
-        model, options, parameters, data = gf.setup_mcmc()
+        __, options, parameters, data = gf.setup_mcmc()
         CP = CovarianceProcedures()
         CP._initialize_covariance_settings(parameters = parameters, options = options)
         

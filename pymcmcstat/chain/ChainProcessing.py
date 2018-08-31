@@ -18,7 +18,7 @@ def print_log_files(savedir):
 
     Args:
         * **savedir** (:py:class:`str`): Directory where log files are saved.
-        
+
     The output display will include a date/time stamp, as well as indices of
     the chain that were saved during that export sequence.
     
@@ -270,13 +270,13 @@ def generate_combined_chain_with_index(pres, burnin_percentage = 50):
         * (:class:`~numpy.ndarray`, :py:class:`list`): Combined chain array, index label
     '''
     index = []
-    for ii in range(len(pres)):
-        burnin = int(pres[ii]['nsimu']*burnin_percentage/100)
+    for ii, pr in enumerate(pres):
+        burnin = int(pr['nsimu']*burnin_percentage/100)
         if ii == 0:
-            combined_chain = pres[ii]['chain'][burnin:,:]
+            combined_chain = pr['chain'][burnin:,:]
         else:
-            combined_chain = np.concatenate((combined_chain, pres[ii]['chain'][burnin:,:]))
-        for jj in range(pres[ii]['chain'][burnin:,:].shape[0]):
+            combined_chain = np.concatenate((combined_chain, pr['chain'][burnin:,:]))
+        for jj in range(pr['chain'][burnin:,:].shape[0]):
             index.append(str('Chain {}'.format(ii)))
             
     return combined_chain, index

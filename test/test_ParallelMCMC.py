@@ -36,7 +36,7 @@ class CheckOptionsOutput(unittest.TestCase):
         options = check_options_output(options = mcstat.simulation_options)
         self.assertTrue(options.save_to_bin, msg = 'Expect True')
         self.assertTrue(options.save_to_txt, msg = 'Expect True')
-        
+
     def test_check_options_output_with_bin_false(self):
         mcstat = gf.basic_mcmc()
         mcstat.simulation_options.save_to_bin = False
@@ -44,7 +44,7 @@ class CheckOptionsOutput(unittest.TestCase):
         options = check_options_output(options = mcstat.simulation_options)
         self.assertFalse(options.save_to_bin, msg = 'Expect False')
         self.assertTrue(options.save_to_txt, msg = 'Expect True')
-        
+
     def test_check_options_output_with_txt_false(self):
         mcstat = gf.basic_mcmc()
         mcstat.simulation_options.save_to_bin = True
@@ -52,7 +52,7 @@ class CheckOptionsOutput(unittest.TestCase):
         options = check_options_output(options = mcstat.simulation_options)
         self.assertTrue(options.save_to_bin, msg = 'Expect True')
         self.assertFalse(options.save_to_txt, msg = 'Expect False')
-        
+
     def test_check_options_output_with_both_false(self):
         mcstat = gf.basic_mcmc()
         mcstat.simulation_options.save_to_bin = False
@@ -60,7 +60,7 @@ class CheckOptionsOutput(unittest.TestCase):
         options = check_options_output(options = mcstat.simulation_options)
         self.assertTrue(options.save_to_bin, msg = 'Expect True')
         self.assertFalse(options.save_to_txt, msg = 'Expect False')
-        
+
 # -------------------------
 class CheckDirectory(unittest.TestCase):
     def test_check_directory(self):
@@ -87,14 +87,14 @@ class AssignNumberOfCores(unittest.TestCase):
     def test_assign_number_of_cores(self, mock_cpu_count):
         for nc in range(4):
             num_cores = assign_number_of_cores(num_cores = nc)
-            self.assertEqual(num_cores, nc, msg = str('Expect num_cores = {}'.format(nc))) 
-            
+            self.assertEqual(num_cores, nc, msg = str('Expect num_cores = {}'.format(nc)))
+
     @patch('pymcmcstat.ParallelMCMC.cpu_count', return_value = 2)
     def test_assign_number_of_cores_gte_cpu_count(self, mock_cpu_count):
         for nc in range(2, 4):
             num_cores = assign_number_of_cores(num_cores = nc)
-            self.assertEqual(num_cores, 2, msg = str('Expect num_cores = {}'.format(2))) 
-            
+            self.assertEqual(num_cores, 2, msg = str('Expect num_cores = {}'.format(2)))
+
 # -------------------------
 class CheckShapeOfUsersInitialValues(unittest.TestCase):
     def test_check_shape_of_uiv(self):

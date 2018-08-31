@@ -19,38 +19,28 @@ import numpy as np
 
 # --------------------------
 class Add_Model_Parameter_Test(unittest.TestCase):
+    def standard_check(self, theta0 = 1.0, name = '$p_{0}$'):
+        MP = ModelParameters()
+        MP.add_model_parameter(name = name, theta0 = theta0)
+        self.assertEqual(MP.parameters[0]['theta0'], theta0)
+        self.assertEqual(MP.parameters[0]['name'], name)
+        self.assertEqual(MP.parameters[0]['minimum'], -np.inf)
+        self.assertEqual(MP.parameters[0]['maximum'], np.inf)
+        self.assertEqual(MP.parameters[0]['prior_mu'],np.zeros([1]))
+        self.assertEqual(MP.parameters[0]['prior_sigma'],np.inf)
+        self.assertEqual(MP.parameters[0]['sample'],1)
+        self.assertEqual(MP.parameters[0]['local'],0)
 
     def test_does_parameter_assignment_match(self):
-        MP = ModelParameters()
-        theta0 = 0
-        MP.add_model_parameter('aa', theta0)
-        self.assertEqual(MP.parameters[0]['theta0'], theta0)
-        self.assertEqual(MP.parameters[0]['name'],'aa')
-        self.assertEqual(MP.parameters[0]['minimum'], -np.inf)
-        self.assertEqual(MP.parameters[0]['maximum'], np.inf)
-        self.assertEqual(MP.parameters[0]['prior_mu'],np.zeros([1]))
-        self.assertEqual(MP.parameters[0]['prior_sigma'],np.inf)
-        self.assertEqual(MP.parameters[0]['sample'],1)
-        self.assertEqual(MP.parameters[0]['local'],0)
+        self.standard_check(0, ['aa'])
 
     def test_does_parameter_assignment_match_with_no_name_or_initial_value(self):
-        MP = ModelParameters()
-        MP.add_model_parameter(name = None, theta0 = None)
-        self.assertEqual(MP.parameters[0]['theta0'], 1.0)
-        self.assertEqual(MP.parameters[0]['name'],'$p_{0}$')
-        self.assertEqual(MP.parameters[0]['minimum'], -np.inf)
-        self.assertEqual(MP.parameters[0]['maximum'], np.inf)
-        self.assertEqual(MP.parameters[0]['prior_mu'],np.zeros([1]))
-        self.assertEqual(MP.parameters[0]['prior_sigma'],np.inf)
-        self.assertEqual(MP.parameters[0]['sample'],1)
-        self.assertEqual(MP.parameters[0]['local'],0)
+        self.standard_check()
 
     def test_results_to_params(self):
         MP = ModelParameters()
         MP.add_model_parameter('aa', 0)
         MP._openparameterstructure(nbatch=1)
-#        print('parind = {}'.format(MP._parind))
-#        print('local = {}'.format(MP._local))
          # define minimal results dictionary
         results = {'parind': MP._parind, 'names': MP._names, 'local': MP._local, 'theta': [1.2]}
         # initialize default options
@@ -61,7 +51,7 @@ class Add_Model_Parameter_Test(unittest.TestCase):
         MP._openparameterstructure(nbatch=1)
         MP.display_parameter_settings(verbosity = SO.verbosity, no_adapt = MP._no_adapt)
         self.assertEqual(MP.parameters[0]['theta0'], results['theta'][0])
-                
+
 # --------------------------
 MP = ModelParameters()
 class LessThanOrEqualToZero(unittest.TestCase):
@@ -127,11 +117,10 @@ class PriorDisplaySetting(unittest.TestCase):
     
     def test_x_is_inf(self):
         self.assertEqual(prior_display_setting(x = np.inf), '', msg = 'Blank string if infinity.')
-        
     def test_x_is_not_inf(self):
         self.assertEqual(prior_display_setting(x = 2.0), '^2', msg = 'Raised to the second power if not infinity.')
-        
-# --------------------------        
+
+# --------------------------
 class CheckNoadaptind(unittest.TestCase):
     
     def test_noadaptind_is_none(self):

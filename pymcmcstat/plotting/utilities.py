@@ -70,7 +70,7 @@ def setup_plot_features(nparam, names, figsizeinches):
     ns1, ns2 = generate_subplot_grid(nparam = nparam)
 
     names = generate_names(nparam = nparam, names = names)
-    
+
     if figsizeinches is None:
         figsizeinches = [5,4]
         

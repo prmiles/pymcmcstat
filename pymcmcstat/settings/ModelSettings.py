@@ -44,7 +44,6 @@ class ModelSettings:
 
         .. note:: Variables :code:`sigma2, N, S20, N0`, and :code:`nbatch` converted to :class:`~numpy.ndarray` for subsequent processing.
         '''
-    
         self.sos_function = sos_function
         self.prior_function = prior_function
         self.prior_type = prior_type
