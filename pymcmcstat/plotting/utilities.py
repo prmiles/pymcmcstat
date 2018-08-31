@@ -70,7 +70,7 @@ def setup_plot_features(nparam, names, figsizeinches):
     ns1, ns2 = generate_subplot_grid(nparam = nparam)
 
     names = generate_names(nparam = nparam, names = names)
-    
+
     if figsizeinches is None:
         figsizeinches = [5,4]
         
@@ -361,19 +361,37 @@ def empirical_quantiles(x, p = np.array([0.25, 0.5, 0.75])):
     
     return interpfun(itpoints)
 
-# --------------------------------------------    
-def check_defaults(kwargs, defaults):
+def check_settings(default_settings, user_settings = None):
     '''
-    Check if defaults are defined in kwargs
+    Check user settings with default.
+    
+    Recursively checks elements of user settings against the defaults and updates settings
+    as it goes.  If a user setting does not exist in the default, then the user setting
+    is added to the settings.  If the setting is defined in both the user and default
+    settings, then the user setting overrides the default.  Otherwise, the default
+    settings persist.
     
     Args:
-        * **kwargs** (:py:class:`dict`): Keyword arguments.
-        * **defaults** (:py:class:`dict`): Default settings.
-
+        * **default_settings** (:py:class:`dict`): Default settings for particular method.
+        * **user_settings** (:py:class:`dict`): User defined settings.
+    
     Returns:
-        * **kwargs** (:py:class:`dict`): Updated keyword arguments with at least defaults set.
+        * (:py:class:`dict`): Updated settings.
     '''
-    for ii in defaults:
-        if ii not in kwargs:
-            kwargs[ii] = defaults[ii]
-    return kwargs
+    settings = default_settings.copy() # initially define settings as default
+    
+    options = list(default_settings.keys()) # get default settings
+    if user_settings is None: # convert to empty dict
+        user_settings = {}
+    user_options = list(user_settings.keys()) # get user settings
+    for uo in user_options: # iterate through settings
+        if uo in options:
+            # check if checking a dictionary
+            if isinstance(settings[uo], dict):
+                settings[uo] = check_settings(settings[uo], user_settings[uo])
+            else:
+                settings[uo] = user_settings[uo]
+        if uo not in options:
+            settings[uo] = user_settings[uo]
+            
+    return settings

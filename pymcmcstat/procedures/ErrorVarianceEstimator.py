@@ -36,7 +36,9 @@ class ErrorVarianceEstimator:
             \\sigma^2|(\\nu, q) \sim \\text{Inv-Gamma}\\Big(\\frac{N_s + N}{2}, \\frac{N_s\\sigma_{s}^2+ SS_q}{2}\\Big)
 
         where :math:`N_s` and :math:`\\sigma_{s}^2` are shape and scaling parameters,
-        :math:`N` is the number of observations, and :math:`SS_q` is the sum-of-squares error.
+        :math:`N` is the number of observations, and :math:`SS_q` is the sum-of-squares error.  For more details
+        regarding the interpretation of :math:`N_s` and :math:`\\sigma_{s}^2`, please refer to
+        :cite:`smith2013uncertainty` page 163.
 
         .. note::
 
@@ -52,7 +54,7 @@ class ErrorVarianceEstimator:
         N = model.N
         sigma2 = model.sigma2 # initializes it as array
         nsos = len(sos)
-        
+
         for jj in range(0,nsos):
             sigma2[jj] = (self.gammar(1, 1, 0.5*(N0[jj]+N[jj]),
                           2*((N0[jj]*S20[jj]+sos[jj])**(-1))))**(-1)

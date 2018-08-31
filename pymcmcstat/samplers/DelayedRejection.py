@@ -19,7 +19,7 @@ class DelayedRejection:
     Attributes:
         * :meth:`~run_delayed_rejection`
         * :meth:`~initialize_next_metropolis_step`
-        * :meth:`~alphafun`        
+        * :meth:`~alphafun`
     '''
     # -------------------------------------------
     def run_delayed_rejection(self, old_set, new_set, RDR, ntry, parameters, invR, sosobj, priorobj):
@@ -57,11 +57,11 @@ class DelayedRejection:
                 trypath.append(next_set)
                 out_set = old_set
                 continue # return to beginning of while loop
-                    
+
             # Evaluate new proposals
             outbound = 0
             next_set.ss = sosobj.evaluate_sos_function(next_set.theta)
-            next_set.prior = priorobj.evaluate_prior(next_set.theta)
+            next_set.prior = priorobj.evaluate_prior(theta = next_set.theta)
             trypath.append(next_set) # add set to trypath
             alpha = self.alphafun(trypath, invR)
             trypath[-1].alpha = alpha # add propability ratio

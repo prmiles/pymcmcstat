@@ -34,7 +34,7 @@ class Data_Structure_Initialization(unittest.TestCase):
     def test_does_initialization_yield_udobj(self):
         data = DataStructure.DataStructure()
         self.assertTrue(hasattr(data,'user_defined_object'))
-        
+
 # --------------------------
 # adding data
 # --------------------------
@@ -161,50 +161,41 @@ class Get_Number_Of_Batches(unittest.TestCase):
 # get_number_of_data_sets
 # --------------------------
 class Get_Number_Of_Data_Sets(unittest.TestCase):
-    def test_does_single_data_set_match(self):
+    def setup_data_set(self, xsh = [2], ysh = [2], nsets = 1):
         data = DataStructure.DataStructure()
-        x = np.zeros([2])
-        y = np.zeros([2])
-        data.add_data_set(x,y)
+        x = np.zeros(xsh)
+        y = np.zeros(ysh)
+        for _ in range(nsets):
+            data.add_data_set(x,y)
         data.get_number_of_data_sets()
+        return data
+    def add_data_set(self, data, xsh = [2], ysh = [2], nsets = 1):
+        x = np.zeros(xsh)
+        y = np.zeros(ysh)
+        for _ in range(nsets):
+            data.add_data_set(x,y)
+        data.get_number_of_data_sets()
+        return data
+    def test_does_single_data_set_match(self):
+        data = self.setup_data_set()
         self.assertEqual(data.ndatasets, 1, msg = 'ndatasets should match total number of columns of elements of ydata')
         
     def test_does_double_data_set_match(self):
-        data = DataStructure.DataStructure()
-        x = np.zeros([2])
-        y = np.zeros([2])
-        data.add_data_set(x,y)
-        data.add_data_set(x,y)
-        data.get_number_of_data_sets()
+        data = self.setup_data_set(nsets = 2)
         self.assertEqual(data.ndatasets, 2, msg = 'ndatasets should match total number of columns of elements of ydata')
         
     def test_does_double_data_set_match_with_2d_sets(self):
-        data = DataStructure.DataStructure()
-        x = np.zeros([2])
-        y = np.zeros([2,2])
-        data.add_data_set(x,y)
-        data.add_data_set(x,y)
-        data.get_number_of_data_sets()
+        data = self.setup_data_set(ysh = [2,2], nsets = 2)
         self.assertEqual(data.ndatasets, 4, msg = 'ndatasets should match total number of columns of elements of ydata')
      
     def test_does_double_data_set_match_with_2d_sets_of_different_size(self):
-        data = DataStructure.DataStructure()
-        x = np.zeros([2])
-        y = np.zeros([2,2])
-        data.add_data_set(x,y)
-        y = np.zeros([3,4])
-        data.add_data_set(x,y)
-        data.get_number_of_data_sets()
+        data = self.setup_data_set(ysh = [2,2])
+        data = self.add_data_set(data, ysh = [3,4])
         self.assertEqual(data.ndatasets, 6, msg = 'ndatasets should match total number of columns of elements of ydata')
      
     def test_does_double_data_set_match_with_different_sizes(self):
-        data = DataStructure.DataStructure()
-        x = np.zeros([2])
-        y = np.zeros([2])
-        data.add_data_set(x,y)
-        y = np.zeros([2,2])
-        data.add_data_set(x,y)
-        data.get_number_of_data_sets()
+        data = self.setup_data_set(ysh = [2])
+        data = self.add_data_set(data, ysh = [2,2])
         self.assertEqual(data.ndatasets, 3, msg = 'ndatasets should match total number of columns of elements of ydata')
         
         

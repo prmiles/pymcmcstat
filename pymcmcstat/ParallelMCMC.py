@@ -8,6 +8,7 @@ Created on Tue May  1 15:58:22 2018
 
 from .MCMC import MCMC
 from .chain import ChainStatistics as CS
+from .chain import ChainProcessing as CP
 from .samplers.utilities import is_sample_outside_bounds
 from multiprocessing import Pool, cpu_count
 import numpy as np
@@ -31,7 +32,7 @@ class ParallelMCMC:
     def setup_parallel_simulation(self, mcset, initial_values = None, num_cores = 1, num_chain = 1):
         '''
         Setup simulation to run in parallel.
-        
+
         Settings defined in `mcset` object will be copied into different instances in
         order to run parallel chains.
         
@@ -70,6 +71,8 @@ class ParallelMCMC:
             self.parmc[ii].simulation_options = copy.deepcopy(options)
             chain_dir = str('chain_{}'.format(ii))
             self.parmc[ii].simulation_options.savedir = str('{}{}{}'.format(self.__parallel_dir,os.sep,chain_dir))
+            self.parmc[ii].simulation_options.results_filename = str('{}.json'.format(chain_dir))
+            self.parmc[ii].simulation_options.json_restart_file = check_for_restart_file(options.json_restart_file, chain_dir)
             # replicate parameter settings and assign distributed initial values
             self.parmc[ii].parameters = copy.deepcopy(parameters)
             for jj in range(npar):
@@ -281,7 +284,7 @@ def check_options_output(options):
     Returns:
         * **options** (:class:`.SimulationOptions`): MCMC simulation options with at least binary save flag set to True.
     '''
-    if options.save_to_txt == False and options.save_to_bin == False:
+    if options.save_to_txt == False and options.save_to_bin == False and options.save_to_json == False:
         options.save_to_bin = True
     return options
 
@@ -327,3 +330,40 @@ def assign_number_of_cores(num_cores = 1):
         return tmp
     else:
         return num_cores
+    
+# -------------------------
+def load_parallel_simulation_results(savedir):
+    '''
+    Load results from parallel simulation directory json files.
+    
+    Lists in json files are converted to numpy arrays.
+    
+    Args:
+        * **savedir** (:py:class:`str`): String indicated path to parallel directory.
+    
+    Returns:
+        * **pres** (:py:class:`list`): Each element of list is an MCMC result dictionary.
+    '''
+    pres = CP.read_in_parallel_json_results_files(savedir)
+    for ii, pr in enumerate(pres):
+        for key in pr.keys():
+            if isinstance(pres[ii][key], list):
+                pres[ii][key] = np.array(pres[ii][key])
+    return pres
+# -------------------------
+def check_for_restart_file(json_restart_file, chain_dir):
+    '''
+    Check if restart directory was specified.
+    
+    Args:
+        * **json_restart_file** (:py:class:`str`): String specifying path to results directory.
+        * **chain_dir** (:py:class:`str`): String specifying which chain is being restarted.
+    '''
+    if json_restart_file is not None:
+        json_restart_file = str('{}{}{}{}{}.json'.format(json_restart_file,os.sep,chain_dir,os.sep,chain_dir))
+        if os.path.exists(json_restart_file):
+            return json_restart_file
+        else:
+            return None
+    else:
+        return None

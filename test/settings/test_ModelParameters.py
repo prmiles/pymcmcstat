@@ -19,49 +19,39 @@ import numpy as np
 
 # --------------------------
 class Add_Model_Parameter_Test(unittest.TestCase):
+    def standard_check(self, theta0 = 1.0, name = '$p_{0}$'):
+        MP = ModelParameters()
+        MP.add_model_parameter(name = name, theta0 = theta0)
+        self.assertEqual(MP.parameters[0]['theta0'], theta0)
+        self.assertEqual(MP.parameters[0]['name'], name)
+        self.assertEqual(MP.parameters[0]['minimum'], -np.inf)
+        self.assertEqual(MP.parameters[0]['maximum'], np.inf)
+        self.assertEqual(MP.parameters[0]['prior_mu'],np.zeros([1]))
+        self.assertEqual(MP.parameters[0]['prior_sigma'],np.inf)
+        self.assertEqual(MP.parameters[0]['sample'],1)
+        self.assertEqual(MP.parameters[0]['local'],0)
 
     def test_does_parameter_assignment_match(self):
-        MP = ModelParameters()
-        theta0 = 0
-        MP.add_model_parameter('aa', theta0)
-        self.assertEqual(MP.parameters[0]['theta0'], theta0)
-        self.assertEqual(MP.parameters[0]['name'],'aa')
-        self.assertEqual(MP.parameters[0]['minimum'], -np.inf)
-        self.assertEqual(MP.parameters[0]['maximum'], np.inf)
-        self.assertEqual(MP.parameters[0]['prior_mu'],np.zeros([1]))
-        self.assertEqual(MP.parameters[0]['prior_sigma'],np.inf)
-        self.assertEqual(MP.parameters[0]['sample'],1)
-        self.assertEqual(MP.parameters[0]['local'],0)
+        self.standard_check(0, ['aa'])
 
     def test_does_parameter_assignment_match_with_no_name_or_initial_value(self):
-        MP = ModelParameters()
-        MP.add_model_parameter(name = None, theta0 = None)
-        self.assertEqual(MP.parameters[0]['theta0'], 1.0)
-        self.assertEqual(MP.parameters[0]['name'],'$p_{0}$')
-        self.assertEqual(MP.parameters[0]['minimum'], -np.inf)
-        self.assertEqual(MP.parameters[0]['maximum'], np.inf)
-        self.assertEqual(MP.parameters[0]['prior_mu'],np.zeros([1]))
-        self.assertEqual(MP.parameters[0]['prior_sigma'],np.inf)
-        self.assertEqual(MP.parameters[0]['sample'],1)
-        self.assertEqual(MP.parameters[0]['local'],0)
+        self.standard_check()
 
     def test_results_to_params(self):
         MP = ModelParameters()
         MP.add_model_parameter('aa', 0)
         MP._openparameterstructure(nbatch=1)
-#        print('parind = {}'.format(MP._parind))
-#        print('local = {}'.format(MP._local))
          # define minimal results dictionary
         results = {'parind': MP._parind, 'names': MP._names, 'local': MP._local, 'theta': [1.2]}
         # initialize default options
         SO = SimulationOptions()
         SO.define_simulation_options(verbosity=0)
-        MP.display_parameter_settings(verbosity = SO.verbosity, noadaptind = SO.noadaptind)
+        MP.display_parameter_settings(verbosity = SO.verbosity, no_adapt = MP._no_adapt)
         MP._results_to_params(results, 1)
         MP._openparameterstructure(nbatch=1)
-        MP.display_parameter_settings(verbosity = SO.verbosity, noadaptind = SO.noadaptind)
+        MP.display_parameter_settings(verbosity = SO.verbosity, no_adapt = MP._no_adapt)
         self.assertEqual(MP.parameters[0]['theta0'], results['theta'][0])
-                
+
 # --------------------------
 MP = ModelParameters()
 class LessThanOrEqualToZero(unittest.TestCase):
@@ -98,49 +88,46 @@ class ReplaceListElements(unittest.TestCase):
 class DisplayParametersSettings(unittest.TestCase):
     
     def test_parameter_display_set_1(self):
-        MP.add_model_parameter(name = 'm', theta0 = 2., minimum = -10, maximum = np.inf, sample = 1)
-        MP.add_model_parameter(name = 'b', theta0 = -5., minimum = -10, maximum = 100, sample = 0)
-        MP.add_model_parameter(name = 'b2', theta0 = -5.3e6, minimum = -1e7, maximum = 1e6, sample = 1)
+        MP = ModelParameters()
+        MP.add_model_parameter(name = 'm', theta0 = 2., minimum = -10, maximum = np.inf, sample = True)
+        MP.add_model_parameter(name = 'b', theta0 = -5., minimum = -10, maximum = 100, sample = False)
+        MP.add_model_parameter(name = 'b2', theta0 = -5.3e6, minimum = -1e7, maximum = 1e6, sample = True)
         MP._openparameterstructure(nbatch = 1)
         
-        MP.display_parameter_settings(verbosity = 1, noadaptind = None)
+        MP.display_parameter_settings(verbosity = 1, no_adapt = None)
         
     def test_parameter_display_set_2(self):
-        MP.add_model_parameter(name = 'm', theta0 = 2., minimum = -10, maximum = np.inf, sample = 1)
-        MP.add_model_parameter(name = 'b', theta0 = -5., minimum = -10, maximum = 100, sample = 0)
-        MP.add_model_parameter(name = 'b2', theta0 = -5.3e6, minimum = -1e7, maximum = 1e6, sample = 1)
+        MP = ModelParameters()
+        MP.add_model_parameter(name = 'm', theta0 = 2., minimum = -10, maximum = np.inf, sample = True)
+        MP.add_model_parameter(name = 'b', theta0 = -5., minimum = -10, maximum = 100, sample = False)
+        MP.add_model_parameter(name = 'b2', theta0 = -5.3e6, minimum = -1e7, maximum = 1e6, sample = True)
         MP._openparameterstructure(nbatch = 1)
         
-        MP.display_parameter_settings(verbosity = None, noadaptind = None)
+        MP.display_parameter_settings(verbosity = None, no_adapt = None)
 
 # --------------------------
 class NoadaptindDisplaySetting(unittest.TestCase):
     
-    def test_noadaptind_is_empty(self):
-        self.assertEqual(noadapt_display_setting(ii = 1, noadaptind = []), '', msg = 'Default is blank string')
-        self.assertEqual(noadapt_display_setting(ii = 2, noadaptind = []), '', msg = 'Default is blank string')
-        
     def test_noadaptind_is_not_empty(self):
-        self.assertEqual(noadapt_display_setting(ii = 1, noadaptind = [2]), '', msg = 'Default is blank string')
-        self.assertEqual(noadapt_display_setting(ii = 2, noadaptind = [2]), ' (*)', msg = 'Default is blank string')
+        self.assertEqual(noadapt_display_setting(no_adapt = False), '', msg = 'Default is blank string')
+        self.assertEqual(noadapt_display_setting(no_adapt = True), ' (*)', msg = 'Default is blank string')
 
 # --------------------------
 class PriorDisplaySetting(unittest.TestCase):
     
     def test_x_is_inf(self):
         self.assertEqual(prior_display_setting(x = np.inf), '', msg = 'Blank string if infinity.')
-        
     def test_x_is_not_inf(self):
         self.assertEqual(prior_display_setting(x = 2.0), '^2', msg = 'Raised to the second power if not infinity.')
-        
-# --------------------------        
+
+# --------------------------
 class CheckNoadaptind(unittest.TestCase):
     
     def test_noadaptind_is_none(self):
-        self.assertEqual(check_noadaptind(noadaptind = None), [], msg = 'Returns empty list.')
+        self.assertTrue(np.array_equal(check_noadaptind(no_adapt = None, npar = 3), np.zeros([3],dtype=bool)), msg = 'Returns boolean array of size 3.')
         
     def test_noadaptind_is_not_none(self):
-        self.assertEqual(check_noadaptind(noadaptind = [1]), [1], msg = 'Returns input.')
+        self.assertEqual(check_noadaptind(no_adapt = [1], npar = 3), [1], msg = 'Returns input.')
         
 # --------------------------        
 class Verbosity(unittest.TestCase):
@@ -236,3 +223,55 @@ class ScanForLocalVariables(unittest.TestCase):
         MP.add_model_parameter(name = 'b', theta0 = -0.5, local = 1, sample = False)
         local = MP.scan_for_local_variables(nbatch = 2, parameters = MP.parameters)
         self.assertTrue(np.array_equal(local, np.array([1, 2, 0, 1, 2, 0])), msg = str('Expect arrays to match: {} neq {}'.format(local, np.array([1, 2, 0, 1, 2, 0]))))
+
+# --------------------------
+class SetupAdapting(unittest.TestCase):
+    def test_setup_adapting(self):
+        MP = ModelParameters()
+        self.assertTrue(MP.setup_adapting(adapt = True, sample = True), msg = 'Expect True')
+        self.assertFalse(MP.setup_adapting(adapt = False, sample = True), msg = 'Expect False')
+        self.assertFalse(MP.setup_adapting(adapt = True, sample = False), msg = 'Expect False')
+        self.assertFalse(MP.setup_adapting(adapt = False, sample = False), msg = 'Expect False')
+        
+# --------------------------
+class SetupAdaptationIndices(unittest.TestCase):
+    def test_basic_setup(self):
+        MP = ModelParameters()
+        parind, adapt, no_adapt = MP.setup_adaptation_indices(adapt = np.array([True,True,True]), parind = np.array([True,True,True]))
+        self.assertTrue(np.array_equal(parind, np.array([0,1,2])), msg = str('Expect arrays to match: {} neq {}'.format(parind, np.array([0, 1, 2]))))
+        self.assertTrue(np.array_equal(adapt, np.array([0,1,2])), msg = str('Expect arrays to match: {} neq {}'.format(adapt, np.array([0, 1, 2]))))
+        self.assertTrue(np.array_equal(no_adapt, np.array([False, False, False])), msg = str('Expect arrays to match: {} neq {}'.format(no_adapt, np.array([False, False, False]))))
+        
+    def test_not_all_adapt(self):
+        MP = ModelParameters()
+        parind, adapt, no_adapt = MP.setup_adaptation_indices(adapt = np.array([False, True, True]), parind = np.array([True, True, True]))
+        self.assertTrue(np.array_equal(parind, np.array([0,1,2])), msg = str('Expect arrays to match: {} neq {}'.format(parind, np.array([0, 1, 2]))))
+        self.assertTrue(np.array_equal(adapt, np.array([1,2])), msg = str('Expect arrays to match: {} neq {}'.format(adapt, np.array([1, 2]))))
+        self.assertTrue(np.array_equal(no_adapt, np.array([True, False, False])), msg = str('Expect arrays to match: {} neq {}'.format(no_adapt, np.array([True, False, False]))))
+
+        parind, adapt, no_adapt = MP.setup_adaptation_indices(adapt = np.array([False, True, False]), parind = np.array([True, True, True]))
+        self.assertTrue(np.array_equal(parind, np.array([0,1,2])), msg = str('Expect arrays to match: {} neq {}'.format(parind, np.array([0, 1, 2]))))
+        self.assertTrue(np.array_equal(adapt, np.array([1])), msg = str('Expect arrays to match: {} neq {}'.format(adapt, np.array([1]))))
+        self.assertTrue(np.array_equal(no_adapt, np.array([True, False, True])), msg = str('Expect arrays to match: {} neq {}'.format(no_adapt, np.array([True, False, True]))))
+        
+    def test_not_all_sample(self):
+        MP = ModelParameters()
+        parind, adapt, no_adapt = MP.setup_adaptation_indices(adapt = np.array([False, True, True]), parind = np.array([False, True, True]))
+        self.assertTrue(np.array_equal(parind, np.array([1,2])), msg = str('Expect arrays to match: {} neq {}'.format(parind, np.array([1, 2]))))
+        self.assertTrue(np.array_equal(adapt, np.array([1,2])), msg = str('Expect arrays to match: {} neq {}'.format(adapt, np.array([1, 2]))))
+        self.assertTrue(np.array_equal(no_adapt, np.array([False, False])), msg = str('Expect arrays to match: {} neq {}'.format(no_adapt, np.array([False, False]))))
+
+        parind, adapt, no_adapt = MP.setup_adaptation_indices(adapt = np.array([False, True]), parind = np.array([False, True]))
+        self.assertTrue(np.array_equal(parind, np.array([1])), msg = str('Expect arrays to match: {} neq {}'.format(parind, np.array([1]))))
+        self.assertTrue(np.array_equal(adapt, np.array([1])), msg = str('Expect arrays to match: {} neq {}'.format(adapt, np.array([1]))))
+        self.assertTrue(np.array_equal(no_adapt, np.array([False])), msg = str('Expect arrays to match: {} neq {}'.format(no_adapt, np.array([False]))))
+
+        parind, adapt, no_adapt = MP.setup_adaptation_indices(adapt = np.array([False, False, True]), parind = np.array([False, True, True]))
+        self.assertTrue(np.array_equal(parind, np.array([1,2])), msg = str('Expect arrays to match: {} neq {}'.format(parind, np.array([1, 2]))))
+        self.assertTrue(np.array_equal(adapt, np.array([2])), msg = str('Expect arrays to match: {} neq {}'.format(adapt, np.array([2]))))
+        self.assertTrue(np.array_equal(no_adapt, np.array([True, False])), msg = str('Expect arrays to match: {} neq {}'.format(no_adapt, np.array([True, False]))))
+        
+        parind, adapt, no_adapt = MP.setup_adaptation_indices(adapt = np.array([False, True, False]), parind = np.array([False, True, True]))
+        self.assertTrue(np.array_equal(parind, np.array([1,2])), msg = str('Expect arrays to match: {} neq {}'.format(parind, np.array([1, 2]))))
+        self.assertTrue(np.array_equal(adapt, np.array([1])), msg = str('Expect arrays to match: {} neq {}'.format(adapt, np.array([1]))))
+        self.assertTrue(np.array_equal(no_adapt, np.array([False, True])), msg = str('Expect arrays to match: {} neq {}'.format(no_adapt, np.array([False, True]))))

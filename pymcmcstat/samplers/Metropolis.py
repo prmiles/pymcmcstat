@@ -52,10 +52,9 @@ class Metropolis:
             * **outbound** (:py:class:`int`): 1 - rejected due to sampling outside of parameter bounds
             * **npar_sample_from_normal** (:class:`~numpy.ndarray`): Latet random sample points
         '''
-           
         # unpack oldset
         oldpar, ss, oldprior, sigma2 = self.unpack_set(old_set)
-        
+
         # Sample new candidate from Gaussian proposal
         newpar, npar_sample_from_normal = sample_candidate_from_gaussian_proposal(npar = parameters.npar, oldpar = oldpar, R = R)
            

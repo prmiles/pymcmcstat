@@ -26,7 +26,7 @@ class SimulationOptions:
     def define_simulation_options(self, nsimu=int(1e4), adaptint = None, ntry = None, method='dram',
                  printint=None, adaptend = 0, lastadapt = 0, burnintime = 0,
                  waitbar = 1, debug = 0, qcov = None, updatesigma = False,
-                 noadaptind = None, stats = 0, drscale = np.array([5, 4, 3], dtype = float),
+                 stats = 0, drscale = np.array([5, 4, 3], dtype = float),
                  adascale = None, savesize = 0, maxmem = 0, chainfile = 'chainfile',
                  s2chainfile = 's2chainfile', sschainfile = 'sschainfile', covchainfile = 'covchainfile', savedir = None,
                  save_to_bin = False, skip = 1, label = None, RDR = None, verbosity = 1, maxiter = None,
@@ -50,7 +50,6 @@ class SimulationOptions:
             * **debug** (:py:class:`int`): Flag to perform debug.  Default is 0 -> off.
             * **qcov** (:class:`~numpy.ndarray`): Proposal parameter covariance matrix.
             * **updatesigma** (:py:class:`bool`): Flag for updating measurement error variance. Default is 0 -> off (1 -> on).
-            * **noadaptind** (:py:class:`int`): Indices not to be adapted in covariance matrix. Default is [] (untested).
             * **stats** (:py:class:`int`): Calculate convergence statistics. Default is 0 -> off (1 -> on).
             * **drscale** (:class:`~numpy.ndarray`): Reduced scale for sampling in DR algorithm. Default is [5,4,3].
             * **adascale** (:py:class:`float`): User defined covariance scale.  Default is method dependent (untested).
@@ -85,7 +84,6 @@ class SimulationOptions:
             For the log file names :code:`chainfile, sschainfile, s2chainfile` and :code:`covchainfile` do not include the extension.
             By specifying whether to save to text or to binary, the appropriate extension will be added.
         '''
-        
         method_dictionary = {
             'mh': {'adaptint': 0, 'ntry': 1, 'doram': 0, 'adascale': adascale},
             'am': {'adaptint': 100, 'ntry': 1, 'doram': 0, 'adascale': adascale},
@@ -93,7 +91,7 @@ class SimulationOptions:
             'dram': {'adaptint': 100, 'ntry': 2, 'doram': 0, 'adascale': adascale},
             'ram': {'adaptint': 1, 'ntry': 1, 'doram': 1, 'adascale': 1.},
             }
-        
+
         # define items from dictionary
         if adaptint is None:
             self.adaptint = method_dictionary[method]['adaptint']  # update interval for adaptation
@@ -131,8 +129,6 @@ class SimulationOptions:
         self.qcov = qcov  # proposal covariance
         self.initqcovn = initqcovn  # proposal covariance weight in update
         self.updatesigma = updatesigma  #
-        if noadaptind is None:
-            self.noadaptind = [] # do not adapt these indices
         self.priorupdatestart = priorupdatestart
         self.qcov_adjust = qcov_adjust  # eps adjustment
         self.burnin_scale = burnin_scale

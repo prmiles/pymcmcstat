@@ -15,7 +15,7 @@ import unittest
 
 # --------------------------
 class PlotDensityPanel(unittest.TestCase):
-    def test_basic_plot_features(self):
+    def standard_check(self, hist_on = True):
         npar = 3
         chains = np.random.random_sample(size = (100,npar))
         f = MP.plot_density_panel(chains = chains)
@@ -27,25 +27,19 @@ class PlotDensityPanel(unittest.TestCase):
         self.assertEqual(f.get_figheight(), 4.0, msg = 'Height is 4in')
         plt.close()
 
+    def test_basic_plot_features(self):
+        self.standard_check(hist_on = False)
+
     def test_basic_plot_features_with_hist_on(self):
-        npar = 3
-        chains = np.random.random_sample(size = (100,npar))
-        f = MP.plot_density_panel(chains = chains, hist_on = True)
-        for ii in range(npar):
-            name = str('$p_{{{}}}$'.format(ii))
-            self.assertEqual(f.axes[ii].get_xlabel(), name, msg = str('Should be {}'.format(name)))
-            self.assertEqual(f.axes[ii].get_ylabel(), str('$\pi$({}$|M^{}$)'.format(name, '{data}')), msg = 'Should be posterior')
-        self.assertEqual(f.get_figwidth(), 5.0, msg = 'Width is 5in')
-        self.assertEqual(f.get_figheight(), 4.0, msg = 'Height is 4in')
-        plt.close()
-        
+        self.standard_check(hist_on = True)
+
 # --------------------------
 class PlotChainPanel(unittest.TestCase):
     def test_basic_plot_features_nsimu_lt_maxpoints(self):
         chains = np.random.random_sample(size = (100,2))
         f = MP.plot_chain_panel(chains = chains)
-        x1, y1 = f.axes[0].lines[0].get_xydata().T
-        x2, y2 = f.axes[1].lines[0].get_xydata().T
+        _, y1 = f.axes[0].lines[0].get_xydata().T
+        _, y2 = f.axes[1].lines[0].get_xydata().T
         self.assertTrue(np.array_equal(y1, chains[:,0]), msg = 'Expect y1 to match column 1')
         self.assertTrue(np.array_equal(y2, chains[:,1]), msg = 'Expect y2 to match column 2')
         self.assertEqual(f.axes[0].get_xlabel(), '', msg = 'Should be blank')
@@ -107,31 +101,24 @@ class PlotPairwiseCorrelationPanel(unittest.TestCase):
         
 # --------------------------
 class PlotChainMetrics(unittest.TestCase):
-    def test_basic_plot_features(self):
+    def standard_check(self, figsize = None, expectfigsize = (7,5)):
         chains = np.random.random_sample(size = (100,1))
-        f = MP.plot_chain_metrics(chain = chains, name = 'a1')
+        f = MP.plot_chain_metrics(chain = chains, name = 'a1', figsizeinches = figsize)
         x1, y1 = f.axes[0].lines[0].get_xydata().T
         self.assertTrue(np.array_equal(y1, chains[:,0]), msg = 'Expect y1 to match column 1')
         self.assertEqual(f.axes[0].get_xlabel(), 'Iterations', msg = 'Should be Iterations')
         self.assertEqual(f.axes[0].get_ylabel(), 'a1-chain', msg = 'Should be a1-chain')
         self.assertEqual(f.axes[1].get_xlabel(), 'a1', msg = 'Strings should match')
         self.assertEqual(f.axes[1].get_ylabel(), 'Histogram of a1-chain', msg = 'Strings should match')
-        self.assertEqual(f.get_figwidth(), 7.0, msg = 'Width is 7in')
-        self.assertEqual(f.get_figheight(), 5.0, msg = 'Height is 5in')
+        self.assertEqual(f.get_figwidth(), expectfigsize[0], msg = 'Width is 7in')
+        self.assertEqual(f.get_figheight(), expectfigsize[1], msg = 'Height is 5in')
         plt.close()
         
+    def test_basic_plot_features(self):
+        self.standard_check()
+        
     def test_figsize_plot_features(self):
-        chains = np.random.random_sample(size = (100,1))
-        f = MP.plot_chain_metrics(chain = chains, name = 'a1', figsizeinches = (10,2))
-        x1, y1 = f.axes[0].lines[0].get_xydata().T
-        self.assertTrue(np.array_equal(y1, chains[:,0]), msg = 'Expect y1 to match column 1')
-        self.assertEqual(f.axes[0].get_xlabel(), 'Iterations', msg = 'Should be Iterations')
-        self.assertEqual(f.axes[0].get_ylabel(), 'a1-chain', msg = 'Should be a1-chain')
-        self.assertEqual(f.axes[1].get_xlabel(), 'a1', msg = 'Strings should match')
-        self.assertEqual(f.axes[1].get_ylabel(), 'Histogram of a1-chain', msg = 'Strings should match')
-        self.assertEqual(f.get_figwidth(), 10.0, msg = 'Width is 10in')
-        self.assertEqual(f.get_figheight(), 2.0, msg = 'Height is 2in')
-        plt.close()
+        self.standard_check(figsize = (10,2), expectfigsize = (10,2))
         
 # --------------------------
 class Plot(unittest.TestCase):

@@ -38,7 +38,7 @@ def plot_density_panel(chains, names = None, hist_on = False, figsizeinches = No
     for ii in range(nparam):
         # define chain
         chain = chains[:,ii].reshape(nsimu,1) # check indexing
-        
+
         # define x grid
         chain_grid = make_x_grid(chain)
         
@@ -49,7 +49,7 @@ def plot_density_panel(chains, names = None, hist_on = False, figsizeinches = No
         plt.subplot(ns1,ns2,ii+1)
              
         if hist_on == True: # include histograms
-            hist(chain, normed=True)
+            hist(chain, density=True)
             
         plt.plot(chain_grid, kde.pdf(chain_grid), 'k')
         # format figure
@@ -80,7 +80,7 @@ def plot_histogram_panel(chains, names = None, figsizeinches = None):
         
         # plot density on subplot
         ax = plt.subplot(ns1,ns2,ii+1)
-        hist(chain, normed=True)
+        hist(chain, density=True)
         # format figure
         plt.xlabel(names[ii])
         ax.set_yticklabels([])

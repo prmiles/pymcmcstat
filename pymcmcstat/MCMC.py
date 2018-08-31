@@ -45,11 +45,11 @@ from .utilities.general import message
 class MCMC:
     '''
     Markov Chain Monte Carlo (MCMC) simulation object.
-    
+
     This class type is the primary feature of this Python package.  All simulations
     are run through this class type, and for the most part the user will interact
-    with an object of this type.  The class initialization provides the option for 
-    setting the random seed, which can be very useful for testing the functionality 
+    with an object of this type.  The class initialization provides the option for
+    setting the random seed, which can be very useful for testing the functionality
     of the code.  It was found that setting the random seed at object initialization
     was the simplest interface.
     
@@ -64,7 +64,7 @@ class MCMC:
         * **model_settings** (:class:`~.ModelSettings`): MCMC model settings.
         * **parameters** (:class:`~.ModelParameters`): MCMC model parameters.
     '''
-    def __init__(self, rngseed = None):
+    def __init__(self, rngseed = None, seterr = {'over': 'ignore', 'under': 'ignore'}):
         # public variables
         self.data = DataStructure()
         self.model_settings = ModelSettings()
@@ -76,6 +76,7 @@ class MCMC:
         self._sampling_methods = SamplingMethods()
         self._mcmc_status = False
         np.random.seed(seed = rngseed)
+        np.seterr(**seterr)
     # --------------------------------------------------------
     def run_simulation(self, use_previous_results = False):
         '''
@@ -167,7 +168,7 @@ class MCMC:
         # add check that prior standard deviation > 0
         self.parameters._check_prior_sigma(self.simulation_options.verbosity)
         # display parameter settings
-        self.parameters.display_parameter_settings(self.simulation_options.verbosity, self.simulation_options.noadaptind)
+        self.parameters.display_parameter_settings(self.simulation_options.verbosity, self.parameters._no_adapt)
         # setup covariance matrix and initial Cholesky decomposition
         self._covariance._initialize_covariance_settings(self.parameters, self.simulation_options)
         # ---------------------
@@ -175,7 +176,7 @@ class MCMC:
         self.__sos_object = SumOfSquares(self.model_settings, self.data, self.parameters)
         # ---------------------
         # define prior object
-        self.__prior_object = PriorFunction(priorfun = self.model_settings.prior_function, mu = self.parameters._thetamu, sigma = self.parameters._thetasigma)
+        self.__prior_object = PriorFunction(priorfun = self.model_settings.prior_function, mu = self.parameters._thetamu[self.parameters._parind[:]], sigma = self.parameters._thetasigma[self.parameters._parind[:]])
         # ---------------------
         # Define initial parameter set
         self.__initial_set = ParameterSet(theta = self.parameters._initial_value[self.parameters._parind[:]])
@@ -219,7 +220,7 @@ class MCMC:
             self.__s2chain[chainind,:] = sigma2
         else:
             self.__s2chain = None
-    # --------------------------------------------------------    
+    # --------------------------------------------------------
     def __expand_chains(self, nsimu, npar, nsos, updatesigma):
         '''
         Expand chains for extended simulation
@@ -340,6 +341,8 @@ class MCMC:
         self.simulation_results.add_options(options = self.simulation_options)
         self.simulation_results.add_model(model = self.model_settings)
         
+        # add prior information
+        self.simulation_results.add_prior(mu = self.parameters._thetamu, sigma = self.parameters._thetasigma, priortype = self.model_settings.prior_type)
         # add chain, s2chain, and sschain
         self.simulation_results.add_chain(chain = self.__chain)
         self.simulation_results.add_s2chain(s2chain = self.__s2chain)

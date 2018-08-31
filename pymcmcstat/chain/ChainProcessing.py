@@ -5,6 +5,7 @@ Created on Tue May  1 09:12:06 2018
 
 @author: prmiles
 """
+import json
 import h5py
 import numpy as np
 import os
@@ -17,7 +18,7 @@ def print_log_files(savedir):
 
     Args:
         * **savedir** (:py:class:`str`): Directory where log files are saved.
-        
+
     The output display will include a date/time stamp, as well as indices of
     the chain that were saved during that export sequence.
     
@@ -120,6 +121,22 @@ def read_in_parallel_savedir_files(parallel_dir, extension = 'h5', chainfile = '
         out.append(read_in_savedir_files(savedir, extension = extension, chainfile = chainfile, sschainfile = sschainfile, s2chainfile = s2chainfile, covchainfile = covchainfile))
         
     return out
+
+def read_in_parallel_json_results_files(parallel_dir):
+    '''
+    Read in json results files from directory containing results from parallel MCMC simulation.
+    
+    Args:
+        * **parallel_dir** (:py:class:`str`): Directory where parallel log files are saved.
+    '''
+    # find folders in parallel_dir with name 'chain_#'
+    chainfolders = os.listdir(parallel_dir)
+    parallel_results = []
+    for folder in chainfolders:
+        filename = os.path.join(parallel_dir, folder, str('{}.json'.format(folder)))
+        parallel_results.append(load_json_object(filename = filename))
+        
+    return parallel_results
     
 def read_in_bin_file(filename):
     '''
@@ -222,3 +239,62 @@ def _save_to_txt_file(filename, mtx):
 def _check_directory(directory):
     if not os.path.exists(directory):
         os.makedirs(directory)
+        
+def load_json_object(filename):
+    '''
+    Load object stored in json file.
+
+    .. note::
+
+        Filename should include extension.
+
+    Args:
+        * **filename** (:py:class:`str`): Load object from file with this name.
+
+    Returns:
+        * **results** (:py:class:`dict`): Object loaded from file.
+    '''
+    with open(filename, 'r') as obj:
+        results = json.load(obj)
+    return results
+# -------------------------
+def generate_combined_chain_with_index(pres, burnin_percentage = 50):
+    '''
+    Generate combined chain with index.
+    
+    Args:
+        * **pres** (:py:class:`list`): Parallel results list.
+        * **burnin_percentage** (:py:class:`int`): Percentage of chain to remove for burnin.
+        
+    Returns:
+        * (:class:`~numpy.ndarray`, :py:class:`list`): Combined chain array, index label
+    '''
+    index = []
+    for ii, pr in enumerate(pres):
+        burnin = int(pr['nsimu']*burnin_percentage/100)
+        if ii == 0:
+            combined_chain = pr['chain'][burnin:,:]
+        else:
+            combined_chain = np.concatenate((combined_chain, pr['chain'][burnin:,:]))
+        for jj in range(pr['chain'][burnin:,:].shape[0]):
+            index.append(str('Chain {}'.format(ii)))
+            
+    return combined_chain, index
+            
+# -------------------------
+def generate_chain_list(pres, burnin_percentage = 50):
+    '''
+    Generate list of chains.
+    
+    Args:
+        * **pres** (:py:class:`list`): Parallel results list.
+        * **burnin_percentage** (:py:class:`int`): Percentage of chain to remove for burnin.
+    
+    Returns:
+        * (:py:class:`list`): Each element of list corresponds to different chain set.
+    '''
+    chains = []
+    for ii in range(len(pres)):
+        burnin = int(pres[ii]['nsimu']*burnin_percentage/100)
+        chains.append(pres[ii]['chain'][burnin:,:]);
+    return chains

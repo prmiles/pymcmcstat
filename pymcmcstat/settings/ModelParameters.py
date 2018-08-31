@@ -42,7 +42,7 @@ class ModelParameters:
     # --------------------------
     def add_model_parameter(self, name = None, theta0 = None, minimum = -np.inf,
                       maximum = np.inf, prior_mu = np.zeros([1]), prior_sigma = np.inf,
-                      sample = True, local = 0):
+                      sample = True, local = 0, adapt = True):
         '''
         Add model parameter to MCMC simulation.
 
@@ -67,19 +67,19 @@ class ModelParameters:
         # append dictionary element
         self.parameters.append({'name': name, 'theta0': theta0, 'minimum': minimum,
                                 'maximum': maximum, 'prior_mu': prior_mu, 'prior_sigma': prior_sigma,
-                                'sample': sample, 'local': local})
+                                'sample': bool(sample), 'local': local, 'adapt': bool(adapt)})
     # --------------------------
     def _openparameterstructure(self, nbatch):
-        
         # unpack input object
         parameters = self.parameters
         npar = len(parameters)
-        
+
         # initialize arrays - as lists and numpy arrays (improved functionality)
         self._names = []
         self._initial_value = np.zeros(npar)
         self._value = np.zeros(npar)
-        self._parind = np.ones(npar, dtype = int)
+        self._parind = np.ones(npar, dtype = bool)
+        self._adapt = np.ones(npar, dtype = bool)
         self._local = np.zeros(npar)
         self._upper_limits = np.ones(npar)*np.inf
         self._lower_limits = -np.ones(npar)*np.inf
@@ -117,12 +117,61 @@ class ModelParameters:
                 self._thetasigma[ii] = self.setup_prior_sigma(sigma = parameters[kk]['prior_sigma'])
                 # turn sampling on/off
                 self._parind[ii] = parameters[kk]['sample']
+                # turn adaptation on/off
+                self._adapt[ii] = self.setup_adapting(adapt = parameters[kk]['adapt'], sample = parameters[kk]['sample'])
             ii += 1 # update counter
-            
-        # make parind list of nonzero elements
-        self._parind = np.flatnonzero(self._parind)
         
+        # setup adaptation indices
+        self._parind, self._adapt, self._no_adapt = self.setup_adaptation_indices(parind = self._parind, adapt = self._adapt)
+
         self.npar = len(self._parind) # append number of parameters to structure
+    
+    @classmethod
+    def setup_adapting(cls, adapt, sample):
+        '''
+        Setup parameters being adapted.
+        
+        All parameters that are not being sampled will automatically be thrown out of
+        adaptation.  This method checks that the default adaptation status is consistent.
+        
+        Args:
+            * **adapt** (:py:class:`bool`): Flag from parameter structure.
+            * **sample** (:py:class:`bool`): Flag from parameter structure.
+        
+        Returns:
+            * :py:class:`bool`
+        '''
+        if sample is True:
+            return adapt
+        else:
+            return False
+        
+    @classmethod
+    def setup_adaptation_indices(cls, parind, adapt):
+        '''
+        Setup adaptation parameter indices.
+        
+        Args:
+            * **parind** (:class:`~numpy.ndarray`): Array of boolean flags from parameter structure.
+            * **adapt** (:class:`~numpy.ndarray`): Array of boolean flags from parameter structure.
+            
+        Returns:
+            * **parind** (:class:`~numpy.ndarray`): Array of indices corresponding to sampling parameters.
+            * **adapt** (:class:`~numpy.ndarray`): Array of indices corresponding to adaptating parameters.
+            * **no_adapt** (:class:`~numpy.ndarray`): Boolean array of indices not being adapted.
+            
+        ..note::
+            
+            The size of the returned arrays will equal the number of parameters being sampled.
+        '''
+        # determine non-adapting indices
+        no_adapt = adapt != parind
+        # make parind and adapt array of nonzero elements
+        parind = np.flatnonzero(parind)
+        adapt = np.flatnonzero(adapt)
+        no_adapt = no_adapt[parind[:]] # extract the parind elements
+
+        return parind, adapt, no_adapt
     
     @classmethod
     def scan_for_local_variables(cls, nbatch, parameters):
@@ -137,9 +186,9 @@ class ModelParameters:
             * **local** (:class:`~numpy.ndarray`): Array with local flag indices.
         '''
         local = np.array([], dtype = int)
-        for kk in range(len(parameters)):
-            if parameters[kk]['sample'] is True:
-                if parameters[kk]['local'] != 0:
+        for kk, par in enumerate(parameters):
+            if par['sample'] is True:
+                if par['local'] != 0:
                     local = np.concatenate((local, range(1,nbatch+1)))
                 else:
                     local = np.concatenate((local, np.zeros([1])))
@@ -181,7 +230,7 @@ class ModelParameters:
         else:
             return sigma
         
-    # --------------------------        
+    # --------------------------
     def _results_to_params(self, results, use_local = 1):
     
         # unpack results dictionary
@@ -219,13 +268,13 @@ class ModelParameters:
         message(verbosity, 2, 'If prior variance <= 0, setting to Inf\n')
         self._thetasigma = replace_list_elements(self._thetasigma, less_than_or_equal_to_zero, float('Inf'))
     # --------------------------
-    def display_parameter_settings(self, verbosity = None, noadaptind = None):
+    def display_parameter_settings(self, verbosity = None, no_adapt = None):
         '''
         Display parameter settings
 
         Args:
             * **verbosity** (:py:class:`int`): Verbosity of display output. :code:`0`
-            * **noadaptind** (:py:class:`int`): Indices not to be adapted in covariance matrix. :code:`[]`
+            * **no_adapt** (:class:`~numpy.ndarray`): Boolean array of indices not to be adapted.
         '''
         parind = self._parind
         names = self._names
@@ -236,11 +285,7 @@ class ModelParameters:
         theta_sigma = self._thetasigma
         
         verbosity = check_verbosity(verbosity)
-        noadaptind = check_noadaptind(noadaptind)
-            
-        if noadaptind is None:
-            noadaptind = []
-        
+        no_adapt = check_noadaptind(no_adapt, npar = len(parind))
         if verbosity > 0:
             print('\nSampling these parameters:')
             print('{:>10s} {:>10s} [{:>9s}, {:>9s}] N({:>9s}, {:>9s})'.format('name',
@@ -254,9 +299,8 @@ class ModelParameters:
                 mustr = format_number_to_str(theta_mu[parind[ii]])
                 sigstr = format_number_to_str(theta_sigma[parind[ii]])
                 
-                st = noadapt_display_setting(ii, noadaptind)
+                st = noadapt_display_setting(no_adapt[ii])
                 h2 = prior_display_setting(x = theta_sigma[parind[ii]])
-                
                 print('{:s}: {:s} [{:s}, {:s}] N({:s},{:s}{:s}){:s}'.format(name, valuestr, lowstr, uppstr, mustr, sigstr, h2, st))
 
 # --------------------------
@@ -307,36 +351,35 @@ def check_verbosity(verbosity):
     return verbosity
 
 # --------------------------
-def check_noadaptind(noadaptind):
+def check_noadaptind(no_adapt, npar):
     '''
     Check if noadaptind is None -> Empty List
 
     Args:
-        * **noadaptind** (:py:class:`list`): Indices not to be adapted in covariance matrix.
+        * **no_adapt** (:class:`~numpy.ndarray`): Boolean array of indices not to be adapted.
+        * **npar** (:py:class:`int`): Number of parameters.
 
     Returns:
-        * **noadaptind** (:py:class:`list`): Indices not to be adapted in covariance matrix.
+        * **no_adapt** (:class:`~numpy.ndarray`): Boolean array of indices not to be adapted.
     '''
-    if noadaptind is None:
-        noadaptind = []
-    return noadaptind
+    if no_adapt is None:
+        no_adapt = np.zeros([npar],dtype=bool)
+    return no_adapt
 # --------------------------
-def noadapt_display_setting(ii, noadaptind):
+def noadapt_display_setting(no_adapt):
     '''
     Define display settins if index not being adapted.
 
     Args:
-        * **ii** (:py:class:`int`): Current index number
-        * **noadaptind** (:py:class:`list`): List of indices not being adapted.
+        * **no_adapt** (:py:class:`bool`): Flag to determine whether or not it is to be adapted..
 
     Returns:
-        * **st** (:py:class:`str`): String to be displayed, depending on if in `noadaptind`.
+        * **st** (:py:class:`str`): String to be displayed.
     '''
-    if ii in noadaptind: # THIS PARAMETER IS FIXED
-        st = ' (*)'
+    if no_adapt == True: # THIS PARAMETER IS FIXED
+        return str(' (*)')
     else:
-        st = ''
-    return st
+        return str('')
 # --------------------------
 def prior_display_setting(x):
     '''

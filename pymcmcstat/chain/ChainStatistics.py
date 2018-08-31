@@ -14,6 +14,7 @@ import scipy
 import scipy.stats
 from scipy.fftpack import fft
 from ..plotting.utilities import generate_default_names, extend_names_to_match_nparam
+from .ChainProcessing import generate_chain_list
 
 # display chain statistics
 def chainstats(chain = None, results = None, returnstats = False):
@@ -42,7 +43,7 @@ def chainstats(chain = None, results = None, returnstats = False):
         for ii in range(npar):
             meanii.append(np.mean(chain[:,ii]))
             stdii.append(np.std(chain[:,ii]))
-            
+
         # calculate batch mean standard deviation
         bmstd = batch_mean_standard_deviation(chain)
         mcerr = bmstd/np.sqrt(nsimu)
@@ -289,7 +290,116 @@ def integrated_autocorrelation_time(chain):
                 break
             
     return tau, m
-                
+# ----------------------------------------------------
+def gelman_rubin(chains, names = None, results = None, display = True):
+    '''
+    Gelman-Rubin diagnostic for multiple chains :cite:`gelman1992inference`.
+    
+    This diagnostic technique compares the variance within a single change to the
+    variance between multiple chains.  This process serves as a method for testing
+    whether or not the chain has converged.  If the chain has converged, we would
+    expect the variance within and the variance between to be equal.  This
+    diagnostic tool pairs well with the ParallelMCMC module, which generates a set
+    of distinct chains that have all been initialized at different points within
+    the parameter space.
+    
+    Args:
+        * **chains** (:py:class:`list`): List of arrays - each array corresponds to different chain set.
+        * **names** (:py:class:`list`): List of strings - corresponds to parameter names.
+        * **results** (:py:class:`dict`): Results from MCMC simulation.
+    
+    Returns:
+        * (:py:class:`dict`): Keywords of the dictionary correspond to the parameter names.  Each keyword corresponds to a dictionary outputted from :meth:`calculate_psrf`.
+    '''
+
+    # check what chains is
+    if isinstance(chains[0], dict):
+        chains = generate_chain_list(chains)
+        
+    nchains = len(chains)
+    
+    nsimu, nparam = chains[0].shape
+    
+    if names is None:
+        names = get_parameter_names(nparam, results)
+        
+    if nchains < 2:
+        raise ValueError('Diagnostic method requires multiple chains')
+        
+    # assemble arrays for separate parameters
+    par = dict()
+    for ii, name in enumerate(names):
+        tmp = np.zeros([nsimu, nchains])
+        for jj in range(nchains):
+            tmp[:,jj] = chains[jj][:,ii]
+        par[name] = tmp
+
+    psrf = dict()
+    for name in names:
+        psrf[name] = calculate_psrf(par[name], nsimu, nchains)
+        
+    if display is True:
+        display_gelman_rubin(psrf)
+            
+    return psrf
+
+def calculate_psrf(x, nsimu, nchains):
+    '''
+    Calculate Potential Scale Reduction Factor (PSRF)
+    
+    Performs analysis of variances for set of chains corresponding to a single parameter.
+    This code follows the MATLAB implementation found here:
+        
+        https://users.aalto.fi/~ave/code/mcmcdiag/
+    
+    Args:
+        * **x** (:class:`~numpy.ndarray`): Expect an [nsimu x nchains] array.
+        * **nsimu** (:py:class:`int`): Number of simulations in each chain.
+        * **nchains** (:py:class:`int`): Number of chains.
+    
+    Returns:
+        * :py:class:`dict` \\
+            - R - PSRF \\
+            - B - Between Sequence Variances \\
+            - W - Within Sequence Variances \\
+            - V - Mixture-of-Sequences Variances \\
+            - neff - Effective number of samples
+    '''
+    # Estimated Between Sequence Variances Per Number of Simulations
+    Bpn = np.var(np.mean(x, axis=0), axis=0, ddof=1)
+
+    # Estimated Within Sequence Variances
+    W = np.mean(np.var(x, axis=0, ddof=1), axis=0)
+
+    S = (nsimu - 1)/nsimu * W + Bpn;
+    
+    R = (nchains + 1) / nchains * S / W - (nsimu - 1) / nchains / nsimu
+
+    # Estimated Mixture-of-Sequences Variances
+    V = R * W
+    
+    # Potential Scale Reduction Factor - PSRF
+    R = np.sqrt(R)
+    
+    # Estimated Between Sequence Variances
+    B = Bpn * nsimu
+    
+    # estimated effective number of samples
+    neff = min(nchains * nsimu * V / B, nchains * nsimu);
+
+    return dict(R = R, B = B, W = W, V = V, neff = neff)
+# ----------------------------------------------------
+def display_gelman_rubin(psrf):
+    '''
+    Display results of Gelman-Rubin diagnostic
+    
+    Args:
+        * **psrf** (:class:`dict`): Results from GR diagnostic
+    '''
+    for _, ps in enumerate(psrf):
+        print('Parameter: {}'.format(ps))
+        for _, k in enumerate(psrf[ps].keys()):
+            print('  {} = {}'.format(k, psrf[ps][k]))
 # ----------------------------------------------------
 def get_parameter_names(nparam, results):
     '''

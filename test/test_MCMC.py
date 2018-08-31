@@ -25,27 +25,32 @@ def setup_pseudo_results(initialize = True):
     mcstat._MCMC__simulation_time = 0.1
     return mcstat
 
-def setup_case():
-    mcstat = gf.basic_mcmc()
-    mcstat._MCMC__chain = np.random.random_sample(size = (100,2))
-    mcstat._MCMC__sschain = np.random.random_sample(size = (100,2))
-    mcstat._MCMC__s2chain = np.random.random_sample(size = (100,2))
-    mcstat._covariance._R = np.array([[0.5, 0.2],[0., 0.3]])
-    return mcstat
-
 # --------------------------
 class MCMCInitialization(unittest.TestCase):
-    
+
     def test_initialization(self):
         MC = MCMC()
-        
         check_these = ['data', 'model_settings', 'simulation_options', 'parameters',
                        '_error_variance', '_covariance', '_sampling_methods', '_mcmc_status']
         for ct in check_these:
             self.assertTrue(hasattr(MC, ct), msg = str('Object missing attribute: {}'.format(ct)))
-        
         self.assertFalse(MC._mcmc_status, msg = 'Status is False')
 
+    def test_numpy_error_set(self):
+        MCMC(seterr = {});
+        a = np.geterr()
+        self.assertEqual(a['over'], 'ignore', msg = 'Expect default ignore')
+        self.assertEqual(a['under'], 'ignore', msg = 'Expect default ignore')
+        MCMC(seterr = dict(over = 'warn', under = 'ignore'));
+        a = np.geterr()
+        self.assertEqual(a['over'], 'warn', msg = 'Expect overwrite to warn')
+        self.assertEqual(a['under'], 'ignore', msg = 'Expect default ignore')
+
+    def test_set_seed(self):
+        MCMC(rngseed = 1);
+        a = np.random.rand(1)
+        self.assertAlmostEqual(a[0], 0.417022, msg = str('Expect seed to cause consistent random draw: {} neq {}'.format(a, np.array([0.417022]))))
+        
 # --------------------------
 class DisplayCurrentMCMCSettings(unittest.TestCase):
     
@@ -76,32 +81,23 @@ class PrintRejectionStatistics(unittest.TestCase):
 # --------------------------
 class UpdateChain(unittest.TestCase):
     def test_chain_accepted(self):
-        mcstat = gf.setup_mcmc_case_cp()
         accept = 1
         outsidebounds = 0
         CL = {'theta':np.array([1.0, 2.0]), 'ss': 1.0, 'prior':0.0, 'sigma2': 0.0}
         parset = ParameterSet(theta = CL['theta'], ss = CL['ss'], prior = CL['prior'], sigma2 = CL['sigma2'])
-        
-        mcstat._MCMC__chain_index = mcstat.simulation_options.nsimu - 1
-        mcstat._MCMC__initialize_chains(chainind = 0, nsimu = mcstat.simulation_options.nsimu, npar = mcstat.parameters.npar, nsos = mcstat.model_settings.nsos, updatesigma = mcstat.simulation_options.updatesigma, sigma2 = mcstat.model_settings.sigma2)
+        mcstat = gf.setup_initialize_chains(CL)
         mcstat._MCMC__update_chain(accept = accept, new_set = parset, outsidebounds = outsidebounds)
-        
         self.assertTrue(np.array_equal(mcstat._MCMC__chain[-1,:], parset.theta), msg = str('theta added to end of chain - {}'.format(mcstat._MCMC__chain[-1,:])))
         self.assertEqual(mcstat._MCMC__old_set, parset, msg = 'old_set updated to new set')
         
     def test_chain_not_accepted_within_bounds(self):
-        mcstat = gf.setup_mcmc_case_cp()
         accept = 0
         outsidebounds = 0
         CL = {'theta':np.array([1.0, 2.0]), 'ss': 1.0, 'prior':0.0, 'sigma2': 0.0}
         parset = ParameterSet(theta = CL['theta'], ss = CL['ss'], prior = CL['prior'], sigma2 = CL['sigma2'])
-        
-        mcstat._MCMC__old_set = ParameterSet(theta = CL['theta'], ss = CL['ss'], prior = CL['prior'], sigma2 = CL['sigma2'])
-        mcstat._MCMC__chain_index = mcstat.simulation_options.nsimu - 1
-        mcstat._MCMC__initialize_chains(chainind = 0, nsimu = mcstat.simulation_options.nsimu, npar = mcstat.parameters.npar, nsos = mcstat.model_settings.nsos, updatesigma = mcstat.simulation_options.updatesigma, sigma2 = mcstat.model_settings.sigma2)
+        mcstat = gf.setup_initialize_chains(CL)
         mcstat._MCMC__rejected = {'total': 10, 'in_adaptation_interval': 4, 'outside_bounds': 1}
         mcstat._MCMC__update_chain(accept = accept, new_set = parset, outsidebounds = outsidebounds)
-        
         self.assertTrue(np.array_equal(mcstat._MCMC__chain[-1,:], mcstat._MCMC__old_set.theta), msg = str('theta added to end of chain - {}'.format(mcstat._MCMC__chain[-1,:])))
         
 # --------------------------
@@ -130,70 +126,54 @@ class UpdateRejected(unittest.TestCase):
         
 # --------------------------
 class InitializeChain(unittest.TestCase):
+    @classmethod
+    def setup_CL(cls):
+        return {'theta':np.array([1.0, 2.0]), 'ss': 1.0, 'prior':0.0, 'sigma2': 0.0}
     def test_initialize_chain_updatesigma_1(self):
-        mcstat = gf.setup_mcmc_case_cp()
-        CL = {'theta':np.array([1.0, 2.0]), 'ss': 1.0, 'prior':0.0, 'sigma2': 0.0}
-        mcstat._MCMC__old_set = ParameterSet(theta = CL['theta'], ss = CL['ss'], prior = CL['prior'], sigma2 = CL['sigma2'])
-        mcstat._MCMC__chain_index = mcstat.simulation_options.nsimu - 1
-        mcstat._MCMC__initialize_chains(chainind = 0, nsimu = mcstat.simulation_options.nsimu, npar = mcstat.parameters.npar, nsos = mcstat.model_settings.nsos, updatesigma = mcstat.simulation_options.updatesigma, sigma2 = mcstat.model_settings.sigma2)
+        CL = self.setup_CL()
+        mcstat = gf.setup_initialize_chains(CL)
         self.assertEqual(mcstat._MCMC__chain.shape, (mcstat.simulation_options.nsimu, 2), msg = str('Shape should be (nsimu,2) -> {}'.format(mcstat._MCMC__chain.shape)))
         self.assertEqual(mcstat._MCMC__sschain.shape, (mcstat.simulation_options.nsimu, 1), msg = str('Shape should be (nsimu,1) -> {}'.format(mcstat._MCMC__sschain.shape)))
         self.assertEqual(mcstat._MCMC__s2chain.shape, (mcstat.simulation_options.nsimu, 1), msg = str('Shape should be (nsimu,1) -> {}'.format(mcstat._MCMC__s2chain.shape)))
         
     def test_initialize_chain_updatesigma_0(self):
-        mcstat = gf.setup_mcmc_case_cp()
-        mcstat.simulation_options.updatesigma = 0
-        CL = {'theta':np.array([1.0, 2.0]), 'ss': 1.0, 'prior':0.0, 'sigma2': 0.0}
-        mcstat._MCMC__old_set = ParameterSet(theta = CL['theta'], ss = CL['ss'], prior = CL['prior'], sigma2 = CL['sigma2'])
-        mcstat._MCMC__chain_index = mcstat.simulation_options.nsimu - 1
-        mcstat._MCMC__initialize_chains(chainind = 0, nsimu = mcstat.simulation_options.nsimu, npar = mcstat.parameters.npar, nsos = mcstat.model_settings.nsos, updatesigma = mcstat.simulation_options.updatesigma, sigma2 = mcstat.model_settings.sigma2)
+        CL = self.setup_CL()
+        mcstat = gf.setup_initialize_chains(CL, updatesigma = False)
         self.assertEqual(mcstat._MCMC__chain.shape, (mcstat.simulation_options.nsimu, 2), msg = str('Shape should be (nsimu,2) -> {}'.format(mcstat._MCMC__chain.shape)))
         self.assertEqual(mcstat._MCMC__sschain.shape, (mcstat.simulation_options.nsimu, 1), msg = str('Shape should be (nsimu,1) -> {}'.format(mcstat._MCMC__sschain.shape)))
         self.assertEqual(mcstat._MCMC__s2chain, None, msg = str('s2chain should be None -> {}'.format(mcstat._MCMC__s2chain)))
         
     def test_initialize_chain_updatesigma_1_nsos_2(self):
-        mcstat = gf.setup_mcmc_case_cp()
-        mcstat.model_settings.nsos = 2
-        CL = {'theta':np.array([1.0, 2.0]), 'ss': 1.0, 'prior':0.0, 'sigma2': 0.0}
-        mcstat._MCMC__old_set = ParameterSet(theta = CL['theta'], ss = CL['ss'], prior = CL['prior'], sigma2 = CL['sigma2'])
-        mcstat._MCMC__chain_index = mcstat.simulation_options.nsimu - 1
-        mcstat._MCMC__initialize_chains(chainind = 0, nsimu = mcstat.simulation_options.nsimu, npar = mcstat.parameters.npar, nsos = mcstat.model_settings.nsos, updatesigma = mcstat.simulation_options.updatesigma, sigma2 = mcstat.model_settings.sigma2)
+        CL = self.setup_CL()
+        mcstat = gf.setup_initialize_chains(CL, nsos = 2)
         self.assertEqual(mcstat._MCMC__chain.shape, (mcstat.simulation_options.nsimu, 2), msg = str('Shape should be (nsimu,2) -> {}'.format(mcstat._MCMC__chain.shape)))
         self.assertEqual(mcstat._MCMC__sschain.shape, (mcstat.simulation_options.nsimu, 2), msg = str('Shape should be (nsimu,2) -> {}'.format(mcstat._MCMC__sschain.shape)))
         self.assertEqual(mcstat._MCMC__s2chain.shape, (mcstat.simulation_options.nsimu, 2), msg = str('Shape should be (nsimu,2) -> {}'.format(mcstat._MCMC__s2chain.shape)))
      
 # --------------------------
 class ExpandChain(unittest.TestCase):
+    @classmethod
+    def setup_CL(cls):
+        return {'theta':np.array([1.0, 2.0]), 'ss': 1.0, 'prior':0.0, 'sigma2': 0.0}
     def test_expand_chain_updatesigma_1(self):
-        mcstat = gf.setup_mcmc_case_cp()
-        CL = {'theta':np.array([1.0, 2.0]), 'ss': 1.0, 'prior':0.0, 'sigma2': 0.0}
-        mcstat._MCMC__old_set = ParameterSet(theta = CL['theta'], ss = CL['ss'], prior = CL['prior'], sigma2 = CL['sigma2'])
-        mcstat._MCMC__chain_index = mcstat.simulation_options.nsimu - 1
-        mcstat._MCMC__initialize_chains(chainind = 0, nsimu = mcstat.simulation_options.nsimu, npar = mcstat.parameters.npar, nsos = mcstat.model_settings.nsos, updatesigma = mcstat.simulation_options.updatesigma, sigma2 = mcstat.model_settings.sigma2)
+        CL = self.setup_CL()
+        mcstat = gf.setup_initialize_chains(CL)
         mcstat._MCMC__expand_chains(nsimu = mcstat.simulation_options.nsimu, npar = mcstat.parameters.npar, nsos = mcstat.model_settings.nsos, updatesigma = mcstat.simulation_options.updatesigma)
         self.assertEqual(mcstat._MCMC__chain.shape, (mcstat.simulation_options.nsimu*2 - 1, 2), msg = str('Shape should be (nsimu,2) -> {}'.format(mcstat._MCMC__chain.shape)))
         self.assertEqual(mcstat._MCMC__sschain.shape, (mcstat.simulation_options.nsimu*2 - 1, 1), msg = str('Shape should be (nsimu,1) -> {}'.format(mcstat._MCMC__sschain.shape)))
         self.assertEqual(mcstat._MCMC__s2chain.shape, (mcstat.simulation_options.nsimu*2 - 1, 1), msg = str('Shape should be (nsimu,1) -> {}'.format(mcstat._MCMC__s2chain.shape)))
         
     def test_expand_chain_updatesigma_0(self):
-        mcstat = gf.setup_mcmc_case_cp()
-        mcstat.simulation_options.updatesigma = 0
-        CL = {'theta':np.array([1.0, 2.0]), 'ss': 1.0, 'prior':0.0, 'sigma2': 0.0}
-        mcstat._MCMC__old_set = ParameterSet(theta = CL['theta'], ss = CL['ss'], prior = CL['prior'], sigma2 = CL['sigma2'])
-        mcstat._MCMC__chain_index = mcstat.simulation_options.nsimu - 1
-        mcstat._MCMC__initialize_chains(chainind = 0, nsimu = mcstat.simulation_options.nsimu, npar = mcstat.parameters.npar, nsos = mcstat.model_settings.nsos, updatesigma = mcstat.simulation_options.updatesigma, sigma2 = mcstat.model_settings.sigma2)
+        CL = self.setup_CL()
+        mcstat = gf.setup_initialize_chains(CL, updatesigma = False)
         mcstat._MCMC__expand_chains(nsimu = mcstat.simulation_options.nsimu, npar = mcstat.parameters.npar, nsos = mcstat.model_settings.nsos, updatesigma = mcstat.simulation_options.updatesigma)
         self.assertEqual(mcstat._MCMC__chain.shape, (mcstat.simulation_options.nsimu*2 - 1, 2), msg = str('Shape should be (nsimu,2) -> {}'.format(mcstat._MCMC__chain.shape)))
         self.assertEqual(mcstat._MCMC__sschain.shape, (mcstat.simulation_options.nsimu*2 - 1, 1), msg = str('Shape should be (nsimu,1) -> {}'.format(mcstat._MCMC__sschain.shape)))
         self.assertEqual(mcstat._MCMC__s2chain, None, msg = str('s2chain should be None -> {}'.format(mcstat._MCMC__s2chain)))
         
     def test_expand_chain_updatesigma_1_nsos_2(self):
-        mcstat = gf.setup_mcmc_case_cp()
-        mcstat.model_settings.nsos = 2
-        CL = {'theta':np.array([1.0, 2.0]), 'ss': 1.0, 'prior':0.0, 'sigma2': 0.0}
-        mcstat._MCMC__old_set = ParameterSet(theta = CL['theta'], ss = CL['ss'], prior = CL['prior'], sigma2 = CL['sigma2'])
-        mcstat._MCMC__chain_index = mcstat.simulation_options.nsimu - 1
-        mcstat._MCMC__initialize_chains(chainind = 0, nsimu = mcstat.simulation_options.nsimu, npar = mcstat.parameters.npar, nsos = mcstat.model_settings.nsos, updatesigma = mcstat.simulation_options.updatesigma, sigma2 = mcstat.model_settings.sigma2)
+        CL = self.setup_CL()
+        mcstat = gf.setup_initialize_chains(CL, nsos = 2)
         mcstat._MCMC__expand_chains(nsimu = mcstat.simulation_options.nsimu, npar = mcstat.parameters.npar, nsos = mcstat.model_settings.nsos, updatesigma = mcstat.simulation_options.updatesigma)
         self.assertEqual(mcstat._MCMC__chain.shape, (mcstat.simulation_options.nsimu*2 - 1, 2), msg = str('Shape should be (nsimu,2) -> {}'.format(mcstat._MCMC__chain.shape)))
         self.assertEqual(mcstat._MCMC__sschain.shape, (mcstat.simulation_options.nsimu*2 - 1, 2), msg = str('Shape should be (nsimu,2) -> {}'.format(mcstat._MCMC__sschain.shape)))
@@ -274,74 +254,70 @@ class SaveToLogFile(unittest.TestCase):
         self.assertEqual(lastbin, 100, msg = 'Expect lastbin = end = 100')
 # --------------------------------------------------------
 class SaveChainsToTXT(unittest.TestCase):
+    def run_chain_check(self, chainfile, sschainfile, covchainfile, s2chainfile, mcstat):
+        self.compare_chain(chainfile, mcstat._MCMC__chain)
+        self.compare_chain(sschainfile, mcstat._MCMC__sschain)
+        self.compare_chain(covchainfile, np.dot(mcstat._covariance._R.transpose(),mcstat._covariance._R))
+        if s2chainfile is not False:
+            self.compare_chain(s2chainfile, mcstat._MCMC__s2chain)
+        
     def compare_chain(self, file, chain):
         self.assertTrue(os.path.isfile(file), msg = 'File exists')
         out = np.loadtxt(file)
         self.assertTrue(np.array_equal(out, chain), msg = str('Expect arrays to match: {} neq {}'.format(out, chain)))
         
     def test_save_chains_to_txt(self):
-        mcstat = setup_case()
+        mcstat = gf.setup_case()
         savedir = gf.generate_temp_folder()
         mcstat.simulation_options.savedir = savedir
-        
         chainfile, s2chainfile, sschainfile, covchainfile = ChainProcessing._create_path_with_extension_for_all_logs(mcstat.simulation_options, extension = 'txt')
-        
         mcstat._MCMC__save_chains_to_txt(start = 0, end = 100)
-        self.compare_chain(chainfile, mcstat._MCMC__chain)
-        self.compare_chain(sschainfile, mcstat._MCMC__sschain)
-        self.compare_chain(s2chainfile, mcstat._MCMC__s2chain)
-        self.compare_chain(covchainfile, np.dot(mcstat._covariance._R.transpose(),mcstat._covariance._R))
+        self.run_chain_check(chainfile, sschainfile, covchainfile, s2chainfile, mcstat)
         shutil.rmtree(savedir)
         
     def test_save_chains_to_txt_updatesigma_off(self):
-        mcstat = setup_case()
+        mcstat = gf.setup_case()
         mcstat.simulation_options.updatesigma = False
         mcstat._MCMC__s2chain = None
         savedir = gf.generate_temp_folder()
         mcstat.simulation_options.savedir = savedir
-        
-        chainfile, s2chainfile, sschainfile, covchainfile = ChainProcessing._create_path_with_extension_for_all_logs(mcstat.simulation_options, extension = 'txt')
-        
+        chainfile, _, sschainfile, covchainfile = ChainProcessing._create_path_with_extension_for_all_logs(mcstat.simulation_options, extension = 'txt')
         mcstat._MCMC__save_chains_to_txt(start = 0, end = 100)
-        self.compare_chain(chainfile, mcstat._MCMC__chain)
-        self.compare_chain(sschainfile, mcstat._MCMC__sschain)
-        self.compare_chain(covchainfile, np.dot(mcstat._covariance._R.transpose(),mcstat._covariance._R))
+        self.run_chain_check(chainfile, sschainfile, covchainfile, False, mcstat)
         shutil.rmtree(savedir)
         
 # --------------------------------------------------------
 class SaveChainsToBIN(unittest.TestCase):
+    def run_chain_check(self, chainfile, sschainfile, covchainfile, s2chainfile, mcstat):
+        self.compare_chain(chainfile, mcstat._MCMC__chain)
+        self.compare_chain(sschainfile, mcstat._MCMC__sschain)
+        self.compare_chain(covchainfile, np.dot(mcstat._covariance._R.transpose(),mcstat._covariance._R))
+        if s2chainfile is not False:
+            self.compare_chain(s2chainfile, mcstat._MCMC__s2chain)
+
     def compare_chain(self, file, chain):
         self.assertTrue(os.path.isfile(file), msg = 'File exists')
         out = ChainProcessing.read_in_bin_file(file)
         self.assertTrue(np.array_equal(out, chain), msg = str('Expect arrays to match: {}'.format(file)))
         
     def test_save_chains_to_bin(self):
-        mcstat = setup_case()
+        mcstat = gf.setup_case()
         savedir = gf.generate_temp_folder()
         mcstat.simulation_options.savedir = savedir
-        
         chainfile, s2chainfile, sschainfile, covchainfile = ChainProcessing._create_path_with_extension_for_all_logs(mcstat.simulation_options, extension = 'h5')
-        
         mcstat._MCMC__save_chains_to_bin(start = 0, end = 100)
-        self.compare_chain(chainfile, mcstat._MCMC__chain)
-        self.compare_chain(sschainfile, mcstat._MCMC__sschain)
-        self.compare_chain(s2chainfile, mcstat._MCMC__s2chain)
-        self.compare_chain(covchainfile, np.dot(mcstat._covariance._R.transpose(),mcstat._covariance._R))
+        self.run_chain_check(chainfile, sschainfile, covchainfile, s2chainfile, mcstat)
         shutil.rmtree(savedir)
         
     def test_save_chains_to_bin_updatesigma_off(self):
-        mcstat = setup_case()
+        mcstat = gf.setup_case()
         mcstat.simulation_options.updatesigma = False
         mcstat._MCMC__s2chain = None
         savedir = gf.generate_temp_folder()
         mcstat.simulation_options.savedir = savedir
-        
-        chainfile, s2chainfile, sschainfile, covchainfile = ChainProcessing._create_path_with_extension_for_all_logs(mcstat.simulation_options, extension = 'h5')
-        
+        chainfile, _, sschainfile, covchainfile = ChainProcessing._create_path_with_extension_for_all_logs(mcstat.simulation_options, extension = 'h5')
         mcstat._MCMC__save_chains_to_bin(start = 0, end = 100)
-        self.compare_chain(chainfile, mcstat._MCMC__chain)
-        self.compare_chain(sschainfile, mcstat._MCMC__sschain)
-        self.compare_chain(covchainfile, np.dot(mcstat._covariance._R.transpose(),mcstat._covariance._R))
+        self.run_chain_check(chainfile, sschainfile, covchainfile, False, mcstat)
         shutil.rmtree(savedir)
         
 # --------------------------------------------------------

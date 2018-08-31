@@ -12,7 +12,7 @@ from ..settings.DataStructure import DataStructure
 from ..settings.ModelSettings import ModelSettings
 from ..utilities.progressbar import progress_bar
 from ..plotting.utilities import append_to_nrow_ncol_based_on_shape, convert_flag_to_boolean, set_local_parameters
-from ..plotting.utilities import empirical_quantiles, check_defaults
+from ..plotting.utilities import empirical_quantiles, check_settings
 import matplotlib.pyplot as plt
 
 class PredictionIntervals:
@@ -36,7 +36,7 @@ class PredictionIntervals:
             * modelfunction: Model function handle
         '''
         # Analyze data structure
-        self.__ndatabatches, ncols = self._analyze_data_structure(data = data)
+        self.__ndatabatches, _ = self._analyze_data_structure(data = data)
 
         # setup data structure for prediction
         self.datapred = self._setup_data_structure_for_prediction(data = data, ndatabatches = self.__ndatabatches)
@@ -96,7 +96,7 @@ class PredictionIntervals:
             datapred.append(DataStructure())
             datapred[ii].add_data_set(x = data.xdata[ii], y = data.ydata[ii],
                          user_defined_object = data.user_defined_object[ii])
-            
+
         return datapred
     # --------------------------------------------
     def _assign_features_from_results_structure(self, results, burnin = 0):
@@ -699,13 +699,13 @@ class PredictionIntervals:
         '''
         # Setup interval display
         default_interval_display = {'linestyle': ':', 'linewidth': 1, 'alpha': 0.5, 'edgecolor': 'k'}
-        interval_display = check_defaults(interval_display, default_interval_display)
+        interval_display = check_settings(default_interval_display, interval_display)
         # Setup model display
-        default_model_display = {'linestyle': '-', 'marker': '', 'color': 'r', 'linewidth': 2, 'markersize': 5, 'label': 'model', 'alpha': 1.0}
-        model_display = check_defaults(model_display, default_model_display)
+        default_model_display = {'linestyle': '-', 'color': 'r', 'marker': '', 'linewidth': 2, 'markersize': 5, 'label': 'model'}
+        model_display = check_settings(default_model_display, model_display)
         # Setup data display
-        default_data_display = {'linestyle': '', 'marker': '.', 'color': 'b', 'linewidth': 1, 'markersize': 5, 'label': 'data', 'alpha': 1.0}
-        data_display = check_defaults(data_display, default_data_display)
+        default_data_display = {'linestyle': '', 'color': 'b', 'marker': '.', 'linewidth': 1, 'markersize': 5, 'label': 'data'}
+        data_display = check_settings(default_data_display, data_display)
         return interval_display, model_display, data_display
         
     @classmethod
