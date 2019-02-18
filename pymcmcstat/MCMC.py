@@ -408,37 +408,6 @@ class MCMC:
         lastbin = end
         return savecount, lastbin
     # --------------------------------------------------------
-    def __save_chains_to_bin(self, start, end):
-        '''
-        Save chain segment to binary file
-
-        Args:
-            * **start** (:py:class:`int`): Starting index of chain to save to file
-            * **end** (:py:class:`int`): Ending index of chain to save to file
-
-        If you specify a `savesize` of 100, then every 100 simulations the last 100
-        chain sets will be appended to the file.  That is to say, if you are on
-        simulation 1000, the chain elements 900-999 will be appended to the file.
-        '''
-        savedir = self.simulation_options.savedir
-        ChainProcessing._check_directory(savedir)
-        
-        chainfile, s2chainfile, sschainfile, covchainfile = ChainProcessing._create_path_with_extension_for_all_logs(self.simulation_options, extension = 'h5')
-        
-        binlogfile = os.path.join(savedir, 'binlogfile.txt')
-        binstr = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        ChainProcessing._add_to_log(binlogfile, str('{}\t{}\t{}\n'.format(binstr, start, end-1)))
-
-        # define set name based in start/end
-        datasetname = str('{}_{}_{}'.format('nsimu',start,end-1))
-        
-        ChainProcessing._save_to_bin_file(chainfile, datasetname = datasetname, mtx = self.__chain[start:end,:])
-        ChainProcessing._save_to_bin_file(sschainfile, datasetname = datasetname, mtx = self.__sschain[start:end,:])
-        ChainProcessing._save_to_bin_file(covchainfile, datasetname = datasetname, mtx = np.dot(self._covariance._R.transpose(),self._covariance._R))
-        
-        if self.simulation_options.updatesigma == 1:
-            ChainProcessing._save_to_bin_file(s2chainfile, datasetname = datasetname, mtx = self.__s2chain[start:end,:])
-    # --------------------------------------------------------
     def __save_chains(self, chains, savedir, start, end, extension):
         '''
         Save custom chain segment
@@ -464,35 +433,6 @@ class MCMC:
                 ChainProcessing._save_to_bin_file(chainfile, datasetname = datasetname, mtx = chain['mtx'][start:end,:])
             else:
                 ChainProcessing._save_to_txt_file(chainfile, mtx = chain['mtx'][start:end,:])
-            
-    # --------------------------------------------------------
-    def __save_chains_to_txt(self, start, end):
-        '''
-        Save chain segment to text file
-
-        Args:
-            * **start** (:py:class:`int`): Starting index of chain to save to file
-            * **end** (:py:class:`int`): Ending index of chain to save to file
-
-        If you specify a `savesize` of 100, then every 100 simulations the last 100
-        chain sets will be appended to the file.  That is to say, if you are on
-        simulation 1000, the chain elements 900-999 will be appended to the file.
-        '''
-        savedir = self.simulation_options.savedir
-        ChainProcessing._check_directory(savedir)
-        
-        chainfile, s2chainfile, sschainfile, covchainfile = ChainProcessing._create_path_with_extension_for_all_logs(self.simulation_options, extension = 'txt')
-       
-        txtlogfile = os.path.join(savedir, 'txtlogfile.txt')
-        txtstr = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        ChainProcessing._add_to_log(txtlogfile, str('{}\t{}\t{}\n'.format(txtstr, start, end-1)))
-        
-        ChainProcessing._save_to_txt_file(chainfile, self.__chain[start:end,:])
-        ChainProcessing._save_to_txt_file(sschainfile, self.__sschain[start:end,:])
-        ChainProcessing._save_to_txt_file(covchainfile, np.dot(self._covariance._R.transpose(),self._covariance._R))
-        
-        if self.simulation_options.updatesigma == 1:
-            ChainProcessing._save_to_txt_file(s2chainfile, self.__s2chain[start:end,:])
     
     # --------------------------------------------------------
     def __update_chain(self, accept, new_set, outsidebounds):

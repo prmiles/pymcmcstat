@@ -235,8 +235,7 @@ class GenerateSimulationResults(unittest.TestCase):
 
 # ------------------------------------------------
 class SaveToLogFile(unittest.TestCase):
-    @patch('pymcmcstat.MCMC.MCMC._MCMC__save_chains_to_bin', return_value = None)
-    def test_no_save_to_log_file(self, mock_bin):
+    def test_no_save_to_log_file(self):
         mcstat = gf.basic_mcmc()
         mcstat.simulation_options.save_to_bin = False
         mcstat.simulation_options.save_to_txt = False
@@ -249,8 +248,7 @@ class SaveToLogFile(unittest.TestCase):
         self.assertEqual(lastbin, 100, msg = 'Expect lastbin = end = 100')
         self.assertFalse(os.path.isdir(tmpfolder), msg = str('Folder exists: {}'.format(tmpfolder)))
         
-    @patch('pymcmcstat.MCMC.MCMC._MCMC__save_chains_to_bin', return_value = None)
-    def test_save_to_log_file_bin(self, mock_bin):
+    def test_save_to_log_file_bin(self):
         mcstat = gf.basic_mcmc()
         mcstat.simulation_options.save_to_bin = True
         mcstat.simulation_options.save_to_txt = False
@@ -263,8 +261,7 @@ class SaveToLogFile(unittest.TestCase):
         self.assertEqual(lastbin, 100, msg = 'Expect lastbin = end = 100')
         shutil.rmtree(tmpfolder)
         
-    @patch('pymcmcstat.MCMC.MCMC._MCMC__save_chains_to_txt', return_value = None)
-    def test_save_to_log_file_txt(self, mock_txt):
+    def test_save_to_log_file_txt(self):
         mcstat = gf.basic_mcmc()
         mcstat.simulation_options.save_to_bin = False
         mcstat.simulation_options.save_to_txt = True
@@ -277,8 +274,7 @@ class SaveToLogFile(unittest.TestCase):
         self.assertEqual(lastbin, 100, msg = 'Expect lastbin = end = 100')
         shutil.rmtree(tmpfolder)
     
-    @patch('pymcmcstat.MCMC.MCMC._MCMC__save_chains_to_bin', return_value = None)
-    def test_save_to_log_file_bin_no_append(self, mock_bin):
+    def test_save_to_log_file_bin_no_append(self):
         mcstat = gf.basic_mcmc()
         mcstat.simulation_options.save_to_bin = True
         mcstat.simulation_options.save_to_txt = False
@@ -294,8 +290,7 @@ class SaveToLogFile(unittest.TestCase):
         self.assertFalse(os.path.isfile(tmpfile), msg = str('File exists: {}'.format(tmpfile)))
         shutil.rmtree(tmpfolder)
         
-    @patch('pymcmcstat.MCMC.MCMC._MCMC__save_chains_to_txt', return_value = None)
-    def test_save_to_log_file_txt_no_append(self, mock_txt):
+    def test_save_to_log_file_txt_no_append(self):
         mcstat = gf.basic_mcmc()
         mcstat.simulation_options.save_to_bin = False
         mcstat.simulation_options.save_to_txt = True
@@ -310,74 +305,6 @@ class SaveToLogFile(unittest.TestCase):
         
         self.assertFalse(os.path.isfile(tmpfile), msg = str('File exists: {}'.format(tmpfile)))
         shutil.rmtree(tmpfolder)
-        
-# --------------------------------------------------------
-class SaveChainsToTXT(unittest.TestCase):
-    def run_chain_check(self, chainfile, sschainfile, covchainfile, s2chainfile, mcstat):
-        self.compare_chain(chainfile, mcstat._MCMC__chain)
-        self.compare_chain(sschainfile, mcstat._MCMC__sschain)
-        self.compare_chain(covchainfile, np.dot(mcstat._covariance._R.transpose(),mcstat._covariance._R))
-        if s2chainfile is not False:
-            self.compare_chain(s2chainfile, mcstat._MCMC__s2chain)
-        
-    def compare_chain(self, file, chain):
-        self.assertTrue(os.path.isfile(file), msg = 'File exists')
-        out = np.loadtxt(file)
-        self.assertTrue(np.array_equal(out, chain), msg = str('Expect arrays to match: {} neq {}'.format(out, chain)))
-        
-    def test_save_chains_to_txt(self):
-        mcstat = gf.setup_case()
-        savedir = gf.generate_temp_folder()
-        mcstat.simulation_options.savedir = savedir
-        chainfile, s2chainfile, sschainfile, covchainfile = ChainProcessing._create_path_with_extension_for_all_logs(mcstat.simulation_options, extension = 'txt')
-        mcstat._MCMC__save_chains_to_txt(start = 0, end = 100)
-        self.run_chain_check(chainfile, sschainfile, covchainfile, s2chainfile, mcstat)
-        shutil.rmtree(savedir)
-        
-    def test_save_chains_to_txt_updatesigma_off(self):
-        mcstat = gf.setup_case()
-        mcstat.simulation_options.updatesigma = False
-        mcstat._MCMC__s2chain = None
-        savedir = gf.generate_temp_folder()
-        mcstat.simulation_options.savedir = savedir
-        chainfile, _, sschainfile, covchainfile = ChainProcessing._create_path_with_extension_for_all_logs(mcstat.simulation_options, extension = 'txt')
-        mcstat._MCMC__save_chains_to_txt(start = 0, end = 100)
-        self.run_chain_check(chainfile, sschainfile, covchainfile, False, mcstat)
-        shutil.rmtree(savedir)
-        
-# --------------------------------------------------------
-class SaveChainsToBIN(unittest.TestCase):
-    def run_chain_check(self, chainfile, sschainfile, covchainfile, s2chainfile, mcstat):
-        self.compare_chain(chainfile, mcstat._MCMC__chain)
-        self.compare_chain(sschainfile, mcstat._MCMC__sschain)
-        self.compare_chain(covchainfile, np.dot(mcstat._covariance._R.transpose(),mcstat._covariance._R))
-        if s2chainfile is not False:
-            self.compare_chain(s2chainfile, mcstat._MCMC__s2chain)
-
-    def compare_chain(self, file, chain):
-        self.assertTrue(os.path.isfile(file), msg = 'File exists')
-        out = ChainProcessing.read_in_bin_file(file)
-        self.assertTrue(np.array_equal(out, chain), msg = str('Expect arrays to match: {}'.format(file)))
-        
-    def test_save_chains_to_bin(self):
-        mcstat = gf.setup_case()
-        savedir = gf.generate_temp_folder()
-        mcstat.simulation_options.savedir = savedir
-        chainfile, s2chainfile, sschainfile, covchainfile = ChainProcessing._create_path_with_extension_for_all_logs(mcstat.simulation_options, extension = 'h5')
-        mcstat._MCMC__save_chains_to_bin(start = 0, end = 100)
-        self.run_chain_check(chainfile, sschainfile, covchainfile, s2chainfile, mcstat)
-        shutil.rmtree(savedir)
-        
-    def test_save_chains_to_bin_updatesigma_off(self):
-        mcstat = gf.setup_case()
-        mcstat.simulation_options.updatesigma = False
-        mcstat._MCMC__s2chain = None
-        savedir = gf.generate_temp_folder()
-        mcstat.simulation_options.savedir = savedir
-        chainfile, _, sschainfile, covchainfile = ChainProcessing._create_path_with_extension_for_all_logs(mcstat.simulation_options, extension = 'h5')
-        mcstat._MCMC__save_chains_to_bin(start = 0, end = 100)
-        self.run_chain_check(chainfile, sschainfile, covchainfile, False, mcstat)
-        shutil.rmtree(savedir)
         
 # --------------------------------------------------------
 class RunSimulation(unittest.TestCase):
