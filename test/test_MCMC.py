@@ -233,6 +233,25 @@ class GenerateSimulationResults(unittest.TestCase):
         for cft in check_for_these:
             self.assertTrue(cft in results, msg = str('{} assigned successfully'.format(cft)))
             
+## ------------------------------------------------
+#class SaveToLogFile(unittest.TestCase):
+#    @patch('pymcmcstat.MCMC.MCMC._MCMC__save_chains_to_bin', return_value = None)
+#    def test_save_to_log_file_bin(self, mock_bin):
+#        mcstat = gf.basic_mcmc()
+#        mcstat.simulation_options.save_to_bin = True
+#        mcstat.simulation_options.save_to_txt = False
+#        savecount, lastbin = mcstat._MCMC__save_to_log_file(start = 0, end = 100)
+#        self.assertEqual(savecount, 0, msg = 'Expect 0')
+#        self.assertEqual(lastbin, 100, msg = 'Expect lastbin = end = 100')
+#        
+#    @patch('pymcmcstat.MCMC.MCMC._MCMC__save_chains_to_txt', return_value = None)
+#    def test_save_to_log_file_txt(self, mock_txt):
+#        mcstat = gf.basic_mcmc()
+#        mcstat.simulation_options.save_to_bin = False
+#        mcstat.simulation_options.save_to_txt = True
+#        savecount, lastbin = mcstat._MCMC__save_to_log_file(start = 0, end = 100)
+#        self.assertEqual(savecount, 0, msg = 'Expect 0')
+#        self.assertEqual(lastbin, 100, msg = 'Expect lastbin = end = 100')
 # ------------------------------------------------
 class SaveToLogFile(unittest.TestCase):
     @patch('pymcmcstat.MCMC.MCMC._MCMC__save_chains_to_bin', return_value = None)
@@ -240,7 +259,9 @@ class SaveToLogFile(unittest.TestCase):
         mcstat = gf.basic_mcmc()
         mcstat.simulation_options.save_to_bin = True
         mcstat.simulation_options.save_to_txt = False
-        savecount, lastbin = mcstat._MCMC__save_to_log_file(start = 0, end = 100)
+        chains = []
+        chains.append(dict(file = 'chain', mtx = np.random.random_sample((1000,3))))
+        savecount, lastbin = mcstat._MCMC__save_to_log_file(chains = chains, start = 0, end = 100)
         self.assertEqual(savecount, 0, msg = 'Expect 0')
         self.assertEqual(lastbin, 100, msg = 'Expect lastbin = end = 100')
         
@@ -249,9 +270,46 @@ class SaveToLogFile(unittest.TestCase):
         mcstat = gf.basic_mcmc()
         mcstat.simulation_options.save_to_bin = False
         mcstat.simulation_options.save_to_txt = True
-        savecount, lastbin = mcstat._MCMC__save_to_log_file(start = 0, end = 100)
+        chains = []
+        chains.append(dict(file = 'chain', mtx = np.random.random_sample((1000,3))))
+        savecount, lastbin = mcstat._MCMC__save_to_log_file(chains = chains, start = 0, end = 100)
         self.assertEqual(savecount, 0, msg = 'Expect 0')
         self.assertEqual(lastbin, 100, msg = 'Expect lastbin = end = 100')
+    
+    @patch('pymcmcstat.MCMC.MCMC._MCMC__save_chains_to_bin', return_value = None)
+    def test_save_to_log_file_bin_no_append(self, mock_bin):
+        mcstat = gf.basic_mcmc()
+        mcstat.simulation_options.save_to_bin = True
+        mcstat.simulation_options.save_to_txt = False
+
+        tmpfolder = gf.generate_temp_folder()
+        mcstat.simulation_options.savedir = tmpfolder
+        tmpfile = tmpfolder + os.sep + 'binlogfile.txt'
+        
+        chains = []
+        chains.append(dict(file = 'chain', mtx = np.random.random_sample((1000,3))))
+        savecount, lastbin = mcstat._MCMC__save_to_log_file(chains = chains, start = 0, end = 100, append_to_log = False)
+        
+        self.assertFalse(os.path.isfile(tmpfile), msg = str('File exists: {}'.format(tmpfile)))
+        shutil.rmtree(tmpfolder)
+        
+    @patch('pymcmcstat.MCMC.MCMC._MCMC__save_chains_to_txt', return_value = None)
+    def test_save_to_log_file_txt_no_append(self, mock_txt):
+        mcstat = gf.basic_mcmc()
+        mcstat.simulation_options.save_to_bin = False
+        mcstat.simulation_options.save_to_txt = True
+
+        tmpfolder = gf.generate_temp_folder()
+        mcstat.simulation_options.savedir = tmpfolder
+        tmpfile = tmpfolder + os.sep + 'txtlogfile.txt'
+        
+        chains = []
+        chains.append(dict(file = 'chain', mtx = np.random.random_sample((1000,3))))
+        savecount, lastbin = mcstat._MCMC__save_to_log_file(chains = chains, start = 0, end = 100, append_to_log = False)
+        
+        self.assertFalse(os.path.isfile(tmpfile), msg = str('File exists: {}'.format(tmpfile)))
+        shutil.rmtree(tmpfolder)
+        
 # --------------------------------------------------------
 class SaveChainsToTXT(unittest.TestCase):
     def run_chain_check(self, chainfile, sschainfile, covchainfile, s2chainfile, mcstat):
