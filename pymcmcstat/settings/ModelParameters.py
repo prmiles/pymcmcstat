@@ -65,9 +65,19 @@ class ModelParameters:
             theta0 = 1.0
 
         # append dictionary element
-        self.parameters.append({'name': name, 'theta0': theta0, 'minimum': minimum,
-                                'maximum': maximum, 'prior_mu': prior_mu, 'prior_sigma': prior_sigma,
-                                'sample': bool(sample), 'local': local, 'adapt': bool(adapt)})
+        self.parameters.append(dict(
+                name = name,
+                theta0 = theta0,
+                minimum = minimum,
+                maximum = maximum,
+                prior_mu = prior_mu,
+                prior_sigma = prior_sigma,
+                sample = bool(sample),
+                local = local,
+                adapt = bool(adapt),
+                )
+        )
+        
     # --------------------------
     def _openparameterstructure(self, nbatch):
         # unpack input object
