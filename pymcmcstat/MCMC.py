@@ -222,9 +222,14 @@ class MCMC:
         self.__chain[chainind,:] = self.__initial_set.theta
         self.__sschain[chainind,:] = self.__initial_set.ss
         
+        self.__chains = []
+        self.__chains.append(dict(file = self.simulation_options.chainfile, mtx = self.__chain))
+        self.__chains.append(dict(file = self.simulation_options.sschainfile, mtx = self.__sschain))
+        
         if updatesigma:
             self.__s2chain = np.zeros([nsimu, nsos])
             self.__s2chain[chainind,:] = sigma2
+            self.__chains.append(dict(file = self.simulation_options.s2chainfile, mtx = self.__s2chain))
         else:
             self.__s2chain = None
     # --------------------------------------------------------
@@ -325,14 +330,15 @@ class MCMC:
                 # add custom chains is applicable
                 for cs in self.custom_samplers:
                     if (hasattr(cs, 'save_chain') is True) and (cs.save_chain is True):
-                        self.save_to_log_file(chains = cs.chains, start = isimu - self.simulation_options.savesize, end = isimu)
+                        self.save_to_log_file(chains = cs.chains, start = isimu - self.simulation_options.savesize, end = isimu, append_to_log = False)
        
         # SAVE REMAINING ELEMENTS TO BIN FILE
-        self.__save_to_log_file(start = lastbin, end = isimu + 1)
+#        self.__save_to_log_file(start = lastbin, end = isimu + 1)
+        self.save_to_log_file(chains = self.__chains, start = lastbin, end = isimu + 1)
         # add custom chains is applicable
         for cs in self.custom_samplers:
             if (hasattr(cs, 'save_chain') is True) and (cs.save_chain is True):
-                self.save_to_log_file(cs.chains, start = lastbin, end = isimu + 1)
+                self.save_to_log_file(cs.chains, start = lastbin, end = isimu + 1, append_to_log = False)
        
         # update value to end value
         self.parameters._value[self.parameters._parind] = self.__old_set.theta
@@ -390,7 +396,7 @@ class MCMC:
         return savecount, lastbin
     
     # ------------------------------------------------
-    def save_to_log_file(self, chains, start, end):
+    def save_to_log_file(self, chains, start, end, append_to_log = True):
         '''
         Save to log files
         
@@ -406,15 +412,17 @@ class MCMC:
         ChainProcessing._check_directory(savedir)
         
         if self.simulation_options.save_to_bin is True:
-            binlogfile = os.path.join(savedir, 'binlogfile.txt')
-            binstr = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-            ChainProcessing._add_to_log(binlogfile, str('{}\t{}\t{}\n'.format(binstr, start, end-1)))
+            if append_to_log is True:
+                binlogfile = os.path.join(savedir, 'binlogfile.txt')
+                binstr = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                ChainProcessing._add_to_log(binlogfile, str('{}\t{}\t{}\n'.format(binstr, start, end-1)))
             self.__save_chains(chains = chains, savedir = savedir, start = start, end = end, extension = 'h5')
             
         if self.simulation_options.save_to_txt is True:
-            txtlogfile = os.path.join(savedir, 'txtlogfile.txt')
-            txtstr = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-            ChainProcessing._add_to_log(txtlogfile, str('{}\t{}\t{}\n'.format(txtstr, start, end-1)))
+            if append_to_log is True:
+                txtlogfile = os.path.join(savedir, 'txtlogfile.txt')
+                txtstr = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                ChainProcessing._add_to_log(txtlogfile, str('{}\t{}\t{}\n'.format(txtstr, start, end-1)))
             self.__save_chains(chains = chains, savedir = savedir, start = start, end = end, extension = 'txt')
             
         # reset counter
