@@ -70,6 +70,7 @@ class MCMC:
         self.model_settings = ModelSettings()
         self.simulation_options = SimulationOptions()
         self.parameters = ModelParameters()
+        self.custom_samplers = None
         # private variables
         self._error_variance = ErrorVarianceEstimator()
         self._covariance = CovarianceProcedures()
