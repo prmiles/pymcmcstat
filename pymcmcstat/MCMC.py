@@ -524,7 +524,7 @@ class MCMC:
         self.__rejected['in_adaptation_interval'] += 1
         if outsidebounds:
             self.__rejected['outside_bounds'] += 1
-    # --------------------------------------------------------        
+    # --------------------------------------------------------
     def display_current_mcmc_settings(self):
         '''
         Display model settings, simulation options, and current covariance values.
