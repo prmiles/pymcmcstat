@@ -70,7 +70,7 @@ class MCMC:
         self.model_settings = ModelSettings()
         self.simulation_options = SimulationOptions()
         self.parameters = ModelParameters()
-        self.custom_samplers = None
+        self.custom_samplers = []
         # private variables
         self._error_variance = ErrorVarianceEstimator()
         self._covariance = CovarianceProcedures()
@@ -196,6 +196,12 @@ class MCMC:
         
         if self.simulation_options.ntry > 1:
             self._sampling_methods.delayed_rejection._initialize_dr_metrics(self.simulation_options)
+        # ---------------------
+        # Setup custom samplers
+        if self.custom_samplers is not None:
+            for ii, cs in enumerate(self.custom_samplers):
+                cs.setup()
+        
     # --------------------------------------------------------
     def __initialize_chains(self, chainind, nsimu, npar, nsos, updatesigma, sigma2):
         '''
@@ -312,6 +318,12 @@ class MCMC:
             # SAVE TO LOG FILE
             if savecount == self.simulation_options.savesize:
                 savecount, lastbin = self.__save_to_log_file(start = isimu - self.simulation_options.savesize, end = isimu)
+                
+            # ---------------------
+            # RUN CUSTOM SAMPLERS
+            if self.custom_samplers is not None:
+                for ii, cs in enumerate(self.custom_samplers):
+                    cs.update()
        
         # SAVE REMAINING ELEMENTS TO BIN FILE
         self.__save_to_log_file(start = lastbin, end = isimu + 1)
