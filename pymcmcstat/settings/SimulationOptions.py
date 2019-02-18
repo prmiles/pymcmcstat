@@ -25,7 +25,7 @@ class SimulationOptions:
 
     def define_simulation_options(self, nsimu=int(1e4), adaptint = None, ntry = None, method='dram',
                  printint=None, adaptend = 0, lastadapt = 0, burnintime = 0,
-                 waitbar = 1, debug = 0, qcov = None, updatesigma = False,
+                 waitbar = True, debug = 0, qcov = None, updatesigma = False,
                  stats = 0, drscale = np.array([5, 4, 3], dtype = float),
                  adascale = None, savesize = 0, maxmem = 0, chainfile = 'chainfile',
                  s2chainfile = 's2chainfile', sschainfile = 'sschainfile', covchainfile = 'covchainfile', savedir = None,
@@ -116,7 +116,7 @@ class SimulationOptions:
             self.doram = doram
         
         
-        self.nsimu = nsimu  # length of chain to simulate
+        self.nsimu = int(nsimu)  # length of chain to simulate
         self.method = method
         self.dodram = 0
         
@@ -124,11 +124,11 @@ class SimulationOptions:
         self.adaptend = adaptend  # last adapt
         self.lastadapt = lastadapt # last adapt
         self.burnintime = burnintime
-        self.waitbar = waitbar # use waitbar
+        self.waitbar = bool(waitbar) # use waitbar
         self.debug = debug  # show some debug information
         self.qcov = qcov  # proposal covariance
         self.initqcovn = initqcovn  # proposal covariance weight in update
-        self.updatesigma = updatesigma  #
+        self.updatesigma = bool(updatesigma)  #
         self.priorupdatestart = priorupdatestart
         self.qcov_adjust = qcov_adjust  # eps adjustment
         self.burnin_scale = burnin_scale
