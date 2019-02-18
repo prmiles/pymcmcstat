@@ -68,6 +68,12 @@ def setup_case():
     mcstat._MCMC__sschain = np.random.random_sample(size = (100,2))
     mcstat._MCMC__s2chain = np.random.random_sample(size = (100,2))
     mcstat._covariance._R = np.array([[0.5, 0.2],[0., 0.3]])
+    
+    mcstat._MCMC__chains = []
+    mcstat._MCMC__chains.append(dict(file = mcstat.simulation_options.chainfile, mtx = mcstat._MCMC__chain))
+    mcstat._MCMC__chains.append(dict(file = mcstat.simulation_options.sschainfile, mtx = mcstat._MCMC__sschain))
+    mcstat._MCMC__chains.append(dict(file = mcstat.simulation_options.s2chainfile, mtx = mcstat._MCMC__s2chain))
+        
     return mcstat
 
 def setup_mcmc():

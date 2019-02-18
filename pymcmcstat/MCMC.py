@@ -327,6 +327,7 @@ class MCMC:
             # SAVE TO LOG FILE
             if savecount == self.simulation_options.savesize:
                 savecount, lastbin = self.__save_to_log_file(chains = self.__chains, start = isimu - self.simulation_options.savesize, end = isimu)
+                self.__save_to_log_file(chains = [dict(mtx = np.dot(self._covariance._R.transpose(),self._covariance._R))], start = isimu - self.simulation_options.savesize, end = isimu, append_to_log = False, covmtx = True)
                 # add custom chains is applicable
                 for cs in self.custom_samplers:
                     if (hasattr(cs, 'save_chain') is True) and (cs.save_chain is True):
@@ -334,6 +335,7 @@ class MCMC:
        
         # SAVE REMAINING ELEMENTS TO BIN FILE
         self.__save_to_log_file(chains = self.__chains, start = lastbin, end = isimu + 1)
+        self.__save_to_log_file(chains = [dict(mtx = np.dot(self._covariance._R.transpose(),self._covariance._R))], start = lastbin, end = isimu, append_to_log = False, covmtx = True)
         # add custom chains is applicable
         for cs in self.custom_samplers:
             if (hasattr(cs, 'save_chain') is True) and (cs.save_chain is True):
@@ -373,7 +375,7 @@ class MCMC:
         self.simulation_results.add_sschain(sschain = self.__sschain)
 
     # ------------------------------------------------
-    def __save_to_log_file(self, chains, start, end, append_to_log = True):
+    def __save_to_log_file(self, chains, start, end, append_to_log = True, covmtx = False):
         '''
         Save to log files
         
@@ -392,7 +394,11 @@ class MCMC:
                 binlogfile = os.path.join(savedir, 'binlogfile.txt')
                 binstr = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                 ChainProcessing._add_to_log(binlogfile, str('{}\t{}\t{}\n'.format(binstr, start, end-1)))
-            self.__save_chains(chains = chains, savedir = savedir, start = start, end = end, extension = 'h5')
+            
+            if covmtx is True:
+                self.__save_covmtx_chain(chain = chains[0], start = start, end = end, extension = 'h5')
+            else:
+                self.__save_chains(chains = chains, savedir = savedir, start = start, end = end, extension = 'h5')
             
         if self.simulation_options.save_to_txt is True:
             savedir = self.simulation_options.savedir
@@ -401,7 +407,10 @@ class MCMC:
                 txtlogfile = os.path.join(savedir, 'txtlogfile.txt')
                 txtstr = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                 ChainProcessing._add_to_log(txtlogfile, str('{}\t{}\t{}\n'.format(txtstr, start, end-1)))
-            self.__save_chains(chains = chains, savedir = savedir, start = start, end = end, extension = 'txt')
+            if covmtx is True:
+                self.__save_covmtx_chain(chain = chains[0], start = start, end = end, extension = 'txt')
+            else:
+                self.__save_chains(chains = chains, savedir = savedir, start = start, end = end, extension = 'txt')
             
         # reset counter
         savecount = 0
@@ -427,12 +436,38 @@ class MCMC:
             # add extension
             chainfile = ChainProcessing._create_path_with_extension(savedir, chain['file'], extension = extension)
             
-            if extension.lower() == 'bin':
+            if extension.lower() == 'h5':
                 # define set name based in start/end
                 datasetname = str('{}_{}_{}'.format('nsimu',start,end-1))
                 ChainProcessing._save_to_bin_file(chainfile, datasetname = datasetname, mtx = chain['mtx'][start:end,:])
             else:
                 ChainProcessing._save_to_txt_file(chainfile, mtx = chain['mtx'][start:end,:])
+                
+    # --------------------------------------------------------
+    def __save_covmtx_chain(self, chain, start, end, extension):
+        '''
+        Save custom chain segment
+
+        Args:
+            * **chains** (:py:class:`list`): List of dicts with keys "file" and "mtx".  "file" is name of log file, and "mtx" is chain array to save
+            * **start** (:py:class:`int`): Starting index of chain to save to file
+            * **end** (:py:class:`int`): Ending index of chain to save to file
+            * **extension** (:py:class:`str`): File extension - 'h5' or 'txt'
+
+        If you specify a `savesize` of 100, then every 100 simulations the last 100
+        chain sets will be appended to the file.  That is to say, if you are on
+        simulation 1000, the chain elements 900-999 will be appended to the file.
+        '''
+        
+        # add extension
+        chainfile = ChainProcessing._create_path_with_extension(self.simulation_options.savedir, self.simulation_options.covchainfile, extension = extension)
+        
+        if extension.lower() == 'h5':
+            # define set name based in start/end
+            datasetname = str('{}_{}_{}'.format('nsimu',start,end-1))
+            ChainProcessing._save_to_bin_file(chainfile, datasetname = datasetname, mtx = chain['mtx'])
+        else:
+            ChainProcessing._save_to_txt_file(chainfile, mtx = chain['mtx'])
     
     # --------------------------------------------------------
     def __update_chain(self, accept, new_set, outsidebounds):
