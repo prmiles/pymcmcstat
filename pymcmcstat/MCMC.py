@@ -385,10 +385,9 @@ class MCMC:
             * **savecount** (:py:class:`int`): Reset save counter
             * **lastbin** (:py:class:`int`): Last index saved
         '''
-        savedir = self.simulation_options.savedir
-        ChainProcessing._check_directory(savedir)
-        
         if self.simulation_options.save_to_bin is True:
+            savedir = self.simulation_options.savedir
+            ChainProcessing._check_directory(savedir)
             if append_to_log is True:
                 binlogfile = os.path.join(savedir, 'binlogfile.txt')
                 binstr = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
@@ -396,6 +395,8 @@ class MCMC:
             self.__save_chains(chains = chains, savedir = savedir, start = start, end = end, extension = 'h5')
             
         if self.simulation_options.save_to_txt is True:
+            savedir = self.simulation_options.savedir
+            ChainProcessing._check_directory(savedir)
             if append_to_log is True:
                 txtlogfile = os.path.join(savedir, 'txtlogfile.txt')
                 txtstr = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')

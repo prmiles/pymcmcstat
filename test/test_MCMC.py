@@ -232,49 +232,50 @@ class GenerateSimulationResults(unittest.TestCase):
         check_for_these = ['simulation_options', 'model_settings', 'chain', 's2chain', 'sschain', 'drscale', 'iacce', 'RDR']
         for cft in check_for_these:
             self.assertTrue(cft in results, msg = str('{} assigned successfully'.format(cft)))
-            
-## ------------------------------------------------
-#class SaveToLogFile(unittest.TestCase):
-#    @patch('pymcmcstat.MCMC.MCMC._MCMC__save_chains_to_bin', return_value = None)
-#    def test_save_to_log_file_bin(self, mock_bin):
-#        mcstat = gf.basic_mcmc()
-#        mcstat.simulation_options.save_to_bin = True
-#        mcstat.simulation_options.save_to_txt = False
-#        savecount, lastbin = mcstat._MCMC__save_to_log_file(start = 0, end = 100)
-#        self.assertEqual(savecount, 0, msg = 'Expect 0')
-#        self.assertEqual(lastbin, 100, msg = 'Expect lastbin = end = 100')
-#        
-#    @patch('pymcmcstat.MCMC.MCMC._MCMC__save_chains_to_txt', return_value = None)
-#    def test_save_to_log_file_txt(self, mock_txt):
-#        mcstat = gf.basic_mcmc()
-#        mcstat.simulation_options.save_to_bin = False
-#        mcstat.simulation_options.save_to_txt = True
-#        savecount, lastbin = mcstat._MCMC__save_to_log_file(start = 0, end = 100)
-#        self.assertEqual(savecount, 0, msg = 'Expect 0')
-#        self.assertEqual(lastbin, 100, msg = 'Expect lastbin = end = 100')
+
 # ------------------------------------------------
 class SaveToLogFile(unittest.TestCase):
     @patch('pymcmcstat.MCMC.MCMC._MCMC__save_chains_to_bin', return_value = None)
-    def test_save_to_log_file_bin(self, mock_bin):
+    def test_no_save_to_log_file(self, mock_bin):
         mcstat = gf.basic_mcmc()
-        mcstat.simulation_options.save_to_bin = True
+        mcstat.simulation_options.save_to_bin = False
         mcstat.simulation_options.save_to_txt = False
+        tmpfolder = gf.generate_temp_folder()
+        mcstat.simulation_options.savedir = tmpfolder
         chains = []
         chains.append(dict(file = 'chain', mtx = np.random.random_sample((1000,3))))
         savecount, lastbin = mcstat._MCMC__save_to_log_file(chains = chains, start = 0, end = 100)
         self.assertEqual(savecount, 0, msg = 'Expect 0')
         self.assertEqual(lastbin, 100, msg = 'Expect lastbin = end = 100')
+        self.assertFalse(os.path.isdir(tmpfolder), msg = str('Folder exists: {}'.format(tmpfolder)))
+        
+    @patch('pymcmcstat.MCMC.MCMC._MCMC__save_chains_to_bin', return_value = None)
+    def test_save_to_log_file_bin(self, mock_bin):
+        mcstat = gf.basic_mcmc()
+        mcstat.simulation_options.save_to_bin = True
+        mcstat.simulation_options.save_to_txt = False
+        tmpfolder = gf.generate_temp_folder()
+        mcstat.simulation_options.savedir = tmpfolder
+        chains = []
+        chains.append(dict(file = 'chain', mtx = np.random.random_sample((1000,3))))
+        savecount, lastbin = mcstat._MCMC__save_to_log_file(chains = chains, start = 0, end = 100)
+        self.assertEqual(savecount, 0, msg = 'Expect 0')
+        self.assertEqual(lastbin, 100, msg = 'Expect lastbin = end = 100')
+        shutil.rmtree(tmpfolder)
         
     @patch('pymcmcstat.MCMC.MCMC._MCMC__save_chains_to_txt', return_value = None)
     def test_save_to_log_file_txt(self, mock_txt):
         mcstat = gf.basic_mcmc()
         mcstat.simulation_options.save_to_bin = False
         mcstat.simulation_options.save_to_txt = True
+        tmpfolder = gf.generate_temp_folder()
+        mcstat.simulation_options.savedir = tmpfolder
         chains = []
         chains.append(dict(file = 'chain', mtx = np.random.random_sample((1000,3))))
         savecount, lastbin = mcstat._MCMC__save_to_log_file(chains = chains, start = 0, end = 100)
         self.assertEqual(savecount, 0, msg = 'Expect 0')
         self.assertEqual(lastbin, 100, msg = 'Expect lastbin = end = 100')
+        shutil.rmtree(tmpfolder)
     
     @patch('pymcmcstat.MCMC.MCMC._MCMC__save_chains_to_bin', return_value = None)
     def test_save_to_log_file_bin_no_append(self, mock_bin):
@@ -385,13 +386,15 @@ class RunSimulation(unittest.TestCase):
         mcstat.simulation_options.nsimu = 100
         mcstat.simulation_options.save_to_bin = False
         mcstat.simulation_options.save_to_txt = False
+        tmpfolder = gf.generate_temp_folder()
+        mcstat.simulation_options.savedir = tmpfolder
         mcstat.run_simulation()
         self.assertTrue(mcstat._mcmc_status, msg = 'Expect True if successfully run')
         
         check_these = ['mcmcplot', 'PI', 'chainstats']
         for ci in check_these:
             self.assertTrue(hasattr(mcstat, ci), msg = str('object has attribute: {}'.format(ci)))
-            
+        
     def test_run_simulation_with_json(self):
         mcstat = gf.basic_mcmc()
         mcstat.simulation_options.nsimu = 100
@@ -417,6 +420,8 @@ class RunSimulation(unittest.TestCase):
         mcstat.simulation_options.nsimu = 200
         mcstat.simulation_options.save_to_bin = False
         mcstat.simulation_options.save_to_txt = False
+        tmpfolder = gf.generate_temp_folder()
+        mcstat.simulation_options.savedir = tmpfolder
         mcstat.simulation_options.verbosity = 20
         mcstat.run_simulation()
         self.assertTrue(mcstat._mcmc_status, msg = 'Expect True if successfully run')
