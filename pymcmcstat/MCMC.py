@@ -70,6 +70,7 @@ class MCMC:
         self.model_settings = ModelSettings()
         self.simulation_options = SimulationOptions()
         self.parameters = ModelParameters()
+        self.custom_samplers = []
         # private variables
         self._error_variance = ErrorVarianceEstimator()
         self._covariance = CovarianceProcedures()
@@ -195,6 +196,12 @@ class MCMC:
         
         if self.simulation_options.ntry > 1:
             self._sampling_methods.delayed_rejection._initialize_dr_metrics(self.simulation_options)
+        # ---------------------
+        # Setup custom samplers
+        if self.custom_samplers is not None:
+            for ii, cs in enumerate(self.custom_samplers):
+                cs.setup()
+        
     # --------------------------------------------------------
     def __initialize_chains(self, chainind, nsimu, npar, nsos, updatesigma, sigma2):
         '''
@@ -215,9 +222,14 @@ class MCMC:
         self.__chain[chainind,:] = self.__initial_set.theta
         self.__sschain[chainind,:] = self.__initial_set.ss
         
+        self.__chains = []
+        self.__chains.append(dict(file = self.simulation_options.chainfile, mtx = self.__chain))
+        self.__chains.append(dict(file = self.simulation_options.sschainfile, mtx = self.__sschain))
+        
         if updatesigma:
             self.__s2chain = np.zeros([nsimu, nsos])
             self.__s2chain[chainind,:] = sigma2
+            self.__chains.append(dict(file = self.simulation_options.s2chainfile, mtx = self.__s2chain))
         else:
             self.__s2chain = None
     # --------------------------------------------------------
@@ -307,14 +319,26 @@ class MCMC:
                 sigma2 = self._error_variance.update_error_variance(self.__old_set.ss, self.model_settings)
                 self.__s2chain[self.__chain_index,:] = sigma2
                 self.__old_set.sigma2 = sigma2
-                
+
+            # RUN CUSTOM SAMPLERS
+            for cs in self.custom_samplers:
+                cs.update()
+                    
             # SAVE TO LOG FILE
             if savecount == self.simulation_options.savesize:
-                savecount, lastbin = self.__save_to_log_file(start = isimu - self.simulation_options.savesize, end = isimu)
+                savecount, lastbin = self.__save_to_log_file(chains = self.__chains, start = isimu - self.simulation_options.savesize, end = isimu)
+                # add custom chains is applicable
+                for cs in self.custom_samplers:
+                    if (hasattr(cs, 'save_chain') is True) and (cs.save_chain is True):
+                        self.__save_to_log_file(chains = cs.chains, start = isimu - self.simulation_options.savesize, end = isimu, append_to_log = False)
        
         # SAVE REMAINING ELEMENTS TO BIN FILE
-        self.__save_to_log_file(start = lastbin, end = isimu + 1)
-           
+        self.__save_to_log_file(chains = self.__chains, start = lastbin, end = isimu + 1)
+        # add custom chains is applicable
+        for cs in self.custom_samplers:
+            if (hasattr(cs, 'save_chain') is True) and (cs.save_chain is True):
+                self.__save_to_log_file(cs.chains, start = lastbin, end = isimu + 1, append_to_log = False)
+       
         # update value to end value
         self.parameters._value[self.parameters._parind] = self.__old_set.theta
     # ------------------------------------------------
@@ -347,8 +371,9 @@ class MCMC:
         self.simulation_results.add_chain(chain = self.__chain)
         self.simulation_results.add_s2chain(s2chain = self.__s2chain)
         self.simulation_results.add_sschain(sschain = self.__sschain)
+
     # ------------------------------------------------
-    def __save_to_log_file(self, start, end):
+    def __save_to_log_file(self, chains, start, end, append_to_log = True):
         '''
         Save to log files
         
@@ -361,9 +386,22 @@ class MCMC:
             * **lastbin** (:py:class:`int`): Last index saved
         '''
         if self.simulation_options.save_to_bin is True:
-            self.__save_chains_to_bin(start, end)
+            savedir = self.simulation_options.savedir
+            ChainProcessing._check_directory(savedir)
+            if append_to_log is True:
+                binlogfile = os.path.join(savedir, 'binlogfile.txt')
+                binstr = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                ChainProcessing._add_to_log(binlogfile, str('{}\t{}\t{}\n'.format(binstr, start, end-1)))
+            self.__save_chains(chains = chains, savedir = savedir, start = start, end = end, extension = 'h5')
+            
         if self.simulation_options.save_to_txt is True:
-            self.__save_chains_to_txt(start, end)
+            savedir = self.simulation_options.savedir
+            ChainProcessing._check_directory(savedir)
+            if append_to_log is True:
+                txtlogfile = os.path.join(savedir, 'txtlogfile.txt')
+                txtstr = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                ChainProcessing._add_to_log(txtlogfile, str('{}\t{}\t{}\n'.format(txtstr, start, end-1)))
+            self.__save_chains(chains = chains, savedir = savedir, start = start, end = end, extension = 'txt')
             
         # reset counter
         savecount = 0
@@ -400,6 +438,33 @@ class MCMC:
         
         if self.simulation_options.updatesigma == 1:
             ChainProcessing._save_to_bin_file(s2chainfile, datasetname = datasetname, mtx = self.__s2chain[start:end,:])
+    # --------------------------------------------------------
+    def __save_chains(self, chains, savedir, start, end, extension):
+        '''
+        Save custom chain segment
+
+        Args:
+            * **chains** (:py:class:`list`): List of dicts with keys "file" and "mtx".  "file" is name of log file, and "mtx" is chain array to save
+            * **start** (:py:class:`int`): Starting index of chain to save to file
+            * **end** (:py:class:`int`): Ending index of chain to save to file
+            * **extension** (:py:class:`str`): File extension - 'h5' or 'txt'
+
+        If you specify a `savesize` of 100, then every 100 simulations the last 100
+        chain sets will be appended to the file.  That is to say, if you are on
+        simulation 1000, the chain elements 900-999 will be appended to the file.
+        '''
+        
+        for ii, chain in enumerate(chains):
+            # add extension
+            chainfile = ChainProcessing._create_path_with_extension(savedir, chain['file'], extension = extension)
+            
+            if extension.lower() == 'bin':
+                # define set name based in start/end
+                datasetname = str('{}_{}_{}'.format('nsimu',start,end-1))
+                ChainProcessing._save_to_bin_file(chainfile, datasetname = datasetname, mtx = chain['mtx'][start:end,:])
+            else:
+                ChainProcessing._save_to_txt_file(chainfile, mtx = chain['mtx'][start:end,:])
+            
     # --------------------------------------------------------
     def __save_chains_to_txt(self, start, end):
         '''
@@ -459,7 +524,7 @@ class MCMC:
         self.__rejected['in_adaptation_interval'] += 1
         if outsidebounds:
             self.__rejected['outside_bounds'] += 1
-    # --------------------------------------------------------        
+    # --------------------------------------------------------
     def display_current_mcmc_settings(self):
         '''
         Display model settings, simulation options, and current covariance values.

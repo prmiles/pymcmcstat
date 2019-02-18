@@ -1,6 +1,10 @@
 Changelog
 =========
 
+v1.7.0 ()
+----------------------
+- Added custom sampler feature.  Interface requires creation of a class, but allows for inclusion of things like Gibbs samplers.
+
 v1.6.0 (August 31, 2018)
 ----------------------
 - Added optimal handling of prior function used numpy array multiplication.
