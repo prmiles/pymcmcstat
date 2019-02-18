@@ -306,6 +306,37 @@ class SaveToLogFile(unittest.TestCase):
         self.assertFalse(os.path.isfile(tmpfile), msg = str('File exists: {}'.format(tmpfile)))
         shutil.rmtree(tmpfolder)
         
+    def test_covmtx_save_to_log_file(self):
+        mcstat = gf.setup_case()
+        mcstat.simulation_options.save_to_bin = False
+        mcstat.simulation_options.save_to_txt = True
+
+        tmpfolder = gf.generate_temp_folder()
+        mcstat.simulation_options.savedir = tmpfolder
+        tmpfile = tmpfolder + os.sep + 'txtlogfile.txt'
+        tmptxtfile = tmpfolder + os.sep + 'covchainfile.txt'
+        
+        savecount, lastbin = mcstat._MCMC__save_to_log_file(chains = [dict(mtx = np.dot(mcstat._covariance._R.transpose(),mcstat._covariance._R))], start = 0, end = 100, covmtx = True)
+        
+        self.assertEqual(savecount, 0, msg = 'Expect 0')
+        self.assertEqual(lastbin, 100, msg = 'Expect lastbin = end = 100')
+        self.assertTrue(os.path.isfile(tmpfile), msg = str('File exists: {}'.format(tmpfile)))
+        self.assertTrue(os.path.isfile(tmptxtfile), msg = str('File exists: {}'.format(tmptxtfile)))
+        
+        mcstat.simulation_options.save_to_bin = True
+        mcstat.simulation_options.save_to_txt = False
+        tmpfile = tmpfolder + os.sep + 'binlogfile.txt'
+        tmpbinfile = tmpfolder + os.sep + 'covchainfile.h5'
+        
+        savecount, lastbin = mcstat._MCMC__save_to_log_file(chains = [dict(mtx = np.dot(mcstat._covariance._R.transpose(),mcstat._covariance._R))], start = 0, end = 100, covmtx = True)
+        
+        self.assertEqual(savecount, 0, msg = 'Expect 0')
+        self.assertEqual(lastbin, 100, msg = 'Expect lastbin = end = 100')
+        self.assertTrue(os.path.isfile(tmpfile), msg = str('File exists: {}'.format(tmpfile)))
+        self.assertTrue(os.path.isfile(tmpbinfile), msg = str('File exists: {}'.format(tmpbinfile)))
+        
+        shutil.rmtree(tmpfolder)
+        
 # --------------------------------------------------------
 class RunSimulation(unittest.TestCase):
     def test_run_simulation(self):
