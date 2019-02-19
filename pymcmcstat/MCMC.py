@@ -322,7 +322,7 @@ class MCMC:
 
             # RUN CUSTOM SAMPLERS
             for cs in self.custom_samplers:
-                cs.update(accept = accept, isimu = isimu)
+                cs.update(accept = accept, isimu = isimu, current_set = self.__old_set)
                     
             # SAVE TO LOG FILE
             if savecount == self.simulation_options.savesize:
