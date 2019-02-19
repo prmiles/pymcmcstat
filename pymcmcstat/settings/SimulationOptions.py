@@ -78,7 +78,7 @@ class SimulationOptions:
             * **results_filename** (:py:class:`str`): Output file name when saving results structure with json.
             * **save_to_json** (:py:class:`bool`): Save results structure to json file.  Default is False.
             * **json_restart_file** (:py:class:`str`): Extract parameter covariance and last sample value from saved json file.
-
+            
         .. note::
 
             For the log file names :code:`chainfile, sschainfile, s2chainfile` and :code:`covchainfile` do not include the extension.
