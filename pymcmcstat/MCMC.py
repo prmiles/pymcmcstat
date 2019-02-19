@@ -295,7 +295,6 @@ class MCMC:
                         sosobj = self.__sos_object, priorobj = self.__prior_object)
 
             # UPDATE CHAIN & SUM-OF-SQUARES CHAIN
-            self.simulation_options.accepted = accept
             self.__update_chain(accept = accept, new_set = new_set, outsidebounds = outbound)
             self.__sschain[self.__chain_index,:] = self.__old_set.ss
 
@@ -323,7 +322,7 @@ class MCMC:
 
             # RUN CUSTOM SAMPLERS
             for cs in self.custom_samplers:
-                cs.update()
+                cs.update(accept = accept, isimu = isimu, current_set = self.__old_set)
                     
             # SAVE TO LOG FILE
             if savecount == self.simulation_options.savesize:
