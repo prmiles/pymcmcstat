@@ -114,6 +114,7 @@ def read_in_parallel_savedir_files(parallel_dir, extension = 'h5', chainfile = '
     '''
     # find folders in parallel_dir with name 'chain_#'
     chainfolders = os.listdir(parallel_dir)
+    chainfolders = check_parallel_directory_contents(parallel_dir, chainfolders)
     out = []
     for folder in chainfolders:
         # create full path names with extension
@@ -131,12 +132,32 @@ def read_in_parallel_json_results_files(parallel_dir):
     '''
     # find folders in parallel_dir with name 'chain_#'
     chainfolders = os.listdir(parallel_dir)
+    chainfolders = check_parallel_directory_contents(parallel_dir, chainfolders)
     parallel_results = []
     for folder in chainfolders:
         filename = os.path.join(parallel_dir, folder, str('{}.json'.format(folder)))
         parallel_results.append(load_json_object(filename = filename))
         
     return parallel_results
+
+def check_parallel_directory_contents(parallel_dir, cf_orig):
+    '''
+    Check that items in directory are subdirectories with name "chain_#"
+    
+    Args:
+        * **parallel_dir** (:py:class:`str`): Directory where parallel log files are saved.
+        * **cf_orig** (:py:class:`list`): List of items contained in parallel directory.
+        
+    Returns:
+        * **chainfolders** (:py:class:`list`): List of items that match criteria in parallel directory.
+    '''
+    chainfolders = []
+    for cf in cf_orig:
+        if (os.path.isdir(parallel_dir + os.sep + cf) is True) and ('chain_' in cf):
+            chainfolders.append(cf)
+    
+    chainfolders.sort() # sort elements
+    return chainfolders
     
 def read_in_bin_file(filename):
     '''

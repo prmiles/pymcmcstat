@@ -263,3 +263,24 @@ class GenerateChainList(unittest.TestCase):
         self.assertEqual(len(chains), 2, msg = 'expect length of 2')
         self.assertTrue(np.array_equal(chains[0], pres[0]['chain']))
         self.assertTrue(np.array_equal(chains[1], pres[1]['chain']))
+# -------------------------
+class CheckParallelDirectoryContents(unittest.TestCase):
+    def test_id_chain_no(self):
+        parallel_dir = gf.generate_temp_folder()
+        setup_problem(parallel_dir, case = 'binary')
+        chainfolders = os.listdir(parallel_dir)        
+        chainfolders2 = CP.check_parallel_directory_contents(parallel_dir, chainfolders)
+        self.assertEqual(chainfolders2, ['chain_0', 'chain_1', 'chain_2'], msg = 'List of strings do not match ({}): {} neq {}'.format(parallel_dir, chainfolders2, ['chain_0', 'chain_1', 'chain_2']))
+        shutil.rmtree(parallel_dir)
+        
+    def test_id_chain_no_with_bad_items(self):
+        parallel_dir = gf.generate_temp_folder()
+        setup_problem(parallel_dir, case = 'binary')
+        tmpfile = gf.generate_temp_file()
+        os.mkdir(parallel_dir + os.sep + 'chain')
+        if not os.path.exists(parallel_dir + os.sep + tmpfile):
+            with open(parallel_dir + os.sep + tmpfile, 'w'): pass
+        chainfolders = os.listdir(parallel_dir)        
+        chainfolders2 = CP.check_parallel_directory_contents(parallel_dir, chainfolders)
+        self.assertEqual(chainfolders2, ['chain_0', 'chain_1', 'chain_2'], msg = 'List of strings do not match ({}): {} neq {}'.format(parallel_dir, chainfolders2, ['chain_0', 'chain_1', 'chain_2']))
+        shutil.rmtree(parallel_dir)
