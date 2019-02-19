@@ -4,6 +4,7 @@ Changelog
 v1.7.0 ()
 ----------------------
 - Added custom sampler feature.  Interface requires creation of a class, but allows for inclusion of things like Gibbs samplers.
+- Added check routines for reading in parallel MCMC results to ensure only directories with name 'chain_' are queried
 
 v1.6.0 (August 31, 2018)
 ----------------------
