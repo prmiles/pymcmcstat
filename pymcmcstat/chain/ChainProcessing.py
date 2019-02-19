@@ -114,6 +114,7 @@ def read_in_parallel_savedir_files(parallel_dir, extension = 'h5', chainfile = '
     '''
     # find folders in parallel_dir with name 'chain_#'
     chainfolders = os.listdir(parallel_dir)
+    chainfolders = check_parallel_directory_contents(parallel_dir, chainfolders)
     out = []
     for folder in chainfolders:
         # create full path names with extension
