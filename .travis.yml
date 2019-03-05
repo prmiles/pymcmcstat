@@ -12,7 +12,7 @@ before_script: # configure a headless display to test plot generation
   - "sh -e /etc/init.d/xvfb start"
   - sleep 3 # give xvfb some time to start
 script:
-  - flake8 --ignore=E,W pymcmcstat
+  - flake8 --ignore=E,F,W pymcmcstat
   - coverage run --source=pymcmcstat -m unittest discover -s "test" -p "test*.py"
 notifications:
   email: 
