@@ -1,7 +1,7 @@
 `pymcmcstat`
 ============
 
-|docs| |build| |coverage| |license| |codacy| |zenodo| |pypi| |pyversion|
+|docs| |build| |coverage| |license| |zenodo| |pypi| |pyversion|
 
 The `pymcmcstat <https://prmiles.wordpress.ncsu.edu/codes/python-packages/pymcmcstat/>`__ package is a Python program for running Markov Chain Monte Carlo (MCMC) simulations.
 Included in this package is the ability to use different Metropolis based sampling techniques:
@@ -71,9 +71,6 @@ Feedback
 
 .. |coverage| image:: https://coveralls.io/repos/github/prmiles/pymcmcstat/badge.svg
     :target: https://coveralls.io/github/prmiles/pymcmcstat
-
-.. |codacy| image:: https://api.codacy.com/project/badge/Grade/b1a33340c57a47648f993e124c75e93a    
-    :target: https://www.codacy.com/app/prmiles/pymcmcstat?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=prmiles/pymcmcstat&amp;utm_campaign=Badge_Grade
 
 .. |zenodo| image:: https://zenodo.org/badge/107596954.svg
     :target: https://zenodo.org/badge/latestdoi/107596954
