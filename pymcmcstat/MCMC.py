@@ -64,7 +64,7 @@ class MCMC:
         * **model_settings** (:class:`~.ModelSettings`): MCMC model settings.
         * **parameters** (:class:`~.ModelParameters`): MCMC model parameters.
     '''
-    def __init__(self, rngseed = None, seterr = {'over': 'ignore', 'under': 'ignore'}):
+    def __init__(self, rngseed=None, seterr={'over': 'ignore', 'under': 'ignore'}):
         # public variables
         self.data = DataStructure()
         self.model_settings = ModelSettings()
@@ -79,7 +79,7 @@ class MCMC:
         np.random.seed(seed = rngseed)
         np.seterr(**seterr)
     # --------------------------------------------------------
-    def run_simulation(self, use_previous_results = False):
+    def run_simulation(self, use_previous_results=False):
         '''
         Run MCMC Simulation
         
@@ -117,7 +117,7 @@ class MCMC:
         self.__generate_simulation_results()
         if self.simulation_options.save_to_json == True:
             if self.simulation_results.basic == True: # check that results structure has been created
-                self.simulation_results.export_simulation_results_to_json_file(results = self.simulation_results.results)
+                self.simulation_results.export_simulation_results_to_json_file(results=self.simulation_results.results)
         self.mcmcplot = MCMCPlotting.Plot()
         self.PI = PredictionIntervals()
         self.chainstats = ChainStatistics.chainstats
@@ -140,7 +140,7 @@ class MCMC:
             if self._mcmc_status == True:
                 self.parameters._results_to_params(self.simulation_results.results, 1)
                 self._initialize_simulation()
-                self.__expand_chains(nsimu = self.simulation_options.nsimu, npar = self.parameters.npar, nsos = self.model_settings.nsos, updatesigma=self.simulation_options.updatesigma)
+                self.__expand_chains(nsimu = self.simulation_options.nsimu, npar=self.parameters.npar, nsos=self.model_settings.nsos, updatesigma=self.simulation_options.updatesigma)
             else:
                 sys.exit('No previous results found.  Set ''use_previous_results'' to ''False''')
         else:
@@ -152,7 +152,7 @@ class MCMC:
                 
             self.__chain_index = 0 # start index at zero
             self._initialize_simulation()
-            self.__initialize_chains(chainind = self.__chain_index, nsimu = self.simulation_options.nsimu, npar = self.parameters.npar, nsos = self.model_settings.nsos, updatesigma=self.simulation_options.updatesigma, sigma2 = self.model_settings.sigma2)
+            self.__initialize_chains(chainind=self.__chain_index, nsimu=self.simulation_options.nsimu, npar=self.parameters.npar, nsos=self.model_settings.nsos, updatesigma=self.simulation_options.updatesigma, sigma2=self.model_settings.sigma2)
     # --------------------------------------------------------
     def _initialize_simulation(self):
         '''
@@ -177,7 +177,7 @@ class MCMC:
         self.__sos_object = SumOfSquares(self.model_settings, self.data, self.parameters)
         # ---------------------
         # define prior object
-        self.__prior_object = PriorFunction(priorfun = self.model_settings.prior_function, mu = self.parameters._thetamu[self.parameters._parind[:]], sigma = self.parameters._thetasigma[self.parameters._parind[:]])
+        self.__prior_object = PriorFunction(priorfun=self.model_settings.prior_function, mu=self.parameters._thetamu[self.parameters._parind[:]], sigma=self.parameters._thetasigma[self.parameters._parind[:]])
         # ---------------------
         # Define initial parameter set
         self.__initial_set = ParameterSet(theta = self.parameters._initial_value[self.parameters._parind[:]])
@@ -223,8 +223,8 @@ class MCMC:
         self.__sschain[chainind,:] = self.__initial_set.ss
         
         self.__chains = []
-        self.__chains.append(dict(file = self.simulation_options.chainfile, mtx = self.__chain))
-        self.__chains.append(dict(file = self.simulation_options.sschainfile, mtx = self.__sschain))
+        self.__chains.append(dict(file=self.simulation_options.chainfile, mtx=self.__chain))
+        self.__chains.append(dict(file=self.simulation_options.sschainfile, mtx=self.__sschain))
         
         if updatesigma:
             self.__s2chain = np.zeros([nsimu, nsos])
@@ -247,11 +247,11 @@ class MCMC:
         zero_chain = np.zeros([nsimu-1, npar])
         zero_sschain = np.zeros([nsimu-1, nsos])
         # Concatenate with previous chains
-        self.__chain = np.concatenate((self.__chain, zero_chain), axis = 0)
-        self.__sschain = np.concatenate((self.__sschain, zero_sschain), axis = 0)
+        self.__chain = np.concatenate((self.__chain, zero_chain), axis=0)
+        self.__sschain = np.concatenate((self.__sschain, zero_sschain), axis=0)
         if updatesigma:
             zero_s2chain = np.zeros([nsimu-1, nsos])
-            self.__s2chain = np.concatenate((self.__s2chain, zero_s2chain), axis = 0)
+            self.__s2chain = np.concatenate((self.__s2chain, zero_s2chain), axis=0)
         else:
             self.__s2chain = None
     # --------------------------------------------------------
@@ -283,33 +283,33 @@ class MCMC:
             message(self.simulation_options.verbosity, 100, str('i: {:d}/{:d}\n'.format(isimu,nsimu)));
 
             # METROPOLIS
-            accept, new_set, outbound, npar_sample_from_normal = self._sampling_methods.metropolis.run_metropolis_step(
-                    old_set = self.__old_set, parameters = self.parameters, R = self._covariance._R,
-                    prior_object = self.__prior_object, sos_object = self.__sos_object)
+            accept, new_set, outbound, npar_sample_from_normal=self._sampling_methods.metropolis.run_metropolis_step(
+                    old_set=self.__old_set, parameters=self.parameters, R=self._covariance._R,
+                    prior_object=self.__prior_object, sos_object=self.__sos_object)
 
             # DELAYED REJECTION
             if self.simulation_options.ntry > 1 and accept == 0:
                 accept, new_set, outbound = self._sampling_methods.delayed_rejection.run_delayed_rejection(
-                        old_set = self.__old_set, new_set = new_set, RDR = self._covariance._RDR, ntry = self.simulation_options.ntry,
-                        parameters = self.parameters, invR = self._covariance._invR,
-                        sosobj = self.__sos_object, priorobj = self.__prior_object)
+                        old_set=self.__old_set, new_set=new_set, RDR=self._covariance._RDR, ntry=self.simulation_options.ntry,
+                        parameters=self.parameters, invR=self._covariance._invR,
+                        sosobj=self.__sos_object, priorobj=self.__prior_object)
 
             # UPDATE CHAIN & SUM-OF-SQUARES CHAIN
-            self.__update_chain(accept = accept, new_set = new_set, outsidebounds = outbound)
+            self.__update_chain(accept=accept, new_set=new_set, outsidebounds=outbound)
             self.__sschain[self.__chain_index,:] = self.__old_set.ss
 
             # PRINT REJECTION STATISTICS
             if self.simulation_options.printint and iiprint == self.simulation_options.printint:
-                print_rejection_statistics(rejected = self.__rejected, isimu = isimu, iiadapt = iiadapt, verbosity = self.simulation_options.verbosity)
+                print_rejection_statistics(rejected=self.__rejected, isimu=isimu, iiadapt=iiadapt, verbosity=self.simulation_options.verbosity)
                 iiprint = 0 # reset print counter
 
             # ADAPTATION
             if self.simulation_options.adaptint > 0 and iiadapt == self.simulation_options.adaptint:
                 self._covariance = self._sampling_methods.adaptation.run_adaptation(
-                        covariance = self._covariance, options = self.simulation_options,
-                        isimu = isimu, iiadapt = iiadapt, rejected = self.__rejected,
-                        chain = self.__chain, chainind = self.__chain_index, u = npar_sample_from_normal,
-                        npar = self.parameters.npar, alpha = new_set.alpha)
+                        covariance=self._covariance, options=self.simulation_options,
+                        isimu=isimu, iiadapt=iiadapt, rejected=self.__rejected,
+                        chain=self.__chain, chainind=self.__chain_index, u=npar_sample_from_normal,
+                        npar=self.parameters.npar, alpha=new_set.alpha)
                 
                 iiadapt = 0 # reset local adaptation index
                 self.__rejected['in_adaptation_interval'] = 0 # reset local rejection index
@@ -326,20 +326,20 @@ class MCMC:
                     
             # SAVE TO LOG FILE
             if savecount == self.simulation_options.savesize:
-                savecount, lastbin = self.__save_to_log_file(chains = self.__chains, start = isimu - self.simulation_options.savesize, end = isimu)
+                savecount, lastbin = self.__save_to_log_file(chains=self.__chains, start=isimu - self.simulation_options.savesize, end=isimu)
                 self.__save_to_log_file(chains = [dict(mtx = np.dot(self._covariance._R.transpose(),self._covariance._R))], start = isimu - self.simulation_options.savesize, end = isimu, append_to_log = False, covmtx = True)
                 # add custom chains is applicable
                 for cs in self.custom_samplers:
                     if (hasattr(cs, 'save_chain') is True) and (cs.save_chain is True):
-                        self.__save_to_log_file(chains = cs.chains, start = isimu - self.simulation_options.savesize, end = isimu, append_to_log = False)
+                        self.__save_to_log_file(chains=cs.chains, start=isimu - self.simulation_options.savesize, end=isimu, append_to_log=False)
        
         # SAVE REMAINING ELEMENTS TO BIN FILE
-        self.__save_to_log_file(chains = self.__chains, start = lastbin, end = isimu + 1)
-        self.__save_to_log_file(chains = [dict(mtx = np.dot(self._covariance._R.transpose(),self._covariance._R))], start = lastbin, end = isimu, append_to_log = False, covmtx = True)
+        self.__save_to_log_file(chains = self.__chains, start=lastbin, end=isimu + 1)
+        self.__save_to_log_file(chains=[dict(mtx = np.dot(self._covariance._R.transpose(),self._covariance._R))], start=lastbin, end=isimu, append_to_log=False, covmtx=True)
         # add custom chains is applicable
         for cs in self.custom_samplers:
             if (hasattr(cs, 'save_chain') is True) and (cs.save_chain is True):
-                self.__save_to_log_file(cs.chains, start = lastbin, end = isimu + 1, append_to_log = False)
+                self.__save_to_log_file(cs.chains, start=lastbin, end=isimu + 1, append_to_log=False)
        
         # update value to end value
         self.parameters._value[self.parameters._parind] = self.__old_set.theta
