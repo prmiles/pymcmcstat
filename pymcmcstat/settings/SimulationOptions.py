@@ -9,6 +9,7 @@ Created on Wed Jan 17 09:08:13 2018
 import numpy as np
 from datetime import datetime
 
+
 class SimulationOptions:
     '''
     MCMC simulation options.
@@ -19,21 +20,23 @@ class SimulationOptions:
     '''
     def __init__(self):
         # initialize simulation option variables
-#        self.options = BaseSimulationOptions()
+        # self.options = BaseSimulationOptions()
         self.description = 'simulation_options'
         self.__options_set = False
 
-    def define_simulation_options(self, nsimu=int(1e4), adaptint = None, ntry = None, method='dram',
-                 printint=None, adaptend = 0, lastadapt = 0, burnintime = 0,
-                 waitbar = True, debug = 0, qcov = None, updatesigma = False,
-                 stats = 0, drscale = np.array([5, 4, 3], dtype = float),
-                 adascale = None, savesize = 0, maxmem = 0, chainfile = 'chainfile',
-                 s2chainfile = 's2chainfile', sschainfile = 'sschainfile', covchainfile = 'covchainfile', savedir = None,
-                 save_to_bin = False, skip = 1, label = None, RDR = None, verbosity = 1, maxiter = None,
-                 priorupdatestart = 0, qcov_adjust = 1e-8, burnin_scale = 10,
-                 alphatarget = 0.234, etaparam = 0.7, initqcovn = None,
-                 doram = None, rndseq = None, results_filename = None, save_to_json = False, save_to_txt = False,
-                 json_restart_file = None):
+    def define_simulation_options(self, nsimu=int(1e4), adaptint=None, ntry=None, method='dram',
+                                  printint=None, adaptend=0, lastadapt=0, burnintime=0,
+                                  waitbar=True, debug=0, qcov=None, updatesigma=False,
+                                  stats=0, drscale=np.array([5, 4, 3], dtype=float),
+                                  adascale=None, savesize=0, maxmem=0, chainfile='chainfile',
+                                  s2chainfile='s2chainfile', sschainfile='sschainfile',
+                                  covchainfile='covchainfile', savedir=None,
+                                  save_to_bin=False, skip=1, label=None, RDR=None, verbosity=1, maxiter=None,
+                                  priorupdatestart=0, qcov_adjust=1e-8, burnin_scale=10,
+                                  alphatarget=0.234, etaparam=0.7, initqcovn=None,
+                                  doram=None, rndseq=None, results_filename=None,
+                                  save_to_json=False, save_to_txt=False,
+                                  json_restart_file=None):
         '''
         Define simulation options.
 
@@ -41,7 +44,8 @@ class SimulationOptions:
             * **nsimu** (:py:class:`int`): Number of parameter samples to simulate.  Default is 1e4.
             * **adaptint** (:py:class:`int`): Number of interates between adaptation. Default is method dependent.
             * **ntry** (:py:class:`int`): Number of tries to take before rejection. Default is method dependent.
-            * **method** (:py:class:`str`): Sampling method (:code:`'mh', 'am', 'dr', 'dram'`).  Default is :code:`'dram'`.
+            * **method** (:py:class:`str`): Sampling method (:code:`'mh', 'am', 'dr', 'dram'`).\
+            Default is :code:`'dram'`.
             * **printint** (:py:class:`int`): Printing interval.
             * **adaptend** (:py:class:`int`): Obsolete.
             * **lastadapt** (:py:class:`int`): Last adaptation iteration (i.e., no more adaptation beyond this point).
@@ -49,7 +53,8 @@ class SimulationOptions:
             * **waitbar** (:py:class:`int`): Flag to use progress bar. Default is 1 -> on (otherwise -> off).
             * **debug** (:py:class:`int`): Flag to perform debug.  Default is 0 -> off.
             * **qcov** (:class:`~numpy.ndarray`): Proposal parameter covariance matrix.
-            * **updatesigma** (:py:class:`bool`): Flag for updating measurement error variance. Default is 0 -> off (1 -> on).
+            * **updatesigma** (:py:class:`bool`): Flag for updating measurement error variance.\
+            Default is 0 -> off (1 -> on).
             * **stats** (:py:class:`int`): Calculate convergence statistics. Default is 0 -> off (1 -> on).
             * **drscale** (:class:`~numpy.ndarray`): Reduced scale for sampling in DR algorithm. Default is [5,4,3].
             * **adascale** (:py:class:`float`): User defined covariance scale.  Default is method dependent (untested).
@@ -77,11 +82,13 @@ class SimulationOptions:
             * **rndseq** (:class:`~numpy.ndarray`): Random number sequence (Obsolete).
             * **results_filename** (:py:class:`str`): Output file name when saving results structure with json.
             * **save_to_json** (:py:class:`bool`): Save results structure to json file.  Default is False.
-            * **json_restart_file** (:py:class:`str`): Extract parameter covariance and last sample value from saved json file.
-            
+            * **json_restart_file** (:py:class:`str`): Extract parameter covariance and last sample\
+            value from saved json file.
+
         .. note::
 
-            For the log file names :code:`chainfile, sschainfile, s2chainfile` and :code:`covchainfile` do not include the extension.
+            For the log file names :code:`chainfile, sschainfile, s2chainfile` and :code:`covchainfile` \
+            do not include the extension.
             By specifying whether to save to text or to binary, the appropriate extension will be added.
         '''
         method_dictionary = {
@@ -99,32 +106,26 @@ class SimulationOptions:
             self.adaptint = method_dictionary[method]['adaptint']  # no adaptation - enforce!
         else:
             self.adaptint = adaptint
-        
         if ntry is None:
             self.ntry = method_dictionary[method]['ntry']
         else:
             self.ntry = ntry
-            
         if adascale is None:
             self.adascale = method_dictionary[method]['adascale']  # qcov_scale
         else:
             self.adascale = adascale
-            
         if doram is None:
             self.doram = method_dictionary[method]['doram']
         else:
             self.doram = doram
-        
-        
         self.nsimu = int(nsimu)  # length of chain to simulate
         self.method = method
         self.dodram = 0
-        
         self.printint = printint  # print interval
-        self.adaptend = adaptend  # last adapt
-        self.lastadapt = lastadapt # last adapt
+        self.adaptend = adaptend   # last adapt
+        self.lastadapt = lastadapt  # last adapt
         self.burnintime = burnintime
-        self.waitbar = bool(waitbar) # use waitbar
+        self.waitbar = bool(waitbar)  # use waitbar
         self.debug = debug  # show some debug information
         self.qcov = qcov  # proposal covariance
         self.initqcovn = initqcovn  # proposal covariance weight in update
@@ -136,44 +137,34 @@ class SimulationOptions:
         self.etaparam = etaparam  #
         self.stats = stats  # convergence statistics
         self.drscale = drscale
-
         self.skip = skip
-        
         datestr = datetime.now().strftime('%Y%m%d_%H%M%S')
         self.datestr = datestr
-        
         if label is None:
             self.label = str('MCMC run at {}'.format(datestr))
         else:
             self.label = label
-            
         self.RDR = RDR
-        self.verbosity = verbosity # amount of information to print
+        self.verbosity = verbosity  # amount of information to print
         self.maxiter = maxiter
-        
         # log settings
         self.savesize = savesize
         self.maxmem = maxmem
-            
         self.chainfile = chainfile
         self.s2chainfile = s2chainfile
         self.sschainfile = sschainfile
         self.covchainfile = covchainfile
-        
         if savedir is None:
-            self.savedir = str('{}_{}'.format(datestr,'chain_log'))
+            self.savedir = str('{}_{}'.format(datestr, 'chain_log'))
         else:
             self.savedir = savedir
-            
         self.save_to_bin = save_to_bin
         self.save_to_txt = save_to_txt
-        
         self.results_filename = results_filename
         self.save_to_json = save_to_json
         self.json_restart_file = json_restart_file
-        
-        self.__options_set = True # options have been defined
-        
+        self.__options_set = True  # options have been defined
+
     def _check_dependent_simulation_options(self, model):
         '''
         Check dependent parameters.
@@ -189,27 +180,23 @@ class SimulationOptions:
         # save options
         if self.savesize <= 0 or self.savesize > self.nsimu:
             self.savesize = self.nsimu
-        
         # turn on DR if ntry > 1
         if self.ntry > 1:
             self.dodram = 1
         else:
             self.dodram = 0
-            
         if self.lastadapt < 1:
             self.lastadapt = self.nsimu
-            
         if self.printint is None:
-            self.printint = max(100,min(1000,self.adaptint))
-            
+            self.printint = max(100, min(1000, self.adaptint))
         # if N0 given, then also turn on updatesigma
         if model.N0 is not None:
             self.updatesigma = True
-            
-    def display_simulation_options(self, print_these = None):
+
+    def display_simulation_options(self, print_these=None):
         '''
         Display subset of the simulation options.
-        
+
         Args:
             * **print_these** (:py:class:`list`): List of strings corresponding to keywords.  Default below.
 
@@ -219,9 +206,7 @@ class SimulationOptions:
         '''
         if print_these is None:
             print_these = ['nsimu', 'adaptint', 'ntry', 'method', 'printint', 'lastadapt', 'drscale', 'qcov']
-            
         print('simulation options:')
         for ptii in print_these:
             print('\t{} = {}'.format(ptii, getattr(self, ptii)))
-            
         return print_these
