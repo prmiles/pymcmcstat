@@ -359,23 +359,23 @@ class MCMC:
         # --------------------------------------------
         # BUILD RESULTS OBJECT
         self.simulation_results = ResultsStructure() # inititialize
-        self.simulation_results.add_basic(nsimu = self.simulation_options.nsimu, covariance = self._covariance, parameters = self.parameters, rejected = self.__rejected, simutime = self.__simulation_time, theta = self.parameters._value)
+        self.simulation_results.add_basic(nsimu=self.simulation_options.nsimu, covariance=self._covariance, parameters=self.parameters, rejected=self.__rejected, simutime=self.__simulation_time, theta=self.parameters._value)
 
         if self.simulation_options.ntry > 1:
-            self.simulation_results.add_dram(drscale = self.simulation_options.drscale, RDR = self._covariance._RDR, total_rejected = self.__rejected['total'], drsettings = self._sampling_methods.delayed_rejection)
+            self.simulation_results.add_dram(drscale=self.simulation_options.drscale, RDR=self._covariance._RDR, total_rejected=self.__rejected['total'], drsettings=self._sampling_methods.delayed_rejection)
         
         self.simulation_results.add_options(options = self.simulation_options)
         self.simulation_results.add_model(model = self.model_settings)
         
         # add prior information
-        self.simulation_results.add_prior(mu = self.parameters._thetamu, sigma = self.parameters._thetasigma, priortype = self.model_settings.prior_type)
+        self.simulation_results.add_prior(mu=self.parameters._thetamu, sigma=self.parameters._thetasigma, priortype=self.model_settings.prior_type)
         # add chain, s2chain, and sschain
-        self.simulation_results.add_chain(chain = self.__chain)
-        self.simulation_results.add_s2chain(s2chain = self.__s2chain)
-        self.simulation_results.add_sschain(sschain = self.__sschain)
+        self.simulation_results.add_chain(chain=self.__chain)
+        self.simulation_results.add_s2chain(s2chain=self.__s2chain)
+        self.simulation_results.add_sschain(sschain=self.__sschain)
 
     # ------------------------------------------------
-    def __save_to_log_file(self, chains, start, end, append_to_log = True, covmtx = False):
+    def __save_to_log_file(self, chains, start, end, append_to_log=True, covmtx=False):
         '''
         Save to log files
         
@@ -396,9 +396,9 @@ class MCMC:
                 ChainProcessing._add_to_log(binlogfile, str('{}\t{}\t{}\n'.format(binstr, start, end-1)))
             
             if covmtx is True:
-                self.__save_covmtx_chain(chain = chains[0], start = start, end = end, extension = 'h5')
+                self.__save_covmtx_chain(chain=chains[0], start=start, end=end, extension='h5')
             else:
-                self.__save_chains(chains = chains, savedir = savedir, start = start, end = end, extension = 'h5')
+                self.__save_chains(chains=chains, savedir=savedir, start=start, end=end, extension='h5')
             
         if self.simulation_options.save_to_txt is True:
             savedir = self.simulation_options.savedir
@@ -408,9 +408,9 @@ class MCMC:
                 txtstr = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                 ChainProcessing._add_to_log(txtlogfile, str('{}\t{}\t{}\n'.format(txtstr, start, end-1)))
             if covmtx is True:
-                self.__save_covmtx_chain(chain = chains[0], start = start, end = end, extension = 'txt')
+                self.__save_covmtx_chain(chain=chains[0], start=start, end=end, extension='txt')
             else:
-                self.__save_chains(chains = chains, savedir = savedir, start = start, end = end, extension = 'txt')
+                self.__save_chains(chains=chains, savedir=savedir, start=start, end=end, extension='txt')
             
         # reset counter
         savecount = 0
@@ -434,14 +434,14 @@ class MCMC:
         
         for ii, chain in enumerate(chains):
             # add extension
-            chainfile = ChainProcessing._create_path_with_extension(savedir, chain['file'], extension = extension)
+            chainfile = ChainProcessing._create_path_with_extension(savedir, chain['file'], extension=extension)
             
             if extension.lower() == 'h5':
                 # define set name based in start/end
                 datasetname = str('{}_{}_{}'.format('nsimu',start,end-1))
-                ChainProcessing._save_to_bin_file(chainfile, datasetname = datasetname, mtx = chain['mtx'][start:end,:])
+                ChainProcessing._save_to_bin_file(chainfile, datasetname=datasetname, mtx=chain['mtx'][start:end,:])
             else:
-                ChainProcessing._save_to_txt_file(chainfile, mtx = chain['mtx'][start:end,:])
+                ChainProcessing._save_to_txt_file(chainfile, mtx=chain['mtx'][start:end,:])
                 
     # --------------------------------------------------------
     def __save_covmtx_chain(self, chain, start, end, extension):
@@ -460,14 +460,14 @@ class MCMC:
         '''
         
         # add extension
-        chainfile = ChainProcessing._create_path_with_extension(self.simulation_options.savedir, self.simulation_options.covchainfile, extension = extension)
+        chainfile = ChainProcessing._create_path_with_extension(self.simulation_options.savedir, self.simulation_options.covchainfile, extension=extension)
         
         if extension.lower() == 'h5':
             # define set name based in start/end
             datasetname = str('{}_{}_{}'.format('nsimu',start,end-1))
-            ChainProcessing._save_to_bin_file(chainfile, datasetname = datasetname, mtx = chain['mtx'])
+            ChainProcessing._save_to_bin_file(chainfile, datasetname=datasetname, mtx=chain['mtx'])
         else:
-            ChainProcessing._save_to_txt_file(chainfile, mtx = chain['mtx'])
+            ChainProcessing._save_to_txt_file(chainfile, mtx=chain['mtx'])
     
     # --------------------------------------------------------
     def __update_chain(self, accept, new_set, outsidebounds):
