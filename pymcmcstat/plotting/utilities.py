@@ -7,11 +7,12 @@ Created on Mon May 14 06:24:12 2018
 """
 import numpy as np
 from scipy.interpolate import interp1d
-from scipy import pi,sin,cos
+from scipy import pi, sin, cos
 import sys
 import math
 
-def generate_subplot_grid(nparam = 2):
+
+def generate_subplot_grid(nparam=2):
     '''
     Generate subplot grid.
 
@@ -27,6 +28,7 @@ def generate_subplot_grid(nparam = 2):
     ns1 = math.ceil(math.sqrt(nparam))
     ns2 = round(math.sqrt(nparam))
     return ns1, ns2
+
 
 def generate_names(nparam, names):
     '''
@@ -44,13 +46,13 @@ def generate_names(nparam, names):
         * **names** (:py:class:`list`): List of strings - parameter names
     '''
     # Check if names defined
-    if names == None:
+    if names is None:
         names = generate_default_names(nparam)
-
     # Check if enough names defined
     if len(names) != nparam:
         names = extend_names_to_match_nparam(names, nparam)
     return names
+
 
 def setup_plot_features(nparam, names, figsizeinches):
     '''
@@ -67,14 +69,12 @@ def setup_plot_features(nparam, names, figsizeinches):
         * **names** (:py:class:`list`): List of strings - parameter names
         * **figsizeiches** (:py:class:`list`): [Width, Height]
     '''
-    ns1, ns2 = generate_subplot_grid(nparam = nparam)
-
-    names = generate_names(nparam = nparam, names = names)
-
+    ns1, ns2 = generate_subplot_grid(nparam=nparam)
+    names = generate_names(nparam=nparam, names=names)
     if figsizeinches is None:
-        figsizeinches = [5,4]
-        
+        figsizeinches = [5, 4]
     return ns1, ns2, names, figsizeinches
+
 
 def generate_default_names(nparam):
     '''
@@ -94,6 +94,7 @@ def generate_default_names(nparam):
     for ii in range(nparam):
         names.append(str('$p_{{{}}}$'.format(ii)))
     return names
+
 
 def extend_names_to_match_nparam(names, nparam):
     '''
@@ -115,14 +116,14 @@ def extend_names_to_match_nparam(names, nparam):
     '''
     if names is None:
         names = []
-        
     n0 = len(names)
-    for ii in range(n0,nparam):
+    for ii in range(n0, nparam):
         names.append(str('$p_{{{}}}$'.format(ii)))
     return names
 
+
 # --------------------------------------------
-def make_x_grid(x, npts = 100):
+def make_x_grid(x, npts=100):
     '''
     Generate x grid based on extrema.
 
@@ -143,17 +144,18 @@ def make_x_grid(x, npts = 100):
     xmax = max(x)
     xxrange = xmax-xmin
     if len(x) > 200:
-        x_grid=np.linspace(xmin-0.08*xxrange,xmax+0.08*xxrange,npts)
+        x_grid = np.linspace(xmin-0.08*xxrange, xmax+0.08*xxrange, npts)
     else:
-        x_grid=np.linspace(np.mean(x)-4*np.std(x, ddof=1),np.mean(x)+4*np.std(x, ddof=1),npts)
-    return x_grid.reshape(x_grid.shape[0],1) # returns 1d column vector
+        x_grid = np.linspace(np.mean(x)-4*np.std(x, ddof=1), np.mean(x)+4*np.std(x, ddof=1), npts)
+    return x_grid.reshape(x_grid.shape[0], 1)  # returns 1d column vector
+
 
 # --------------------------------------------
 # see MASS 2nd ed page 181.
 def iqrange(x):
     '''
     Interquantile range of each column of x.
-    
+
     Args:
         * **x** (:class:`~numpy.ndarray`): Array of points.
 
@@ -161,26 +163,25 @@ def iqrange(x):
         * (:class:`~numpy.ndarray`): Interquantile range - single element array, `q3 - q1`.
     '''
     nr, nc = x.shape
-    if nr == 1: # make sure it is a column vector
-        x = x.reshape(nc,nr)
+    if nr == 1:  # make sure it is a column vector
+        x = x.reshape(nc, nr)
         nr = nc
         nc = 1
-    
     # sort
     x.sort()
-    
     i1 = math.floor((nr + 1)/4)
     i3 = math.floor(3/4*(nr+1))
     f1 = (nr+1)/4-i1
     f3 = 3/4*(nr+1)-i3
-    q1 = (1-f1)*x[int(i1),:] + f1*x[int(i1)+1,:]
-    q3 = (1-f3)*x[int(i3),:] + f3*x[int(i3)+1,:]
+    q1 = (1-f1)*x[int(i1), :] + f1*x[int(i1)+1, :]
+    q3 = (1-f3)*x[int(i3), :] + f3*x[int(i3)+1, :]
     return q3-q1
-    
-def gaussian_density_function(x, mu = 0, sigma2 = 1):
+
+
+def gaussian_density_function(x, mu=0, sigma2=1):
     '''
     Standard normal/Gaussian density function.
-    
+
     Args:
         * **x** (:py:class:`float`): Value of which to calculate probability.
         * **mu** (:py:class:`float`): Mean of Gaussian distribution.
@@ -192,10 +193,11 @@ def gaussian_density_function(x, mu = 0, sigma2 = 1):
     y = 1/math.sqrt(2*math.pi*sigma2)*math.exp(-0.5*(x-mu)**2/sigma2)
     return y
 
+
 def scale_bandwidth(x):
     '''
     Scale bandwidth of array.
-    
+
     Args:
         * **x** (:class:`~numpy.ndarray`): Array of points - column of chain.
 
@@ -206,11 +208,12 @@ def scale_bandwidth(x):
     if iqrange(x) <= 0:
         s = 1.06*np.array([np.std(x, ddof=1)*n**(-1/5)])
     else:
-        s = 1.06*np.array([min(np.std(x, ddof=1),iqrange(x)/1.34)*n**(-1/5)])
+        s = 1.06*np.array([min(np.std(x, ddof=1), iqrange(x)/1.34)*n**(-1/5)])
     return s
 
+
 # --------------------------------------------
-def generate_ellipse(mu, cmat, ndp = 100):
+def generate_ellipse(mu, cmat, ndp=100):
     '''
     Generates points for a probability contour ellipse
 
@@ -223,31 +226,26 @@ def generate_ellipse(mu, cmat, ndp = 100):
         * **x** (:class:`~numpy.ndarray`): x-points
         * **y** (:class:`~numpy.ndarray`): y-points
     '''
-    
     # check shape of covariance matrix
-    if cmat.shape != (2,2):
+    if cmat.shape != (2, 2):
         sys.exit('covariance matrix must be 2x2')
-    
     if check_symmetric(cmat) is not True:
         sys.exit('covariance matrix must be symmetric')
-        
-    
+
     # define t space
     t = np.linspace(0, 2*pi, ndp)
-    
     pdflag, R = is_semi_pos_def_chol(cmat)
     if pdflag is False:
         sys.exit('covariance matrix must be positive definite')
-    
-    x = mu[0] + R[0,0]*cos(t)
-    y = mu[1] + R[0,1]*cos(t) + R[1,1]*sin(t)
-    
+    x = mu[0] + R[0, 0]*cos(t)
+    y = mu[1] + R[0, 1]*cos(t) + R[1, 1]*sin(t)
     return x, y
+
 
 def check_symmetric(a, tol=1e-8):
     '''
     Check if array is symmetric by comparing with transpose.
-    
+
     Args:
         * **a** (:class:`~numpy.ndarray`): Array to test.
         * **tol** (:py:class:`float`): Tolerance for testing equality.
@@ -255,7 +253,8 @@ def check_symmetric(a, tol=1e-8):
     Returns:
         * (:py:class:`bool`): True -> symmetric, False -> not symmetric.
     '''
-    return np.allclose(a, a.T, atol = tol)
+    return np.allclose(a, a.T, atol=tol)
+
 
 def is_semi_pos_def_chol(x):
     '''
@@ -266,7 +265,8 @@ def is_semi_pos_def_chol(x):
 
     Returns:
         * If matrix is `not` semi positive definite return :code:`False, None`
-        * If matrix is semi positive definite return :code:`True` and the Upper triangular form of the Cholesky decomposition matrix.
+        * If matrix is semi positive definite return :code:`True` and \
+        the Upper triangular form of the Cholesky decomposition matrix.
     '''
     c = None
     try:
@@ -274,7 +274,8 @@ def is_semi_pos_def_chol(x):
         return True, c.transpose()
     except np.linalg.linalg.LinAlgError:
         return False, c
-    
+
+
 def append_to_nrow_ncol_based_on_shape(sh, nrow, ncol):
     '''
     Append to list based on shape of array
@@ -296,6 +297,7 @@ def append_to_nrow_ncol_based_on_shape(sh, nrow, ncol):
         ncol.append(sh[1])
     return nrow, ncol
 
+
 # --------------------------------------------
 def convert_flag_to_boolean(flag):
     '''
@@ -307,23 +309,23 @@ def convert_flag_to_boolean(flag):
     Returns:
         * **flag** (:py:class:`bool`): Flag to converted to boolean.
     '''
-    if flag is 'on':
+    if flag == 'on':
         flag = True
-    elif flag is 'off':
+    elif flag == 'off':
         flag = False
-        
     return flag
+
 
 # --------------------------------------------
 def set_local_parameters(ii, local):
     '''
     Set local parameters based on tests.
-    
+
     :Test 1:
         * `local == 0`
     :Test 2:
         * `local == ii`
-    
+
     Args:
         * **ii** (:py:class:`int`): Index.
         * **local** (:class:`~numpy.ndarray`): Local flags.
@@ -337,8 +339,9 @@ def set_local_parameters(ii, local):
     test = test1 + test2
     return test.reshape(test.size,)
 
+
 # --------------------------------------------
-def empirical_quantiles(x, p = np.array([0.25, 0.5, 0.75])):
+def empirical_quantiles(x, p=np.array([0.25, 0.5, 0.75])):
     '''
     Calculate empirical quantiles.
 
@@ -349,42 +352,39 @@ def empirical_quantiles(x, p = np.array([0.25, 0.5, 0.75])):
     Returns:
         * (:class:`~numpy.ndarray`): Interpolated quantiles.
     '''
-
     # extract number of rows/cols from np.array
     n = x.shape[0]
     # define vector valued interpolation function
     xpoints = range(n)
-    interpfun = interp1d(xpoints, np.sort(x, 0), axis = 0)
-    
+    interpfun = interp1d(xpoints, np.sort(x, 0), axis=0)
     # evaluation points
     itpoints = (n-1)*p
-    
     return interpfun(itpoints)
 
-def check_settings(default_settings, user_settings = None):
+
+def check_settings(default_settings, user_settings=None):
     '''
     Check user settings with default.
-    
+
     Recursively checks elements of user settings against the defaults and updates settings
     as it goes.  If a user setting does not exist in the default, then the user setting
     is added to the settings.  If the setting is defined in both the user and default
     settings, then the user setting overrides the default.  Otherwise, the default
     settings persist.
-    
+
     Args:
         * **default_settings** (:py:class:`dict`): Default settings for particular method.
         * **user_settings** (:py:class:`dict`): User defined settings.
-    
+
     Returns:
         * (:py:class:`dict`): Updated settings.
     '''
-    settings = default_settings.copy() # initially define settings as default
-    
-    options = list(default_settings.keys()) # get default settings
-    if user_settings is None: # convert to empty dict
+    settings = default_settings.copy()  # initially define settings as default
+    options = list(default_settings.keys())  # get default settings
+    if user_settings is None:  # convert to empty dict
         user_settings = {}
-    user_options = list(user_settings.keys()) # get user settings
-    for uo in user_options: # iterate through settings
+    user_options = list(user_settings.keys())  # get user settings
+    for uo in user_options:  # iterate through settings
         if uo in options:
             # check if checking a dictionary
             if isinstance(settings[uo], dict):
@@ -393,5 +393,4 @@ def check_settings(default_settings, user_settings = None):
                 settings[uo] = user_settings[uo]
         if uo not in options:
             settings[uo] = user_settings[uo]
-            
     return settings
