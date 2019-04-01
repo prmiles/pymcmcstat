@@ -13,6 +13,7 @@ from ..utilities.NumpyEncoder import NumpyEncoder
 from ..utilities.general import removekey
 from ..chain.ChainProcessing import _check_directory, _create_path_without_extension
 
+
 class ResultsStructure:
     '''
     Results from MCMC simulation.
@@ -37,8 +38,8 @@ class ResultsStructure:
         * :meth:`~add_random_number_sequence`
     '''
     def __init__(self):
-        self.results = {} # initialize empty dictionary
-        self.basic = False # basic structure not add yet
+        self.results = {}  # initialize empty dictionary
+        self.basic = False  # basic structure not add yet
 
     # --------------------------------------------------------
     def export_simulation_results_to_json_file(self, results):
@@ -49,37 +50,34 @@ class ResultsStructure:
             * **results** (:class:`~.ResultsStructure`): Dictionary of MCMC simulation results/settings.
         '''
         savedir = results['simulation_options']['savedir']
-        filename = self.determine_filename(options = results['simulation_options'])
-        
-        _check_directory(savedir) # make sure output directory exists
-        
+        filename = self.determine_filename(options=results['simulation_options'])
+        _check_directory(savedir)  # make sure output directory exists
         file = _create_path_without_extension(savedir, filename)
-            
         self.save_json_object(results, file)
-    
+
     @classmethod
     def determine_filename(cls, options):
         '''
         Determine results filename.
-        
+
         If not specified by `results_filename` in the simulation options, then
         a default naming format is generated using the date string associated
         with the initialization of the simulation.
-        
+
         Args:
             * **options** (:class:`~.SimulationOptions`): MCMC simulation options.
-        
+
         Returns:
             * **filename** (:py:class:`str`): Filename string.
         '''
         results_filename = options['results_filename']
         if results_filename is None:
             dtstr = options['datestr']
-            filename = str('{}{}{}'.format(dtstr,'_','mcmc_simulation.json'))
+            filename = str('{}{}{}'.format(dtstr, '_', 'mcmc_simulation.json'))
         else:
             filename = results_filename
         return filename
-    
+
     @classmethod
     def save_json_object(cls, results, filename):
         '''
@@ -95,7 +93,7 @@ class ResultsStructure:
         '''
         with open(filename, 'w') as out:
             json.dump(results, out, sort_keys=True, indent=4, cls=NumpyEncoder)
-    
+
     @classmethod
     def load_json_object(cls, filename):
         '''
@@ -114,7 +112,7 @@ class ResultsStructure:
         with open(filename, 'r') as obj:
             results = json.load(obj)
         return results
-    
+
     # --------------------------------------------------------
     def add_basic(self, nsimu, covariance, parameters, rejected, simutime, theta):
         '''
@@ -129,28 +127,26 @@ class ResultsStructure:
             * **simutime** (:py:class:`float`): Simulation run time in seconds.
             * **theta** (:class:`~numpy.ndarray`): Last sampled values.
         '''
-        
         self.results['theta'] = theta
-        
         self.results['parind'] = parameters._parind
         self.results['local'] = parameters._local
-        
-        self.results['total_rejected'] = rejected['total']*(nsimu**(-1)) # total rejected
-        self.results['rejected_outside_bounds'] = rejected['outside_bounds']*(nsimu**(-1)) # rejected due to sampling outside limits
+        self.results['total_rejected'] = rejected['total']*(nsimu**(-1))  # total rejected
+        # rejected due to sampling outside limits
+        self.results['rejected_outside_bounds'] = rejected['outside_bounds']*(nsimu**(-1))
         self.results['R'] = covariance._R
-        self.results['qcov'] = np.dot(covariance._R.transpose(),covariance._R)
+        self.results['qcov'] = np.dot(covariance._R.transpose(), covariance._R)
         self.results['cov'] = covariance._covchain
         self.results['qcov_scale'] = covariance._qcov_scale
         self.results['mean'] = covariance._meanchain
         self.results['names'] = [parameters._names[ii] for ii in parameters._parind]
-        self.results['limits'] = [parameters._lower_limits[parameters._parind[:]], parameters._upper_limits[parameters._parind[:]]]
-             
+        self.results['limits'] = [parameters._lower_limits[parameters._parind[:]],
+                                  parameters._upper_limits[parameters._parind[:]]]
         self.results['nsimu'] = nsimu
         self.results['simutime'] = simutime
-        covariance._qcovorig[np.ix_(parameters._parind,parameters._parind)] = self.results['qcov']
+        covariance._qcovorig[np.ix_(parameters._parind, parameters._parind)] = self.results['qcov']
         self.results['qcovorig'] = covariance._qcovorig
-        self.basic = True # add_basic has been execute
-        
+        self.basic = True  # add_basic has been execute
+
     def add_updatesigma(self, updatesigma, sigma2, S20, N0):
         '''
         Add information to results structure related to observation error.
@@ -186,7 +182,7 @@ class ResultsStructure:
             self.results['sigma2'] = sigma2
             self.results['S20'] = np.nan
             self.results['N0'] = np.nan
-    
+
     def add_dram(self, drscale, RDR, total_rejected, drsettings):
         '''
         Add results specific to performing DR algorithm.
@@ -200,9 +196,7 @@ class ResultsStructure:
         # extract results from basic structure
         if self.basic is True:
             nsimu = self.results['nsimu']
-            
             self.results['drscale'] = drscale
-            
             drsettings.iacce[0] = nsimu - total_rejected - sum(drsettings.iacce[1:])
             # 1 - number accepted without DR, 2 - number accepted via DR try 1,
             # 3 - number accepted via DR try 2, etc.
@@ -213,7 +207,7 @@ class ResultsStructure:
         else:
             print('Cannot add DRAM settings to results structure before running ''add_basic''')
             return False
-    
+
     def add_prior(self, mu, sigma, priortype):
         '''
         Add results specific to prior function.
@@ -227,9 +221,9 @@ class ResultsStructure:
 
             This feature is not currently implemented.
         '''
-        self.results['prior'] = dict(mu = mu, sigma = sigma, priortype = priortype)
-        
-    def add_options(self, options = None):
+        self.results['prior'] = dict(mu=mu, sigma=sigma, priortype=priortype)
+
+    def add_options(self, options=None):
         '''
         Saves subset of features of the simulation options in a nested dictionary.
 
@@ -239,14 +233,15 @@ class ResultsStructure:
         # Return options as dictionary
         opt = options.__dict__
         # define list of keywords to NOT add to results structure
-        do_not_save_these_keys = ['doram', 'waitbar', 'debug', 'dodram', 'maxmem', 'verbosity', 'RDR', 'stats','initqcovn','drscale','maxiter','_SimulationOptions__options_set', 'skip']
+        do_not_save_these_keys = ['doram', 'waitbar', 'debug', 'dodram', 'maxmem',
+                                  'verbosity', 'RDR', 'stats', 'initqcovn', 'drscale',
+                                  'maxiter', '_SimulationOptions__options_set', 'skip']
         for keyii in do_not_save_these_keys:
             opt = removekey(opt, keyii)
-            
         # must convert 'options' object to a dictionary
         self.results['simulation_options'] = opt
 
-    def add_model(self, model = None):
+    def add_model(self, model=None):
         '''
         Saves subset of features of the model settings in a nested dictionary.
 
@@ -256,13 +251,14 @@ class ResultsStructure:
         # Return model as dictionary
         mod = model.__dict__
         # define list of keywords to NOT add to results structure
-        do_not_save_these_keys = ['sos_function','prior_function','model_function','prior_update_function','prior_pars']
+        do_not_save_these_keys = ['sos_function', 'prior_function', 'model_function',
+                                  'prior_update_function', 'prior_pars']
         for keyii in do_not_save_these_keys:
             mod = removekey(mod, keyii)
         # must convert 'model' object to a dictionary
         self.results['model_settings'] = mod
-        
-    def add_chain(self, chain = None):
+
+    def add_chain(self, chain=None):
         '''
         Add chain to results structure.
 
@@ -270,8 +266,8 @@ class ResultsStructure:
             * **chain** (:class:`~numpy.ndarray`): Model parameter sampling chain.
         '''
         self.results['chain'] = chain
-        
-    def add_s2chain(self, s2chain = None):
+
+    def add_s2chain(self, s2chain=None):
         '''
         Add observiation error chain to results structure.
 
@@ -279,8 +275,8 @@ class ResultsStructure:
             * **s2chain** (:class:`~numpy.ndarray`): Sampling chain of observation errors.
         '''
         self.results['s2chain'] = s2chain
-        
-    def add_sschain(self, sschain = None):
+
+    def add_sschain(self, sschain=None):
         '''
         Add sum-of-squares chain to results structure.
 
@@ -288,7 +284,7 @@ class ResultsStructure:
             * **sschain** (:class:`~numpy.ndarray`): Calculated sum-of-squares error for each parameter chains set.
         '''
         self.results['sschain'] = sschain
-        
+
     def add_time_stats(self, mtime, drtime, adtime):
         '''
         Add time spend using each sampling algorithm.
@@ -303,7 +299,7 @@ class ResultsStructure:
             This feature is not currently implemented.
         '''
         self.results['time [mh, dr, am]'] = [mtime, drtime, adtime]
-        
+
     def add_random_number_sequence(self, rndseq):
         '''
         Add random number sequence to results structure.
