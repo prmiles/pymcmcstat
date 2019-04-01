@@ -10,6 +10,7 @@ Created on Wed Jan 17 16:21:48 2018
 import numpy as np
 import sys
 
+
 class SumOfSquares:
     '''
     Sum-of-squares function evaluation.
@@ -24,8 +25,8 @@ class SumOfSquares:
     '''
     def __init__(self, model, data, parameters):
         # check if sos function and model function are defined
-        if model.sos_function is None: #isempty(ssfun)
-            if model.model_function is None: #isempty(modelfun)
+        if model.sos_function is None:  # isempty(ssfun)
+            if model.model_function is None:  # isempty(modelfun)
                 sys.exit('No ssfun or modelfun specified!')
             sos_style = 4
         else:
@@ -39,7 +40,7 @@ class SumOfSquares:
         self.local = parameters._local
         self.data = data
         self.nbatch = model.nbatch
-        
+
     def evaluate_sos_function(self, theta):
         '''
         Evaluate sum-of-squares function.
@@ -58,13 +59,12 @@ class SumOfSquares:
             ss = self.mcmc_sos_function(self.value, self.data, self.nbatch, self.model_function)
         else:
             ss = self.sos_function(self.value, self.data, self.local)
-        
+
         # make sure sos is a numpy array
         if not isinstance(ss, np.ndarray):
             ss = np.array([ss])
-            
         return ss
-     
+
     @classmethod
     def mcmc_sos_function(cls, theta, data, nbatch, model_function):
         '''
@@ -79,7 +79,7 @@ class SumOfSquares:
 
         .. math::
 
-            SS_{q,i} = \sum [w_i(y^{data}_i-y^{model}_i)^2]
+            SS_{q,i} = \\sum [w_i(y^{data}_i-y^{model}_i)^2]
 
         where :math:`w_i` is the weight of a particular data set, and :math:`SS_{q,i}`
         is the sum-of-squares error for the `i`-th data set.
@@ -92,16 +92,12 @@ class SumOfSquares:
         '''
         # initialize
         ss = np.zeros(nbatch)
-
         for ibatch in range(nbatch):
-                xdata = data.xdata[ibatch]
-                ydata = data.ydata[ibatch]
-                weight = data.weight[ibatch]
-            
-                # evaluate model
-                ymodel = model_function(xdata, theta)
-    
-                # calculate sum-of-squares error
-                ss[ibatch] += sum(weight*(ydata-ymodel)**2)
-        
+            xdata = data.xdata[ibatch]
+            ydata = data.ydata[ibatch]
+            weight = data.weight[ibatch]
+            # evaluate model
+            ymodel = model_function(xdata, theta)
+            # calculate sum-of-squares error
+            ss[ibatch] += sum(weight*(ydata-ymodel)**2)
         return ss
