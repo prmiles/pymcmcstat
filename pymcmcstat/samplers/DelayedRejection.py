@@ -23,7 +23,7 @@ class DelayedRejection:
         * :meth:`~alphafun`
     '''
     # -------------------------------------------
-    def run_delayed_rejection(self, old_set, new_set, RDR, ntry, parameters, invR, sosobj, priorobj):
+    def run_delayed_rejection(self, old_set, new_set, RDR, ntry, parameters, invR, sosobj, priorobj, custom=None):
         '''
         Perform delayed rejection step - occurs in standard metropolis is not accepted.
 
@@ -64,7 +64,7 @@ class DelayedRejection:
 
             # Evaluate new proposals
             outbound = 0
-            next_set.ss = sosobj.evaluate_sos_function(next_set.theta)
+            next_set.ss = sosobj.evaluate_sos_function(next_set.theta, custom=custom)
             next_set.prior = priorobj.evaluate_prior(theta=next_set.theta)
             trypath.append(next_set)  # add set to trypath
             alpha = self.alphafun(trypath, invR)

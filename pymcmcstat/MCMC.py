@@ -209,9 +209,10 @@ class MCMC:
             self._sampling_methods.delayed_rejection._initialize_dr_metrics(self.simulation_options)
         # ---------------------
         # Setup custom samplers
-        if self.custom_samplers is not None:
+        self.custom_sampler_output = []
+        if len(self.custom_samplers) > 0:
             for ii, cs in enumerate(self.custom_samplers):
-                cs.setup()
+                self.custom_sampler_output.append(cs.setup())
 
     # --------------------------------------------------------
     def __initialize_chains(self, chainind, nsimu, npar, nsos, updatesigma, sigma2):
@@ -303,7 +304,8 @@ class MCMC:
                     parameters=self.parameters,
                     R=self._covariance._R,
                     prior_object=self.__prior_object,
-                    sos_object=self.__sos_object)
+                    sos_object=self.__sos_object,
+                    custom=self.custom_sampler_output)
 
             # DELAYED REJECTION
             if self.simulation_options.ntry > 1 and accept == 0:
@@ -315,7 +317,8 @@ class MCMC:
                         parameters=self.parameters,
                         invR=self._covariance._invR,
                         sosobj=self.__sos_object,
-                        priorobj=self.__prior_object)
+                        priorobj=self.__prior_object,
+                        custom=self.custom_sampler_output)
 
             # UPDATE CHAIN & SUM-OF-SQUARES CHAIN
             self.__update_chain(accept=accept, new_set=new_set, outsidebounds=outbound)
@@ -354,8 +357,13 @@ class MCMC:
                 self.__old_set.sigma2 = sigma2
 
             # RUN CUSTOM SAMPLERS
+            self.custom_sampler_output = []
             for cs in self.custom_samplers:
-                cs.update(accept=accept, isimu=isimu, current_set=self.__old_set)
+                self.custom_sampler_output.append(
+                        cs.update(
+                                accept=accept,
+                                isimu=isimu,
+                                current_set=self.__old_set))
 
             # SAVE TO LOG FILE
             if savecount == self.simulation_options.savesize:

@@ -36,7 +36,7 @@ class Metropolis:
         * :meth:`~unpack_set`
     '''
     # --------------------------------------------------------
-    def run_metropolis_step(self, old_set, parameters, R, prior_object, sos_object):
+    def run_metropolis_step(self, old_set, parameters, R, prior_object, sos_object, custom=None):
         '''
         Run Metropolis step.
 
@@ -73,7 +73,7 @@ class Metropolis:
             newprior = prior_object.evaluate_prior(newpar)
             # calculate sum-of-squares
             ss2 = ss  # old ss
-            ss1 = sos_object.evaluate_sos_function(newpar)
+            ss1 = sos_object.evaluate_sos_function(newpar, custom=custom)
             # evaluate likelihood
             alpha = self.evaluate_likelihood_function(ss1, ss2, sigma2, newprior, oldprior)
             # make acceptance decision
