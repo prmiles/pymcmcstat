@@ -10,6 +10,7 @@ Description: Prior function
 # Import required packages
 import numpy as np
 
+
 class PriorFunction:
     '''
     Prior distribution functions.
@@ -18,7 +19,7 @@ class PriorFunction:
         * :meth:`default_priorfun`
         * :meth:`evaluate_prior`
     '''
-    def __init__(self, priorfun = None, mu = np.array([0]), sigma = np.array([np.inf])):
+    def __init__(self, priorfun=None, mu=np.array([0]), sigma=np.array([np.inf])):
 
         self.mu = mu
         self.sigma = sigma
@@ -27,8 +28,8 @@ class PriorFunction:
         if priorfun is None:
             priorfun = self.default_priorfun
 
-        self.priorfun = priorfun # function handle
-        
+        self.priorfun = priorfun  # function handle
+
     @classmethod
     def default_priorfun(cls, theta, mu, sigma):
         '''
@@ -36,31 +37,18 @@ class PriorFunction:
 
         .. math::
 
-            \\pi_0(q) = \\frac{1}{\\sigma\sqrt{2\\pi}}\\exp\Big[\\Big(\\frac{\\theta - \\mu}{\\sigma^2}\\Big)^2\Big]
+            \\pi_0(q) = \\frac{1}{\\sigma\\sqrt{2\\pi}}\\exp\\Big[\\Big(\\frac{\\theta - \\mu}{\\sigma^2}\\Big)^2\\Big]
 
         Args:
             * **theta** (:class:`~numpy.ndarray`): Current parameter values.
             * **mu** (:class:`~numpy.ndarray`): Prior mean.
             * **sigma** (:class:`~numpy.ndarray`): Prior standard deviation.
         '''
-        # consider converting everything to numpy array - should allow for optimized performance
-#        n = len(theta)
-#        
-#        if mu is None:
-#            mu = np.zeros([n,1])
-#        
-#        if sigma is None:
-#            sigma = np.ones([n,1])
-#        
-#        pf = np.zeros(1)
-#        for ii in range(n):
-#            pf = pf + ((theta[ii]-mu[ii])*(sigma[ii]**(-1)))**2
-
         # proposed numpy implementation
         res = (mu - theta)/sigma
-        pf = np.dot(res.reshape(1,res.size), res.reshape(res.size,1))
+        pf = np.dot(res.reshape(1, res.size), res.reshape(res.size, 1))
         return pf
-        
+
     def evaluate_prior(self, theta):
         '''
         Evaluate the prior function.

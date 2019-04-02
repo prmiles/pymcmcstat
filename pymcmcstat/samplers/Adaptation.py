@@ -10,6 +10,7 @@ import numpy as np
 import math
 from ..utilities.general import message
 
+
 # --------------------------------------------
 class Adaptation:
     '''
@@ -51,13 +52,16 @@ class Adaptation:
             * **covariance** (:class:`~.CovarianceProcedures`): Updated covariance object
         '''
         # unpack options
-        burnintime, burnin_scale, ntry, drscale, alphatarget, etaparam, qcov_adjust, doram, verbosity = unpack_simulation_options(options = options)
+        (burnintime, burnin_scale, ntry, drscale, alphatarget,
+         etaparam, qcov_adjust, doram, verbosity) = unpack_simulation_options(options=options)
 
         # unpack covariance
-        last_index_since_adaptation, R, oldcovchain, oldmeanchain, oldwsum, no_adapt_index, qcov_scale, qcov = unpack_covariance_settings(covariance = covariance)
+        (last_index_since_adaptation, R, oldcovchain, oldmeanchain, oldwsum,
+         no_adapt_index, qcov_scale, qcov) = unpack_covariance_settings(covariance=covariance)
 
         if isimu < burnintime:
-            R = below_burnin_threshold(rejected = rejected, iiadapt = iiadapt, R = R, burnin_scale = burnin_scale, verbosity = verbosity)
+            R = below_burnin_threshold(rejected=rejected, iiadapt=iiadapt, R=R,
+                                       burnin_scale=burnin_scale, verbosity=verbosity)
             covchain = oldcovchain
             meanchain = oldmeanchain
             wsum = oldwsum
@@ -67,31 +71,30 @@ class Adaptation:
             message(verbosity, 2, str('i:{} adapting ({}, {}, {})'.format(
                     isimu, rejected['total']*(isimu**(-1))*100, rejected['in_adaptation_interval']*(iiadapt**(-1))*100,
                     rejected['outside_bounds']*(isimu**(-1))*100)))
-    
             # UPDATE COVARIANCE MATRIX - CHOLESKY, MEAN, SUM
             covchain, meanchain, wsum = update_covariance_mean_sum(
-                    chain[last_index_since_adaptation:chainind,:], np.ones(1), oldcovchain, oldmeanchain, oldwsum)
-                    
+                    chain[last_index_since_adaptation:chainind, :], np.ones(1), oldcovchain, oldmeanchain, oldwsum)
             last_index_since_adaptation = isimu
-                    
             # ram
             if doram:
-                upcov = update_cov_via_ram(u = u, isimu = isimu, etaparam=etaparam, npar = npar, alphatarget = alphatarget, alpha = alpha, R = R)
+                upcov = update_cov_via_ram(u=u, isimu=isimu, etaparam=etaparam,
+                                           npar=npar, alphatarget=alphatarget, alpha=alpha, R=R)
             else:
-                upcov = update_cov_from_covchain(covchain = covchain, qcov = qcov, no_adapt_index = no_adapt_index)
+                upcov = update_cov_from_covchain(covchain=covchain, qcov=qcov, no_adapt_index=no_adapt_index)
 
             # check if singular covariance matrix
-            R = check_for_singular_cov_matrix(upcov = upcov, R = R, npar = npar, qcov_adjust = qcov_adjust, qcov_scale = qcov_scale, rejected = rejected, iiadapt = iiadapt, verbosity = verbosity)
-            
+            R = check_for_singular_cov_matrix(upcov=upcov, R=R, npar=npar,
+                                              qcov_adjust=qcov_adjust, qcov_scale=qcov_scale,
+                                              rejected=rejected, iiadapt=iiadapt, verbosity=verbosity)
             # update dram covariance matrix
-            RDR, invR = update_delayed_rejection(R = R, npar = npar, ntry = ntry, drscale = drscale)
+            RDR, invR = update_delayed_rejection(R=R, npar=npar, ntry=ntry, drscale=drscale)
 
         covariance._update_covariance_from_adaptation(R, covchain, meanchain, wsum,
-                                          last_index_since_adaptation, iiadapt)
-
-        covariance._update_covariance_for_delayed_rejection_from_adaptation(RDR = RDR, invR = invR)
-        
+                                                      last_index_since_adaptation, iiadapt)
+        covariance._update_covariance_for_delayed_rejection_from_adaptation(RDR=RDR, invR=invR)
         return covariance
+
+
 # --------------------------------------------
 def unpack_simulation_options(options):
     '''
@@ -121,6 +124,8 @@ def unpack_simulation_options(options):
     doram = options.doram
     verbosity = options.verbosity
     return burnintime, burnin_scale, ntry, drscale, alphatarget, etaparam, qcov_adjust, doram, verbosity
+
+
 # --------------------------------------------
 def unpack_covariance_settings(covariance):
     '''
@@ -146,10 +151,11 @@ def unpack_covariance_settings(covariance):
     oldmeanchain = covariance._meanchain
     oldwsum = covariance._wsum
     no_adapt_index = covariance._no_adapt_index
-    
     qcov_scale = covariance._qcov_scale
     qcov = covariance._qcov
     return last_index_since_adaptation, R, oldcovchain, oldmeanchain, oldwsum, no_adapt_index, qcov_scale, qcov
+
+
 # --------------------------------------------
 def below_burnin_threshold(rejected, iiadapt, R, burnin_scale, verbosity):
     '''
@@ -174,8 +180,10 @@ def below_burnin_threshold(rejected, iiadapt, R, burnin_scale, verbosity):
                 rejected['in_adaptation_interval']*(iiadapt**(-1))*100)))
         R = R*burnin_scale
     return R
+
+
 # --------------------------------------------
-def update_covariance_mean_sum(x, w, oldcov, oldmean, oldwsum, oldR = None):
+def update_covariance_mean_sum(x, w, oldcov, oldmean, oldwsum, oldR=None):
     '''
     Update covariance chain, local mean, local sum
 
@@ -193,35 +201,30 @@ def update_covariance_mean_sum(x, w, oldcov, oldmean, oldwsum, oldR = None):
         * **wsum** (:class:`~numpy.ndarray`): Updated weighted sum
     '''
     n, p = x.shape
-    
-    if n == 0 or p == 0: # nothing to update with
+    if n == 0 or p == 0:  # nothing to update with
         return oldcov, oldmean, oldwsum
-    
-    w, R = setup_w_R(w = w, oldR = oldR, n = n)
-           
+    w, R = setup_w_R(w=w, oldR=oldR, n=n)
     if oldcov is None:
         xcov, xmean, wsum = initialize_covariance_mean_sum(x, w)
-                        
     else:
-        for ii in range(0,n):
-            xi = x[ii,:]
+        for ii in range(0, n):
+            xi = x[ii, :]
             wsum = w[ii]
             xmean = oldmean + wsum*((wsum+oldwsum)**(-1.0))*(xi - oldmean)
-            
             if R is not None:
-                Rin, xin = setup_cholupdate(R = R, oldwsum = oldwsum, wsum = wsum, oldmean = oldmean, xi = xi)
+                Rin, xin = setup_cholupdate(R=R, oldwsum=oldwsum,
+                                            wsum=wsum, oldmean=oldmean, xi=xi)
                 R = cholupdate(Rin, xin)
-        
-            xcov = (((oldwsum-1)*((wsum + oldwsum - 1)**(-1)))*oldcov
-                    + (wsum*oldwsum*((wsum+oldwsum-1)**(-1)))*((wsum
-                           + oldwsum)**(-1))*(np.dot((xi-oldmean).reshape(p,1),(xi-oldmean).reshape(1,p))))
-        
+            xcov = (((oldwsum-1)*((wsum + oldwsum - 1)**(-1)))*oldcov + (wsum*oldwsum*((wsum
+                    + oldwsum-1)**(-1))) * ((wsum + oldwsum)**(-1)) * (
+                np.dot((xi-oldmean).reshape(p, 1), (xi-oldmean).reshape(1, p))))
             wsum = wsum + oldwsum
             oldcov = xcov
             oldmean = xmean
             oldwsum = wsum
-   
     return xcov, xmean, wsum
+
+
 # --------------------------------------------
 def setup_w_R(w, oldR, n):
     '''
@@ -241,15 +244,15 @@ def setup_w_R(w, oldR, n):
     '''
     if w is None:
         w = np.ones(1)
-        
     if len(w) == 1:
         w = np.ones(n)*w
-        
     if oldR is None:
         R = None
     else:
         R = oldR
     return w, R
+
+
 # --------------------------------------------
 def initialize_covariance_mean_sum(x, w):
     '''
@@ -267,18 +270,20 @@ def initialize_covariance_mean_sum(x, w):
     npar = x.shape[1]
     wsum = sum(w)
     xmean = np.zeros(npar)
-    xcov = np.zeros([npar,npar])
+    xcov = np.zeros([npar, npar])
     for ii in range(npar):
-        xmean[ii] = sum(x[:,ii]*w)*(wsum**(-1))
+        xmean[ii] = sum(x[:, ii]*w)*(wsum**(-1))
     if wsum > 1:
-        for ii in range(0,npar):
-            for jj in range(0,ii+1):
-                term1 = x[:,ii] - xmean[ii]
-                term2 = x[:,jj] - xmean[jj]
-                xcov[ii,jj] = np.dot(term1.transpose(), ((term2)*w)*((wsum-1)**(-1)))
+        for ii in range(0, npar):
+            for jj in range(0, ii+1):
+                term1 = x[:, ii] - xmean[ii]
+                term2 = x[:, jj] - xmean[jj]
+                xcov[ii, jj] = np.dot(term1.transpose(), ((term2)*w)*((wsum-1)**(-1)))
                 if ii != jj:
-                    xcov[jj,ii] = xcov[ii,jj]
+                    xcov[jj, ii] = xcov[ii, jj]
     return xcov, xmean, wsum
+
+
 # --------------------------------------------
 def setup_cholupdate(R, oldwsum, wsum, oldmean, xi):
     '''
@@ -298,6 +303,8 @@ def setup_cholupdate(R, oldwsum, wsum, oldmean, xi):
     Rin = np.sqrt((oldwsum-1)*((wsum+oldwsum-1)**(-1)))*R
     xin = (xi - oldmean).transpose()*np.sqrt(((wsum*oldwsum)*((wsum+oldwsum-1)**(-1))*((wsum+oldwsum)**(-1))))
     return Rin, xin
+
+
 # --------------------------------------------
 # Cholesky Update
 def cholupdate(R, x):
@@ -315,15 +322,17 @@ def cholupdate(R, x):
     R1 = R.copy()
     x1 = x.copy()
     for ii in range(n):
-        r = math.sqrt(R1[ii,ii]**2 + x1[ii]**2)
-        c = r*(R1[ii,ii]**(-1))
-        s = x1[ii]*(R1[ii,ii]**(-1))
-        R1[ii,ii] = r
+        r = math.sqrt(R1[ii, ii]**2 + x1[ii]**2)
+        c = r*(R1[ii, ii]**(-1))
+        s = x1[ii]*(R1[ii, ii]**(-1))
+        R1[ii, ii] = r
         if ii+1 < n:
-            R1[ii,ii+1:n] = (R1[ii,ii+1:n] + s*x1[ii+1:n])*(c**(-1))
-            x1[ii+1:n] = c*x1[ii+1:n] - s*R1[ii,ii+1:n]
+            R1[ii, ii+1:n] = (R1[ii, ii+1:n] + s*x1[ii+1:n])*(c**(-1))
+            x1[ii+1:n] = c*x1[ii+1:n] - s*R1[ii, ii+1:n]
 
     return R1
+
+
 # --------------------------------------------
 def update_cov_via_ram(u, isimu, etaparam, npar, alphatarget, alpha, R):
     '''
@@ -344,8 +353,10 @@ def update_cov_via_ram(u, isimu, etaparam, npar, alphatarget, alpha, R):
     uu = u*(np.linalg.norm(u)**(-1))
     eta = (isimu**(etaparam))**(-1)
     ram = np.eye(npar) + eta*(min(1.0, alpha) - alphatarget)*(np.dot(uu.transpose(), uu))
-    upcov = np.dot(np.dot(R.transpose(),ram),R)
+    upcov = np.dot(np.dot(R.transpose(), ram), R)
     return upcov
+
+
 # --------------------------------------------
 def update_cov_from_covchain(covchain, qcov, no_adapt_index):
     '''
@@ -360,9 +371,11 @@ def update_cov_from_covchain(covchain, qcov, no_adapt_index):
         * **upcov** (:class:`~numpy.ndarray`): Updated covariance matrix
     '''
     upcov = covchain.copy()
-    upcov[no_adapt_index, :] = qcov[no_adapt_index,:]
-    upcov[:,no_adapt_index] = qcov[:,no_adapt_index]
+    upcov[no_adapt_index, :] = qcov[no_adapt_index, :]
+    upcov[:, no_adapt_index] = qcov[:, no_adapt_index]
     return upcov
+
+
 # --------------------------------------------
 def check_for_singular_cov_matrix(upcov, R, npar, qcov_adjust, qcov_scale, rejected, iiadapt, verbosity):
     '''
@@ -382,10 +395,14 @@ def check_for_singular_cov_matrix(upcov, R, npar, qcov_adjust, qcov_scale, rejec
         * **R** (:class:`~numpy.ndarray`): Adjusted Cholesky decomposition of covariance matrix.
     '''
     pos_def, pRa = is_semi_pos_def_chol(upcov)
-    if pos_def == 1: # not singular!
-        return scale_cholesky_decomposition(Ra = pRa, qcov_scale = qcov_scale)
-    else: # singular covariance matrix
-        return adjust_cov_matrix(upcov = upcov, R = R, npar = npar, qcov_adjust = qcov_adjust, qcov_scale = qcov_scale, rejected = rejected, iiadapt = iiadapt, verbosity = verbosity)
+    if pos_def == 1:  # not singular!
+        return scale_cholesky_decomposition(Ra=pRa, qcov_scale=qcov_scale)
+    else:  # singular covariance matrix
+        return adjust_cov_matrix(upcov=upcov, R=R, npar=npar, qcov_adjust=qcov_adjust,
+                                 qcov_scale=qcov_scale, rejected=rejected, iiadapt=iiadapt,
+                                 verbosity=verbosity)
+
+
 # --------------------------------------------
 def is_semi_pos_def_chol(x):
     '''
@@ -398,13 +415,14 @@ def is_semi_pos_def_chol(x):
         * `Boolean`
         * **c** (:class:`~numpy.ndarray`): Cholesky decomposition (upper triangular form) or `None`
     '''
-    
     c = None
     try:
         c = np.linalg.cholesky(x)
         return True, c.transpose()
     except np.linalg.linalg.LinAlgError:
         return False, c
+
+
 # --------------------------------------------
 def scale_cholesky_decomposition(Ra, qcov_scale):
     '''
@@ -418,6 +436,8 @@ def scale_cholesky_decomposition(Ra, qcov_scale):
         * **R** (:class:`~numpy.ndarray`): Scaled Cholesky decomposition of covariance matrix.
     '''
     return Ra*qcov_scale
+
+
 # --------------------------------------------
 def adjust_cov_matrix(upcov, R, npar, qcov_adjust, qcov_scale, rejected, iiadapt, verbosity):
     '''
@@ -439,15 +459,17 @@ def adjust_cov_matrix(upcov, R, npar, qcov_adjust, qcov_scale, rejected, iiadapt
     # try to blow it up
     tmp = upcov + np.eye(npar)*qcov_adjust
     pos_def_adjust, pRa = is_semi_pos_def_chol(tmp)
-    if pos_def_adjust == 1: # not singular!
+    if pos_def_adjust == 1:  # not singular!
         message(verbosity, 1, 'adjusted covariance matrix')
         # scale R
-        R = scale_cholesky_decomposition(Ra = pRa, qcov_scale = qcov_scale)
+        R = scale_cholesky_decomposition(Ra=pRa, qcov_scale=qcov_scale)
         return R
-    else: # still singular...
+    else:  # still singular...
         errstr = str('covariance matrix singular, no adaptation')
         message(verbosity, 0, '{} {}'.format(errstr, rejected['in_adaptation_interval']*(iiadapt**(-1))*100))
         return R
+
+
 # --------------------------------------------
 def update_delayed_rejection(R, npar, ntry, drscale):
     '''
@@ -461,17 +483,17 @@ def update_delayed_rejection(R, npar, ntry, drscale):
 
     Returns:
         * **RDR** (:py:class:`list`): List of Cholesky decomposition of covariance matrices for each stage of DR.
-        * **InvR** (:py:class:`list`): List of Inverse Cholesky decomposition of covariance matrices for each stage of DR.
+        * **InvR** (:py:class:`list`): List of Inverse Cholesky decomposition of \
+        covariance matrices for each stage of DR.
     '''
     RDR = None
     invR = None
-    if ntry > 1: # delayed rejection
+    if ntry > 1:  # delayed rejection
         RDR = []
         invR = []
         RDR.append(R)
         invR.append(np.linalg.solve(RDR[0], np.eye(npar)))
-        for ii in range(1,ntry):
-            RDR.append(RDR[ii-1]*((drscale[min(ii,len(drscale)) - 1])**(-1)))
-            invR.append(invR[ii-1]*(drscale[min(ii,len(drscale)) - 1]))
-        
+        for ii in range(1, ntry):
+            RDR.append(RDR[ii-1]*((drscale[min(ii, len(drscale)) - 1])**(-1)))
+            invR.append(invR[ii-1]*(drscale[min(ii, len(drscale)) - 1]))
     return RDR, invR

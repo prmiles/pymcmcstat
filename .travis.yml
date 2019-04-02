@@ -4,6 +4,7 @@ python:
   - 3.6
 cache: pip
 install:
+  - pip install flake8
   - pip install -r requirements.txt
   - python setup.py install
 before_script: # configure a headless display to test plot generation
@@ -11,6 +12,7 @@ before_script: # configure a headless display to test plot generation
   - "sh -e /etc/init.d/xvfb start"
   - sleep 3 # give xvfb some time to start
 script:
+  - flake8 pymcmcstat
   - coverage run --source=pymcmcstat -m unittest discover -s "test" -p "test*.py"
 notifications:
   email: 

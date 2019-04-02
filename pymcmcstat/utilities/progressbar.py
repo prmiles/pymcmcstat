@@ -2,10 +2,6 @@ from __future__ import print_function
 
 import sys
 import time
-#try:
-#    from IPython.core.display import HTML, Javascript, display
-#except ImportError:
-#    pass
 
 __all__ = ['progress_bar']
 
@@ -30,6 +26,7 @@ class ProgressBar(object):
             self.last = elapsed
         elif i == self.iterations:
             self.animate(i, elapsed)
+
 
 class TextProgressBar(ProgressBar):
 
@@ -70,16 +67,20 @@ def consoleprint(s):
     else:
         print(s)
 
+
 def check_windows_platform():
     return sys.platform.lower().startswith('win')
 
-def ipythonprint(s, flush = True):
+
+def ipythonprint(s, flush=True):
     print('\r', s, end='')
     if flush is True:
         flush_print()
 
+
 def flush_print():
     sys.stdout.flush()
+
 
 def run_from_ipython():
     try:

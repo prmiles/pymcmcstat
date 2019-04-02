@@ -10,6 +10,7 @@ Utility functions used by different samplers
 
 import numpy as np
 
+
 # --------------------------------------------------------
 def sample_candidate_from_gaussian_proposal(npar, oldpar, R):
     '''
@@ -22,12 +23,14 @@ def sample_candidate_from_gaussian_proposal(npar, oldpar, R):
 
     Returns:
         * **newpar** (:class:`~numpy.ndarray`): :math:`q^*` - candidate
-        * **npar_sample_from_sample** (:class:`~numpy.ndarray`): Sampled values from normal distibution: :math:`N(0,1)`.
+        * **npar_sample_from_sample** (:class:`~numpy.ndarray`): \
+        Sampled values from normal distibution: :math:`N(0,1)`.
     '''
     npar_sample_from_normal = np.random.randn(1, npar)
     newpar = oldpar + np.dot(npar_sample_from_normal, R)
     newpar = newpar.reshape(npar)
     return newpar, npar_sample_from_normal
+
 
 # --------------------------------------------------------
 def is_sample_outside_bounds(theta, lower_limits, upper_limits):
@@ -47,6 +50,7 @@ def is_sample_outside_bounds(theta, lower_limits, upper_limits):
     else:
         outsidebounds = False
     return outsidebounds
+
 
 # --------------------------------------------------------
 def acceptance_test(alpha):
@@ -69,11 +73,12 @@ def acceptance_test(alpha):
     Returns:
         * **accept** (:py:class:`bool`): False - reject, True - accept
     '''
-    if alpha >= 1 or alpha > np.random.rand(1,1):
+    if alpha >= 1 or alpha > np.random.rand(1, 1):
         accept = True
     else:
         accept = False
     return accept
+
 
 # -------------------------------------------
 def set_outside_bounds(next_set):
