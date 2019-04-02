@@ -8,7 +8,6 @@ Created on Wed Jun  6 08:33:47 2018
 
 from pymcmcstat.MCMC import print_rejection_statistics, MCMC
 from pymcmcstat.structures.ParameterSet import ParameterSet
-from pymcmcstat.chain import ChainProcessing
 import test.general_functions as gf
 import unittest
 from mock import patch
