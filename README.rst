@@ -59,6 +59,12 @@ Feedback
 - `Feature Request <https://github.com/prmiles/pymcmcstat/issues/new?template=feature_request.md>`_
 - `Bug Report <https://github.com/prmiles/pymcmcstat/issues/new?template=bug_report.md>`_
 
+Sponsor
+=======
+This work was sponsored in part by the NNSA Office of Defense Nuclear Nonproliferation R&D through the Consortium for Nonproliferation Enabling Capabilities.
+
+|cnec|
+
    
 .. |docs| image:: https://readthedocs.org/projects/pymcmcstat/badge/?version=latest
     :target: https://pymcmcstat.readthedocs.io/en/latest/?badge=latest
@@ -80,3 +86,7 @@ Feedback
     
 .. |pyversion| image:: https://img.shields.io/pypi/pyversions/pymcmcstat.svg
     :target: https://pypi.org/project/pymcmcstat/
+
+.. |cnec| image:: https://github.com/prmiles/pymcmcstat/blob/dev_1.7.0/doc/cnec-logo.png
+    :target: https://cnec.ncsu.edu/
+    
