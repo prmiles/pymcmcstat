@@ -14,6 +14,7 @@ before_script: # configure a headless display to test plot generation
 script:
   - flake8 pymcmcstat
   - coverage run --source=pymcmcstat -m unittest discover -s "test" -p "test*.py"
+- coverage report --fail-under=80
 notifications:
   email: 
     - prmiles@ncsu.edu

@@ -31,7 +31,6 @@ class SumOfSquares:
             sos_style = 4
         else:
             sos_style = 1
-
         self.sos_function = model.sos_function
         self.sos_style = sos_style
         self.model_function = model.model_function
@@ -41,7 +40,7 @@ class SumOfSquares:
         self.data = data
         self.nbatch = model.nbatch
 
-    def evaluate_sos_function(self, theta):
+    def evaluate_sos_function(self, theta, custom=None):
         '''
         Evaluate sum-of-squares function.
 
@@ -54,7 +53,10 @@ class SumOfSquares:
         # evaluate sum-of-squares function
         self.value[self.parind] = theta
         if self.sos_style == 1:
-            ss = self.sos_function(self.value, self.data)
+            try:
+                ss = self.sos_function(self.value, self.data, custom=custom)
+            except TypeError:
+                ss = self.sos_function(self.value, self.data)
         elif self.sos_style == 4:
             ss = self.mcmc_sos_function(self.value, self.data, self.nbatch, self.model_function)
         else:

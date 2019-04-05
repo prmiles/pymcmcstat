@@ -8,7 +8,6 @@ Created on Wed Jun  6 08:33:47 2018
 
 from pymcmcstat.MCMC import print_rejection_statistics, MCMC
 from pymcmcstat.structures.ParameterSet import ParameterSet
-from pymcmcstat.chain import ChainProcessing
 import test.general_functions as gf
 import unittest
 from mock import patch
@@ -387,3 +386,17 @@ class RunSimulation(unittest.TestCase):
         check_these = ['mcmcplot', 'PI', 'chainstats']
         for ci in check_these:
             self.assertTrue(hasattr(mcstat, ci), msg = str('object has attribute: {}'.format(ci)))
+
+
+# --------------------------------------------------------
+class CustomRun(unittest.TestCase):
+    def test_run_simulation(self):
+        mcstat = gf.basic_mcmc()
+        mcstat.simulation_options.nsimu = 100
+        mcstat.simulation_options.save_to_bin = False
+        mcstat.simulation_options.save_to_txt = False
+        mcstat.custom_samplers.append(gf.CustomSampler(nsimu=100))
+        tmpfolder = gf.generate_temp_folder()
+        mcstat.simulation_options.savedir = tmpfolder
+        mcstat.run_simulation()
+        self.assertTrue(mcstat._mcmc_status, msg = 'Expect True if successfully run')
