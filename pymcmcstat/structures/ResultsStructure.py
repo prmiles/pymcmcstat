@@ -145,6 +145,7 @@ class ResultsStructure:
         self.results['simutime'] = simutime
         covariance._qcovorig[np.ix_(parameters._parind, parameters._parind)] = self.results['qcov']
         self.results['qcovorig'] = covariance._qcovorig
+        self.results['original_covariance'] = covariance._qcov_original
         self.basic = True  # add_basic has been execute
 
     def add_updatesigma(self, updatesigma, sigma2, S20, N0):
