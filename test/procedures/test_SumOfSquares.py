@@ -88,11 +88,13 @@ class EvaluateSOS(unittest.TestCase):
         self.assertTrue(isinstance(ss[0], float), msg = 'Numerical result returned')
         self.assertTrue(np.array_equal(SOS.value[SOS.parind], theta), msg = 'Value(s) updated')
 
-#    def test_eval_sos_model_cs(self):
-#        model, options, parameters, data = gf.setup_mcmc()
-#        model.sos_function = gf.custom_ssfun
-#        SOS = SumOfSquares(model=model, data=data, parameters=parameters)
-#        SOS.sos_style = 1
-#        theta = np.array([2., 5.])
-#        with self.assertRaises(TypeError):
-#            SOS.evaluate_sos_function(theta, custom=None)
+    def test_eval_sos_model_cs(self):
+        model, options, parameters, data = gf.setup_mcmc()
+        model.sos_function = gf.custom_ssfun
+        SOS = SumOfSquares(model=model, data=data, parameters=parameters)
+        SOS.sos_style = 1
+        theta = np.array([2., 5.])
+        ss = SOS.evaluate_sos_function(theta)
+        self.assertEqual(ss, None, msg='Expect None')
+        ss = SOS.evaluate_sos_function(theta, custom=123)
+        self.assertEqual(ss, 123, msg='Expect 123')
