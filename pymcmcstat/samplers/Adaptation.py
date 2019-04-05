@@ -68,7 +68,7 @@ class Adaptation:
             RDR = None
             invR = None
         else:
-            message(verbosity, 2, str('i:{} adapting ({}, {}, {})'.format(
+            message(verbosity, 3, str('i:{} adapting ({}, {}, {})'.format(
                     isimu, rejected['total']*(isimu**(-1))*100, rejected['in_adaptation_interval']*(iiadapt**(-1))*100,
                     rejected['outside_bounds']*(isimu**(-1))*100)))
             # UPDATE COVARIANCE MATRIX - CHOLESKY, MEAN, SUM
