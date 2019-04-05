@@ -88,6 +88,6 @@ This work was sponsored in part by the NNSA Office of Defense Nuclear Nonprolife
 .. |pyversion| image:: https://img.shields.io/pypi/pyversions/pymcmcstat.svg
     :target: https://pypi.org/project/pymcmcstat/
 
-.. |cnec| image:: https://github.com/prmiles/pymcmcstat/blob/master/doc/cnec-logo.png
+.. |cnec| image:: https://raw.githubusercontent.com/prmiles/pymcmcstat/master/doc/cnec-logo.png
     :target: https://cnec.ncsu.edu/
     
