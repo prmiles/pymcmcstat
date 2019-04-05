@@ -34,14 +34,8 @@ def ssfun(theta, data, local=None):
     ss = sum((ymodel[:,0] - ydata[:,0])**2)
     return ss
 
-def custom_ssfun(theta, data):
-    xdata = data.xdata[0]
-    ydata = data.ydata[0]
-    # eval model
-    ymodel = modelfun(xdata, theta)
-    # calc sos
-    ss = sum((ymodel[:,0] - ydata[:,0])**2)
-    return ss
+def custom_ssfun(theta, data, custom=None):
+    return custom
 
 def basic_mcmc():
     # Initialize MCMC object
