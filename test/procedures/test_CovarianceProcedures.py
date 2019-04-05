@@ -11,12 +11,33 @@ import unittest
 import numpy as np
 import test.general_functions as gf
 
+
 # --------------------------
 class InitializeCP(unittest.TestCase):
 
     def test_init_CP(self):
         CP = CovarianceProcedures()
         self.assertTrue(hasattr(CP, 'description'))
+
+    def test_init_CP_original_cov(self):
+        CP = CovarianceProcedures()
+        __, options, parameters, __ = gf.setup_mcmc()
+        CP = CovarianceProcedures()
+        CP._initialize_covariance_settings(parameters = parameters, options = options)
+        self.assertTrue(hasattr(CP, '_qcov_original'), msg='Has assigned original covariance matrix')
+        original_covariance = CP._qcov_original.copy()
+        check = {
+            'R': np.random.random_sample(size = (2,2)),
+            'covchain': np.random.random_sample(size = (2,2)),
+            'meanchain': np.random.random_sample(size = (1,2)),
+            'wsum': np.random.random_sample(size = (2,1)),
+            'last_index_since_adaptation': 0,
+            'iiadapt': 100
+            }
+        CP._update_covariance_from_adaptation(**check)
+        self.assertTrue(np.array_equal(CP._qcov_original, original_covariance),
+                        msg='Expect original cov. mtx. unchanged after update.')
+
 
 # --------------------------
 class UpdateCovarianceFromAdaptation(unittest.TestCase):
@@ -25,7 +46,6 @@ class UpdateCovarianceFromAdaptation(unittest.TestCase):
         __, options, parameters, __ = gf.setup_mcmc()
         CP = CovarianceProcedures()
         CP._initialize_covariance_settings(parameters = parameters, options = options)
-        
         check = {
         'R': np.random.random_sample(size = (2,2)),
         'covchain': np.random.random_sample(size = (2,2)),
@@ -34,7 +54,6 @@ class UpdateCovarianceFromAdaptation(unittest.TestCase):
         'last_index_since_adaptation': 0,
         'iiadapt': 100
         }
-        
         CP._update_covariance_from_adaptation(**check)
         CPD = CP.__dict__
         items = ['last_index_since_adaptation', 'iiadapt']
