@@ -13,6 +13,7 @@ Additional routines associated with Cholesky Decomposition.
 import numpy as np
 import math
 
+
 class CovarianceProcedures:
     '''
     Covariance matrix variables and methods.
@@ -41,35 +42,28 @@ class CovarianceProcedures:
         self._covchain = None
         self._meanchain = None
         self._last_index_since_adaptation = 0
-
         self._wsum = options.initqcovn
-
         # define noadaptind as a boolean - inputted as list of index values not updated
         self._no_adapt_index = parameters._no_adapt
-
         # ----------------
         # setup covariance matrix
         self.setup_covariance_matrix(options.qcov, parameters._thetasigma, parameters._initial_value)
-            
         # ----------------
         # check adascale
         self.__check_adascale(options.adascale, parameters.npar)
-        
         # ----------------
         # setup R matrix (R used to update in metropolis)
-#        print('qcov.shape = {}'.format(self._qcov.shape))
         self.__setup_R_matrix(parameters._parind)
-            
         # ----------------
         # setup RDR matrix (RDR used in DR)
         if options.method == 'dram' or options.method == 'dr':
             self._invR = []
-            self.__setup_RDR_matrix(npar = parameters.npar,
-                    drscale = options.drscale, ntry = options.ntry,
-                    RDR = options.RDR)
-            
+            self.__setup_RDR_matrix(npar=parameters.npar,
+                                    drscale=options.drscale, ntry=options.ntry,
+                                    RDR=options.RDR)
+
     def _update_covariance_from_adaptation(self, R, covchain, meanchain, wsum,
-                                          last_index_since_adaptation, iiadapt):
+                                           last_index_since_adaptation, iiadapt):
         '''
         Update covariance from adaptation algorithm.
 
@@ -87,8 +81,8 @@ class CovarianceProcedures:
         self._wsum = wsum
         self._last_index_since_adaptation = last_index_since_adaptation
         self._iiadapt = iiadapt
-        
-    def _update_covariance_for_delayed_rejection_from_adaptation(self, RDR = None, invR = None):
+
+    def _update_covariance_for_delayed_rejection_from_adaptation(self, RDR=None, invR=None):
         '''
         Update covariance variables for delayed rejection based on adaptation.
 
@@ -98,7 +92,7 @@ class CovarianceProcedures:
         '''
         self._RDR = RDR
         self._invR = invR
-        
+
     def _update_covariance_settings(self, parameter_set):
         '''
         Update covariance settings based on parameter set
@@ -109,7 +103,7 @@ class CovarianceProcedures:
         if self._wsum is not None:
             self._covchain = self._qcov
             self._meanchain = parameter_set
-        
+
     def setup_covariance_matrix(self, qcov, thetasig, value):
         '''
         Initialize covariance matrix.
@@ -130,67 +124,65 @@ class CovarianceProcedures:
             * **value** (:class:`~numpy.ndarray`): Current parameter value.
         '''
         # check qcov
-        if qcov is None: # i.e., qcov is None (not defined)
-            qcov = thetasig**2 # variance
+        if qcov is None:  # i.e., qcov is None (not defined)
+            qcov = thetasig**2  # variance
             ii1 = np.isinf(qcov)
             ii2 = np.isnan(qcov)
             ii = ii1 + ii2
-            qcov[ii] = (np.abs(value[ii])*0.05)**2 # default is 5% stdev
-            qcov[qcov==0] = 1.0 # if initial value was zero, use 1 as stdev
-            qcov = np.diagflat(qcov) # create covariance matrix
-    
+            qcov[ii] = (np.abs(value[ii])*0.05)**2  # default is 5% stdev
+            qcov[qcov == 0] = 1.0  # if initial value was zero, use 1 as stdev
+            qcov = np.diagflat(qcov)  # create covariance matrix
+
         self._qcov = np.atleast_2d(qcov[:])
-        
+        self._qcov_original = self._qcov.copy()
+
     def __check_adascale(self, adascale, npar):
         # check adascale
         if adascale is None or adascale <= 0:
-            qcov_scale = 2.4*(math.sqrt(npar)**(-1)) # scale factor in R
+            qcov_scale = 2.4*(math.sqrt(npar)**(-1))  # scale factor in R
         else:
             qcov_scale = adascale
-        
         self._qcov_scale = qcov_scale
-    
+
     def __setup_R_matrix(self, parind):
-        cm, cn = self._qcov.shape # number of rows, number of columns
-        if min([cm, cn]) == 1: # qcov contains variances!
+        cm, cn = self._qcov.shape  # number of rows, number of columns
+        if min([cm, cn]) == 1:  # qcov contains variances!
             self.__setup_R_based_on_variances(parind)
-        else: # qcov has covariance matrix in it
+        else:  # qcov has covariance matrix in it
             self.__setup_R_based_on_covariance_matrix(parind)
-    
+
     def __setup_R_based_on_variances(self, parind):
         qcov = np.copy(self._qcov)
         qcov = np.diagflat(qcov)
-        self._R = np.sqrt(qcov[np.ix_(parind,parind)])
-        self._qcovorig = np.diagflat(self._qcov[:]) # save original qcov
-        self._qcov = qcov[np.ix_(parind,parind)]
-        
+        self._R = np.sqrt(qcov[np.ix_(parind, parind)])
+        self._qcovorig = np.diagflat(self._qcov[:])  # save original qcov
+        self._qcov = qcov[np.ix_(parind, parind)]
+
     def __setup_R_based_on_covariance_matrix(self, parind):
-        self._qcovorig = np.copy(self._qcov) # save qcov
-        self._qcov = self._qcov[np.ix_(parind,parind)] # this operation in matlab maintains matrix (debug)
+        self._qcovorig = np.copy(self._qcov)  # save qcov
+        self._qcov = self._qcov[np.ix_(parind, parind)]  # this operation in matlab maintains matrix (debug)
         if self._qcov.size == 1:
             self._R = np.sqrt(self._qcov)
         else:
-            self._R = np.linalg.cholesky(self._qcov) # cholesky decomposition
-        self._R = self._R.transpose() # matches output of matlab function
-            
+            self._R = np.linalg.cholesky(self._qcov)  # cholesky decomposition
+        self._R = self._R.transpose()  # matches output of matlab function
+
     def __setup_RDR_matrix(self, npar, drscale, ntry, RDR):
         # if not empty
-        if RDR is None: # check implementation
-            RDR = [] # initialize list
+        if RDR is None:  # check implementation
+            RDR = []  # initialize list
             RDR.append(self._R)
             self._invR.append(np.linalg.solve(self._R, np.eye(npar)))
-            for ii in range(1,ntry):
-                RDR.append(RDR[ii-1]*(drscale[min(ii,len(drscale))-1]**(-1)))
-                self._invR.append(np.linalg.solve(RDR[ii],np.eye(npar)))
-        else: # DR strategy: just scale R's down by DR_scale
+            for ii in range(1, ntry):
+                RDR.append(RDR[ii-1]*(drscale[min(ii, len(drscale))-1]**(-1)))
+                self._invR.append(np.linalg.solve(RDR[ii], np.eye(npar)))
+        else:  # DR strategy: just scale R's down by DR_scale
             for ii in range(ntry):
                 self._invR.append(np.linalg.solve(RDR[ii], np.eye(npar)))
-                    
             self._R = RDR[0]
-        
         self._RDR = RDR
-        
-    def display_covariance_settings(self, print_these = None):
+
+    def display_covariance_settings(self, print_these=None):
         '''
         Display subset of the covariance settings.
 

@@ -3,7 +3,7 @@
 
 |docs| |build| |coverage| |license| |zenodo| |pypi| |pyversion|
 
-The `pymcmcstat <https://prmiles.wordpress.ncsu.edu/codes/python-packages/pymcmcstat/>`__ package is a Python program for running Markov Chain Monte Carlo (MCMC) simulations.
+The `pymcmcstat <https://github.com/prmiles/pymcmcstat/wiki>`__ package is a Python program for running Markov Chain Monte Carlo (MCMC) simulations.
 Included in this package is the ability to use different Metropolis based sampling techniques:
 
 * Metropolis-Hastings (MH): Primary sampling method.
@@ -13,7 +13,7 @@ Included in this package is the ability to use different Metropolis based sampli
 
 This package is an adaptation of the MATLAB toolbox `mcmcstat <http://helios.fmi.fi/~lainema/mcmc/>`_.  The user interface is designed to be as similar to the MATLAB version as possible, but this implementation has taken advantage of certain data structure concepts more amenable to Python.  
 
-Note, advanced plotting routines are available in the `mcmcplot <https://prmiles.wordpress.ncsu.edu/codes/python-packages/mcmcplot/>`__ package.  Many plotting features are directly available within `pymcmcstat <https://prmiles.wordpress.ncsu.edu/codes/python-packages/pymcmcstat/>`__, but some user's may find `mcmcplot <https://prmiles.wordpress.ncsu.edu/codes/python-packages/mcmcplot/>`__ useful.
+Note, advanced plotting routines are available in the `mcmcplot <https://prmiles.wordpress.ncsu.edu/codes/python-packages/mcmcplot/>`__ package.  Many plotting features are directly available within `pymcmcstat <https://github.com/prmiles/pymcmcstat/wiki>`__, but some user's may find `mcmcplot <https://prmiles.wordpress.ncsu.edu/codes/python-packages/mcmcplot/>`__ useful.
 
 Installation
 ============
@@ -35,8 +35,9 @@ You can also clone the repository and run ``python  setup.py install``.
 Getting Started
 ===============
 
-- Tutorial `notebooks <https://nbviewer.jupyter.org/github/prmiles/notebooks/tree/master/pymcmcstat/index.ipynb>`_
+- `Tutorial notebooks <https://nbviewer.jupyter.org/github/prmiles/notebooks/tree/master/pymcmcstat/index.ipynb>`_
 - `Documentation <http://pymcmcstat.readthedocs.io/>`_
+- `Release history <https://github.com/prmiles/pymcmcstat/blob/master/CHANGELOG.rst>`_
 
 License
 =======
@@ -51,13 +52,19 @@ See the `GitHub contributor page <https://github.com/prmiles/pymcmcstat/graphs/c
 Citing pymcmcstat
 =================
 
-Please see the `pymcmcstat homepage <https://prmiles.wordpress.ncsu.edu/codes/python-packages/pymcmcstat/>`__ or follow the DOI badge above to find the appropriate citation information.
+Please see the `pymcmcstat homepage <https://github.com/prmiles/pymcmcstat/wiki>`__ or follow the DOI badge above to find the appropriate citation information.
 
 Feedback
 ========
 
 - `Feature Request <https://github.com/prmiles/pymcmcstat/issues/new?template=feature_request.md>`_
 - `Bug Report <https://github.com/prmiles/pymcmcstat/issues/new?template=bug_report.md>`_
+
+Sponsor
+=======
+This work was sponsored in part by the NNSA Office of Defense Nuclear Nonproliferation R&D through the Consortium for Nonproliferation Enabling Capabilities.
+
+|cnec|
 
    
 .. |docs| image:: https://readthedocs.org/projects/pymcmcstat/badge/?version=latest
@@ -80,3 +87,7 @@ Feedback
     
 .. |pyversion| image:: https://img.shields.io/pypi/pyversions/pymcmcstat.svg
     :target: https://pypi.org/project/pymcmcstat/
+
+.. |cnec| image:: https://github.com/prmiles/pymcmcstat/blob/dev_1.7.0/doc/cnec-logo.png
+    :target: https://cnec.ncsu.edu/
+    

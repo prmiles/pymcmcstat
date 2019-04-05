@@ -25,7 +25,7 @@ def modelfun(xdata, theta):
     y[:,0] = m*xdata.reshape(nrow,) + b
     return y
 
-def ssfun(theta, data, local = None):
+def ssfun(theta, data, local=None):
     xdata = data.xdata[0]
     ydata = data.ydata[0]
     # eval model
@@ -33,6 +33,9 @@ def ssfun(theta, data, local = None):
     # calc sos
     ss = sum((ymodel[:,0] - ydata[:,0])**2)
     return ss
+
+def custom_ssfun(theta, data, custom=None):
+    return custom
 
 def basic_mcmc():
     # Initialize MCMC object
@@ -68,6 +71,12 @@ def setup_case():
     mcstat._MCMC__sschain = np.random.random_sample(size = (100,2))
     mcstat._MCMC__s2chain = np.random.random_sample(size = (100,2))
     mcstat._covariance._R = np.array([[0.5, 0.2],[0., 0.3]])
+    
+    mcstat._MCMC__chains = []
+    mcstat._MCMC__chains.append(dict(file = mcstat.simulation_options.chainfile, mtx = mcstat._MCMC__chain))
+    mcstat._MCMC__chains.append(dict(file = mcstat.simulation_options.sschainfile, mtx = mcstat._MCMC__sschain))
+    mcstat._MCMC__chains.append(dict(file = mcstat.simulation_options.s2chainfile, mtx = mcstat._MCMC__s2chain))
+        
     return mcstat
 
 def setup_mcmc():
@@ -179,3 +188,24 @@ def generate_temp_file(extension = 'h5'):
         else:
             flag = False
     return tmpfile
+
+class CustomSampler:
+    def __init__(self, nsimu):
+        self.name = 'Gibbs'
+        self.nsimu = nsimu
+        
+    def setup(self):
+        self.status = 'setup'
+        self.tau = np.zeros([self.nsimu, 1])
+        self.counter = 0
+        self.tau[self.counter,0] = np.random.gamma(0.1, 0.1)
+        self.chains = []
+        self.chains.append(dict(file = 'tauchain', mtx = self.tau))
+        return self.tau[self.counter, 0]
+    
+    def update(self, **kwargs):
+        self.counter += 1
+        self.tau[self.counter,0] = np.random.gamma(0.1, 0.1)
+        self.status = 'updating'
+        self.tau[self.counter, 0]
+        return self.tau[self.counter, 0]

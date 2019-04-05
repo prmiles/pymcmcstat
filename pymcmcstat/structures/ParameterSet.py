@@ -6,6 +6,7 @@ Created on Thu Jan 18 10:15:37 2018
 @author: prmiles
 """
 
+
 class ParameterSet:
     '''
     Basic MCMC parameter set.
@@ -19,7 +20,7 @@ class ParameterSet:
         * **sigma2** (:class:`~numpy.ndarray`): Observation errors.
         * **alpha** (:py:class:`float`): Result from evaluating likelihood function.
     '''
-    def __init__(self, theta = None, ss= None, prior = None, sigma2 = None, alpha = None):
+    def __init__(self, theta=None, ss=None, prior=None, sigma2=None, alpha=None):
         self.theta = theta
         self.ss = ss
         self.prior = prior

@@ -8,6 +8,7 @@ General functions used throughout package
 @author: prmiles
 """
 
+
 def message(verbosity, level, printthis):
     '''
     Display message
@@ -22,6 +23,7 @@ def message(verbosity, level, printthis):
         print(printthis)
         printed = True
     return printed
+
 
 def removekey(d, key):
     '''

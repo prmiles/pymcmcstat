@@ -8,6 +8,7 @@ Created on Thu Jan 18 13:12:50 2018
 # import required packages
 import numpy as np
 
+
 class ErrorVarianceEstimator:
     '''
     Estimate observation errors.
@@ -33,7 +34,8 @@ class ErrorVarianceEstimator:
 
         .. math::
 
-            \\sigma^2|(\\nu, q) \sim \\text{Inv-Gamma}\\Big(\\frac{N_s + N}{2}, \\frac{N_s\\sigma_{s}^2+ SS_q}{2}\\Big)
+            \\sigma^2|(\\nu, q) \\sim \\text{Inv-Gamma}\\Big(\\frac{N_s + N}{2}, \
+            \\frac{N_s\\sigma_{s}^2+ SS_q}{2}\\Big)
 
         where :math:`N_s` and :math:`\\sigma_{s}^2` are shape and scaling parameters,
         :math:`N` is the number of observations, and :math:`SS_q` is the sum-of-squares error.  For more details
@@ -52,16 +54,15 @@ class ErrorVarianceEstimator:
         N0 = model.N0
         S20 = model.S20
         N = model.N
-        sigma2 = model.sigma2 # initializes it as array
+        sigma2 = model.sigma2  # initializes it as array
         nsos = len(sos)
 
-        for jj in range(0,nsos):
+        for jj in range(0, nsos):
             sigma2[jj] = (self.gammar(1, 1, 0.5*(N0[jj]+N[jj]),
                           2*((N0[jj]*S20[jj]+sos[jj])**(-1))))**(-1)
-
         return sigma2
-            
-    def gammar(self, m, n, a, b = 1):
+
+    def gammar(self, m, n, a, b=1):
         '''
         Random deviates from gamma distribution.
 
@@ -78,14 +79,14 @@ class ErrorVarianceEstimator:
             * **a** (:py:class:`float`): Shape parameter
             * **b** (:py:class:`float`): Scaling parameter
         '''
-        if a <= 0: # special case
-            y = np.zeros([m,n])
+        if a <= 0:  # special case
+            y = np.zeros([m, n])
             return y
-        
+
         y = self.gammar_mt(m, n, a, b)
         return y
-    
-    def gammar_mt(self, m, n, a, b = 1):
+
+    def gammar_mt(self, m, n, a, b=1):
         '''
         Wrapper routine for calculating random deviates from gamma distribution
         using method of Marsaglia and Tsang (2000) :cite:`marsaglia2000simple`.
@@ -96,14 +97,13 @@ class ErrorVarianceEstimator:
             * **a** (:py:class:`float`): Shape parameter
             * **b** (:py:class:`float`): Scaling parameter
         '''
-        y = np.zeros([m,n])
-        for jj in range(0,n):
-            for ii in range(0,m):
-                y[ii,jj] = self._gammar_mt1(a = a, b = b)
-                
+        y = np.zeros([m, n])
+        for jj in range(0, n):
+            for ii in range(0, m):
+                y[ii, jj] = self._gammar_mt1(a=a, b=b)
         return y
-        
-    def _gammar_mt1(self, a, b = 1):
+
+    def _gammar_mt1(self, a, b=1):
         '''
         Calculates random deviate from gamma distribution using method of
         Marsaglia and Tsang (2000).
@@ -113,7 +113,7 @@ class ErrorVarianceEstimator:
             * **b** (:py:class:`float`): Scaling parameter
         '''
         if a < 1:
-            y = self._gammar_mt1(1+a,b)*np.random.rand(1)**(a**(-1))
+            y = self._gammar_mt1(1+a, b)*np.random.rand(1)**(a**(-1))
             return y
         else:
             d = a - 3**(-1)
@@ -124,13 +124,11 @@ class ErrorVarianceEstimator:
                     v = 1.0 + c*x
                     if v > 0:
                         break
-                    
                 v = v**(3)
                 u = np.random.rand(1)
                 if u < 1.0 - 0.0331*x**(4):
                     break
                 if np.log(u) < 0.5*x**2 + d*(1.0 - v + np.log(v)):
                     break
-            
             y = b*d*v
             return y

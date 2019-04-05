@@ -1,6 +1,14 @@
 Changelog
 =========
 
+v1.7.0 (April 4, 2019)
+----------------------
+- Added custom sampler feature.  Interface requires creation of a class, but allows for inclusion of things like Gibbs samplers.  User can explicitly pass in features to the sum-of-squares function.
+- Added check routines for reading in parallel MCMC results to ensure only directories with name 'chain_' are queried.
+- All files were updated to comply with formatting standards using *flake8*.
+- Added coverage report check to ensure minimal testing requirements are met.
+- Added original covariance matrix to results structure for reference.
+
 v1.6.0 (August 31, 2018)
 ----------------------
 - Added optimal handling of prior function used numpy array multiplication.

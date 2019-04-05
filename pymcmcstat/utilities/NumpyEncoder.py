@@ -9,6 +9,7 @@ Created on Mon Apr  2 08:42:56 2018
 import numpy as np
 import json
 
+
 class NumpyEncoder(json.JSONEncoder):
     '''
     Encoder used for storing numpy arrays in json files.

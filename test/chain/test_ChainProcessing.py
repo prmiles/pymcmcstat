@@ -128,7 +128,10 @@ class ReadInSavedirFiles(unittest.TestCase):
         mcstat = gf.setup_case()
         savedir = gf.generate_temp_folder()
         mcstat.simulation_options.savedir = savedir
-        mcstat._MCMC__save_chains_to_bin(start = 0, end = 100)
+        mcstat.simulation_options.save_to_bin = True
+        mcstat._MCMC__save_to_log_file(chains = mcstat._MCMC__chains, start = 0, end = 100)
+        mcstat._MCMC__save_to_log_file(chains = [dict(mtx = np.dot(mcstat._covariance._R.transpose(),mcstat._covariance._R))], start = 0, end = 100, covmtx = True)
+        
         out = CP.read_in_savedir_files(savedir, extension = 'h5')
         StandardCheck(out, mcstat)
         shutil.rmtree(savedir)
@@ -137,7 +140,10 @@ class ReadInSavedirFiles(unittest.TestCase):
         mcstat = gf.setup_case()
         savedir = gf.generate_temp_folder()
         mcstat.simulation_options.savedir = savedir
-        mcstat._MCMC__save_chains_to_txt(start = 0, end = 100)
+        mcstat.simulation_options.save_to_txt = True
+        mcstat._MCMC__save_to_log_file(chains = mcstat._MCMC__chains, start = 0, end = 100)
+        mcstat._MCMC__save_to_log_file(chains = [dict(mtx = np.dot(mcstat._covariance._R.transpose(),mcstat._covariance._R))], start = 0, end = 100, covmtx = True)
+        
         out = CP.read_in_savedir_files(savedir, extension = 'txt')
         StandardCheck(out, mcstat)
         shutil.rmtree(savedir)
@@ -146,7 +152,10 @@ class ReadInSavedirFiles(unittest.TestCase):
         mcstat = gf.setup_case()
         savedir = gf.generate_temp_folder()
         mcstat.simulation_options.savedir = savedir
-        mcstat._MCMC__save_chains_to_txt(start = 0, end = 100)
+        mcstat.simulation_options.save_to_txt = True
+        mcstat._MCMC__save_to_log_file(chains = mcstat._MCMC__chains, start = 0, end = 100)
+        mcstat._MCMC__save_to_log_file(chains = [dict(mtx = np.dot(mcstat._covariance._R.transpose(),mcstat._covariance._R))], start = 0, end = 100, covmtx = True)
+        
         out = CP.read_in_savedir_files(savedir, extension = 'unknown')
         self.assertEqual(out, None, msg = 'Expect None')
         shutil.rmtree(savedir)
@@ -154,19 +163,25 @@ class ReadInSavedirFiles(unittest.TestCase):
 # -------------------
 def setup_problem(parallel_dir, case = 'binary'):
     mcstat = gf.setup_case()
-    parallel_dir = gf.generate_temp_folder()
     for ii in range(3):
         chain_dir = str('chain_{}'.format(ii))
         mcstat.simulation_options.savedir = str('{}{}{}'.format(parallel_dir,os.sep,chain_dir))
         if case is 'binary':
-            mcstat._MCMC__save_chains_to_bin(start = 0, end = 100)
+            mcstat.simulation_options.save_to_bin = True
+            mcstat.simulation_options.save_to_txt = False
+            mcstat._MCMC__save_to_log_file(chains = mcstat._MCMC__chains, start = 0, end = 100)
+            mcstat._MCMC__save_to_log_file(chains = [dict(mtx = np.dot(mcstat._covariance._R.transpose(),mcstat._covariance._R))], start = 0, end = 100, covmtx = True)
         else:
-            mcstat._MCMC__save_chains_to_txt(start = 0, end = 100)
+            mcstat.simulation_options.save_to_bin = False
+            mcstat.simulation_options.save_to_txt = True
+            mcstat._MCMC__save_to_log_file(chains = mcstat._MCMC__chains, start = 0, end = 100)
+            mcstat._MCMC__save_to_log_file(chains = [dict(mtx = np.dot(mcstat._covariance._R.transpose(),mcstat._covariance._R))], start = 0, end = 100, covmtx = True)
     return mcstat
 class ReadInParallelSavedirFiles(unittest.TestCase):
     def test_read_in_parallel_bin(self):
         parallel_dir = gf.generate_temp_folder()
         mcstat = setup_problem(parallel_dir, case = 'binary')
+        
         out = CP.read_in_parallel_savedir_files(parallel_dir = parallel_dir, extension = 'h5')
         StandardCheck(out[0], mcstat)
         StandardCheck(out[1], mcstat)
@@ -197,7 +212,10 @@ class PrintLogFiles(unittest.TestCase):
         savedir = gf.generate_temp_folder()
         mcstat.simulation_options.savedir = savedir
         
-        mcstat._MCMC__save_chains_to_txt(start = 0, end = 100)
+        mcstat.simulation_options.save_to_bin = True
+        
+        chains = mcstat._MCMC__chains
+        mcstat._MCMC__save_to_log_file(chains = chains, start = 0, end = 100)
         
         capturedOutput = io.StringIO()
         sys.stdout = capturedOutput
@@ -205,7 +223,7 @@ class PrintLogFiles(unittest.TestCase):
         sys.stdout = sys.__stdout__
         
         self.assertTrue(isinstance(capturedOutput.getvalue(), str), msg = 'Should contain a string')
-        self.assertTrue('Display log file:' in capturedOutput.getvalue(), msg = 'Expect string to contain these works')
+        self.assertTrue('Display log file:' in capturedOutput.getvalue(), msg = 'Expect string to contain these words')
         shutil.rmtree(savedir)
 # -------------------------
 def setup_pres():
@@ -245,3 +263,24 @@ class GenerateChainList(unittest.TestCase):
         self.assertEqual(len(chains), 2, msg = 'expect length of 2')
         self.assertTrue(np.array_equal(chains[0], pres[0]['chain']))
         self.assertTrue(np.array_equal(chains[1], pres[1]['chain']))
+# -------------------------
+class CheckParallelDirectoryContents(unittest.TestCase):
+    def test_id_chain_no(self):
+        parallel_dir = gf.generate_temp_folder()
+        setup_problem(parallel_dir, case = 'binary')
+        chainfolders = os.listdir(parallel_dir)        
+        chainfolders2 = CP.check_parallel_directory_contents(parallel_dir, chainfolders)
+        self.assertEqual(chainfolders2, ['chain_0', 'chain_1', 'chain_2'], msg = 'List of strings do not match ({}): {} neq {}'.format(parallel_dir, chainfolders2, ['chain_0', 'chain_1', 'chain_2']))
+        shutil.rmtree(parallel_dir)
+        
+    def test_id_chain_no_with_bad_items(self):
+        parallel_dir = gf.generate_temp_folder()
+        setup_problem(parallel_dir, case = 'binary')
+        tmpfile = gf.generate_temp_file()
+        os.mkdir(parallel_dir + os.sep + 'chain')
+        if not os.path.exists(parallel_dir + os.sep + tmpfile):
+            with open(parallel_dir + os.sep + tmpfile, 'w'): pass
+        chainfolders = os.listdir(parallel_dir)        
+        chainfolders2 = CP.check_parallel_directory_contents(parallel_dir, chainfolders)
+        self.assertEqual(chainfolders2, ['chain_0', 'chain_1', 'chain_2'], msg = 'List of strings do not match ({}): {} neq {}'.format(parallel_dir, chainfolders2, ['chain_0', 'chain_1', 'chain_2']))
+        shutil.rmtree(parallel_dir)

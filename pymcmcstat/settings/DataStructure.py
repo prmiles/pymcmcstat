@@ -8,13 +8,14 @@ Created on Wed Jan 17 09:03:37 2018
 # import required packages
 import numpy as np
 
+
 # -------------------------
 # Define data structure
 # -------------------------
 class DataStructure:
     '''
-    Structure for storing data in MCMC object.  
-    The following random data sets will be referenced in examples for the 
+    Structure for storing data in MCMC object.
+    The following random data sets will be referenced in examples for the
     different class methods:
     ::
 
@@ -31,18 +32,18 @@ class DataStructure:
         * :meth:`~get_number_of_observations`
     '''
     def __init__(self):
-        self.xdata = [] # initialize list
-        self.ydata = [] # initialize list
-        self.n = [] # initialize list - number of data points
-        self.shape = [] # shape of ydata - important if information stored as matrix
-        self.weight = [] # initialize list - weight of data set
-        self.user_defined_object = [] # user defined object
+        self.xdata = []  # initialize list
+        self.ydata = []  # initialize list
+        self.n = []  # initialize list - number of data points
+        self.shape = []  # shape of ydata - important if information stored as matrix
+        self.weight = []  # initialize list - weight of data set
+        self.user_defined_object = []  # user defined object
 
-    def add_data_set(self, x, y, n = None, weight = 1, user_defined_object = 0):
+    def add_data_set(self, x, y, n=None, weight=1, user_defined_object=0):
         '''
-        Add data set to MCMC object.  
-        
-        This method must be called first before using any of the other methods 
+        Add data set to MCMC object.
+
+        This method must be called first before using any of the other methods
         within :class:`~DataStructure`.
         ::
 
@@ -76,33 +77,27 @@ class DataStructure:
             `[nds,1]` or `[nds,]` numpy arrays.  Note if a list is sent, the code will
             convert it to a numpy array.
         '''
-        
         # check that x and y are numpy arrays
         x = self._convert_to_numpy_array(x)
         y = self._convert_to_numpy_array(y)
-        
         # convert to 2d arrays (if applicable)
         x = self._convert_numpy_array_to_2d(x)
         y = self._convert_numpy_array_to_2d(y)
-        
         # append new data set
         self.xdata.append(x)
         self.ydata.append(y)
-        
         if n is None:
-            if isinstance(y, list): # y is a list
+            if isinstance(y, list):  # y is a list
                 self.n.append(len(y))
             elif isinstance(y, np.ndarray) and y.size == 1:
                 self.n.append(y.size)
-            else: # should
-                self.n.append(y.shape[0]) # assume y is a numpy array - nrows is n
-        
+            else:  # should
+                self.n.append(y.shape[0])  # assume y is a numpy array - nrows is n
         self.shape.append(y.shape)
-        
         self.weight.append(weight)
         # add user defined objects option
         self.user_defined_object.append(user_defined_object)
-     
+
     @classmethod
     def _convert_to_numpy_array(cls, xy):
         '''
@@ -116,9 +111,8 @@ class DataStructure:
         '''
         if isinstance(xy, np.ndarray) is False:
             xy = np.array([xy])
-            
         return xy
-    
+
     @classmethod
     def _convert_numpy_array_to_2d(cls, xy):
         '''
@@ -130,11 +124,10 @@ class DataStructure:
         Returns:
             * **xy** (:class:`~numpy.ndarray`): Variable as at least 2d numpy array
         '''
-        if xy.ndim != 2: # numpy array is (xy.size,) -> Convert to (xy.size,1)
-            xy = xy.reshape(xy.size,1)
-            
+        if xy.ndim != 2:  # numpy array is (xy.size,) -> Convert to (xy.size,1)
+            xy = xy.reshape(xy.size, 1)
         return xy
-    
+
     def get_number_of_batches(self):
         '''
         Get number of batches in data structure.  Essentially, each time you call
@@ -152,7 +145,7 @@ class DataStructure:
         '''
         self.nbatch = len(self.shape)
         return self.nbatch
-    
+
     def get_number_of_data_sets(self):
         '''
         Get number of data sets in data structure.  A data set is strictly
@@ -176,11 +169,9 @@ class DataStructure:
             nrows.append(dshapes[ii][0])
             if len(dshapes[ii]) != 1:
                 ncols.append(dshapes[ii][1])
-        
         self.ndatasets = sum(ncols)
-        
         return self.ndatasets
-    
+
     def get_number_of_observations(self):
         '''
         Get number of observations in data structure.  An observation is essentially

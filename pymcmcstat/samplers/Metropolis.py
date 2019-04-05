@@ -12,6 +12,7 @@ from .utilities import sample_candidate_from_gaussian_proposal
 from .utilities import is_sample_outside_bounds, set_outside_bounds
 from .utilities import acceptance_test
 
+
 class Metropolis:
     '''
     .. |br| raw:: html
@@ -20,10 +21,10 @@ class Metropolis:
 
     Pseudo-Algorithm:
 
-        #. Sample :math:`z_k \sim N(0,1)`
+        #. Sample :math:`z_k \\sim N(0,1)`
         #. Construct candidate :math:`q^* = q^{k-1} + Rz_k`
-        #. Compute |br| :math:`\quad SS_{q^*} = \\sum_{i=1}^N[v_i-f_i(q^*)]^2`
-        #. Compute |br| :math:`\quad \\alpha = \\min\\Big(1, e^{[SS_{q^*} - SS_{q^{k-1}}]/(2\sigma^2_{k-1})}\Big)`
+        #. Compute |br| :math:`\\quad SS_{q^*} = \\sum_{i=1}^N[v_i-f_i(q^*)]^2`
+        #. Compute |br| :math:`\\quad \\alpha = \\min\\Big(1, e^{[SS_{q^*} - SS_{q^{k-1}}]/(2\\sigma^2_{k-1})}\\Big)`
         #. If :math:`u_{\\alpha} <~\\alpha,` |br|
             Set :math:`q^k = q^*,~SS_{q^k} = SS_{q^*}`
            Else
@@ -35,7 +36,7 @@ class Metropolis:
         * :meth:`~unpack_set`
     '''
     # --------------------------------------------------------
-    def run_metropolis_step(self, old_set, parameters, R, prior_object, sos_object):
+    def run_metropolis_step(self, old_set, parameters, R, prior_object, sos_object, custom=None):
         '''
         Run Metropolis step.
 
@@ -56,31 +57,31 @@ class Metropolis:
         oldpar, ss, oldprior, sigma2 = self.unpack_set(old_set)
 
         # Sample new candidate from Gaussian proposal
-        newpar, npar_sample_from_normal = sample_candidate_from_gaussian_proposal(npar = parameters.npar, oldpar = oldpar, R = R)
-           
+        newpar, npar_sample_from_normal = sample_candidate_from_gaussian_proposal(
+                npar=parameters.npar, oldpar=oldpar, R=R)
         # Reject points outside boundaries
-        outsidebounds = is_sample_outside_bounds(newpar, parameters._lower_limits[parameters._parind[:]], parameters._upper_limits[parameters._parind[:]])
+        outsidebounds = is_sample_outside_bounds(newpar, parameters._lower_limits[parameters._parind[:]],
+                                                 parameters._upper_limits[parameters._parind[:]])
         if outsidebounds is True:
             # proposed value outside parameter limits
-            newset = ParameterSet(theta = newpar, sigma2 = sigma2)
-            newset, outbound = set_outside_bounds(next_set = newset)
+            newset = ParameterSet(theta=newpar, sigma2=sigma2)
+            newset, outbound = set_outside_bounds(next_set=newset)
             accept = False
         else:
             outbound = 0
             # prior SS for the new theta
             newprior = prior_object.evaluate_prior(newpar)
             # calculate sum-of-squares
-            ss2 = ss # old ss
-            ss1 = sos_object.evaluate_sos_function(newpar)
+            ss2 = ss  # old ss
+            ss1 = sos_object.evaluate_sos_function(newpar, custom=custom)
             # evaluate likelihood
             alpha = self.evaluate_likelihood_function(ss1, ss2, sigma2, newprior, oldprior)
             # make acceptance decision
             accept = acceptance_test(alpha)
-                    
             # store parameter sets in objects
-            newset = ParameterSet(theta = newpar, ss = ss1, prior = newprior, sigma2 = sigma2, alpha = alpha)
-        
+            newset = ParameterSet(theta=newpar, ss=ss1, prior=newprior, sigma2=sigma2, alpha=alpha)
         return accept, newset, outbound, npar_sample_from_normal
+
     # --------------------------------------------------------
     @classmethod
     def unpack_set(cls, parset):
@@ -101,6 +102,7 @@ class Metropolis:
         prior = parset.prior
         sigma2 = parset.sigma2
         return theta, ss, prior, sigma2
+
     # --------------------------------------------------------
     @classmethod
     def evaluate_likelihood_function(cls, ss1, ss2, sigma2, newprior, oldprior):
@@ -109,12 +111,14 @@ class Metropolis:
 
         .. math::
 
-            \\alpha = \\exp\\Big[-0.5\\Big(\sum\\Big(\\frac{ SS_{q^*} - SS_{q^{k-1}} }{ \\sigma_{k-1}^2 }\\Big) + p_1 - p_2\\Big)\\Big]
+            \\alpha = \\exp\\Big[-0.5\\Big(\\sum\\Big(\\frac{ SS_{q^*} \
+            - SS_{q^{k-1}} }{ \\sigma_{k-1}^2 }\\Big) + p_1 - p_2\\Big)\\Big]
 
         Args:
             * **ss1** (:class:`~numpy.ndarray`): SS error from proposed candidate, :math:`q^*`
             * **ss2** (:class:`~numpy.ndarray`): SS error from previous sample point, :math:`q^{k-1}`
-            * **sigma2** (:class:`~numpy.ndarray`): Error variance estimate from previous sample point, :math:`\\sigma_{k-1}^2`
+            * **sigma2** (:class:`~numpy.ndarray`): Error variance estimate \
+            from previous sample point, :math:`\\sigma_{k-1}^2`
             * **newprior** (:class:`~numpy.ndarray`): Prior for proposal candidate
             * **oldprior** (:class:`~numpy.ndarray`): Prior for previous sample
 
