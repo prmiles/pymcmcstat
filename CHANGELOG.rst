@@ -1,7 +1,7 @@
 Changelog
 =========
 
-v1.7.0 (April 4, 2019)
+v1.7.0 (April 5, 2019)
 ----------------------
 - Added custom sampler feature.  Interface requires creation of a class, but allows for inclusion of things like Gibbs samplers.  User can explicitly pass in features to the sum-of-squares function.
 - Added check routines for reading in parallel MCMC results to ensure only directories with name 'chain_' are queried.
