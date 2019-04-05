@@ -23,7 +23,8 @@ Contents:
 References
 ==========
    
-.. bibliography:: references.bib
+.. bibliography:: refs.bib
+   :all:
 
 Indices and tables
 ==================
