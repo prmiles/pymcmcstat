@@ -290,7 +290,7 @@ def integrated_autocorrelation_time(chain):
 # ----------------------------------------------------
 def gelman_rubin(chains, names=None, results=None, display=True):
     '''
-    Gelman-Rubin diagnostic for multiple chains :cite:`gelman1992inference`.
+    Gelman-Rubin diagnostic for multiple chains :cite:`gelman1992inference`, :cite:`brooks1998general`.
 
     This diagnostic technique compares the variance within a single change to the
     variance between multiple chains.  This process serves as a method for testing
