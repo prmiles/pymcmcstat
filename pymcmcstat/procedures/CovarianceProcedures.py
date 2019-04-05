@@ -134,6 +134,7 @@ class CovarianceProcedures:
             qcov = np.diagflat(qcov)  # create covariance matrix
 
         self._qcov = np.atleast_2d(qcov[:])
+        self._qcov_original = self._qcov.copy()
 
     def __check_adascale(self, adascale, npar):
         # check adascale
