@@ -188,3 +188,24 @@ def generate_temp_file(extension = 'h5'):
         else:
             flag = False
     return tmpfile
+
+class CustomSampler:
+    def __init__(self, nsimu):
+        self.name = 'Gibbs'
+        self.nsimu = nsimu
+        
+    def setup(self):
+        self.status = 'setup'
+        self.tau = np.zeros([self.nsimu, 1])
+        self.counter = 0
+        self.tau[self.counter,0] = np.random.gamma(0.1, 0.1)
+        self.chains = []
+        self.chains.append(dict(file = 'tauchain', mtx = self.tau))
+        return self.tau[self.counter, 0]
+    
+    def update(self, **kwargs):
+        self.counter += 1
+        self.tau[self.counter,0] = np.random.gamma(0.1, 0.1)
+        self.status = 'updating'
+        self.tau[self.counter, 0]
+        return self.tau[self.counter, 0]
