@@ -12,7 +12,7 @@ authors:
 affiliations:
  - name: Department of Mathematics, North Carolina State University
    index: 1
-date: 20 April 2019
+date: 22 April 2019
 bibliography: paper.bib
 ---
 
