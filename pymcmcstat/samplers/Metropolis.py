@@ -118,16 +118,16 @@ class Metropolis:
 
         .. math::
 
-            \\alpha = \\min\Big[1, \\frac{\mathcal{L}(\\nu_{obs}|q^*, \
-            \\sigma_{k-1}^2)\\pi_0(q^*)}{\mathcal{L}(\\nu_{obs}|q^{k-1}, \
-            \\sigma_{k-1}^2)\\pi_0(q^{k-1})}\Big]
+            \\alpha = \\min\\Big[1, \\frac{\\mathcal{L}(\\nu_{obs}|q^*, \
+            \\sigma_{k-1}^2)\\pi_0(q^*)}{\\mathcal{L}(\\nu_{obs}|q^{k-1}, \
+            \\sigma_{k-1}^2)\\pi_0(q^{k-1})}\\Big]
 
         where the Gaussian likelihood function is
 
         .. math::
 
-            \mathcal{L}(\\nu_{obs}|q, \\sigma) = \
-            \exp\Big(-\\frac{SS_q}{2\\sigma}\Big)
+            \\mathcal{L}(\\nu_{obs}|q, \\sigma) = \
+            \\exp\\Big(-\\frac{SS_q}{2\\sigma}\\Big)
 
         and Gaussian prior function is
 
