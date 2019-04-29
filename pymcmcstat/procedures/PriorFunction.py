@@ -51,6 +51,26 @@ class PriorFunction:
         pf = np.dot(res.reshape(1, res.size), res.reshape(res.size, 1))
         return pf
 
+    @classmethod
+    def default_gaussian_priorfun(cls, theta, mu, sigma):
+        '''
+        Default Gaussian prior function.
+
+        .. math::
+
+            \\pi_0(q) = \\frac{1}{\\sigma\\sqrt{2\\pi}}\\exp \
+            \\Big[-\\frac{1}{2}\\Big(\\frac{q - \
+            \\mu}{\\sigma}\\Big)^2\\Big]
+
+        Args:
+            * **theta** (:class:`~numpy.ndarray`): Current parameter values.
+            * **mu** (:class:`~numpy.ndarray`): Prior mean.
+            * **sigma** (:class:`~numpy.ndarray`): Prior standard deviation.
+        '''
+        res = (mu - theta)/sigma
+        pf = np.dot(res.reshape(1, res.size), res.reshape(res.size, 1))
+        return np.exp(-1./2*pf)
+
     def evaluate_prior(self, theta):
         '''
         Evaluate the prior function.
