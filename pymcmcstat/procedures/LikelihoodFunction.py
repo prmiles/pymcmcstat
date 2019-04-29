@@ -44,5 +44,9 @@ class LikelihoodFunction:
     def evaluate_likelihood(self, q, custom=None):
         # Copy sampled parameter values to full parameter array
         self.value[self.parind] = q
-        return self.likelihood(q)
+        try:
+            like = self.likelihood(self.value, self.data, custom=custom)
+        except TypeError:
+            like = self.likelihood(self.value, self.data)
+        return like
         
