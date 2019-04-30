@@ -51,7 +51,6 @@ class DelayedRejection:
             # initialize next step parameter set
             next_set = self.initialize_next_metropolis_step(
                     npar=parameters.npar, old_theta=old_set.theta, sigma2=new_set.sigma2, RDR=RDR[itry-1])
-
             # Reject points outside boundaries
             outsidebounds = is_sample_outside_bounds(next_set.theta,
                                                      parameters._lower_limits[parameters._parind[:]],

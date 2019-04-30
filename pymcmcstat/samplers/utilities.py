@@ -129,6 +129,7 @@ def set_outside_bounds(next_set):
     '''
     next_set.alpha = 0
     next_set.prior = 0
+    next_set.like = 0
     next_set.ss = np.inf
     outbound = True
 
@@ -168,5 +169,9 @@ def calculate_acceptance_ratio(likestar, like,
     Returns:
         * **alpha** (:py:class:`float`): Acceptance ratio
     '''
+#    print('likestar = {}'.format(likestar))
+#    print('like = {}'.format(like))
+#    print('priorstar = {}'.format(priorstar))
+#    print('prior = {}'.format(prior))
     alpha = (likestar * priorstar)/(like * prior)
     return np.min([1, alpha])

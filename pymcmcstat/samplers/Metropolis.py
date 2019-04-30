@@ -11,6 +11,8 @@ from ..structures.ParameterSet import ParameterSet
 from .utilities import sample_candidate_from_gaussian_proposal
 from .utilities import is_sample_outside_bounds, set_outside_bounds
 from .utilities import acceptance_test
+from .utilities import calculate_acceptance_ratio
+from .utilities import posterior_ratio_acceptance_test
 
 
 class Metropolis:
@@ -56,7 +58,9 @@ class Metropolis:
             * **npar_sample_from_normal** (:class:`~numpy.ndarray`): Latet random sample points
         '''
         # unpack oldset
-        oldpar, ss, oldprior, sigma2 = self.unpack_set(old_set)
+        tmp = old_set.__dict__
+        oldpar, ss, oldprior, oldlike, sigma2 = (
+                tmp['theta'], tmp['ss'], tmp['prior'], tmp['like'], tmp['sigma2'])
 
         # Sample new candidate from Gaussian proposal
         newpar, npar_sample_from_normal = sample_candidate_from_gaussian_proposal(
@@ -77,14 +81,21 @@ class Metropolis:
             newlike = like_object.evaluate_likelihood(newpar, custom=custom)
             # calculate sum-of-squares
             ss2 = ss  # old ss
-#            ss1 = sos_object.evaluate_sos_function(newpar, custom=custom)
+            ss1 = sos_object.evaluate_sos_function(newpar, custom=custom)
             q = parameters._initial_value.copy()
             q[parameters._parind] = newpar
             ss1 = like_object.evaluate_sos_function(q, custom=custom)
+            # calculate acceptance ratio
+#            alpha = calculate_acceptance_ratio(
+#                    likestar=newlike,
+#                    like=oldlike,
+#                    priorstar=newprior,
+#                    prior=oldprior)
             # evaluate likelihood
             alpha = self.evaluate_likelihood_function(ss1, ss2, sigma2, newprior, oldprior)
             # make acceptance decision
             accept = acceptance_test(alpha)
+#            accept = posterior_ratio_acceptance_test(alpha)
             # store parameter sets in objects
             newset = ParameterSet(theta=newpar, ss=ss1, prior=newprior,
                                   like=newlike, sigma2=sigma2, alpha=alpha)
@@ -100,16 +111,10 @@ class Metropolis:
             * **parset** (:class:`~.ParameterSet`): Parameter set to unpack
 
         Returns:
-            * **theta** (:class:`~numpy.ndarray`): Value of sampled model parameters
-            * **ss** (:class:`~numpy.ndarray`): Sum-of-squares error using sampled value
-            * **prior** (:class:`~numpy.ndarray`): Value of prior
-            * **sigma2** (:class:`~numpy.ndarray`): Error variance
+            * (:class:`:py:class:dict`): Dictionary of parset
         '''
-        theta = parset.theta
-        ss = parset.ss
-        prior = parset.prior
-        sigma2 = parset.sigma2
-        return theta, ss, prior, sigma2
+        print('This code is deprecated as of v1.8.0.')
+        return parset.__dict__
 
     # --------------------------------------------------------
     @classmethod
