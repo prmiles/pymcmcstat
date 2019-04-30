@@ -349,7 +349,8 @@ class MCMC:
 
             # UPDATE ERROR VARIANCE
             if self.simulation_options.updatesigma:
-                sigma2 = self._error_variance.update_error_variance(self.__old_set.ss, self.model_settings)
+                sigma2 = self._error_variance.update_error_variance(
+                        self.__old_set.ss, self.model_settings)
                 self.__s2chain[self.__chain_index, :] = sigma2
                 self.__old_set.sigma2 = sigma2
 
