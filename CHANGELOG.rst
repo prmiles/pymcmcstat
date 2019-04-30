@@ -1,6 +1,10 @@
 Changelog
 =========
 
+v1.8.0 ()
+----------------------
+- Added acceptance rate display feature when calling chain statistics
+
 v1.7.0 (April 5, 2019)
 ----------------------
 .. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.2630882.svg
