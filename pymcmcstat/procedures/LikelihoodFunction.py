@@ -74,8 +74,11 @@ class LikelihoodFunction:
         elif isinstance(ssq, np.ndarray):
             if np.greater(ssq.shape, 1).sum() <= 1:
                 return ssq
+            else:
+                sys.exit(str('Expect numpy array of shape (n,) '
+                             + 'or (n,1) -> {}'.format(ssq.shape)))
         elif isinstance(ssq, list):
-            return np.array([ssq])
+            return np.array(ssq)
         else:
             valid = ['float', 'list', 'numpy array: (n,)', 'numpy array: (n, 1)']
             sys.exit(str('Return sum-of-squares as' + ''.join('\n\t{}'.format(v) for v in valid)))
