@@ -97,7 +97,8 @@ def setup_mcmc_case_mh():
     sos_object = mcstat._MCMC__sos_object
     prior_object = mcstat._MCMC__prior_object
     parameters = mcstat.parameters
-    return sos_object, prior_object, parameters
+    like_object = mcstat._MCMC__like_object
+    return sos_object, prior_object, parameters, like_object
 
 def setup_mcmc_case_dr():
     mcstat = basic_mcmc()
