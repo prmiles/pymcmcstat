@@ -147,7 +147,7 @@ def calculate_acceptance_ratio(likestar, like,
         \\pi_0(q^*)}{\\mathcal{L}(\\nu_{obs}|q^{k-1}) \
         \\pi_0(q^{k-1})}\\Big]
 
-    For more details regarding the prior and likelihood functions, 
+    For more details regarding the prior and likelihood functions,
     please refer to the :class:`~.PriorFunction` and
     :class`.LikelihoodFunction` class, respectively.
 
