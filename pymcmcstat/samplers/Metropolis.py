@@ -71,6 +71,7 @@ class Metropolis:
             outbound = 0
             # prior SS for the new theta
             newprior = prior_object.evaluate_prior(newpar)
+            # REPLACE SOS WITH LIKELIHOOD OBJECT
             # calculate sum-of-squares
             ss2 = ss  # old ss
             ss1 = sos_object.evaluate_sos_function(newpar, custom=custom)

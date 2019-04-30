@@ -64,6 +64,7 @@ class DelayedRejection:
 
             # Evaluate new proposals
             outbound = 0
+            # REPLACE WITH LIKELIHOOD OBJECT
             next_set.ss = sosobj.evaluate_sos_function(next_set.theta, custom=custom)
             next_set.prior = priorobj.evaluate_prior(theta=next_set.theta)
             trypath.append(next_set)  # add set to trypath
@@ -195,6 +196,7 @@ def log_posterior_ratio(x1, x2):
     Returns:
         * **zq** (:py:class:`float`): Logarithm of posterior ratio.
     '''
+#    zq = x2.loglike * x2.logprior - x1.loglike * x1.logprior
     zq = -0.5*(sum((x2.ss*(x2.sigma2**(-1.0)) - x1.ss*(x1.sigma2**(-1.0)))) + x2.prior - x1.prior)
     return sum(zq)
 
