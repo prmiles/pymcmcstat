@@ -195,16 +195,9 @@ class MCMC:
                 sigma=self.parameters._thetasigma[self.parameters._parind[:]])
         # ---------------------
         # Define initial parameter set
-        self.__initial_set = ParameterSet(theta=self.parameters._initial_value[self.parameters._parind[:]])
-        # calculate sos with initial parameter set
-        self.__initial_set.ss = self.__sos_object.evaluate_sos_function(self.__initial_set.theta)
-        nsos = len(self.__initial_set.ss)
-        # evaluate prior with initial parameter set
-        self.__initial_set.prior = self.__prior_object.evaluate_prior(self.__initial_set.theta)
-        # add initial error variance to initial parameter set
-        self.__initial_set.sigma2 = self.model_settings.sigma2
+        self.__setup_initial_parameter_set()
         # recheck certain values in model settings that are dependent on the output of the sos function
-        self.model_settings._check_dependent_model_settings_wrt_nsos(nsos)
+        self.model_settings._check_dependent_model_settings_wrt_nsos(nsos=len(self.__initial_set.ss))
         # ---------------------
         # Update variables covariance adaptation
         self._covariance._update_covariance_settings(self.__initial_set.theta)
@@ -307,6 +300,7 @@ class MCMC:
                     parameters=self.parameters,
                     R=self._covariance._R,
                     prior_object=self.__prior_object,
+                    like_object=self.__like_object,
                     sos_object=self.__sos_object,
                     custom=self.custom_sampler_output)
 
@@ -592,6 +586,26 @@ class MCMC:
         self.parameters._check_prior_sigma(verbosity)
         # display parameter settings
         self.parameters.display_parameter_settings(verbosity, self.parameters._no_adapt)
+
+    def __setup_initial_parameter_set(self):
+        # Define initial parameter set
+        self.__initial_set = ParameterSet(
+                theta=self.parameters._initial_value[self.parameters._parind[:]])
+        # evaluate likelihood - check for type to maintain backwards comp.
+        if self.__like_object.type == 'default':
+            # calculate sos with initial parameter set
+            sosfun = self.__like_object.evaluate_sos_function
+            q = self.parameters._initial_value
+            self.__initial_set.ss = sosfun(q)
+        self.__initial_set.like = (
+                self.__like_object.evaluate_likelihood(
+                        q=self.__initial_set.theta))
+        # evaluate prior with initial parameter set
+        self.__initial_set.prior = (
+                self.__prior_object.evaluate_prior(
+                        self.__initial_set.theta))
+        # add initial error variance to initial parameter set
+        self.__initial_set.sigma2 = self.model_settings.sigma2
 
     # --------------------------------------------------------
     def display_current_mcmc_settings(self):
