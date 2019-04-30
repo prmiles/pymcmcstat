@@ -170,8 +170,9 @@ class MCMC:
         '''
         # ---------------------------------
         # check dependent parameters
-        self.simulation_options._check_dependent_simulation_options(self.model_settings)
-        self.model_settings._check_dependent_model_settings(self.data, self.simulation_options)
+        self.simulation_options._check_dependent_simulation_options(
+                flag=self.model_settings.N0 is not None)
+        self.model_settings._check_dependent_model_settings(self.data)
         # setup parameter structure
         self.__setup_parameters(
                 nbatch=self.model_settings.nbatch,
