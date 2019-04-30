@@ -172,14 +172,10 @@ class MCMC:
         # check dependent parameters
         self.simulation_options._check_dependent_simulation_options(self.model_settings)
         self.model_settings._check_dependent_model_settings(self.data, self.simulation_options)
-        # open and parse the parameter structure
-        self.parameters._openparameterstructure(self.model_settings.nbatch)
-        # check initial parameter values are inside range
-        self.parameters._check_initial_values_wrt_parameter_limits()
-        # add check that prior standard deviation > 0
-        self.parameters._check_prior_sigma(self.simulation_options.verbosity)
-        # display parameter settings
-        self.parameters.display_parameter_settings(self.simulation_options.verbosity, self.parameters._no_adapt)
+        # setup parameter structure
+        self.__setup_parameters(
+                nbatch=self.model_settings.nbatch,
+                verbosity=self.simulation_options.verbosity)
         # setup covariance matrix and initial Cholesky decomposition
         self._covariance._initialize_covariance_settings(self.parameters, self.simulation_options)
         # ---------------------
@@ -585,6 +581,16 @@ class MCMC:
         self.__rejected['in_adaptation_interval'] += 1
         if outsidebounds:
             self.__rejected['outside_bounds'] += 1
+
+    def __setup_parameters(self, nbatch, verbosity=0):
+        # open and parse the parameter structure
+        self.parameters._openparameterstructure(nbatch)
+        # check initial parameter values are inside range
+        self.parameters._check_initial_values_wrt_parameter_limits()
+        # add check that prior standard deviation > 0
+        self.parameters._check_prior_sigma(verbosity)
+        # display parameter settings
+        self.parameters.display_parameter_settings(verbosity, self.parameters._no_adapt)
 
     # --------------------------------------------------------
     def display_current_mcmc_settings(self):
