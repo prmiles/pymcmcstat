@@ -26,6 +26,7 @@ from .procedures.CovarianceProcedures import CovarianceProcedures
 from .procedures.SumOfSquares import SumOfSquares
 from .procedures.PriorFunction import PriorFunction
 from .procedures.ErrorVarianceEstimator import ErrorVarianceEstimator
+from .procedures.LikelihoodFunction import LikelihoodFunction
 
 from .structures.ParameterSet import ParameterSet
 from .structures.ResultsStructure import ResultsStructure
@@ -259,8 +260,8 @@ class MCMC:
             Default is 0 -> off (1 -> on).
         '''
         # continuing simulation, so we must expand storage arrays
-        zero_chain = np.zeros([nsimu-1, npar])
-        zero_sschain = np.zeros([nsimu-1, nsos])
+        zero_chain = np.zeros([nsimu - 1, npar])
+        zero_sschain = np.zeros([nsimu - 1, nsos])
         # Concatenate with previous chains
         self.__chain = np.concatenate((self.__chain, zero_chain), axis=0)
         self.__sschain = np.concatenate((self.__sschain, zero_sschain), axis=0)
