@@ -183,8 +183,13 @@ class MCMC:
         # setup covariance matrix and initial Cholesky decomposition
         self._covariance._initialize_covariance_settings(self.parameters, self.simulation_options)
         # ---------------------
+        # define likelihood object
+        self.__like_object = LikelihoodFunction(
+                self.model_settings, self.data, self.parameters)
+        # ---------------------
         # define sum-of-squares object
-        self.__sos_object = SumOfSquares(self.model_settings, self.data, self.parameters)
+        self.__sos_object = SumOfSquares(
+                self.model_settings, self.data, self.parameters)
         # ---------------------
         # define prior object
         self.__prior_object = PriorFunction(
