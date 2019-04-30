@@ -21,11 +21,12 @@ class UnpackSet(unittest.TestCase):
 
     def test_unpack_set(self):
         CL = {'theta':1.0, 'ss': 1.0, 'prior':0.0, 'sigma2': 0.0}
-        parset = ParameterSet(theta=CL['theta'], ss=CL['ss'], prior=CL['prior'], sigma2=CL['sigma2'])
-
+        parset = ParameterSet(theta=CL['theta'], ss=CL['ss'],
+                              prior=CL['prior'], sigma2=CL['sigma2'])
         MA = Metropolis()
-        oldpar, ss, oldprior, sigma2 = MA.unpack_set(parset)
-        NL = {'theta':oldpar, 'ss': ss, 'prior':oldprior, 'sigma2': sigma2}
+        tmp = MA.unpack_set(parset)
+        NL = {'theta': tmp['theta'], 'ss': tmp['ss'],
+              'prior': tmp['prior'], 'sigma2': tmp['sigma2']}
         self.assertDictEqual(CL, NL)
 
 # --------------------------
