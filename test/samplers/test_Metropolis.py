@@ -21,12 +21,12 @@ class UnpackSet(unittest.TestCase):
 
     def test_unpack_set(self):
         CL = {'theta':1.0, 'ss': 1.0, 'prior':0.0, 'sigma2': 0.0}
-        parset = ParameterSet(theta = CL['theta'], ss = CL['ss'], prior = CL['prior'], sigma2 = CL['sigma2'])
+        parset = ParameterSet(theta=CL['theta'], ss=CL['ss'], prior=CL['prior'], sigma2=CL['sigma2'])
 
         MA = Metropolis()
         oldpar, ss, oldprior, sigma2 = MA.unpack_set(parset)
         NL = {'theta':oldpar, 'ss': ss, 'prior':oldprior, 'sigma2': sigma2}
-        self.assertDictEqual(CL,NL)
+        self.assertDictEqual(CL, NL)
 
 # --------------------------
 class EvaluateLikelihood(unittest.TestCase):
@@ -74,11 +74,11 @@ class EvaluateLikelihood(unittest.TestCase):
     def test_alpha_value(self):
         MA, ss1, ss2, newprior, oldprior, sigma2 = self.setup_size_2()
         alpha1 = MA.evaluate_likelihood_function(ss1, ss2, sigma2, newprior, oldprior)
-        self.assertTrue(np.allclose(alpha1, np.array([2.568050833375483])), msg = str('alpha = {}'.format(alpha1)))
+        self.assertTrue(np.allclose(alpha1, np.array([2.568050833375483])), msg=str('alpha = {}'.format(alpha1)))
                
 # --------------------------
-def setup_CL(theta = 1.0, ss = 1.0, prior = 0.0, sigma2 = 0.0):
-    return {'theta':theta, 'ss': ss, 'prior': prior, 'sigma2': sigma2}
+def setup_CL(theta=1.0, ss=1.0, prior=0.0, sigma2=0.0):
+    return dict(theta=theta, ss=ss, prior=prior, sigma2=sigma2)
 
 class RunMetropolisStep(unittest.TestCase):
     @classmethod
@@ -86,36 +86,45 @@ class RunMetropolisStep(unittest.TestCase):
         sos_object, prior_object, parameters = gf.setup_mcmc_case_mh()
         MS = Metropolis()
         R = np.array([[0.4, 0.2],[0, 0.3]])
-        parset = ParameterSet(theta = CL['theta'], ss = CL['ss'], prior = CL['prior'], sigma2 = CL['sigma2'])
+        parset = ParameterSet(theta=CL['theta'], ss=CL['ss'], prior=CL['prior'], sigma2=CL['sigma2'])
         accept, _, outbound, npar_sample_from_normal = MS.run_metropolis_step(old_set = parset, parameters = parameters, R = R, prior_object = prior_object, sos_object = sos_object)
         
         return accept, outbound
 
-    @patch('pymcmcstat.samplers.Metropolis.is_sample_outside_bounds', return_value = True)
+    @patch('pymcmcstat.samplers.Metropolis.is_sample_outside_bounds',
+           return_value=True)
     def test_run_step_outside_bounds(self, mock_1):
-        accept, outbound = self.setup_rms(setup_CL(sigma2 = 1.0))
-        self.assertEqual(outbound, 1, msg = 'outbound set to 1')
-        self.assertEqual(accept, 0, msg = 'Not accepted because outside bounds')
+        accept, outbound = self.setup_rms(setup_CL(sigma2=1.0))
+        self.assertEqual(outbound, 1, msg='outbound set to 1')
+        self.assertEqual(accept, 0, msg='Not accepted because outside bounds')
         
-    @patch('pymcmcstat.samplers.Metropolis.is_sample_outside_bounds', return_value = False)
-    @patch('pymcmcstat.samplers.Metropolis.Metropolis.evaluate_likelihood_function', return_value = 1.1)
+    @patch('pymcmcstat.samplers.Metropolis.is_sample_outside_bounds',
+           return_value=False)
+    @patch('pymcmcstat.samplers.Metropolis.Metropolis.evaluate_likelihood_function',
+           return_value=1.1)
     def test_run_step_inside_bounds(self, mock_1, mock_2):
         accept, outbound = self.setup_rms(setup_CL())
-        self.assertEqual(outbound, 0, msg = 'outbound set to 0')
-        self.assertEqual(accept, 1, msg = 'Accepted because likelihood > 1')
+        self.assertEqual(outbound, 0, msg='outbound set to 0')
+        self.assertEqual(accept, 1, msg='Accepted because likelihood > 1')
         
-    @patch('pymcmcstat.samplers.Metropolis.is_sample_outside_bounds', return_value = False)
-    @patch('pymcmcstat.samplers.Metropolis.Metropolis.evaluate_likelihood_function', return_value = 0.5)
-    @patch('numpy.random.rand', return_value = 0.4)
+    @patch('pymcmcstat.samplers.Metropolis.is_sample_outside_bounds',
+           return_value=False)
+    @patch('pymcmcstat.samplers.Metropolis.Metropolis.evaluate_likelihood_function',
+           return_value=0.5)
+    @patch('numpy.random.rand',
+           return_value=0.4)
     def test_run_step_inside_bounds_test_accept(self, mock_1, mock_2, mock_3):
         accept, outbound = self.setup_rms(setup_CL())
-        self.assertEqual(outbound, 0, msg = 'outbound set to 0')
-        self.assertEqual(accept, 1, msg = 'Accepted because 0.5 > 0.4')
+        self.assertEqual(outbound, 0, msg='outbound set to 0')
+        self.assertEqual(accept, 1, msg='Accepted because 0.5 > 0.4')
         
-    @patch('pymcmcstat.samplers.Metropolis.is_sample_outside_bounds', return_value = False)
-    @patch('pymcmcstat.samplers.Metropolis.Metropolis.evaluate_likelihood_function', return_value = 0.3)
-    @patch('numpy.random.rand', return_value = 0.4)
+    @patch('pymcmcstat.samplers.Metropolis.is_sample_outside_bounds',
+           return_value=False)
+    @patch('pymcmcstat.samplers.Metropolis.Metropolis.evaluate_likelihood_function',
+           return_value=0.3)
+    @patch('numpy.random.rand', return_value=0.4)
     def test_run_step_inside_bounds_test_accept_fail(self, mock_1, mock_2, mock_3):
         accept, outbound = self.setup_rms(setup_CL())
-        self.assertEqual(outbound, 0, msg = 'outbound set to 0')
-        self.assertEqual(accept, 0, msg = 'Accepted because 0.3 < 0.4')
+        self.assertEqual(outbound, 0,
+                         msg='outbound set to 0')
+        self.assertFalse(accept, msg='Rejected because 0.3 < 0.4')
