@@ -32,7 +32,7 @@ class MCMCInitialization(unittest.TestCase):
     def test_initialization(self):
         MC = MCMC()
         check_these = ['data', 'model_settings', 'simulation_options', 'parameters',
-                       '_error_variance', '_covariance', '_sampling_methods', '_mcmc_status']
+                       '_covariance', '_sampling_methods', '_mcmc_status']
         for ct in check_these:
             self.assertTrue(hasattr(MC, ct), msg=str('Object missing attribute: {}'.format(ct)))
         self.assertFalse(MC._mcmc_status, msg='Status is False')

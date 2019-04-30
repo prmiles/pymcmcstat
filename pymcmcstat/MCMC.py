@@ -74,7 +74,6 @@ class MCMC:
         self.parameters = ModelParameters()
         self.custom_samplers = []
         # private variables
-        self._error_variance = ErrorVarianceEstimator()
         self._covariance = CovarianceProcedures()
         self._sampling_methods = SamplingMethods()
         self._mcmc_status = False
@@ -194,6 +193,19 @@ class MCMC:
                 mu=self.parameters._thetamu[self.parameters._parind[:]],
                 sigma=self.parameters._thetasigma[self.parameters._parind[:]])
         # ---------------------
+        # Check if user defined likelihood
+        if self.simulation_options.updatesigma is True:
+            self.custom_samplers.append(
+                    ErrorVarianceEstimator(
+                            self.model_settings,
+                            self.simulation_options.nsimu))
+        # ---------------------
+        # Setup custom samplers
+        self.custom_sampler_output = []
+        if len(self.custom_samplers) > 0:
+            for ii, cs in enumerate(self.custom_samplers):
+                self.custom_sampler_output.append(cs.setup())
+        # ---------------------
         # Define initial parameter set
         self.__setup_initial_parameter_set()
         # recheck certain values in model settings that are dependent on the output of the sos function
@@ -203,12 +215,6 @@ class MCMC:
         self._covariance._update_covariance_settings(self.__initial_set.theta)
         if self.simulation_options.ntry > 1:
             self._sampling_methods.delayed_rejection._initialize_dr_metrics(self.simulation_options)
-        # ---------------------
-        # Setup custom samplers
-        self.custom_sampler_output = []
-        if len(self.custom_samplers) > 0:
-            for ii, cs in enumerate(self.custom_samplers):
-                self.custom_sampler_output.append(cs.setup())
 
     # --------------------------------------------------------
     def __initialize_chains(self, chainind, nsimu, npar, nsos, updatesigma, sigma2):
@@ -348,11 +354,11 @@ class MCMC:
                 self.__rejected['in_adaptation_interval'] = 0  # reset local rejection index
 
             # UPDATE ERROR VARIANCE
-            if self.simulation_options.updatesigma:
-                sigma2 = self._error_variance.update_error_variance(
-                        self.__old_set.ss, self.model_settings)
-                self.__s2chain[self.__chain_index, :] = sigma2
-                self.__old_set.sigma2 = sigma2
+#            if self.simulation_options.updatesigma:
+#                sigma2 = self._error_variance.update_error_variance(
+#                        self.__old_set.ss, self.model_settings)
+#                self.__s2chain[self.__chain_index, :] = sigma2
+#                self.__old_set.sigma2 = sigma2
 
             # RUN CUSTOM SAMPLERS
             self.custom_sampler_output = []
@@ -600,7 +606,8 @@ class MCMC:
             self.__initial_set.ss = sosfun(q)
         self.__initial_set.like = (
                 self.__like_object.evaluate_likelihood(
-                        q=self.__initial_set.theta))
+                        q=self.__initial_set.theta,
+                        custom=self.custom_sampler_output))
         # evaluate prior with initial parameter set
         self.__initial_set.prior = (
                 self.__prior_object.evaluate_prior(

@@ -18,8 +18,26 @@ class ErrorVarianceEstimator:
         * :meth:`~gammar`
         * :meth:`~gammar_mt`
     '''
-    def __init__(self):
+    def __init__(self, model, nsimu):
         self.description = 'Estimate error variance.'
+        self.model = model
+        self.nsimu = nsimu
+
+    def setup(self):
+        self.status = 'setup'
+        self.sigma2 = np.zeros([self.nsimu, self.model.sigma2.size])
+        self.counter = 0
+        self.sigma2[self.counter, :] = self.model.sigma2
+        self.chains = []
+        self.chains.append(dict(file='sigma2chain', mtx=self.sigma2))
+        return self.model.sigma2
+
+    def update(self, current_set, **kwargs):
+        self.status = 'updating'
+        self.counter += 1
+        sigma2 = self.update_error_variance(current_set.ss, self.model)
+        self.sigma2[self.counter, 0] = sigma2
+        return sigma2
 
     def update_error_variance(self, sos, model):
         '''

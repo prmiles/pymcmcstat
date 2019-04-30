@@ -43,7 +43,7 @@ class LikelihoodFunction:
             like = self.likelihood(self.value, self.data)
         return like
 
-    def default_gaussian_likelihood(self, q, data, sigma=1.0, custom=None):
+    def default_gaussian_likelihood(self, q, data, custom=None):
         '''
         Gaussian likelihood function
 
@@ -52,6 +52,10 @@ class LikelihoodFunction:
             \\mathcal{L}(\\nu_{obs}|q, \\sigma) = \
             \\exp\\Big(-\\frac{SS_q}{2\\sigma}\\Big)
         '''
+        if custom is not None:
+            sigma = custom[0]
+        else:
+            sigma = 1.0
         rawssq = self.evaluate_sos_function(q, data, custom=custom)
         # check if SOS is array and sum
         ssq = self._check_sos(rawssq)
