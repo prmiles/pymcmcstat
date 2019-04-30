@@ -49,4 +49,3 @@ class LikelihoodFunction:
         except TypeError:
             like = self.likelihood(self.value, self.data)
         return like
-        
