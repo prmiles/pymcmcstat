@@ -79,7 +79,7 @@ class ModelSettings:
             else:
                 sys.exit('Unknown data type - Please use int, ndarray, or list')
 
-    def _check_dependent_model_settings(self, data, options):
+    def _check_dependent_model_settings(self, data, options=None):
         '''
         Check dependent parameters.
 

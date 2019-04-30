@@ -165,7 +165,7 @@ class SimulationOptions:
         self.json_restart_file = json_restart_file
         self.__options_set = True  # options have been defined
 
-    def _check_dependent_simulation_options(self, model):
+    def _check_dependent_simulation_options(self, flag=False, model=None):
         '''
         Check dependent parameters.
         - Checks that :code:`savesize` is between 0 and :code:`nsimu`.
@@ -175,6 +175,7 @@ class SimulationOptions:
         - If :code:`N0` not None, turn on :code:`updatesigma`.
 
         Args:
+            * **flag**: (:py:class:`bool`): Flag to turn on updatesigma.
             * **model**: (:class:`~.ModelSettings`): MCMC model settings.
         '''
         # save options
@@ -189,8 +190,8 @@ class SimulationOptions:
             self.lastadapt = self.nsimu
         if self.printint is None:
             self.printint = max(100, min(1000, self.adaptint))
-        # if N0 given, then also turn on updatesigma
-        if model.N0 is not None:
+        # if flag is True, then also turn on updatesigma
+        if flag:
             self.updatesigma = True
 
     def display_simulation_options(self, print_these=None):
