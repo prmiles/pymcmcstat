@@ -36,7 +36,9 @@ class Metropolis:
         * :meth:`~unpack_set`
     '''
     # --------------------------------------------------------
-    def run_metropolis_step(self, old_set, parameters, R, prior_object, sos_object, custom=None):
+    def run_metropolis_step(self, old_set, parameters, R,
+                            prior_object, like_object, sos_object=None,
+                            custom=None):
         '''
         Run Metropolis step.
 
@@ -72,15 +74,20 @@ class Metropolis:
             # prior SS for the new theta
             newprior = prior_object.evaluate_prior(newpar)
             # REPLACE SOS WITH LIKELIHOOD OBJECT
+            newlike = like_object.evaluate_likelihood(newpar, custom=custom)
             # calculate sum-of-squares
             ss2 = ss  # old ss
-            ss1 = sos_object.evaluate_sos_function(newpar, custom=custom)
+#            ss1 = sos_object.evaluate_sos_function(newpar, custom=custom)
+            q = parameters._initial_value.copy()
+            q[parameters._parind] = newpar
+            ss1 = like_object.evaluate_sos_function(q, custom=custom)
             # evaluate likelihood
             alpha = self.evaluate_likelihood_function(ss1, ss2, sigma2, newprior, oldprior)
             # make acceptance decision
             accept = acceptance_test(alpha)
             # store parameter sets in objects
-            newset = ParameterSet(theta=newpar, ss=ss1, prior=newprior, sigma2=sigma2, alpha=alpha)
+            newset = ParameterSet(theta=newpar, ss=ss1, prior=newprior,
+                                  like=newlike, sigma2=sigma2, alpha=alpha)
         return accept, newset, outbound, npar_sample_from_normal
 
     # --------------------------------------------------------

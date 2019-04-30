@@ -83,12 +83,18 @@ def setup_CL(theta=1.0, ss=1.0, prior=0.0, sigma2=0.0):
 class RunMetropolisStep(unittest.TestCase):
     @classmethod
     def setup_rms(cls, CL):
-        sos_object, prior_object, parameters = gf.setup_mcmc_case_mh()
+        (sos_object, prior_object, parameters,
+         like_object) = gf.setup_mcmc_case_mh()
         MS = Metropolis()
         R = np.array([[0.4, 0.2],[0, 0.3]])
         parset = ParameterSet(theta=CL['theta'], ss=CL['ss'], prior=CL['prior'], sigma2=CL['sigma2'])
-        accept, _, outbound, npar_sample_from_normal = MS.run_metropolis_step(old_set = parset, parameters = parameters, R = R, prior_object = prior_object, sos_object = sos_object)
-        
+        accept, _, outbound, npar_sample_from_normal = MS.run_metropolis_step(
+                old_set=parset,
+                parameters=parameters,
+                R=R,
+                prior_object=prior_object,
+                sos_object=sos_object,
+                like_object=like_object)
         return accept, outbound
 
     @patch('pymcmcstat.samplers.Metropolis.is_sample_outside_bounds',
