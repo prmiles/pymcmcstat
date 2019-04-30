@@ -1,8 +1,15 @@
 Changelog
 =========
 
+v1.8.0 ()
+----------------------
+- Added acceptance rate display feature when calling chain statistics
+
 v1.7.0 (April 5, 2019)
 ----------------------
+.. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.2630882.svg
+      :target: https://doi.org/10.5281/zenodo.2630882
+
 - Added custom sampler feature.  Interface requires creation of a class, but allows for inclusion of things like Gibbs samplers.  User can explicitly pass in features to the sum-of-squares function.
 - Added check routines for reading in parallel MCMC results to ensure only directories with name 'chain_' are queried.
 - All files were updated to comply with formatting standards using *flake8*.
@@ -11,6 +18,9 @@ v1.7.0 (April 5, 2019)
 
 v1.6.0 (August 31, 2018)
 ----------------------
+.. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.1407136.svg
+   :target: https://doi.org/10.5281/zenodo.1407136
+
 - Added optimal handling of prior function used numpy array multiplication.
 - Fixed bug with saving results to json file - output directory now automatically made.
 - Updated PI plotting to allow any valid matplotlib input.
@@ -22,6 +32,8 @@ v1.6.0 (August 31, 2018)
 
 v1.5.0 (July 27, 2018)
 ----------------------
+.. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.1322773.svg
+   :target: https://doi.org/10.5281/zenodo.1322773
 - Final release of 1.5.0.
 - First release with complete test coverage.
 - Updated analysis options and diagnostics.
