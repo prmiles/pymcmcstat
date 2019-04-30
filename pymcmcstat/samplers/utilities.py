@@ -53,7 +53,7 @@ def is_sample_outside_bounds(theta, lower_limits, upper_limits):
 
 
 # --------------------------------------------------------
-def acceptance_test(alpha):
+def acceptance_test(alpha, logpost=False):
     '''
     Run standard acceptance test
 
@@ -69,15 +69,50 @@ def acceptance_test(alpha):
 
     Args:
         * **alpha** (:py:class:`float`): Result of likelihood function
+        * **logpost** (:py:class:`bool`): Flag indicating whether user \
+        has defined the log posterior ratio. Default is `True`.
 
     Returns:
         * **accept** (:py:class:`bool`): False - reject, True - accept
     '''
-    if alpha >= 1 or alpha > np.random.rand(1, 1):
-        accept = True
+    if logpost is True:
+        return log_posterior_ratio_acceptance_test(alpha)
     else:
-        accept = False
-    return accept
+        return posterior_ratio_acceptance_test(alpha)
+
+
+# --------------------------------------------------------
+def posterior_ratio_acceptance_test(alpha):
+    '''
+    Run posterior ratio acceptance test
+
+    Args:
+        * **alpha** (:py:class:`float`): Posterior ratio
+
+    Returns:
+        * **accept** (:py:class:`bool`): False - reject, True - accept
+    '''
+    if alpha >= 1.0 or alpha > np.random.rand(1, 1):
+        return True
+    else:
+        return False
+
+
+# --------------------------------------------------------
+def log_posterior_ratio_acceptance_test(alpha):
+    '''
+    Run log posterior ratio acceptance test
+
+    Args:
+        * **alpha** (:py:class:`float`): Log posterior ratio
+
+    Returns:
+        * **accept** (:py:class:`bool`): False - reject, True - accept
+    '''
+    if alpha > np.log(np.random.rand(1, 1)):
+        return True
+    else:
+        return False
 
 
 # -------------------------------------------
@@ -101,7 +136,7 @@ def set_outside_bounds(next_set):
 
 
 # -------------------------------------------
-def calculate_acceptance_ratio(likelihoodstar, likelihood,
+def calculate_acceptance_ratio(likestar, like,
                                priorstar, prior):
     '''
     Calculate acceptance ratio:
@@ -123,9 +158,9 @@ def calculate_acceptance_ratio(likelihoodstar, likelihood,
         and prior definitions.
 
     Args:
-        * **likelihoodstart** (:py:class:`float`): \
+        * **likestart** (:py:class:`float`): \
         Likelihood from proposed candidate, :math:`q^*`
-        * **likelihood** (:py:class:`float`): \
+        * **like** (:py:class:`float`): \
         Likelihood from previous sample point, :math:`q^{k-1}`
         * **priorstar** (:py:class:`float`): Prior for proposal candidate
         * **prior** (:py:class:`float`): Prior for previous sample
@@ -133,5 +168,5 @@ def calculate_acceptance_ratio(likelihoodstar, likelihood,
     Returns:
         * **alpha** (:py:class:`float`): Acceptance ratio
     '''
-    alpha = (likelihoodstar * priorstar)/(likelihood * prior)
+    alpha = (likestar * priorstar)/(like * prior)
     return np.min([1, alpha])
