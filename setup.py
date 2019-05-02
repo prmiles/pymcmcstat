@@ -16,7 +16,8 @@ with codecs.open(path.join(this_directory, 'README.rst'), encoding='utf-8') as f
 
 def get_version():
     VERSIONFILE = os.path.join('pymcmcstat', '__init__.py')
-    lines = open(VERSIONFILE, 'rt').readlines()
+    with open(VERSIONFILE, 'rt') as f:
+        lines = f.readlines()
     vgx = '^__version__ = \"\d+\.\d+\.\d.*\"'
     for line in lines:
         mo = re.search(vgx, line, re.M)
