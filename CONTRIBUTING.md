@@ -1,11 +1,11 @@
 # Guidelines for Contributing
 
-Individual or groups are very welcome to contribute to pymcmcstat.  There are 4 main ways of contributing to the pymcmcstat project:
+Individual or groups are very welcome to contribute to pymcmcstat.  There are four main ways of contributing to the pymcmcstat project:
 
-* Adding new or improved functionality to the existing codebase
-* Fixing outstanding issues with the existing codebase.
-* Contributing or improving the documentation (`doc`)
-* Submitting issues related to bugs or desired enhancements
+1. Adding new or improved functionality to the existing codebase
+2. Fixing outstanding issues with the existing codebase.
+3. Contributing or improving the documentation (`doc`)
+4. Submitting issues related to bugs or desired enhancements
 
 # Opening issues
 
@@ -88,19 +88,25 @@ We recommended that your contribution complies with the following guidelines bef
 You can also check for common programming errors with the following
 tools:
 
-* Code with good test **coverage** (at least 80%), check with:
+* Check code **coverage** (at least 80%) with:
 
   ```bash
   $ pip install coveralls
-  $ coverage run --source=pymcmcstat -m unittest discover -s "test" -p "test*.py"
+  $ coverage run --source=pymcmcstat -m unittest test/<path to test>/test_<name>.py
   $ coverage report --fail-under=80
   ```
+Note that Travis-CI will run
+  ```bash
+  - coverage run --source=pymcmcstat -m unittest discover -s "test" -p "test*.py"
+  - coverage report --fail-under=80
+  ```
+when checking the package.  Your test files needs to start with the prefix "test_" to be run in Travis-CI.
 
-* No `flake8` warnings, check with:
+* Check code style (no `flake8` warnings) with:
 
   ```bash
   $ pip install flake8
-  $ flake8 path/to/module.py
+  $ flake8 pymcmcstat/path_to_module.py
   ```
   
- #### This guide was derived from the [PyMC3 guide to contributing](https://github.com/pymc-devs/pymc3/blob/master/CONTRIBUTING.md)
+ #### This guide was derived from the [PyMC3's guide to contributing](https://github.com/pymc-devs/pymc3/blob/master/CONTRIBUTING.md)
