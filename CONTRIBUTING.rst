@@ -117,4 +117,4 @@ when checking the package.  Your test files needs to start with the prefix "test
   $ pip install flake8
   $ flake8 pymcmcstat/path_to_module.py
   
-**This guide was derived from the `PyMC3's guide to contributing <https://github.com/pymc-devs/pymc3/blob/master/CONTRIBUTING.md>`_.**
+**This guide was derived from the** `PyMC3's guide to contributing <https://github.com/pymc-devs/pymc3/blob/master/CONTRIBUTING.md>`_.
