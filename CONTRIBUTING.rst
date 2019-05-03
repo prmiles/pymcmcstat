@@ -108,7 +108,7 @@ Note that Travis-CI will run
   coverage run --source=pymcmcstat -m unittest discover -s "test" -p "test*.py"
   coverage report --fail-under=80
 
-when checking the package.  Your test files needs to start with the prefix "test_" to be run in Travis-CI.
+when checking the package.  Your test files needs to start with the prefix "test\_" to be run in Travis-CI.
 
 * Check code style (no `flake8` warnings) with:
 
