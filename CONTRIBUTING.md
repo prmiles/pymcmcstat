@@ -2,10 +2,10 @@
 
 Individual or groups are very welcome to contribute to pymcmcstat.  There are four main ways of contributing to the pymcmcstat project:
 
-1. Adding new or improved functionality to the existing codebase
+1. Adding new or improved functionality to the existing codebase.
 2. Fixing outstanding issues with the existing codebase.
-3. Contributing or improving the documentation (`doc`)
-4. Submitting issues related to bugs or desired enhancements
+3. Contributing or improving the documentation (`doc`).
+4. Submitting issues related to bugs or desired enhancements.
 
 # Opening issues
 
@@ -79,11 +79,11 @@ We recommended that your contribution complies with the following guidelines bef
 
 *  All other tests pass when everything is rebuilt from scratch.
 
-*  When adding additional functionality, provide at least one example script or Jupyter Notebook in the ``pymcmcstat/tutorials/`` folder. Have a look at other examples for reference. Examples should demonstrate why the new functionality is useful in practice and, if possible, compare it to other methods available in pymcmcstat.
-
 * Documentation and high-coverage tests are necessary for enhancements to be accepted.
 
 * Run any of the pre-existing [tutorials](https://github.com/prmiles/notebooks/blob/master/pymcmcstat/index.ipynb) that contain analyses that would be affected by your changes to ensure that nothing breaks. This is a useful opportunity to not only check your work for bugs that might not be revealed by unit test, but also to show how your contribution improves pymcmcstat for end users.
+
+* *A local tutorials directory is currently being developed.*
 
 You can also check for common programming errors with the following
 tools:
