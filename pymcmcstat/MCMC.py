@@ -625,7 +625,7 @@ class MCMC:
         self.__initial_set.like = (
                 self.__like_object.evaluate_likelihood(
                         q=self.__initial_set.theta,
-                        custom=self.custom_sampler_output))
+                        custom=self.custom_sampler_output))['like']
         # evaluate prior with initial parameter set
         self.__initial_set.prior = (
                 self.__prior_object.evaluate_prior(
