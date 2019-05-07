@@ -67,7 +67,10 @@ class PriorFunction:
         '''
         res = (mu - theta)/sigma
         pf = np.dot(res.reshape(1, res.size), res.reshape(res.size, 1))
-        return np.exp(-1./2*pf)
+        return dict(
+                prior=np.exp(-1./2*pf),
+                logprior=-1./2*pf,
+                )
 
     def evaluate_prior(self, theta):
         '''

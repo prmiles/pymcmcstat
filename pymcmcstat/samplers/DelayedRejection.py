@@ -23,7 +23,8 @@ class DelayedRejection:
         * :meth:`~alphafun`
     '''
     # -------------------------------------------
-    def run_delayed_rejection(self, old_set, new_set, RDR, ntry, parameters, invR, sosobj, priorobj, custom=None):
+    def run_delayed_rejection(self, old_set, new_set, RDR, ntry, parameters,
+                              invR, sosobj, priorobj, likeobj, custom=None):
         '''
         Perform delayed rejection step - occurs in standard metropolis is not accepted.
 
@@ -36,6 +37,7 @@ class DelayedRejection:
             * **invR** (:class:`~numpy.ndarray`): Inverse Cholesky decomposition matrix
             * **sosobj** (:class:`~.SumOfSquares`): Sum-of-Squares function
             * **priorobj** (:class:`~.PriorFunction`): Prior function
+            * **likeobj** (:class:`~.LikelihoodFunction`): Likelihood function
 
         Returns:
             * **accept** (:py:class:`int`): 0 - reject, 1 - accept
@@ -63,8 +65,14 @@ class DelayedRejection:
 
             # Evaluate new proposals
             outbound = 0
-            # REPLACE WITH LIKELIHOOD OBJECT
-            next_set.ss = sosobj.evaluate_sos_function(next_set.theta, custom=custom)
+            # evaluate likelihood function
+            next_set.newlike = likeobj.evaluate_likelihood(
+                    next_set.theta, custom=custom)
+            if isinstance(next_set.newlike, dict):
+                next_set.ss = next_set.newlike['ssq']
+                next_set.like = next_set.newlike['like']
+#            next_set.ss = sosobj.evaluate_sos_function(next_set.theta, custom=custom)
+            # evaluate prior function
             next_set.prior = priorobj.evaluate_prior(theta=next_set.theta)
             trypath.append(next_set)  # add set to trypath
             alpha = self.alphafun(trypath, invR)

@@ -61,6 +61,7 @@ class LikelihoodFunction:
         ssq = self._check_sos(rawssq)
         return dict(
                 like=np.exp(-1./2 * ssq.sum()/sigma**2),
+                loglike=-1./2 * ssq.sum()/sigma**2,
                 ssq=ssq,
                 )
 

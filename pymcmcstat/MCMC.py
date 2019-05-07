@@ -298,7 +298,6 @@ class MCMC:
                             R=self._covariance._R,
                             prior_object=self.__prior_object,
                             like_object=self.__like_object,
-                            sos_object=self.__sos_object,
                             custom=self.custom_sampler_output)
                     )
 
@@ -314,6 +313,7 @@ class MCMC:
                                 invR=self._covariance._invR,
                                 sosobj=self.__sos_object,
                                 priorobj=self.__prior_object,
+                                likeobj=self.__like_object,
                                 custom=self.custom_sampler_output)
                         )
             # UPDATE CHAIN & SUM-OF-SQUARES CHAIN
@@ -622,14 +622,16 @@ class MCMC:
             for ii, cs in enumerate(self.custom_samplers):
                 self.custom_sampler_output.append(cs.setup())
         # evaluate likelihood with initial parameter set
-        self.__initial_set.like = (
-                self.__like_object.evaluate_likelihood(
-                        q=self.__initial_set.theta,
-                        custom=self.custom_sampler_output))['like']
+        _like = self.__like_object.evaluate_likelihood(
+                q=self.__initial_set.theta,
+                custom=self.custom_sampler_output)
+        self.__initial_set.like = _like['like']
+        self.__initial_set.loglike = _like['loglike']
         # evaluate prior with initial parameter set
-        self.__initial_set.prior = (
-                self.__prior_object.evaluate_prior(
-                        self.__initial_set.theta))
+        _prior = self.__prior_object.evaluate_prior(
+                        self.__initial_set.theta)
+        self.__initial_set.prior = _prior['prior']
+        self.__initial_set.logprior = _prior['logprior']
 
     # --------------------------------------------------------
     def display_current_mcmc_settings(self):

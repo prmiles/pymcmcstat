@@ -11,8 +11,8 @@ from ..structures.ParameterSet import ParameterSet
 from .utilities import sample_candidate_from_gaussian_proposal
 from .utilities import is_sample_outside_bounds, set_outside_bounds
 #from .utilities import acceptance_test
-from .utilities import calculate_posterior_ratio
-from .utilities import posterior_ratio_acceptance_test
+from .utilities import calculate_log_posterior_ratio
+from .utilities import log_posterior_ratio_acceptance_test
 
 
 class Metropolis:
@@ -39,7 +39,7 @@ class Metropolis:
     '''
     # --------------------------------------------------------
     def run_metropolis_step(self, old_set, parameters, R,
-                            prior_object, like_object, sos_object=None,
+                            prior_object, like_object,
                             custom=None):
         '''
         Run Metropolis step.
@@ -49,7 +49,7 @@ class Metropolis:
             * **parameters** (:class:`~.ModelParameters`): Model parameters
             * **R** (:class:`~numpy.ndarray`): Cholesky decomposition of parameter covariance matrix
             * **priorobj** (:class:`~.PriorFunction`): Prior function
-            * **sosobj** (:class:`~.SumOfSquares`): Sum-of-Squares function
+            * **like_object** (:class:`~.LikelihoodFunction`): Likelihood function
 
         Returns:
             * **accept** (:py:class:`int`): 0 - reject, 1 - accept
@@ -59,9 +59,8 @@ class Metropolis:
         '''
         # unpack oldset
         tmp = old_set.__dict__
-        oldpar, ss, oldprior, oldlike, sigma2 = (
-                tmp['theta'], tmp['ss'], tmp['prior'], tmp['like'], tmp['sigma2'])
-
+        oldpar, ss, oldlogprior, oldloglike, sigma2 = (
+                tmp['theta'], tmp['ss'], tmp['logprior'], tmp['loglike'], tmp['sigma2'])
         # Sample new candidate from Gaussian proposal
         newpar, npar_sample_from_normal = sample_candidate_from_gaussian_proposal(
                 npar=parameters.npar, oldpar=oldpar, R=R)
@@ -81,17 +80,20 @@ class Metropolis:
             newlike = like_object.evaluate_likelihood(newpar, custom=custom)
             if isinstance(newlike, dict):
                 ss = newlike['ssq']
-                newlike = newlike['like']
-            # calculate acceptance ratio
-            alpha = calculate_posterior_ratio(
-                    likestar=newlike,
-                    like=oldlike,
-                    priorstar=newprior,
-                    prior=oldprior)
-            accept = posterior_ratio_acceptance_test(alpha)
+            # calculate log posterior ratio
+            alpha = calculate_log_posterior_ratio(
+                    loglikestar=newlike['loglike'],
+                    loglike=oldloglike,
+                    logpriorstar=newprior['logprior'],
+                    logprior=oldlogprior)
+            accept = log_posterior_ratio_acceptance_test(alpha)
             # store parameter sets in objects
-            newset = ParameterSet(theta=newpar, ss=ss, prior=newprior,
-                                  like=newlike, sigma2=sigma2, alpha=alpha)
+            newset = ParameterSet(theta=newpar, ss=ss,
+                                  prior=newprior['prior'],
+                                  logprior=newprior['logprior'],
+                                  like=newlike['like'],
+                                  loglike=newlike['loglike'],
+                                  sigma2=sigma2, alpha=alpha)
         return accept, newset, outbound, npar_sample_from_normal
 
     # --------------------------------------------------------
