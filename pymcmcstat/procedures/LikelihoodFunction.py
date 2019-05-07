@@ -59,7 +59,10 @@ class LikelihoodFunction:
         rawssq = self.evaluate_sos_function(q, data, custom=custom)
         # check if SOS is array and sum
         ssq = self._check_sos(rawssq)
-        return np.exp(-1./2 * ssq.sum()/sigma**2)
+        return dict(
+                like=np.exp(-1./2 * ssq.sum()/sigma**2),
+                ssq=ssq,
+                )
 
     def evaluate_sos_function(self, q, data=None, custom=None):
         if data is None:
