@@ -10,8 +10,8 @@ import numpy as np
 from ..structures.ParameterSet import ParameterSet
 from .utilities import sample_candidate_from_gaussian_proposal
 from .utilities import is_sample_outside_bounds, set_outside_bounds
-from .utilities import acceptance_test
-from .utilities import calculate_acceptance_ratio
+#from .utilities import acceptance_test
+from .utilities import calculate_posterior_ratio
 from .utilities import posterior_ratio_acceptance_test
 
 
@@ -75,29 +75,22 @@ class Metropolis:
             accept = False
         else:
             outbound = 0
-            # prior SS for the new theta
+            # evaluate prior function
             newprior = prior_object.evaluate_prior(newpar)
-            # REPLACE SOS WITH LIKELIHOOD OBJECT
+            # evaluate likelihood function
             newlike = like_object.evaluate_likelihood(newpar, custom=custom)
-            # calculate sum-of-squares
-            ss2 = ss  # old ss
-            ss1 = sos_object.evaluate_sos_function(newpar, custom=custom)
-            q = parameters._initial_value.copy()
-            q[parameters._parind] = newpar
-            ss1 = like_object.evaluate_sos_function(q, custom=custom)
+            if isinstance(newlike, dict):
+                ss = newlike['ssq']
+                newlike = newlike['like']
             # calculate acceptance ratio
-#            alpha = calculate_acceptance_ratio(
-#                    likestar=newlike,
-#                    like=oldlike,
-#                    priorstar=newprior,
-#                    prior=oldprior)
-            # evaluate likelihood
-            alpha = self.evaluate_likelihood_function(ss1, ss2, sigma2, newprior, oldprior)
-            # make acceptance decision
-            accept = acceptance_test(alpha)
-#            accept = posterior_ratio_acceptance_test(alpha)
+            alpha = calculate_posterior_ratio(
+                    likestar=newlike,
+                    like=oldlike,
+                    priorstar=newprior,
+                    prior=oldprior)
+            accept = posterior_ratio_acceptance_test(alpha)
             # store parameter sets in objects
-            newset = ParameterSet(theta=newpar, ss=ss1, prior=newprior,
+            newset = ParameterSet(theta=newpar, ss=ss, prior=newprior,
                                   like=newlike, sigma2=sigma2, alpha=alpha)
         return accept, newset, outbound, npar_sample_from_normal
 

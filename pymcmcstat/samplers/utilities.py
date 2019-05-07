@@ -137,10 +137,10 @@ def set_outside_bounds(next_set):
 
 
 # -------------------------------------------
-def calculate_acceptance_ratio(likestar, like,
+def calculate_posterior_ratio(likestar, like,
                                priorstar, prior):
     '''
-    Calculate acceptance ratio:
+    Calculate posterior ratio:
 
     .. math::
 
@@ -150,7 +150,7 @@ def calculate_acceptance_ratio(likestar, like,
 
     For more details regarding the prior and likelihood functions,
     please refer to the :class:`~.PriorFunction` and
-    :class`.LikelihoodFunction` class, respectively.
+    :class:`~.LikelihoodFunction` class, respectively.
 
     .. note::
         The default behavior of the package is to use Gaussian
@@ -159,7 +159,48 @@ def calculate_acceptance_ratio(likestar, like,
         and prior definitions.
 
     Args:
-        * **likestart** (:py:class:`float`): \
+        * **likestar** (:py:class:`float`): \
+        Likelihood from proposed candidate, :math:`q^*`
+        * **like** (:py:class:`float`): \
+        Likelihood from previous sample point, :math:`q^{k-1}`
+        * **priorstar** (:py:class:`float`): Prior for proposal candidate
+        * **prior** (:py:class:`float`): Prior for previous sample
+
+    Returns:
+        * **alpha** (:py:class:`float`): Acceptance ratio
+    '''
+    print('likestar = {}'.format(likestar))
+    print('like = {}'.format(like))
+    print('priorstar = {}'.format(priorstar))
+    print('prior = {}'.format(prior))
+    alpha = (likestar * priorstar)/(like * prior)
+    return np.min([1, alpha])
+
+
+# -------------------------------------------
+def calculate_log_posterior_ratio(likestar, like,
+                               priorstar, prior):
+    '''
+    Calculate log posterior ratio:
+
+    .. math::
+
+        \\log(\\alpha) = \\min\\Big[0, \\log(\\mathcal{L}(\\nu_{obs}|q^*)) \
+        + \\log(\\pi_0(q^*)) - \\log(\\mathcal{L}(\\nu_{obs}|q^{k-1})) \
+        - \\log(\\pi_0(q^{k-1}))\\Big]
+
+    For more details regarding the prior and likelihood functions,
+    please refer to the :class:`~.PriorFunction` and
+    :class:`~.LikelihoodFunction` class, respectively.
+
+    .. note::
+        The default behavior of the package is to use Gaussian
+        likelihood and prior functions (as of v1.7.0).  Future releases
+        will expand the functionality to allow for alternative likelihood
+        and prior definitions.
+
+    Args:
+        * **likestar** (:py:class:`float`): \
         Likelihood from proposed candidate, :math:`q^*`
         * **like** (:py:class:`float`): \
         Likelihood from previous sample point, :math:`q^{k-1}`
