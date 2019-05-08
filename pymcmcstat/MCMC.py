@@ -154,13 +154,15 @@ class MCMC:
                 self.simulation_options.qcov = np.array(res['qcov'])
             self.__chain_index = 0  # start index at zero
             self._initialize_simulation()
-            self.__initialize_chains(
+            self.__initialize_chain(
                     chainind=self.__chain_index,
                     nsimu=self.simulation_options.nsimu,
-                    npar=self.parameters.npar,
-                    nsos=self.model_settings.nsos,
-                    updatesigma=self.simulation_options.updatesigma,
-                    sigma2=self.model_settings.sigma2)
+                    npar=self.parameters.npar)
+            if self.__like_object.type == 'default':
+                self.__initialize_sschain(
+                        chainind=self.__chain_index,
+                        nsimu=self.simulation_options.nsimu,
+                        nsos=self.model_settings.nsos)
 
     # --------------------------------------------------------
     def _initialize_simulation(self):
@@ -182,10 +184,10 @@ class MCMC:
         # define likelihood object
         self.__like_object = LikelihoodFunction(
                 self.model_settings, self.data, self.parameters)
-        # ---------------------
-        # define sum-of-squares object
-        self.__sos_object = SumOfSquares(
-                self.model_settings, self.data, self.parameters)
+#        # ---------------------
+#        # define sum-of-squares object
+#        self.__sos_object = SumOfSquares(
+#                self.model_settings, self.data, self.parameters)
         # ---------------------
         # define prior object
         self.__prior_object = PriorFunction(
@@ -210,33 +212,37 @@ class MCMC:
             self._sampling_methods.delayed_rejection._initialize_dr_metrics(self.simulation_options)
 
     # --------------------------------------------------------
-    def __initialize_chains(self, chainind, nsimu, npar, nsos, updatesigma, sigma2):
+    def __initialize_chain(self, chainind, nsimu, npar):
         '''
-        Initialize chains
+        Initialize chain
 
         Args:
             * **chainind** (:py:class:`int`): Where to store initial parameter value
             * **nsimu** (:py:class:`int`): Number of parameter samples to simulate.
             * **npar** (:py:class:`int`): Number of parameters being sampled.
-            * **nsos** (:py:class:`int`): Length of output from sum-of-squares function
-            * **updatesigma** (:py:class:`bool`): Flag for updating measurement error variance. \
-            Default is 0 -> off (1 -> on).
-            * **sigma2** (:class:`numpy.ndarray`): Initial error observations.
         '''
         # Initialize chain, error variance, and SS
         self.__chain = np.zeros([nsimu, npar])
-        self.__sschain = np.zeros([nsimu, nsos])
         # Save initialized values to chain, s2chain, sschain
         self.__chain[chainind, :] = self.__initial_set.theta
-        self.__sschain[chainind, :] = self.__initial_set.ss
         self.__chains = []
         self.__chains.append(dict(file=self.simulation_options.chainfile, mtx=self.__chain))
+
+    # --------------------------------------------------------
+    def __initialize_sschain(self, chainind, nsimu, nsos):
+        '''
+        Initialize sschain
+
+        Args:
+            * **chainind** (:py:class:`int`): Where to store initial parameter value
+            * **nsimu** (:py:class:`int`): Number of parameter samples to simulate.
+            * **nsos** (:py:class:`int`): Length of output from sum-of-squares function
+        '''
+        # Initialize chain, error variance, and SS
+        self.__sschain = np.zeros([nsimu, nsos])
+        # Save initialized values to chain, s2chain, sschain
+        self.__sschain[chainind, :] = self.__initial_set.like['ssq']
         self.__chains.append(dict(file=self.simulation_options.sschainfile, mtx=self.__sschain))
-        if updatesigma:
-            self.__s2chain = np.zeros([nsimu, nsos])
-            self.__s2chain[chainind, :] = sigma2
-        else:
-            self.__s2chain = None
 
     # --------------------------------------------------------
     def __expand_chains(self, nsimu, npar, nsos, updatesigma):
@@ -311,7 +317,6 @@ class MCMC:
                                 ntry=self.simulation_options.ntry,
                                 parameters=self.parameters,
                                 invR=self._covariance._invR,
-                                sosobj=self.__sos_object,
                                 priorobj=self.__prior_object,
                                 likeobj=self.__like_object,
                                 custom=self.custom_sampler_output)
@@ -319,7 +324,8 @@ class MCMC:
             # UPDATE CHAIN & SUM-OF-SQUARES CHAIN
             self.__update_chain(accept=accept, new_set=new_set,
                                 outsidebounds=outbound)
-            self.__sschain[self.__chain_index, :] = self.__old_set.ss
+            if self.__like_object.type == 'default':
+                self.__sschain[self.__chain_index, :] = self.__old_set.like['ssq']
             # PRINT REJECTION STATISTICS
             if (
                     self.simulation_options.printint and
@@ -359,11 +365,6 @@ class MCMC:
                                 accept=accept,
                                 isimu=isimu,
                                 current_set=self.__old_set))
-            # UPDATE ERROR VARIANCE
-            if self.simulation_options.updatesigma:
-                # sigma2 update will always be first custom sampler if on
-                self.__s2chain[self.__chain_index, :] = self.custom_sampler_output[0]
-                self.__old_set.sigma2 = self.custom_sampler_output[0]
             # SAVE TO LOG FILE
             if savecount == self.simulation_options.savesize:
                 savecount, lastbin = self.__save_to_log_file(
@@ -446,8 +447,11 @@ class MCMC:
                 priortype=self.model_settings.prior_type)
         # add chain, s2chain, and sschain
         self.simulation_results.add_chain(chain=self.__chain)
-        self.simulation_results.add_s2chain(s2chain=self.__s2chain)
-        self.simulation_results.add_sschain(sschain=self.__sschain)
+        if self.simulation_options.updatesigma is True:
+            self.simulation_results.add_s2chain(
+                    s2chain=self.custom_samplers[0].sigma2)
+        if self.__like_object.type == 'default':
+            self.simulation_results.add_sschain(sschain=self.__sschain)
 
     # ------------------------------------------------
     def __save_to_log_file(self, chains, start, end,
@@ -551,7 +555,7 @@ class MCMC:
                 extension=extension)
         if extension.lower() == 'h5':
             # define set name based in start/end
-            datasetname = str('{}_{}_{}'.format('nsimu', start, end-1))
+            datasetname = str('{}_{}_{}'.format('nsimu', start, end - 1))
             ChainProcessing._save_to_bin_file(
                     chainfile, datasetname=datasetname, mtx=chain['mtx'])
         else:
@@ -605,33 +609,21 @@ class MCMC:
         # Define initial parameter set
         self.__initial_set = ParameterSet(
                 theta=self.parameters._initial_value[self.parameters._parind[:]])
-        # evaluate likelihood - check for type to maintain backwards comp.
+        # evaluate likelihood with initial parameter set
+        self.__initial_set.like = self.__like_object.evaluate_likelihood(
+                q=self.__initial_set.theta)
+        # evaluate prior with initial parameter set
+        self.__initial_set.prior = self.__prior_object.evaluate_prior(
+                        self.__initial_set.theta)
         if self.__like_object.type == 'default':
-            # calculate sos with initial parameter set
-            sosfun = self.__like_object.evaluate_sos_function
-            q = self.parameters._initial_value
-            self.__initial_set.ss = sosfun(q)
-            # recheck certain values in model settings that are dependent on the output of the sos function
             self.model_settings._check_dependent_model_settings_wrt_nsos(
-                    nsos=len(self.__initial_set.ss))
-            # add initial error variance to initial parameter set
-            self.__initial_set.sigma2 = self.model_settings.sigma2
+                    nsos=len(self.__initial_set.like['ssq']))
+            self.__initial_set.like['sigma2'] = self.model_settings.sigma2
         # Setup additional custom samplers
         self.custom_sampler_output = []
         if len(self.custom_samplers) > 0:
             for ii, cs in enumerate(self.custom_samplers):
                 self.custom_sampler_output.append(cs.setup())
-        # evaluate likelihood with initial parameter set
-        _like = self.__like_object.evaluate_likelihood(
-                q=self.__initial_set.theta,
-                custom=self.custom_sampler_output)
-        self.__initial_set.like = _like['like']
-        self.__initial_set.loglike = _like['loglike']
-        # evaluate prior with initial parameter set
-        _prior = self.__prior_object.evaluate_prior(
-                        self.__initial_set.theta)
-        self.__initial_set.prior = _prior['prior']
-        self.__initial_set.logprior = _prior['logprior']
 
     # --------------------------------------------------------
     def display_current_mcmc_settings(self):

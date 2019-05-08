@@ -128,11 +128,9 @@ def set_outside_bounds(next_set):
         * **outbound** (:class:`bool`): True
     '''
     next_set.alpha = 0
-    next_set.prior = 0
-    next_set.like = 0
-    next_set.logprior = -np.inf
-    next_set.loglike = -np.inf
-    next_set.ss = np.inf
+    next_set.prior = dict(prior=0.0, logprior=-np.inf)
+    next_set.like = dict(like=0.0, loglike=-np.inf)
+#    next_set.ss = np.inf
     outbound = True
 
     return next_set, outbound
@@ -217,4 +215,4 @@ def calculate_log_posterior_ratio(loglikestar, loglike,
 #    print('priorstar = {}'.format(logpriorstar))
 #    print('prior = {}'.format(logprior))
     logalpha = loglikestar + logpriorstar - (loglike + logprior)
-    return np.min([0, logalpha])
+    return logalpha

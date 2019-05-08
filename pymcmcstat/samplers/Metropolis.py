@@ -59,8 +59,8 @@ class Metropolis:
         '''
         # unpack oldset
         tmp = old_set.__dict__
-        oldpar, ss, oldlogprior, oldloglike, sigma2 = (
-                tmp['theta'], tmp['ss'], tmp['logprior'], tmp['loglike'], tmp['sigma2'])
+        oldpar, oldprior, oldlike = (
+                tmp['theta'], tmp['prior'], tmp['like'])
         # Sample new candidate from Gaussian proposal
         newpar, npar_sample_from_normal = sample_candidate_from_gaussian_proposal(
                 npar=parameters.npar, oldpar=oldpar, R=R)
@@ -69,7 +69,7 @@ class Metropolis:
                                                  parameters._upper_limits[parameters._parind[:]])
         if outsidebounds is True:
             # proposed value outside parameter limits
-            newset = ParameterSet(theta=newpar, sigma2=sigma2)
+            newset = ParameterSet(theta=newpar)
             newset, outbound = set_outside_bounds(next_set=newset)
             accept = False
         else:
@@ -78,22 +78,19 @@ class Metropolis:
             newprior = prior_object.evaluate_prior(newpar)
             # evaluate likelihood function
             newlike = like_object.evaluate_likelihood(newpar, custom=custom)
-            if isinstance(newlike, dict):
-                ss = newlike['ssq']
             # calculate log posterior ratio
             alpha = calculate_log_posterior_ratio(
                     loglikestar=newlike['loglike'],
-                    loglike=oldloglike,
+                    loglike=oldlike['loglike'],
                     logpriorstar=newprior['logprior'],
-                    logprior=oldlogprior)
+                    logprior=oldprior['logprior'])
+            alpha = np.min([0, alpha])
             accept = log_posterior_ratio_acceptance_test(alpha)
             # store parameter sets in objects
-            newset = ParameterSet(theta=newpar, ss=ss,
-                                  prior=newprior['prior'],
-                                  logprior=newprior['logprior'],
-                                  like=newlike['like'],
-                                  loglike=newlike['loglike'],
-                                  sigma2=sigma2, alpha=alpha)
+            newset = ParameterSet(theta=newpar,
+                                  prior=newprior,
+                                  like=newlike,
+                                  alpha=alpha)
         return accept, newset, outbound, npar_sample_from_normal
 
     # --------------------------------------------------------

@@ -11,6 +11,7 @@ from ..structures.ParameterSet import ParameterSet
 from .utilities import sample_candidate_from_gaussian_proposal
 from .utilities import is_sample_outside_bounds, set_outside_bounds
 from .utilities import acceptance_test
+from .utilities import calculate_log_posterior_ratio
 
 
 class DelayedRejection:
@@ -24,7 +25,7 @@ class DelayedRejection:
     '''
     # -------------------------------------------
     def run_delayed_rejection(self, old_set, new_set, RDR, ntry, parameters,
-                              invR, sosobj, priorobj, likeobj, custom=None):
+                              invR, priorobj, likeobj, custom=None):
         '''
         Perform delayed rejection step - occurs in standard metropolis is not accepted.
 
@@ -35,7 +36,6 @@ class DelayedRejection:
             * **ntry** (:py:class:`int`): Number of DR steps to perform until rejection
             * **parameters** (:class:`~.ModelParameters`): Model parameters
             * **invR** (:class:`~numpy.ndarray`): Inverse Cholesky decomposition matrix
-            * **sosobj** (:class:`~.SumOfSquares`): Sum-of-Squares function
             * **priorobj** (:class:`~.PriorFunction`): Prior function
             * **likeobj** (:class:`~.LikelihoodFunction`): Likelihood function
 
@@ -52,11 +52,12 @@ class DelayedRejection:
             itry += 1  # update dr step index
             # initialize next step parameter set
             next_set = self.initialize_next_metropolis_step(
-                    npar=parameters.npar, old_theta=old_set.theta, sigma2=new_set.sigma2, RDR=RDR[itry-1])
+                    npar=parameters.npar, old_theta=old_set.theta, RDR=RDR[itry-1])
             # Reject points outside boundaries
-            outsidebounds = is_sample_outside_bounds(next_set.theta,
-                                                     parameters._lower_limits[parameters._parind[:]],
-                                                     parameters._upper_limits[parameters._parind[:]])
+            outsidebounds = is_sample_outside_bounds(
+                    next_set.theta,
+                    parameters._lower_limits[parameters._parind[:]],
+                    parameters._upper_limits[parameters._parind[:]])
             if outsidebounds is True:
                 next_set, outbound = set_outside_bounds(next_set=next_set)
                 trypath.append(next_set)
@@ -66,12 +67,8 @@ class DelayedRejection:
             # Evaluate new proposals
             outbound = 0
             # evaluate likelihood function
-            next_set.newlike = likeobj.evaluate_likelihood(
+            next_set.like = likeobj.evaluate_likelihood(
                     next_set.theta, custom=custom)
-            if isinstance(next_set.newlike, dict):
-                next_set.ss = next_set.newlike['ssq']
-                next_set.like = next_set.newlike['like']
-#            next_set.ss = sosobj.evaluate_sos_function(next_set.theta, custom=custom)
             # evaluate prior function
             next_set.prior = priorobj.evaluate_prior(theta=next_set.theta)
             trypath.append(next_set)  # add set to trypath
@@ -85,14 +82,13 @@ class DelayedRejection:
 
     # -------------------------------------------
     @classmethod
-    def initialize_next_metropolis_step(cls, npar, old_theta, sigma2, RDR):
+    def initialize_next_metropolis_step(cls, npar, old_theta, RDR):
         '''
         Take metropolis step according to DR
 
         Args:
             * **npar** (:py:class:`int`): Number of parameters
             * **old_theta** (:class:`~numpy.ndarray`): `q^{k-1}`
-            * **sigma2** (:py:class:`float`): Observation error variance
             * **RDR** (:class:`~numpy.ndarray`): Cholesky decomposition of parameter covariance matrix for DR steps
             * **itry** (:py:class:`int`): DR step counter
 
@@ -102,8 +98,8 @@ class DelayedRejection:
             distributions (:code:`u.shape = (1,npar)`)
         '''
         next_set = ParameterSet()
-        next_set.theta, u = sample_candidate_from_gaussian_proposal(npar=npar, oldpar=old_theta, R=RDR)
-        next_set.sigma2 = sigma2
+        next_set.theta, u = sample_candidate_from_gaussian_proposal(
+                npar=npar, oldpar=old_theta, R=RDR)
         return next_set
 
     # -------------------------------------------
@@ -142,10 +138,16 @@ class DelayedRejection:
             if a2 == 0:  # we will come back with prob 1
                 alpha = np.zeros(1)
                 return alpha
-        y = log_posterior_ratio(trypath[0], trypath[-1])
+        # calculate log posterior ratio
+        y = calculate_log_posterior_ratio(
+                loglikestar=trypath[-1].like['loglike'],
+                loglike=trypath[0].like['loglike'],
+                logpriorstar=trypath[-1].prior['logprior'],
+                logprior=trypath[0].prior['logprior'])
+#        y = log_posterior_ratio(trypath[0], trypath[-1])
         for kk in range(stage):
             y = y + nth_stage_log_proposal_ratio(kk, trypath, invR)
-        alpha = min(np.ones(1), np.exp(y)*a2*(a1**(-1)))
+        alpha = np.min([np.ones(1), np.exp(y)*a2*(a1**(-1))])
         return alpha
 
 
@@ -191,21 +193,21 @@ def extract_state_elements(iq, stage, trypath):
     return y1, y2, y3, y4
 
 
-# -------------------------------------------
-def log_posterior_ratio(x1, x2):
-    '''
-    Calculate the logarithm of the posterior ratio.
-
-    Args:
-        * **x1** (:class:`~.ParameterSet`): Old set - :math:`q^{k-1}`
-        * **x2** (:class:`~.ParameterSet`): New set - :math:`q^*`
-
-    Returns:
-        * **zq** (:py:class:`float`): Logarithm of posterior ratio.
-    '''
-#    zq = x2.loglike * x2.logprior - x1.loglike * x1.logprior
-    zq = -0.5*(sum((x2.ss*(x2.sigma2**(-1.0)) - x1.ss*(x1.sigma2**(-1.0)))) + x2.prior - x1.prior)
-    return sum(zq)
+## -------------------------------------------
+#def log_posterior_ratio(x1, x2):
+#    '''
+#    Calculate the logarithm of the posterior ratio.
+#
+#    Args:
+#        * **x1** (:class:`~.ParameterSet`): Old set - :math:`q^{k-1}`
+#        * **x2** (:class:`~.ParameterSet`): New set - :math:`q^*`
+#
+#    Returns:
+#        * **zq** (:py:class:`float`): Logarithm of posterior ratio.
+#    '''
+##    zq = x2.loglike * x2.logprior - x1.loglike * x1.logprior
+#    zq = -0.5*(sum((x2.ss*(x2.sigma2**(-1.0)) - x1.ss*(x1.sigma2**(-1.0)))) + x2.prior - x1.prior)
+#    return sum(zq)
 
 
 # -------------------------------------------
