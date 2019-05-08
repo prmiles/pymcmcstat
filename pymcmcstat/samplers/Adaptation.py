@@ -32,7 +32,8 @@ class Adaptation:
         self.last_index_since_adaptation = 0
 
     # -------------------------------------------
-    def run_adaptation(self, covariance, options, isimu, iiadapt, rejected, chain, chainind, u, npar, alpha):
+    def run_adaptation(self, covariance, options, isimu, iiadapt,
+                       rejected, chain, chainind, u, npar, alpha):
         '''
         Run adaptation step
 
@@ -123,7 +124,8 @@ def unpack_simulation_options(options):
     qcov_adjust = options.qcov_adjust
     doram = options.doram
     verbosity = options.verbosity
-    return burnintime, burnin_scale, ntry, drscale, alphatarget, etaparam, qcov_adjust, doram, verbosity
+    return (burnintime, burnin_scale, ntry, drscale, alphatarget,
+            etaparam, qcov_adjust, doram, verbosity)
 
 
 # --------------------------------------------
@@ -153,7 +155,8 @@ def unpack_covariance_settings(covariance):
     no_adapt_index = covariance._no_adapt_index
     qcov_scale = covariance._qcov_scale
     qcov = covariance._qcov
-    return last_index_since_adaptation, R, oldcovchain, oldmeanchain, oldwsum, no_adapt_index, qcov_scale, qcov
+    return (last_index_since_adaptation, R, oldcovchain, oldmeanchain,
+            oldwsum, no_adapt_index, qcov_scale, qcov)
 
 
 # --------------------------------------------
@@ -173,7 +176,8 @@ def below_burnin_threshold(rejected, iiadapt, R, burnin_scale, verbosity):
     '''
     # during burnin no adaptation, just scaling down
     if rejected['in_adaptation_interval']*(iiadapt**(-1)) > 0.95:
-        message(verbosity, 2, str(' (burnin/down) {}'.format(rejected['in_adaptation_interval']*(iiadapt**(-1))*100)))
+        message(verbosity, 2, str(' (burnin/down) {}'.format(
+                rejected['in_adaptation_interval']*(iiadapt**(-1))*100)))
         R = R*(burnin_scale**(-1))
     elif rejected['in_adaptation_interval']*(iiadapt**(-1)) < 0.05:
         message(verbosity, 2, str(' (burnin/up) {}'.format(
@@ -215,8 +219,8 @@ def update_covariance_mean_sum(x, w, oldcov, oldmean, oldwsum, oldR=None):
                 Rin, xin = setup_cholupdate(R=R, oldwsum=oldwsum,
                                             wsum=wsum, oldmean=oldmean, xi=xi)
                 R = cholupdate(Rin, xin)
-            xcov = (((oldwsum-1)*((wsum + oldwsum - 1)**(-1)))*oldcov + (wsum*oldwsum*((wsum
-                    + oldwsum-1)**(-1))) * ((wsum + oldwsum)**(-1)) * (
+            xcov = (((oldwsum - 1)*((wsum + oldwsum - 1)**(-1)))*oldcov + (wsum*oldwsum*((wsum
+                    + oldwsum - 1)**(-1))) * ((wsum + oldwsum)**(-1)) * (
                 np.dot((xi-oldmean).reshape(p, 1), (xi-oldmean).reshape(1, p))))
             wsum = wsum + oldwsum
             oldcov = xcov
@@ -278,7 +282,8 @@ def initialize_covariance_mean_sum(x, w):
             for jj in range(0, ii+1):
                 term1 = x[:, ii] - xmean[ii]
                 term2 = x[:, jj] - xmean[jj]
-                xcov[ii, jj] = np.dot(term1.transpose(), ((term2)*w)*((wsum-1)**(-1)))
+                xcov[ii, jj] = np.dot(
+                        term1.transpose(), ((term2)*w)*((wsum-1)**(-1)))
                 if ii != jj:
                     xcov[jj, ii] = xcov[ii, jj]
     return xcov, xmean, wsum
@@ -300,8 +305,9 @@ def setup_cholupdate(R, oldwsum, wsum, oldmean, xi):
         * **Rin** (:class:`~numpy.ndarray`): Scaled Cholesky decomposition matrix
         * **xin** (:class:`~numpy.ndarray`): Updated mean chain values for Cholesky function
     '''
-    Rin = np.sqrt((oldwsum-1)*((wsum+oldwsum-1)**(-1)))*R
-    xin = (xi - oldmean).transpose()*np.sqrt(((wsum*oldwsum)*((wsum+oldwsum-1)**(-1))*((wsum+oldwsum)**(-1))))
+    Rin = np.sqrt((oldwsum - 1)*((wsum + oldwsum - 1)**(-1)))*R
+    xin = (xi - oldmean).transpose()*np.sqrt(
+            ((wsum*oldwsum)*((wsum+oldwsum - 1)**(-1))*((wsum + oldwsum)**(-1))))
     return Rin, xin
 
 
@@ -352,7 +358,8 @@ def update_cov_via_ram(u, isimu, etaparam, npar, alphatarget, alpha, R):
     '''
     uu = u*(np.linalg.norm(u)**(-1))
     eta = (isimu**(etaparam))**(-1)
-    ram = np.eye(npar) + eta*(min(1.0, alpha) - alphatarget)*(np.dot(uu.transpose(), uu))
+    ram = np.eye(npar) + eta*(
+            np.min([1.0, alpha]) - alphatarget)*(np.dot(uu.transpose(), uu))
     upcov = np.dot(np.dot(R.transpose(), ram), R)
     return upcov
 
@@ -377,7 +384,8 @@ def update_cov_from_covchain(covchain, qcov, no_adapt_index):
 
 
 # --------------------------------------------
-def check_for_singular_cov_matrix(upcov, R, npar, qcov_adjust, qcov_scale, rejected, iiadapt, verbosity):
+def check_for_singular_cov_matrix(upcov, R, npar, qcov_adjust,
+                                  qcov_scale, rejected, iiadapt, verbosity):
     '''
     Check if singular covariance matrix
 
@@ -439,7 +447,8 @@ def scale_cholesky_decomposition(Ra, qcov_scale):
 
 
 # --------------------------------------------
-def adjust_cov_matrix(upcov, R, npar, qcov_adjust, qcov_scale, rejected, iiadapt, verbosity):
+def adjust_cov_matrix(upcov, R, npar, qcov_adjust,
+                      qcov_scale, rejected, iiadapt, verbosity):
     '''
     Adjust covariance matrix if found to be singular.
 
