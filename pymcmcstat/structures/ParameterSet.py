@@ -20,14 +20,8 @@ class ParameterSet:
         * **sigma2** (:class:`~numpy.ndarray`): Observation errors.
         * **alpha** (:py:class:`float`): Result from evaluating likelihood function.
     '''
-    def __init__(self, theta=None, ss=None,
-                 sigma2=None, alpha=None, like=None,
-                 prior=None, logprior=None, loglike=None):
+    def __init__(self, theta=None, alpha=None, like=None, prior=None):
         self.theta = theta
-        self.ss = ss
-        self.sigma2 = sigma2
         self.alpha = alpha
         self.like = like
-        self.loglike = loglike
         self.prior = prior
-        self.logprior = logprior
