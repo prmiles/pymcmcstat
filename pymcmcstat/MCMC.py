@@ -354,13 +354,16 @@ class MCMC:
                 # reset local rejection index
                 self.__rejected['in_adaptation_interval'] = 0
             # RUN CUSTOM SAMPLERS
-            self.custom_sampler_output = []
-            for cs in self.custom_samplers:
-                self.custom_sampler_output.append(
-                        cs.update(
-                                accept=accept,
-                                isimu=isimu,
-                                current_set=self.__old_set))
+            if len(self.custom_samplers) > 0:
+                self.custom_sampler_output = []
+                for cs in self.custom_samplers:
+                    self.custom_sampler_output.append(
+                            cs.update(
+                                    accept=accept,
+                                    isimu=isimu,
+                                    current_set=self.__old_set))
+            else:
+                self.custom_sampler_output = None
             # SAVE TO LOG FILE
             if savecount == self.simulation_options.savesize:
                 savecount, lastbin = self.__save_to_log_file(
@@ -616,10 +619,12 @@ class MCMC:
                     nsos=len(self.__initial_set.like['ssq']))
             self.__initial_set.like['sigma2'] = self.model_settings.sigma2
         # Setup additional custom samplers
-        self.custom_sampler_output = []
         if len(self.custom_samplers) > 0:
+            self.custom_sampler_output = []
             for ii, cs in enumerate(self.custom_samplers):
                 self.custom_sampler_output.append(cs.setup())
+        else:
+            self.custom_sampler_output = None
 
     # --------------------------------------------------------
     def display_current_mcmc_settings(self):
