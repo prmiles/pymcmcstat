@@ -14,6 +14,7 @@
 #
 import os
 import sys
+import re
 sys.path.insert(0, os.path.abspath('../..'))
 #sys.path.insert(0, os.path.abspath('../../pymcmcstat'))
 
@@ -24,13 +25,23 @@ copyright = '2018, Paul Miles'
 author = 'Paul Miles'
 
 # The short X.Y version
-with open('../../pymcmcstat/__version__.py','r') as f:
-    version = f.read()
-    release = version
+def get_version():
+    VERSIONFILE = os.path.join('..','..', 'pymcmcstat', '__init__.py')
+    with open(VERSIONFILE, 'rt') as f:
+        lines = f.readlines()
+    vgx = '^__version__ = \"\d+\.\d+\.\d.*\"'
+    for line in lines:
+        mo = re.search(vgx, line, re.M)
+        if mo:
+            return mo.group().split('"')[1]
+    raise RuntimeError('Unable to find version in %s.' % (VERSIONFILE,))
+#with open('../../pymcmcstat/__init__.py','r') as f:
+#    version = f.read()
+release = get_version()
 #version = ''
 # The full version, including alpha/beta/rc tags
 #release = 'v1.4.0'
-print(version)
+print(release)
 
 # -- General configuration ---------------------------------------------------
 

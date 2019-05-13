@@ -37,7 +37,11 @@ Getting Started
 
 - `Tutorial notebooks <https://nbviewer.jupyter.org/github/prmiles/notebooks/tree/master/pymcmcstat/index.ipynb>`_
 - `Documentation <http://pymcmcstat.readthedocs.io/>`_
-- `Release history <https://github.com/prmiles/pymcmcstat/blob/master/CHANGELOG.rst>`_
+- `Release history`_
+- `Contributing guidelines`_
+
+.. _Release history: CHANGELOG.rst
+.. _Contributing guidelines: CONTRIBUTING.rst
 
 License
 =======
