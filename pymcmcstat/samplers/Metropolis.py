@@ -93,74 +93,74 @@ class Metropolis:
                                   alpha=alpha)
         return accept, newset, outbound, npar_sample_from_normal
 
-    # --------------------------------------------------------
-    @classmethod
-    def unpack_set(cls, parset):
-        '''
-        Unpack parameter set
+#    # --------------------------------------------------------
+#    @classmethod
+#    def unpack_set(cls, parset):
+#        '''
+#        Unpack parameter set
+#
+#        Args:
+#            * **parset** (:class:`~.ParameterSet`): Parameter set to unpack
+#
+#        Returns:
+#            * (:class:`:py:class:dict`): Dictionary of parset
+#        '''
+#        print('This code is deprecated as of v1.8.0.')
+#        return parset.__dict__
 
-        Args:
-            * **parset** (:class:`~.ParameterSet`): Parameter set to unpack
-
-        Returns:
-            * (:class:`:py:class:dict`): Dictionary of parset
-        '''
-        print('This code is deprecated as of v1.8.0.')
-        return parset.__dict__
-
-    # --------------------------------------------------------
-    @classmethod
-    def evaluate_likelihood_function(cls, ss1, ss2, sigma2, newprior, oldprior):
-        '''
-        Calculate acceptance ratio:
-
-        .. math::
-
-            \\alpha = \\exp\\Big[-0.5\\Big(\\sum\\Big(\\frac{ SS_{q^*} \
-            - SS_{q^{k-1}} }{ \\sigma_{k-1}^2 }\\Big) + p_1 - p_2\\Big)\\Big]
-
-        This is equivalent to calculating the acceptance ratio:
-
-        .. math::
-
-            \\alpha = \\min\\Big[1, \\frac{\\mathcal{L}(\\nu_{obs}|q^*, \
-            \\sigma_{k-1}^2)\\pi_0(q^*)}{\\mathcal{L}(\\nu_{obs}|q^{k-1}, \
-            \\sigma_{k-1}^2)\\pi_0(q^{k-1})}\\Big]
-
-        where the Gaussian likelihood function is
-
-        .. math::
-
-            \\mathcal{L}(\\nu_{obs}|q, \\sigma) = \
-            \\exp\\Big(-\\frac{SS_q}{2\\sigma}\\Big)
-
-        and Gaussian prior function is
-
-        .. math::
-
-            \\pi_0(q) = \\exp \
-            \\Big[-\\frac{1}{2}\\Big(\\frac{q - \
-            \\mu_0}{\\sigma_0}\\Big)^2\\Big].
-
-        For more details regarding the prior function, please refer to the
-        :class:`~.PriorFunction` class.
-
-        .. note::
-            The default behavior of the package is to use Gaussian
-            likelihood and prior functions (as of v1.7.0).  Future releases
-            will expand the functionality to allow for alternative likelihood
-            and prior definitions.
-
-        Args:
-            * **ss1** (:class:`~numpy.ndarray`): SS error from proposed candidate, :math:`q^*`
-            * **ss2** (:class:`~numpy.ndarray`): SS error from previous sample point, :math:`q^{k-1}`
-            * **sigma2** (:class:`~numpy.ndarray`): Error variance estimate \
-            from previous sample point, :math:`\\sigma_{k-1}^2`
-            * **newprior** (:class:`~numpy.ndarray`): Prior for proposal candidate
-            * **oldprior** (:class:`~numpy.ndarray`): Prior for previous sample
-
-        Returns:
-            * **alpha** (:py:class:`float`): Result of likelihood function
-        '''
-        alpha = np.exp(-0.5*(sum((ss1 - ss2)*(sigma2**(-1))) + newprior - oldprior))
-        return sum(alpha)
+#    # --------------------------------------------------------
+#    @classmethod
+#    def evaluate_likelihood_function(cls, ss1, ss2, sigma2, newprior, oldprior):
+#        '''
+#        Calculate acceptance ratio:
+#
+#        .. math::
+#
+#            \\alpha = \\exp\\Big[-0.5\\Big(\\sum\\Big(\\frac{ SS_{q^*} \
+#            - SS_{q^{k-1}} }{ \\sigma_{k-1}^2 }\\Big) + p_1 - p_2\\Big)\\Big]
+#
+#        This is equivalent to calculating the acceptance ratio:
+#
+#        .. math::
+#
+#            \\alpha = \\min\\Big[1, \\frac{\\mathcal{L}(\\nu_{obs}|q^*, \
+#            \\sigma_{k-1}^2)\\pi_0(q^*)}{\\mathcal{L}(\\nu_{obs}|q^{k-1}, \
+#            \\sigma_{k-1}^2)\\pi_0(q^{k-1})}\\Big]
+#
+#        where the Gaussian likelihood function is
+#
+#        .. math::
+#
+#            \\mathcal{L}(\\nu_{obs}|q, \\sigma) = \
+#            \\exp\\Big(-\\frac{SS_q}{2\\sigma}\\Big)
+#
+#        and Gaussian prior function is
+#
+#        .. math::
+#
+#            \\pi_0(q) = \\exp \
+#            \\Big[-\\frac{1}{2}\\Big(\\frac{q - \
+#            \\mu_0}{\\sigma_0}\\Big)^2\\Big].
+#
+#        For more details regarding the prior function, please refer to the
+#        :class:`~.PriorFunction` class.
+#
+#        .. note::
+#            The default behavior of the package is to use Gaussian
+#            likelihood and prior functions (as of v1.7.0).  Future releases
+#            will expand the functionality to allow for alternative likelihood
+#            and prior definitions.
+#
+#        Args:
+#            * **ss1** (:class:`~numpy.ndarray`): SS error from proposed candidate, :math:`q^*`
+#            * **ss2** (:class:`~numpy.ndarray`): SS error from previous sample point, :math:`q^{k-1}`
+#            * **sigma2** (:class:`~numpy.ndarray`): Error variance estimate \
+#            from previous sample point, :math:`\\sigma_{k-1}^2`
+#            * **newprior** (:class:`~numpy.ndarray`): Prior for proposal candidate
+#            * **oldprior** (:class:`~numpy.ndarray`): Prior for previous sample
+#
+#        Returns:
+#            * **alpha** (:py:class:`float`): Result of likelihood function
+#        '''
+#        alpha = np.exp(-0.5*(sum((ss1 - ss2)*(sigma2**(-1))) + newprior - oldprior))
+#        return sum(alpha)
