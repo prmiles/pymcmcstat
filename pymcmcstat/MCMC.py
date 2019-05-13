@@ -184,10 +184,6 @@ class MCMC:
         # define likelihood object
         self.__like_object = LikelihoodFunction(
                 self.model_settings, self.data, self.parameters)
-#        # ---------------------
-#        # define sum-of-squares object
-#        self.__sos_object = SumOfSquares(
-#                self.model_settings, self.data, self.parameters)
         # ---------------------
         # define prior object
         self.__prior_object = PriorFunction(
