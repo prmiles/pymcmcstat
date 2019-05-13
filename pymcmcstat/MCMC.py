@@ -23,7 +23,7 @@ from .settings.ModelParameters import ModelParameters
 from .settings.SimulationOptions import SimulationOptions
 
 from .procedures.CovarianceProcedures import CovarianceProcedures
-from .procedures.SumOfSquares import SumOfSquares
+#from .procedures.SumOfSquares import SumOfSquares
 from .procedures.PriorFunction import PriorFunction
 from .procedures.ErrorVarianceEstimator import ErrorVarianceEstimator
 from .procedures.LikelihoodFunction import LikelihoodFunction
