@@ -38,7 +38,7 @@ class ErrorVarianceEstimator:
         self.status = 'updating'
         self.counter += 1
         sigma2 = self.update_error_variance(
-                current_set.like['ssq'], self.model)
+                sos=current_set.like['ssq'], model=self.model)
         self.sigma2[self.counter, :] = sigma2.reshape(sigma2.size, )
         return sigma2
 

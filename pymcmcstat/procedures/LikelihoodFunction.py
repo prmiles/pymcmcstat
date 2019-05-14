@@ -53,12 +53,13 @@ class LikelihoodFunction:
             \\exp\\Big(-\\frac{SS_q}{2\\sigma}\\Big)
         '''
         if custom is not None:
-            sigma2 = custom[0]
+            sigma2 = custom[-1]
         else:
             sigma2 = 1.0
         rawssq = self.evaluate_sos_function(q, data, custom=custom)
         # check if SOS is array and sum
         ssq = self._check_sos(rawssq)
+#        print('ssq = {}\n sigma2 = {},\n ll = {}'.format(ssq, sigma2, ssq.sum()/sigma2))
         return dict(
                 like=np.exp(-1./2 * ssq.sum()/sigma2),
                 loglike=-1./2 * ssq.sum()/sigma2,

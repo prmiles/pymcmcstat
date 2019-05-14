@@ -448,7 +448,7 @@ class MCMC:
         self.simulation_results.add_chain(chain=self.__chain)
         if self.simulation_options.updatesigma is True:
             self.simulation_results.add_s2chain(
-                    s2chain=self.custom_samplers[0].sigma2)
+                    s2chain=self.custom_samplers[-1].sigma2)
         if self.__like_object.type == 'default':
             self.simulation_results.add_sschain(sschain=self.__sschain)
 
