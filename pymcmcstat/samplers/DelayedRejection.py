@@ -130,10 +130,10 @@ class DelayedRejection:
         # recursively compute past alphas
         a1 = 1.0  # initialize
         a2 = 1.0  # initialize
-        for kk in range(0, stage-1):
-            tmp1 = self.alphafun(trypath[0:(kk+2)], invR)
+        for kk in range(0, stage - 1):
+            tmp1 = self.alphafun(trypath[0:(kk + 2)], invR)
             a1 = a1*(1 - tmp1)
-            tmp2 = self.alphafun(trypath[stage:stage-kk-2:-1], invR)
+            tmp2 = self.alphafun(trypath[stage:stage - kk - 2:-1], invR)
             a2 = a2*(1 - tmp2)
             if a2 == 0:  # we will come back with prob 1
                 alpha = np.zeros(1)
