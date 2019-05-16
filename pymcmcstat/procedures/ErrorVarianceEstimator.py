@@ -79,11 +79,11 @@ class ErrorVarianceEstimator:
         nsos = len(sos)
 
         for jj in range(0, nsos):
-            sigma2[jj] = (self.gammar(1, 1, 0.5*(N0[jj]+N[jj]),
-                          2*((N0[jj]*S20[jj]+sos[jj])**(-1))))**(-1)
+            sigma2[jj] = (self.gammar(1, 1, 0.5*(N0[jj] + N[jj]),
+                          2*((N0[jj]*S20[jj] + sos[jj])**(-1))))**(-1)
         return sigma2
 
-    def gammar(self, m, n, a, b=1):
+    def gammar(self, m, n, a, b=1.0):
         '''
         Random deviates from gamma distribution.
 
@@ -107,7 +107,7 @@ class ErrorVarianceEstimator:
         y = self.gammar_mt(m, n, a, b)
         return y
 
-    def gammar_mt(self, m, n, a, b=1):
+    def gammar_mt(self, m, n, a, b=1.0):
         '''
         Wrapper routine for calculating random deviates from gamma distribution
         using method of Marsaglia and Tsang (2000) :cite:`marsaglia2000simple`.
@@ -124,7 +124,7 @@ class ErrorVarianceEstimator:
                 y[ii, jj] = self._gammar_mt1(a=a, b=b)
         return y
 
-    def _gammar_mt1(self, a, b=1):
+    def _gammar_mt1(self, a, b=1.0):
         '''
         Calculates random deviate from gamma distribution using method of
         Marsaglia and Tsang (2000).

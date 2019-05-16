@@ -354,6 +354,7 @@ class MCMC:
                 # reset local rejection index
                 self.__rejected['in_adaptation_interval'] = 0
             # RUN CUSTOM SAMPLERS
+#            print('ssq = {}'.format(self.__old_set.like['ssq']))
             if len(self.custom_samplers) > 0:
                 self.custom_sampler_output = []
                 for cs in self.custom_samplers:
