@@ -6,3 +6,4 @@
 *demo_MCMC.py
 *doc/build/
 *.DS_Store
+*.ipynb_checkpoints/
