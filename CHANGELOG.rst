@@ -1,6 +1,14 @@
 Changelog
 =========
 
+v1.7.1 (May 3, 2019)
+---------------------
+.. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.2660145.svg
+   :target: https://doi.org/10.5281/zenodo.2660145
+   
+- Fixed bug #41.
+- Updated how version attribute is defined in package and referenced in setup.py and documentation.
+
 v1.7.0 (April 5, 2019)
 ----------------------
 .. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.2630882.svg
