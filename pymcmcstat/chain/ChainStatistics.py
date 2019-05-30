@@ -480,6 +480,7 @@ def get_parameter_names(nparam, results):
         names = extend_names_to_match_nparam(names, nparam)
     return names
 
+
 def _display_stat_defs():
     print('Definition for items displayed:')
     print('"mean": Average value of parameter chains.')
