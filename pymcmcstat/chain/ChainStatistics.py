@@ -18,7 +18,7 @@ from .ChainProcessing import generate_chain_list
 
 
 # display chain statistics
-def chainstats(chain=None, results=None, returnstats=False):
+def chainstats(chain=None, results=None, returnstats=False, display_details=False):
     '''
     Calculate chain statistics.
 
@@ -53,6 +53,9 @@ def chainstats(chain=None, results=None, returnstats=False):
         tau, m = integrated_autocorrelation_time(chain)
         # print statistics
         print_chain_statistics(names, meanii, stdii, mcerr, tau, p)
+        if display_details is True:
+            _display_stat_defs()
+        print(30*'=')
         # print acceptance rate
         print_chain_acceptance_info(chain, results=results)
         # assign stats to dictionary
@@ -476,3 +479,12 @@ def get_parameter_names(nparam, results):
         names = results['names']
         names = extend_names_to_match_nparam(names, nparam)
     return names
+
+def _display_stat_defs():
+    print('Definition for items displayed:')
+    print('"mean": Average value of parameter chains.')
+    print('"std": Standard deviation of parameter chains.')
+    print('"MC_err": Normalized batch mean standard deviation.')
+    print('"tau": Integrated autocorrelation time.')
+    print('"geweke": Geweke\'s convergence diagnostic.')
+    print(30*'-')
