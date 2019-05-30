@@ -35,7 +35,8 @@ def plot_density_panel(chains, names=None, hist_on=False, figsizeinches=None):
         * **figsizeinches** (:py:class:`list`): Specify figure size in inches [Width, Height]
     '''
     nsimu, nparam = chains.shape  # number of rows, number of columns
-    ns1, ns2, names, figsizeinches = setup_plot_features(nparam=nparam, names=names, figsizeinches=figsizeinches)
+    ns1, ns2, names, figsizeinches = setup_plot_features(
+            nparam=nparam, names=names, figsizeinches=figsizeinches)
     f = plt.figure(dpi=100, figsize=(figsizeinches))  # initialize figure
     for ii in range(nparam):
         # define chain
@@ -68,7 +69,8 @@ def plot_histogram_panel(chains, names=None, figsizeinches=None):
         * **figsizeinches** (:py:class:`list`): Specify figure size in inches [Width, Height]
     """
     nsimu, nparam = chains.shape  # number of rows, number of columns
-    ns1, ns2, names, figsizeinches = setup_plot_features(nparam=nparam, names=names, figsizeinches=figsizeinches)
+    ns1, ns2, names, figsizeinches = setup_plot_features(
+            nparam=nparam, names=names, figsizeinches=figsizeinches)
     f = plt.figure(dpi=100, figsize=(figsizeinches))  # initialize figure
     for ii in range(nparam):
         # define chain
