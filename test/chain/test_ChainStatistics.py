@@ -24,7 +24,7 @@ class Chainstats_Eval(unittest.TestCase):
 
     def test_cs_eval_with_return(self):
         stats = CS.chainstats(chain=chain, returnstats=True)
-        self.assertTrue(isinstance(stats,dict))
+        self.assertTrue(isinstance(stats, dict))
 
     def test_cs_eval_with_no_return(self):
         stats = CS.chainstats(chain=chain, returnstats=False)
@@ -33,6 +33,28 @@ class Chainstats_Eval(unittest.TestCase):
     def test_cs_eval_with_no_chain(self):
         stats = CS.chainstats(chain=None, returnstats=True)
         self.assertTrue(isinstance(stats, str))
+
+    def test_string_display(self):
+        capturedOutput = io.StringIO()                  # Create StringIO object
+        sys.stdout = capturedOutput                     #  and redirect stdout.
+        CS.chainstats(chain)
+        sys.stdout = sys.__stdout__  # Reset redirect.
+        self.assertTrue(isinstance(capturedOutput.getvalue(), str),
+                        msg='Caputured string')
+        self.assertFalse('Results dictionary' in capturedOutput.getvalue(),
+                        msg='Expect results dictionary not included')
+        self.assertFalse('Definition for items displayed:' in capturedOutput.getvalue())
+
+    def test_string_display_w_details(self):
+        capturedOutput = io.StringIO()                  # Create StringIO object
+        sys.stdout = capturedOutput                     #  and redirect stdout.
+        CS.chainstats(chain, display_details=True)
+        sys.stdout = sys.__stdout__  # Reset redirect.
+        self.assertTrue(isinstance(capturedOutput.getvalue(), str),
+                        msg='Caputured string')
+        self.assertFalse('Results dictionary' in capturedOutput.getvalue(),
+                        msg='Expect results dictionary not included')
+        self.assertTrue('Definition for items displayed:' in capturedOutput.getvalue())
 
 
 # --------------------------
