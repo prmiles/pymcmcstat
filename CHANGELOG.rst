@@ -4,7 +4,7 @@ Changelog
 v1.8.0 ()
 ----------------------
 - Added acceptance rate display feature when calling chain statistics
-- User can specify `skip` in pairwise correlation plots in order to thin chain.
+- User can specify `skip` or `maxpoints` in pairwise correlation and chain panel plots in order to thin chain.
 
 v1.7.0 (April 5, 2019)
 ----------------------

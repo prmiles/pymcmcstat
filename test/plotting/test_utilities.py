@@ -285,6 +285,7 @@ class Empirical_Quantiles_Test(unittest.TestCase):
         
 # --------------------------
 class CheckSettings(unittest.TestCase):
+
     def test_settings_with_user_none(self):
         user_settings = None
         default_settings = dict(a = False, linewidth = 3, marker = dict(markersize = 5, color = 'g'))
@@ -314,3 +315,41 @@ class CheckSettings(unittest.TestCase):
         self.assertEqual(settings['marker']['color'], user_settings['marker']['color'], msg = 'Expect user to overwrite')
         self.assertEqual(settings['marker']['markersize'], default_settings['marker']['markersize'], msg = 'Expect default to persist')
         self.assertEqual(settings['linestyle'], user_settings['linestyle'], msg = 'Expect user setting to be added')
+
+
+# --------------------------
+class SetupSubsample(unittest.TestCase):
+
+    def test_max_lt_nsimu(self):
+        skip = 1
+        maxpoints = 10
+        nsimu = 100
+        inds = utilities.setup_subsample(skip, maxpoints, nsimu)
+        self.assertTrue(isinstance(inds, np.ndarray),
+                        msg='Expect numpy array')
+        self.assertEqual(inds.shape, (10,), msg='Expect (10,)')
+
+    def test_max_gt_nsimu(self):
+        skip = 1
+        maxpoints = 1000
+        nsimu = 100
+        inds = utilities.setup_subsample(skip, maxpoints, nsimu)
+        self.assertTrue(isinstance(inds, np.ndarray),
+                        msg='Expect numpy array')
+        self.assertEqual(inds.shape, (100,), msg='Expect (100,)')
+        skip = 3
+        maxpoints = 1000
+        nsimu = 100
+        inds = utilities.setup_subsample(skip, maxpoints, nsimu)
+        self.assertTrue(isinstance(inds, np.ndarray),
+                        msg='Expect numpy array')
+        self.assertEqual(inds.shape, (34,), msg='Expect (34,)')
+
+    def test_max_eq_nsimu(self):
+        skip = 1
+        maxpoints = 100
+        nsimu = 100
+        inds = utilities.setup_subsample(skip, maxpoints, nsimu)
+        self.assertTrue(isinstance(inds, np.ndarray),
+                        msg='Expect numpy array')
+        self.assertEqual(inds.shape, (100,), msg='Expect (100,)')
