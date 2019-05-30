@@ -394,3 +394,29 @@ def check_settings(default_settings, user_settings=None):
         if uo not in options:
             settings[uo] = user_settings[uo]
     return settings
+
+
+def setup_subsample(skip, maxpoints, nsimu):
+    '''
+    Setup subsampling from posterior.
+
+    When plotting the sampling chain, it is often beneficial to subsample
+    in order to avoid to dense of plots.  This routine determines the
+    appropriate step size based on the size of the chain (nsimu) and maximum
+    points allowed to plot (maxpoints).  The function checks if the
+    size of the chain exceeds the maximum number of points allowed in the
+    plot.  If yes, skip is defined such that every the max number of points
+    are used and sampled evenly from the start to end of the chain.  Otherwise
+    the value of skip is return as defined by the user.  A subsample index
+    is then generated based on the value of skip and the number of simulations.
+
+    Args:
+        * **skip** (:py:class:`int`): User defined skip value.
+        * **maxpoints** (:py:class:`int`): Maximum points allowed in each plot.
+
+    Returns:
+        * (:py:class:`int`): Skip value.
+    '''
+    if nsimu > maxpoints:
+        skip = int(np.floor(nsimu/maxpoints))
+    return np.arange(0, nsimu, skip)
