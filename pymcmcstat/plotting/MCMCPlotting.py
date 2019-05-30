@@ -8,13 +8,11 @@ Created on Wed Jan 31 12:54:16 2018
 
 # import required packages
 from __future__ import division
-import math
 import matplotlib.pyplot as plt
 from pylab import hist
 from .utilities import generate_names, setup_plot_features, make_x_grid
 from .utilities import setup_subsample
 import warnings
-import numpy as np
 
 try:
     from statsmodels.nonparametric.kernel_density import KDEMultivariate
