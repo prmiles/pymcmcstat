@@ -13,6 +13,7 @@ import matplotlib.pyplot as plt
 from pylab import hist
 from .utilities import generate_names, setup_plot_features, make_x_grid
 import warnings
+import numpy as np
 
 try:
     from statsmodels.nonparametric.kernel_density import KDEMultivariate
@@ -114,7 +115,8 @@ def plot_chain_panel(chains, names=None, figsizeinches=None, maxpoints=500):
 
 
 # --------------------------------------------
-def plot_pairwise_correlation_panel(chains, names=None, figsizeinches=None, skip=1):
+def plot_pairwise_correlation_panel(chains, names=None, figsizeinches=None,
+                                    skip=1):
     """
     Plot pairwise correlation for each parameter
 
@@ -125,19 +127,17 @@ def plot_pairwise_correlation_panel(chains, names=None, figsizeinches=None, skip
         * **skip** (:py:class:`int`): Indicates step size to be used when plotting elements from the chain
     """
     nsimu, nparam = chains.shape  # number of rows, number of columns
-    inds = range(0, nsimu, skip)
+    inds = np.arange(0, nsimu, skip)
     names = generate_names(nparam=nparam, names=names)
     if figsizeinches is None:
         figsizeinches = [7, 5]
     f = plt.figure(dpi=100, figsize=(figsizeinches))  # initialize figure
-    for jj in range(2, nparam+1):
+    for jj in range(2, nparam + 1):
         for ii in range(1, jj):
-            chain1 = chains[inds, ii-1]
-            chain1 = chain1.reshape(nsimu, 1)
-            chain2 = chains[inds, jj-1]
-            chain2 = chain2.reshape(nsimu, 1)
+            chain1 = chains[inds, ii - 1]
+            chain2 = chains[inds, jj - 1]
             # plot density on subplot
-            ax = plt.subplot(nparam-1, nparam-1, (jj-2)*(nparam-1)+ii)
+            ax = plt.subplot(nparam - 1, nparam - 1, (jj - 2)*(nparam - 1)+ii)
             plt.plot(chain1, chain2, '.b')
             # format figure
             if jj != nparam:  # rm xticks
@@ -145,12 +145,12 @@ def plot_pairwise_correlation_panel(chains, names=None, figsizeinches=None, skip
             if ii != 1:  # rm yticks
                 ax.set_yticklabels([])
             if ii == 1:  # add ylabels
-                plt.ylabel(str('{}'.format(names[jj-1])))
+                plt.ylabel(str('{}'.format(names[jj - 1])))
             if ii == jj - 1:
                 if nparam == 2:  # add xlabels
-                    plt.xlabel(str('{}'.format(names[ii-1])))
+                    plt.xlabel(str('{}'.format(names[ii - 1])))
                 else:  # add title
-                    plt.title(str('{}'.format(names[ii-1])))
+                    plt.title(str('{}'.format(names[ii - 1])))
     # adjust figure margins
     plt.tight_layout(rect=[0, 0.03, 1, 0.95], h_pad=1.0)  # adjust spacing
     return f
