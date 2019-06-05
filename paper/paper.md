@@ -17,6 +17,11 @@ bibliography: paper.bib
 ---
 
 # Summary
+Many scientific problems require calibrating a set of model parameters in order to fit a set of data.  Various approaches exist for performing this calibration, but not all of them account for underlying uncertainty within the problem.  Examples of this uncertainty include random noise within experimental measurements as well as errors due to model discrepancy; i.e., missing physics in the model.  A Bayesian framework provides a natural perspective from which to perform model calibration in light of this uncertainty.  To utilize this approach, we make several assumptions regarding the problem.
+
+1. Parameters are treated as random variables with underlying distributions instead of unknown but fixed values.
+2. Observations (data) are expected to be equal to the model response plus idependent and identically distributed random errors: $F^{data}(i) = F(i;q) + \epsilon_i$ where $\epsilon \sim \mathcal{N}(0,\sigma^2)$.
+
 Bayesian inference is a powerful tool for quantifying model input uncertainty, and Markov Chain Monte Carlo (MCMC) methods present a computationally tractable means for constructing posterior distributions for input parameters [@smith2014uncertainty].  A variety of Metropolis algorithms can be used within MCMC.  Ideally, information learned about the posterior distribution as candidate parameters are accepted will be used to update the proposal distribution.  This can be accomplished via a variety of adaptive Metropolis (AM) algorithms [@andrieu2008tutorial, @haario2001adaptive, @roberts2009examples].  In addition to improving the proposal distribution via adaption, it is often advantageous to incorporate delayed rejection (DR) in order to stimulate mixing [@haario2006dram].  Both mechanisms have been demonstrated to significantly improve the performance of MCMC simulations.
 
 In the Python package ``pymcmcstat``, we employ various Metropolis-based algorithms for parameter estimation.  These algorithms include:
