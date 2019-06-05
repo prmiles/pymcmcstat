@@ -28,9 +28,9 @@ In the Python package ``pymcmcstat``, we employ various Metropolis-based algorit
 
 The default program employs 2-stage DRAM; however, it is capable of accomodating $n$-stage DR.  The specific algorithms implemented for AM and DR are outlined in [@haario2001adaptive, @haario2006dram].
 
-The ``pymcmcstat`` package was designed for engineers and scientists interested in using Bayesian methods to quantify model parameter uncertainty.  Furthermore, we had the goal of providing a Python platform for researchers familiar with the MATLAB toolbox (mcmcstat)[https://mjlaine.github.io/mcmcstat/] developed by Marko Laine.  To accommodate a diverse audience, we constructed several tutorials to guide the user through the various stages of setting up a problem, such as defining the data structure, model parameters, and simulation options.  Currently, the package is limited to Gaussian likelihood and prior functions; however, these are still suitable for a wide variety of scientific problems.  
+The ``pymcmcstat`` package was designed for engineers and scientists interested in using Bayesian methods to quantify model parameter uncertainty.  Furthermore, we had the goal of providing a Python platform for researchers familiar with the MATLAB toolbox [mcmcstat](https://mjlaine.github.io/mcmcstat/) developed by Marko Laine.  To accommodate a diverse audience, we constructed several tutorials to guide the user through the various stages of setting up a problem, such as defining the data structure, model parameters, and simulation options.  Currently, the package is limited to Gaussian likelihood and prior functions; however, these are still suitable for a wide variety of scientific problems.  
 
-To the author's knowledge, the package is being used for several scientific projects, including radiation source localization using 3D transport models and fractional-order viscoelasticity models of dielectric elastomers.  The source code for ``pymcmcstat`` has been archived to Zenodo with the linked DOI: [@zenodo]
+To the author's knowledge, the package is being used for several scientific projects, including radiation source localization using 3D transport models and fractional-order viscoelasticity models of dielectric elastomers.  The source code for ``pymcmcstat`` has been archived to Zenodo with the linked DOI [@zenodo].
 
 # Acknowledgements
 
