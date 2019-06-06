@@ -20,7 +20,7 @@ bibliography: paper.bib
 Many scientific problems require calibrating a set of model parameters to fit a set of data.  Various approaches exist for performing this calibration, but not all of them account for underlying uncertainty within the problem.  Examples of this uncertainty include random noise within experimental measurements as well as errors due to model discrepancy; i.e., missing physics in the model.  A Bayesian framework provides a natural perspective from which to perform model calibration to accommodate this uncertainty.  To utilize this approach, we make several assumptions regarding the problem.
 
 1. Parameters ($q$) are treated as random variables with underlying distributions instead of unknown but fixed values.
-2. Observations (data) are expected to be equal to the model response plus idependent and identically distributed random errors: $F^{data}(i) = F(i;q) + \epsilon_i$ where $\epsilon_i \sim \mathcal{N}(0,\sigma^2)$.
+2. Observations $F^{data}(i)$ are expected to be equal to the model response $F(i;q)$ plus independent and identically distributed random errors $\epsilon_i \rightarrow$ $F^{data}(i) = F(i;q) + \epsilon_i$ where $\epsilon_i \sim \mathcal{N}(0,\sigma^2)$.
 
 The goal of the calibration process is to infer the parameters' posterior distributions given a set of observations - $\pi(q|F^{data}(i))$.  Once these parameter distributions are known, the Bayesian approach provides a natural framework in which to consider how this uncertainty propagates and affects model predictions.
 
