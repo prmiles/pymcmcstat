@@ -37,7 +37,7 @@ In the Python package ``pymcmcstat``, we offer several Metropolis-based algorith
 
 The default program employs 2-stage DRAM; however, it is capable of accommodating $n$-stage delayed rejection.  The specific algorithms implemented for adaptive Metropolis and delayed rejection are outlined in [@haario2001adaptive, @haario2006dram].
 
-To the author's knowledge, the package is currently being used for several scientific projects, including radiation source localization using 3D transport models and fractional-order viscoelasticity models of dielectric elastomers.  The source code for ``pymcmcstat`` has been archived to Zenodo with the linked DOI [@zenodo].
+To the author's knowledge, the package is currently being used for several scientific projects, including radiation source localization using 3D transport models and fractional-order viscoelasticity models of dielectric elastomers.
 
 # Acknowledgements
 
