@@ -132,7 +132,7 @@ class Metropolis:
 
         For the Gaussian likelihood and prior, this yields the acceptance ratio
 
-            .. math::
+        .. math::
 
             \\alpha = \\exp\\Big[-0.5\\Big(\\sum\\Big(\\frac{ SS_{q^*} \
             - SS_{q^{k-1}} }{ \\sigma_{k-1}^2 }\\Big) + p_1 - p_2\\Big)\\Big].
