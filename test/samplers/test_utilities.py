@@ -9,10 +9,12 @@ from pymcmcstat.samplers.utilities import sample_candidate_from_gaussian_proposa
 from pymcmcstat.samplers.utilities import is_sample_outside_bounds
 from pymcmcstat.samplers.utilities import acceptance_test
 from pymcmcstat.samplers.utilities import set_outside_bounds
+from pymcmcstat.samplers.utilities import log_posterior_ratio_acceptance_test as lprat
 from pymcmcstat.structures.ParameterSet import ParameterSet
 import unittest
 from mock import patch
 import numpy as np
+
 
 # --------------------------
 class SampleCandidate(unittest.TestCase):
@@ -60,4 +62,20 @@ class SetOutsideBounds(unittest.TestCase):
         self.assertEqual(next_set.alpha, 0, msg = 'next_set.alpha should be 0')
         self.assertEqual(next_set.prior, 0, msg = 'next_set.prior should be 0')
         self.assertEqual(next_set.ss, np.inf, msg = 'next_set.ss should be np.inf')
-        self.assertEqual(outbound, 1, msg = 'outbound should be 1')  
+        self.assertEqual(outbound, 1, msg = 'outbound should be 1')
+
+
+# --------------------------
+class LogPosteriorRatioAcceptanceTest(unittest.TestCase):
+    
+    def test_accept_alpha(self):
+        self.assertEqual(lprat(alpha=0.1), 1,
+                         msg='accept alpha >= 0')
+        self.assertEqual(lprat(alpha=0), 1,
+                         msg='accept alpha >= 0')
+        np.random.seed(0)
+        self.assertEqual(lprat(alpha=np.log(0.4)), 0,
+                         msg='Reject alpha < log(u) (-0.916 < -0.600)')
+        np.random.seed(0)
+        self.assertEqual(lprat(alpha=np.log(0.6)), 1,
+                         msg='Accept alpha > log(u) (-0.511 > -0.600)')
