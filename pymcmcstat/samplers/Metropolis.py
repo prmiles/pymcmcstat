@@ -75,7 +75,7 @@ class Metropolis:
             ss2 = ss  # old ss
             ss1 = sos_object.evaluate_sos_function(newpar, custom=custom)
             # evaluate likelihood
-            alpha = self.evaluate_likelihood_function(ss1, ss2, sigma2, newprior, oldprior)
+            alpha = self.calculate_posterior_ratio(ss1, ss2, sigma2, newprior, oldprior)
             # make acceptance decision
             accept = acceptance_test(alpha)
             # store parameter sets in objects
@@ -105,7 +105,7 @@ class Metropolis:
 
     # --------------------------------------------------------
     @classmethod
-    def evaluate_likelihood_function(cls, ss1, ss2, sigma2, newprior, oldprior):
+    def calculate_posterior_ratio(cls, ss1, ss2, sigma2, newprior, oldprior):
         '''
         Calculate acceptance ratio
 

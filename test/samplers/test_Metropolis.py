@@ -29,7 +29,7 @@ class UnpackSet(unittest.TestCase):
         self.assertDictEqual(CL,NL)
 
 # --------------------------
-class EvaluateLikelihood(unittest.TestCase):
+class CalculatePosteriorRatio(unittest.TestCase):
     @classmethod
     def setup_size_2(cls):
         MA = Metropolis()
@@ -47,33 +47,33 @@ class EvaluateLikelihood(unittest.TestCase):
         newprior = np.array([0.])
         oldprior = np.array([0.])
         sigma2 = np.array([1.])
-        alpha = MA.evaluate_likelihood_function(ss1, ss2, sigma2, newprior, oldprior)
+        alpha = MA.calculate_posterior_ratio(ss1, ss2, sigma2, newprior, oldprior)
         self.assertEqual(alpha.size, 1)
         
     def test_size_of_alpha_for_2d_nsos(self):
         MA, ss1, ss2, newprior, oldprior, sigma2 = self.setup_size_2()
-        alpha = MA.evaluate_likelihood_function(ss1, ss2, sigma2, newprior, oldprior)
+        alpha = MA.calculate_posterior_ratio(ss1, ss2, sigma2, newprior, oldprior)
         self.assertEqual(alpha.size, 1)
         
     def test_likelihood_goes_up(self):
         MA, ss1, ss2, newprior, oldprior, sigma2 = self.setup_size_2()
-        alpha1 = MA.evaluate_likelihood_function(ss1, ss2, sigma2, newprior, oldprior)
+        alpha1 = MA.calculate_posterior_ratio(ss1, ss2, sigma2, newprior, oldprior)
         
         ss3 = np.array([0.4, 0.5])
-        alpha2 = MA.evaluate_likelihood_function(ss3, ss2, sigma2, newprior, oldprior)
+        alpha2 = MA.calculate_posterior_ratio(ss3, ss2, sigma2, newprior, oldprior)
         self.assertTrue(alpha1 < alpha2)
         
     def test_likelihood_goes_down(self):
         MA, ss1, ss2, newprior, oldprior, sigma2 = self.setup_size_2()
-        alpha1 = MA.evaluate_likelihood_function(ss1, ss2, sigma2, newprior, oldprior)
+        alpha1 = MA.calculate_posterior_ratio(ss1, ss2, sigma2, newprior, oldprior)
         
         ss3 = np.array([1.4, 2.5])
-        alpha2 = MA.evaluate_likelihood_function(ss3, ss2, sigma2, newprior, oldprior)
+        alpha2 = MA.calculate_posterior_ratio(ss3, ss2, sigma2, newprior, oldprior)
         self.assertTrue(alpha2 < alpha1)
         
     def test_alpha_value(self):
         MA, ss1, ss2, newprior, oldprior, sigma2 = self.setup_size_2()
-        alpha1 = MA.evaluate_likelihood_function(ss1, ss2, sigma2, newprior, oldprior)
+        alpha1 = MA.calculate_posterior_ratio(ss1, ss2, sigma2, newprior, oldprior)
         self.assertTrue(np.allclose(alpha1, np.array([2.568050833375483])), msg = str('alpha = {}'.format(alpha1)))
                
 # --------------------------
@@ -98,14 +98,14 @@ class RunMetropolisStep(unittest.TestCase):
         self.assertEqual(accept, 0, msg = 'Not accepted because outside bounds')
         
     @patch('pymcmcstat.samplers.Metropolis.is_sample_outside_bounds', return_value = False)
-    @patch('pymcmcstat.samplers.Metropolis.Metropolis.evaluate_likelihood_function', return_value = 1.1)
+    @patch('pymcmcstat.samplers.Metropolis.Metropolis.calculate_posterior_ratio', return_value = 1.1)
     def test_run_step_inside_bounds(self, mock_1, mock_2):
         accept, outbound = self.setup_rms(setup_CL())
         self.assertEqual(outbound, 0, msg = 'outbound set to 0')
         self.assertEqual(accept, 1, msg = 'Accepted because likelihood > 1')
         
     @patch('pymcmcstat.samplers.Metropolis.is_sample_outside_bounds', return_value = False)
-    @patch('pymcmcstat.samplers.Metropolis.Metropolis.evaluate_likelihood_function', return_value = 0.5)
+    @patch('pymcmcstat.samplers.Metropolis.Metropolis.calculate_posterior_ratio', return_value = 0.5)
     @patch('numpy.random.rand', return_value = 0.4)
     def test_run_step_inside_bounds_test_accept(self, mock_1, mock_2, mock_3):
         accept, outbound = self.setup_rms(setup_CL())
@@ -113,7 +113,7 @@ class RunMetropolisStep(unittest.TestCase):
         self.assertEqual(accept, 1, msg = 'Accepted because 0.5 > 0.4')
         
     @patch('pymcmcstat.samplers.Metropolis.is_sample_outside_bounds', return_value = False)
-    @patch('pymcmcstat.samplers.Metropolis.Metropolis.evaluate_likelihood_function', return_value = 0.3)
+    @patch('pymcmcstat.samplers.Metropolis.Metropolis.calculate_posterior_ratio', return_value = 0.3)
     @patch('numpy.random.rand', return_value = 0.4)
     def test_run_step_inside_bounds_test_accept_fail(self, mock_1, mock_2, mock_3):
         accept, outbound = self.setup_rms(setup_CL())
