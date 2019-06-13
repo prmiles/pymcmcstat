@@ -107,14 +107,7 @@ class Metropolis:
     @classmethod
     def evaluate_likelihood_function(cls, ss1, ss2, sigma2, newprior, oldprior):
         '''
-        Calculate acceptance ratio:
-
-        .. math::
-
-            \\alpha = \\exp\\Big[-0.5\\Big(\\sum\\Big(\\frac{ SS_{q^*} \
-            - SS_{q^{k-1}} }{ \\sigma_{k-1}^2 }\\Big) + p_1 - p_2\\Big)\\Big]
-
-        This is equivalent to calculating the acceptance ratio:
+        Calculate acceptance ratio
 
         .. math::
 
@@ -137,12 +130,19 @@ class Metropolis:
             \\Big[-\\frac{1}{2}\\Big(\\frac{q - \
             \\mu_0}{\\sigma_0}\\Big)^2\\Big].
 
+        For the Gaussian likelihood and prior, this yields the acceptance ratio
+
+        .. math::
+
+            \\alpha = \\exp\\Big[-0.5\\Big(\\sum\\Big(\\frac{ SS_{q^*} \
+            - SS_{q^{k-1}} }{ \\sigma_{k-1}^2 }\\Big) + p_1 - p_2\\Big)\\Big].
+
         For more details regarding the prior function, please refer to the
         :class:`~.PriorFunction` class.
 
         .. note::
             The default behavior of the package is to use Gaussian
-            likelihood and prior functions (as of v1.7.0).  Future releases
+            likelihood and prior functions (as of v1.8.0).  Future releases
             will expand the functionality to allow for alternative likelihood
             and prior definitions.
 
