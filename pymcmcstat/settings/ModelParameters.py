@@ -136,7 +136,8 @@ class ModelParameters:
         self._parind, self._adapt, self._no_adapt = self.setup_adaptation_indices(
                 parind=self._parind,
                 adapt=self._adapt)
-        self.npar = len(self._parind)  # append number of parameters to structure
+        # append number of sampling parameters to structure
+        self.npar = len(self._parind)
 
     @classmethod
     def setup_adapting(cls, adapt, sample):
@@ -261,6 +262,22 @@ class ModelParameters:
                     # only change if parind = 1 in params (1 is the default)
                     if self.parameters[kk]['sample'] == 1 or self.parameters[kk]['sample'] is None:
                         self.parameters[kk]['theta0'] = theta[parii]
+
+    # --------------------------
+    def _check_parameter_limits(self):
+        # check maximum parameter value is greater than minimum
+        for ii, (lower, upper) in enumerate(zip(
+                self._lower_limits[np.ix_(self._parind)],
+                self._upper_limits[np.ix_(self._parind)])):
+            if lower <= upper:
+                continue
+            else:
+                # proposed limits are incompatible
+                sys.exit('Proposed limits are incompatible...\n'
+                         + '\tCheck parameter {} - '.format(
+                                 self._names[self._parind[ii]])
+                         + 'Minimum ({}) is not less than maximum ({})'.format(
+                                 lower, upper))
 
     # --------------------------
     def _check_initial_values_wrt_parameter_limits(self):

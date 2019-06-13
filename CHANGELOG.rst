@@ -6,6 +6,7 @@ v1.8.0 ()
 - Added acceptance rate display feature when calling chain statistics
 - User can specify `skip` or `maxpoints` in pairwise correlation and chain panel plots in order to thin chain.
 - User can request item definitions when callings `chainstats`.
+- Resolved #51 by adding method to check if limits are incompatible.  User is provided with more descriptive error message.
 
 v1.7.0 (April 5, 2019)
 ----------------------
