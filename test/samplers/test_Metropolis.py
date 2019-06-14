@@ -77,7 +77,7 @@ class CalculatePosteriorRatio(unittest.TestCase):
         self.assertTrue(np.allclose(alpha1, np.array([2.568050833375483])), msg = str('alpha = {}'.format(alpha1)))
                
 # --------------------------
-def setup_CL(theta = 1.0, ss = 1.0, prior = 0.0, sigma2 = 0.0):
+def setup_CL(theta=1.0, ss=1.0, prior=0.0, sigma2=0.0):
     return {'theta':theta, 'ss': ss, 'prior': prior, 'sigma2': sigma2}
 
 class RunMetropolisStep(unittest.TestCase):
@@ -104,9 +104,13 @@ class RunMetropolisStep(unittest.TestCase):
         self.assertEqual(outbound, 0, msg = 'outbound set to 0')
         self.assertEqual(accept, 1, msg = 'Accepted because likelihood > 1')
         
-    @patch('pymcmcstat.samplers.Metropolis.is_sample_outside_bounds', return_value = False)
-    @patch('pymcmcstat.samplers.Metropolis.Metropolis.calculate_posterior_ratio', return_value = 0.5)
-    @patch('numpy.random.rand', return_value = 0.4)
+    @patch('pymcmcstat.samplers.Metropolis.is_sample_outside_bounds',
+           return_value=False)
+#    @patch('pymcmcstat.samplers.Metropolis.Metropolis.calculate_posterior_ratio', return_value = 0.5)
+    @patch('pymcmcstat.samplers.utilities.calculate_log_posterior_ratio',
+           return_value=0.5)
+    @patch('numpy.random.rand',
+           return_value=0.4)
     def test_run_step_inside_bounds_test_accept(self, mock_1, mock_2, mock_3):
         accept, outbound = self.setup_rms(setup_CL())
         self.assertEqual(outbound, 0, msg = 'outbound set to 0')
