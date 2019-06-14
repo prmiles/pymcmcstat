@@ -10,9 +10,9 @@ import numpy as np
 from ..structures.ParameterSet import ParameterSet
 from .utilities import sample_candidate_from_gaussian_proposal
 from .utilities import is_sample_outside_bounds, set_outside_bounds
-#from .utilities import acceptance_test
 from .utilities import calculate_log_posterior_ratio
 from .utilities import log_posterior_ratio_acceptance_test
+
 
 class Metropolis:
     '''
