@@ -77,10 +77,10 @@ class Metropolis:
             ss1 = sos_object.evaluate_sos_function(newpar, custom=custom)
             # Calculate log-posterior ratio
             alpha = calculate_log_posterior_ratio(
-                    loglikestar=ss1/sigma2,
-                    loglike=ss2/sigma2,
-                    logpriorstar=0.5*newprior,
-                    logprior=0.5*oldprior)
+                    loglikestar=-0.5*ss1/sigma2,
+                    loglike=-0.5*ss2/sigma2,
+                    logpriorstar=-0.5*newprior,
+                    logprior=-0.5*oldprior)
             # make acceptance decision
             accept = log_posterior_ratio_acceptance_test(alpha)
             # store parameter sets in objects
