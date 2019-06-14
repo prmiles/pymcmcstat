@@ -2,7 +2,7 @@ Changelog
 =========
 
 v1.8.0 ()
-----------------------
+---------
 - Added acceptance rate display feature when calling chain statistics
 - User can specify `skip` or `maxpoints` in pairwise correlation and chain panel plots in order to thin chain.
 - User can request item definitions when calling `chainstats`.
@@ -21,7 +21,7 @@ v1.7.0 (April 5, 2019)
 - Added original covariance matrix to results structure for reference.
 
 v1.6.0 (August 31, 2018)
-----------------------
+------------------------
 .. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.1407136.svg
    :target: https://doi.org/10.5281/zenodo.1407136
 

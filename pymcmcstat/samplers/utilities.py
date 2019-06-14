@@ -105,6 +105,7 @@ def set_outside_bounds(next_set):
 def posterior_ratio_acceptance_test(alpha):
     '''
     Run posterior ratio acceptance test
+
     Args:
         * **alpha** (:py:class:`float`): Posterior ratio
     Returns:
@@ -120,6 +121,7 @@ def posterior_ratio_acceptance_test(alpha):
 def log_posterior_ratio_acceptance_test(alpha):
     '''
     Run log posterior ratio acceptance test
+
     Args:
         * **alpha** (:py:class:`float`): Log posterior ratio
     Returns:
@@ -149,7 +151,7 @@ def calculate_log_posterior_ratio(loglikestar, loglike,
 
     .. note::
         The default behavior of the package is to use Gaussian
-        likelihood and prior functions (as of v1.7.0).  Future releases
+        likelihood and prior functions (as of v1.8.0).  Future releases
         will expand the functionality to allow for alternative likelihood
         and prior definitions.
 
