@@ -206,6 +206,7 @@ def log_posterior_ratio(x1, x2):
     Returns:
         * **zq** (:py:class:`float`): Logarithm of posterior ratio.
     '''
+    print('This function is deprecated as of v1.8.0')
     zq = -0.5*(sum((x2.ss*(x2.sigma2**(-1.0)) - x1.ss*(x1.sigma2**(-1.0)))) + x2.prior - x1.prior)
     return sum(zq)
 
