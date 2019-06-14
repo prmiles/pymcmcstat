@@ -130,40 +130,40 @@ def log_posterior_ratio_acceptance_test(alpha):
         return False
 
 
-# -------------------------------------------
-def calculate_posterior_ratio(likestar, like,
-                               priorstar, prior):
-    '''
-    Calculate posterior ratio:
-
-    .. math::
-        \\alpha = \\min\\Big[1, \\frac{\\mathcal{L}(\\nu_{obs}|q^*) \
-        \\pi_0(q^*)}{\\mathcal{L}(\\nu_{obs}|q^{k-1}) \
-        \\pi_0(q^{k-1})}\\Big]
-
-    For more details regarding the prior and likelihood functions,
-    please refer to the :class:`~.PriorFunction` and
-    :class:`~.LikelihoodFunction` class, respectively.
-
-    .. note::
-        The default behavior of the package is to use Gaussian
-        likelihood and prior functions (as of v1.7.0).  Future releases
-        will expand the functionality to allow for alternative likelihood
-        and prior definitions.
-
-    Args:
-        * **likestar** (:py:class:`float`): \
-        Likelihood from proposed candidate, :math:`q^*`
-        * **like** (:py:class:`float`): \
-        Likelihood from previous sample point, :math:`q^{k-1}`
-        * **priorstar** (:py:class:`float`): Prior for proposal candidate
-        * **prior** (:py:class:`float`): Prior for previous sample
-
-    Returns:
-        * **alpha** (:py:class:`float`): Acceptance ratio
-    '''
-    alpha = (likestar * priorstar)/(like * prior)
-    return np.min([1, alpha])
+## -------------------------------------------
+#def calculate_posterior_ratio(likestar, like,
+#                               priorstar, prior):
+#    '''
+#    Calculate posterior ratio:
+#
+#    .. math::
+#        \\alpha = \\min\\Big[1, \\frac{\\mathcal{L}(\\nu_{obs}|q^*) \
+#        \\pi_0(q^*)}{\\mathcal{L}(\\nu_{obs}|q^{k-1}) \
+#        \\pi_0(q^{k-1})}\\Big]
+#
+#    For more details regarding the prior and likelihood functions,
+#    please refer to the :class:`~.PriorFunction` and
+#    :class:`~.LikelihoodFunction` class, respectively.
+#
+#    .. note::
+#        The default behavior of the package is to use Gaussian
+#        likelihood and prior functions (as of v1.7.0).  Future releases
+#        will expand the functionality to allow for alternative likelihood
+#        and prior definitions.
+#
+#    Args:
+#        * **likestar** (:py:class:`float`): \
+#        Likelihood from proposed candidate, :math:`q^*`
+#        * **like** (:py:class:`float`): \
+#        Likelihood from previous sample point, :math:`q^{k-1}`
+#        * **priorstar** (:py:class:`float`): Prior for proposal candidate
+#        * **prior** (:py:class:`float`): Prior for previous sample
+#
+#    Returns:
+#        * **alpha** (:py:class:`float`): Acceptance ratio
+#    '''
+#    alpha = (likestar * priorstar)/(like * prior)
+#    return np.min([1, alpha])
 
 
 # -------------------------------------------
