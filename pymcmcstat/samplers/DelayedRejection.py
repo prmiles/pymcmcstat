@@ -10,9 +10,9 @@ import numpy as np
 from ..structures.ParameterSet import ParameterSet
 from .utilities import sample_candidate_from_gaussian_proposal
 from .utilities import is_sample_outside_bounds, set_outside_bounds
-from .utilities import acceptance_test
+from .utilities import posterior_ratio_acceptance_test
 from .utilities import calculate_log_posterior_ratio
-from .utilities import log_posterior_ratio_acceptance_test
+#from .utilities import log_posterior_ratio_acceptance_test
 
 
 class DelayedRejection:
@@ -72,7 +72,7 @@ class DelayedRejection:
             alpha = self.alphafun(trypath, invR)
             trypath[-1].alpha = alpha  # add propability ratio
             # check results of delayed rejection
-            accept = acceptance_test(alpha=alpha)
+            accept = posterior_ratio_acceptance_test(alpha=alpha)
 #            accept = log_posterior_ratio_acceptance_test(alpha)
             out_set = update_set_based_on_acceptance(accept, old_set=old_set, next_set=next_set)
             self.iacce[itry - 1] += accept  # if accepted, adds 1, if not, adds 0

@@ -73,6 +73,7 @@ def acceptance_test(alpha):
     Returns:
         * **accept** (:py:class:`bool`): False - reject, True - accept
     '''
+    print('This function was deprecated in v1.8.0')
     if alpha >= 1 or alpha > np.random.rand(1, 1):
         accept = True
     else:
