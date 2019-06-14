@@ -82,7 +82,9 @@ class Metropolis:
                     logpriorstar=-0.5*newprior,
                     logprior=-0.5*oldprior)
             # make acceptance decision
+            print(alpha)
             accept = log_posterior_ratio_acceptance_test(alpha)
+            print(accept)
             # store parameter sets in objects
             newset = ParameterSet(theta=newpar, ss=ss1, prior=newprior, sigma2=sigma2, alpha=alpha)
         return accept, newset, outbound, npar_sample_from_normal
