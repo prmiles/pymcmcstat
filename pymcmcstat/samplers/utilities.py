@@ -151,7 +151,7 @@ def calculate_log_posterior_ratio(loglikestar, loglike,
 
     .. note::
         The default behavior of the package is to use Gaussian
-        likelihood and prior functions (as of v1.7.0).  Future releases
+        likelihood and prior functions (as of v1.8.0).  Future releases
         will expand the functionality to allow for alternative likelihood
         and prior definitions.
 
