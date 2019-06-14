@@ -10,6 +10,7 @@ from pymcmcstat.samplers.utilities import is_sample_outside_bounds
 from pymcmcstat.samplers.utilities import acceptance_test
 from pymcmcstat.samplers.utilities import set_outside_bounds
 from pymcmcstat.samplers.utilities import log_posterior_ratio_acceptance_test as lprat
+from pymcmcstat.samplers.utilities import calculate_log_posterior_ratio
 from pymcmcstat.structures.ParameterSet import ParameterSet
 import unittest
 from mock import patch
@@ -79,3 +80,33 @@ class LogPosteriorRatioAcceptanceTest(unittest.TestCase):
         np.random.seed(0)
         self.assertEqual(lprat(alpha=np.log(0.6)), 1,
                          msg='Accept alpha > log(u) (-0.511 > -0.600)')
+
+
+# --------------------------
+class LogPosteriorRatio(unittest.TestCase):
+
+    def test_io(self):
+        alpha = calculate_log_posterior_ratio(
+                loglikestar=-0.5,
+                loglike=-0.4,
+                logpriorstar=-0.5,
+                logprior=-0.5)
+        self.assertAlmostEqual(alpha, -0.1, msg='Expect approx. -0.1')
+
+    def test_gt_zero(self):
+        alpha = calculate_log_posterior_ratio(
+                loglikestar=-0.5,
+                loglike=-1,
+                logpriorstar=0,
+                logprior=0)
+        self.assertTrue(alpha > 0, msg='Expect > 0')
+
+    def test_lt_zero(self):
+        alpha = calculate_log_posterior_ratio(
+                loglikestar=-1,
+                loglike=-0.5,
+                logpriorstar=0,
+                logprior=0)
+        self.assertTrue(alpha < 0, msg='Expect < 0')
+
+
