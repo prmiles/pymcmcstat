@@ -10,7 +10,8 @@ import numpy as np
 from ..structures.ParameterSet import ParameterSet
 from .utilities import sample_candidate_from_gaussian_proposal
 from .utilities import is_sample_outside_bounds, set_outside_bounds
-from .utilities import acceptance_test
+from .utilities import calculate_log_posterior_ratio
+from .utilities import log_posterior_ratio_acceptance_test
 
 
 class Metropolis:
@@ -74,10 +75,14 @@ class Metropolis:
             # calculate sum-of-squares
             ss2 = ss  # old ss
             ss1 = sos_object.evaluate_sos_function(newpar, custom=custom)
-            # evaluate likelihood
-            alpha = self.evaluate_likelihood_function(ss1, ss2, sigma2, newprior, oldprior)
+            # Calculate log-posterior ratio
+            alpha = calculate_log_posterior_ratio(
+                    loglikestar=-0.5*(ss1/sigma2).sum(),
+                    loglike=-0.5*(ss2/sigma2).sum(),
+                    logpriorstar=-0.5*newprior,
+                    logprior=-0.5*oldprior)
             # make acceptance decision
-            accept = acceptance_test(alpha)
+            accept = log_posterior_ratio_acceptance_test(alpha)
             # store parameter sets in objects
             newset = ParameterSet(theta=newpar, ss=ss1, prior=newprior, sigma2=sigma2, alpha=alpha)
         return accept, newset, outbound, npar_sample_from_normal
@@ -105,7 +110,7 @@ class Metropolis:
 
     # --------------------------------------------------------
     @classmethod
-    def evaluate_likelihood_function(cls, ss1, ss2, sigma2, newprior, oldprior):
+    def calculate_posterior_ratio(cls, ss1, ss2, sigma2, newprior, oldprior):
         '''
         Calculate acceptance ratio
 

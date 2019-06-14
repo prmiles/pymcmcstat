@@ -10,7 +10,9 @@ import numpy as np
 from ..structures.ParameterSet import ParameterSet
 from .utilities import sample_candidate_from_gaussian_proposal
 from .utilities import is_sample_outside_bounds, set_outside_bounds
-from .utilities import acceptance_test
+from .utilities import posterior_ratio_acceptance_test
+from .utilities import calculate_log_posterior_ratio
+# from .utilities import log_posterior_ratio_acceptance_test
 
 
 class DelayedRejection:
@@ -70,7 +72,8 @@ class DelayedRejection:
             alpha = self.alphafun(trypath, invR)
             trypath[-1].alpha = alpha  # add propability ratio
             # check results of delayed rejection
-            accept = acceptance_test(alpha=alpha)
+            accept = posterior_ratio_acceptance_test(alpha=alpha)
+#            accept = log_posterior_ratio_acceptance_test(alpha)
             out_set = update_set_based_on_acceptance(accept, old_set=old_set, next_set=next_set)
             self.iacce[itry - 1] += accept  # if accepted, adds 1, if not, adds 0
         return accept, out_set, outbound
@@ -126,18 +129,26 @@ class DelayedRejection:
         # recursively compute past alphas
         a1 = 1.0  # initialize
         a2 = 1.0  # initialize
-        for kk in range(0, stage-1):
-            tmp1 = self.alphafun(trypath[0:(kk+2)], invR)
+        for kk in range(0, stage - 1):
+            tmp1 = self.alphafun(trypath[0:(kk + 2)], invR)
             a1 = a1*(1 - tmp1)
-            tmp2 = self.alphafun(trypath[stage:stage-kk-2:-1], invR)
+            tmp2 = self.alphafun(trypath[stage:stage - kk - 2:-1], invR)
             a2 = a2*(1 - tmp2)
             if a2 == 0:  # we will come back with prob 1
                 alpha = np.zeros(1)
                 return alpha
-        y = log_posterior_ratio(trypath[0], trypath[-1])
+#        y = log_posterior_ratio(trypath[0], trypath[-1])
+        x1 = trypath[0]
+        x2 = trypath[-1]
+        y = calculate_log_posterior_ratio(
+                loglikestar=-0.5*(x2.ss/x2.sigma2).sum(),
+                loglike=-0.5*(x1.ss/x1.sigma2).sum(),
+                logpriorstar=-0.5*x2.prior,
+                logprior=-0.5*x1.prior)
         for kk in range(stage):
             y = y + nth_stage_log_proposal_ratio(kk, trypath, invR)
         alpha = min(np.ones(1), np.exp(y)*a2*(a1**(-1)))
+#        alpha =  y + np.log(a2) + np.log((a1**(-1)))
         return alpha
 
 
@@ -195,6 +206,7 @@ def log_posterior_ratio(x1, x2):
     Returns:
         * **zq** (:py:class:`float`): Logarithm of posterior ratio.
     '''
+    print('This function is deprecated as of v1.8.0')
     zq = -0.5*(sum((x2.ss*(x2.sigma2**(-1.0)) - x1.ss*(x1.sigma2**(-1.0)))) + x2.prior - x1.prior)
     return sum(zq)
 

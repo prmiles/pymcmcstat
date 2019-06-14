@@ -73,6 +73,7 @@ def acceptance_test(alpha):
     Returns:
         * **accept** (:py:class:`bool`): False - reject, True - accept
     '''
+    print('This function was deprecated in v1.8.0')
     if alpha >= 1 or alpha > np.random.rand(1, 1):
         accept = True
     else:
@@ -98,3 +99,70 @@ def set_outside_bounds(next_set):
     outbound = True
 
     return next_set, outbound
+
+
+# --------------------------------------------------------
+def posterior_ratio_acceptance_test(alpha):
+    '''
+    Run posterior ratio acceptance test
+    Args:
+        * **alpha** (:py:class:`float`): Posterior ratio
+    Returns:
+        * **accept** (:py:class:`bool`): False - reject, True - accept
+    '''
+    if alpha >= 1.0 or alpha > np.random.rand(1, 1):
+        return True
+    else:
+        return False
+
+
+# --------------------------------------------------------
+def log_posterior_ratio_acceptance_test(alpha):
+    '''
+    Run log posterior ratio acceptance test
+    Args:
+        * **alpha** (:py:class:`float`): Log posterior ratio
+    Returns:
+        * **accept** (:py:class:`bool`): False - reject, True - accept
+    '''
+    if alpha > np.log(np.random.rand(1, 1)):
+        return True
+    else:
+        return False
+
+
+# -------------------------------------------
+def calculate_log_posterior_ratio(loglikestar, loglike,
+                                  logpriorstar, logprior):
+    '''
+    Calculate log posterior ratio:
+
+    .. math::
+
+        \\log(\\alpha) = \\min\\Big[0, \\log(\\mathcal{L}(\\nu_{obs}|q^*)) \
+        + \\log(\\pi_0(q^*)) - \\log(\\mathcal{L}(\\nu_{obs}|q^{k-1})) \
+        - \\log(\\pi_0(q^{k-1}))\\Big]
+
+    For more details regarding the prior and likelihood functions,
+    please refer to the :class:`~.PriorFunction` and
+    :class:`~.LikelihoodFunction` class, respectively.
+
+    .. note::
+        The default behavior of the package is to use Gaussian
+        likelihood and prior functions (as of v1.7.0).  Future releases
+        will expand the functionality to allow for alternative likelihood
+        and prior definitions.
+
+    Args:
+        * **likestar** (:py:class:`float`): \
+        Likelihood from proposed candidate, :math:`q^*`
+        * **like** (:py:class:`float`): \
+        Likelihood from previous sample point, :math:`q^{k-1}`
+        * **priorstar** (:py:class:`float`): Prior for proposal candidate
+        * **prior** (:py:class:`float`): Prior for previous sample
+
+    Returns:
+        * **alpha** (:py:class:`float`): Acceptance ratio
+    '''
+    logalpha = loglikestar + logpriorstar - (loglike + logprior)
+    return logalpha
