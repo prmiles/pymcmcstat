@@ -72,8 +72,8 @@ class DelayedRejection:
             alpha = self.alphafun(trypath, invR)
             trypath[-1].alpha = alpha  # add propability ratio
             # check results of delayed rejection
-#            accept = acceptance_test(alpha=alpha)
-            accept = log_posterior_ratio_acceptance_test(alpha)
+            accept = acceptance_test(alpha=alpha)
+#            accept = log_posterior_ratio_acceptance_test(alpha)
             out_set = update_set_based_on_acceptance(accept, old_set=old_set, next_set=next_set)
             self.iacce[itry - 1] += accept  # if accepted, adds 1, if not, adds 0
         return accept, out_set, outbound
@@ -147,8 +147,8 @@ class DelayedRejection:
                 logprior=-0.5*x1.prior)
         for kk in range(stage):
             y = y + nth_stage_log_proposal_ratio(kk, trypath, invR)
-#        alpha = min(np.ones(1), np.exp(y)*a2*(a1**(-1)))
-        alpha =  y + np.log(a2*(a1**(-1)))
+        alpha = min(np.ones(1), np.exp(y)*a2*(a1**(-1)))
+#        alpha =  y + np.log(a2) + np.log((a1**(-1)))
         return alpha
 
 

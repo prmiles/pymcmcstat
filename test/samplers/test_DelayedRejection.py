@@ -165,7 +165,9 @@ class RunDelayedRejection(unittest.TestCase):
                 priorobj=priorobj)
         return accept, out_set, outbound
 
-    @patch('pymcmcstat.samplers.DelayedRejection.log_posterior_ratio_acceptance_test',
+#    @patch('pymcmcstat.samplers.DelayedRejection.log_posterior_ratio_acceptance_test',
+#           return_value=True)
+    @patch('pymcmcstat.samplers.DelayedRejection.acceptance_test',
            return_value=True)
     def test_run_dr(self, mock_accept):
         accept, __, __ = self.setup_dr()
