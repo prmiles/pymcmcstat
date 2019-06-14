@@ -148,7 +148,7 @@ class DelayedRejection:
         for kk in range(stage):
             y = y + nth_stage_log_proposal_ratio(kk, trypath, invR)
 #        alpha = min(np.ones(1), np.exp(y)*a2*(a1**(-1)))
-        alpha =  y + a2*(a1**(-1))
+        alpha =  y + np.log(a2*(a1**(-1)))
         return alpha
 
 
