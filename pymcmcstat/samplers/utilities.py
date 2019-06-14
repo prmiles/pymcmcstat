@@ -105,6 +105,7 @@ def set_outside_bounds(next_set):
 def posterior_ratio_acceptance_test(alpha):
     '''
     Run posterior ratio acceptance test
+
     Args:
         * **alpha** (:py:class:`float`): Posterior ratio
     Returns:
@@ -120,6 +121,7 @@ def posterior_ratio_acceptance_test(alpha):
 def log_posterior_ratio_acceptance_test(alpha):
     '''
     Run log posterior ratio acceptance test
+
     Args:
         * **alpha** (:py:class:`float`): Log posterior ratio
     Returns:
