@@ -372,7 +372,10 @@ def assign_number_of_cores(num_cores=1):
 
 
 # -------------------------
-def load_parallel_simulation_results(savedir):
+def load_parallel_simulation_results(
+        savedir, extension='h5', chainfile='chainfile',
+        sschainfile='sschainfile', s2chainfile='s2chainfile',
+        covchainfile='covchainfile'):
     '''
     Load results from parallel simulation directory json files.
 
@@ -389,6 +392,19 @@ def load_parallel_simulation_results(savedir):
         for key in pr.keys():
             if isinstance(pres[ii][key], list):
                 pres[ii][key] = np.array(pres[ii][key])
+    # check whether chains included in json file
+    if 'chain' not in pr.keys():
+        out = CP.read_in_parallel_savedir_files(
+                savedir, extension=extension, chainfile=chainfile,
+                sschainfile=sschainfile, s2chainfile=s2chainfile,
+                covchainfile=covchainfile)
+        if out[0]['chain'] == []:
+            print('WARNING: NO CHAINS FOUND IN SAVED RESULTS\n')
+    for ii, pr in enumerate(pres):
+        pr['chain'] = out[ii]['chain']
+        pr['sschain'] = out[ii]['sschain']
+        pr['s2chain'] = out[ii]['s2chain']
+        pr['covchain'] = out[ii]['covchain']
     return pres
 
 
