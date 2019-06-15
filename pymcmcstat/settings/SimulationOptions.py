@@ -220,12 +220,9 @@ def check_lightly_save(save_lightly, save_to_json, save_to_bin, save_to_txt):
     '''
     Check settings for lightly save
 
-    If saving to json, you can specify whether or not to include the chains.
-    This is memory intensive, so it is recommended that user's take advantage
-    of the save_to_bin (binary) option when it comes to chains.  This routine
-    will save everything to json unless the chains are already being saved
-    via one of the logging methods.  If yes, save_lightly is set to True to
-    avoid duplicate chains being saved to the hard disc.
+    If saving to json, chains will be removed if already being stored via
+    one of the logging methods, binary or text.  If logging methods not
+    being used, then chains will be included in json file.
 
     Args:
         * **save_lightly** (:py:class:`bool`): Flag to save results w/out arrays
@@ -237,6 +234,6 @@ def check_lightly_save(save_lightly, save_to_json, save_to_bin, save_to_txt):
         if save_to_bin is True or save_to_txt is True:
             return True
         else:
-            return save_lightly
+            return False
     else:
         return save_lightly

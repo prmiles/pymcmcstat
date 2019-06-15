@@ -101,6 +101,12 @@ class CheckSaveLightly(unittest.TestCase):
         out = check_lightly_save(save_lightly=False, save_to_json=True,
                                  save_to_bin=True, save_to_txt=False)
         self.assertTrue(out, msg='Expect True when logging used')
+        out = check_lightly_save(save_lightly=False, save_to_json=True,
+                                 save_to_bin=False, save_to_txt=False)
+        self.assertFalse(out, msg='Expect False if no logging but json')
+        out = check_lightly_save(save_lightly=True, save_to_json=True,
+                                 save_to_bin=False, save_to_txt=False)
+        self.assertFalse(out, msg='Expect False if no logging but json')
 
     def test_json_false(self):
         out = check_lightly_save(save_lightly=False, save_to_json=False,
@@ -112,11 +118,3 @@ class CheckSaveLightly(unittest.TestCase):
         out = check_lightly_save(save_lightly=False, save_to_json=False,
                                  save_to_bin=True, save_to_txt=False)
         self.assertFalse(out, msg='Expect user-defined when json False')
-
-    def test_ud(self):
-        out = check_lightly_save(save_lightly=False, save_to_json=True,
-                                 save_to_bin=False, save_to_txt=False)
-        self.assertFalse(out, msg='Expect False')
-        out = check_lightly_save(save_lightly=True, save_to_json=True,
-                                 save_to_bin=False, save_to_txt=False)
-        self.assertTrue(out, msg='Expect True')
