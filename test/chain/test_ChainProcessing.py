@@ -357,8 +357,16 @@ class LoadSerialSimulationResults(unittest.TestCase):
         RS = ResultsStructure()
         RS.save_json_object(results, tmpfile0)
         pres = CP.load_serial_simulation_results(tmpfolder0)
-        print(pres)
         shutil.rmtree(tmpfolder)
         self.assertTrue(isinstance(pres['a'], np.ndarray))
         self.assertTrue(isinstance(pres['b'], str))
         self.assertEqual(pres['b'], 'hello')
+
+    def test_load_ser_sim_res_no_json(self):
+        tmpfolder = gf.generate_temp_folder()
+        os.makedirs(tmpfolder)
+        pres = CP.load_serial_simulation_results(tmpfolder)
+        shutil.rmtree(tmpfolder)
+        self.assertTrue(isinstance(pres['chain'], list))
+        self.assertTrue(isinstance(pres['s2chain'], list))
+        self.assertEqual(pres['chain'], [])
