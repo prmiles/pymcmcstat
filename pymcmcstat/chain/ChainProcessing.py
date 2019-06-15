@@ -162,7 +162,7 @@ def check_parallel_directory_contents(parallel_dir, cf_orig):
 
     chainfolders.sort()  # sort elements
     return chainfolders
-
+    
 
 def read_in_bin_file(filename):
     '''
