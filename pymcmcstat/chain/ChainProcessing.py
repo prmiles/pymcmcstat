@@ -52,6 +52,87 @@ def print_log_files(savedir):
         print('--------------------------\n')
 
 
+# -------------------------
+def load_serial_simulation_results(
+        savedir, json_file=None, extension='h5', chainfile='chainfile',
+        sschainfile='sschainfile', s2chainfile='s2chainfile',
+        covchainfile='covchainfile'):
+    '''
+    Load results from serial simulation directory json files.
+
+    Lists in json files are converted to numpy arrays.
+
+    Args:
+        * **savedir** (:py:class:`str`): String indicated path to results directory.
+
+    Returns:
+        * **results** (:py:class:`dict`): Each element of list is an MCMC result dictionary.
+    '''
+    items = os.listdir(savedir)
+    for item in items:
+        if item.endswith('.json'):
+            json_file = item
+            break
+    if json_file is not None:
+        results = load_json_object(savedir + os.sep + json_file)
+    else:
+        results = {}
+    # convert lists to arrays
+    for key in results.keys():
+        if isinstance(results[key], list):
+            results[key] = np.array(results[key])
+    # check whether chains included in results dict
+    if 'chain' not in results.keys():
+        out = read_in_savedir_files(
+                savedir, extension=extension, chainfile=chainfile,
+                sschainfile=sschainfile, s2chainfile=s2chainfile,
+                covchainfile=covchainfile)
+        if out['chain'] == []:
+            warnings.warn('WARNING: No chains found in saved results.', UserWarning)
+        results['chain'] = out['chain']
+        results['sschain'] = out['sschain']
+        results['s2chain'] = out['s2chain']
+        results['covchain'] = out['covchain']
+    return results
+
+
+# -------------------------
+def load_parallel_simulation_results(
+        savedir, extension='h5', chainfile='chainfile',
+        sschainfile='sschainfile', s2chainfile='s2chainfile',
+        covchainfile='covchainfile'):
+    '''
+    Load results from parallel simulation directory json files.
+
+    Lists in json files are converted to numpy arrays.
+
+    Args:
+        * **savedir** (:py:class:`str`): String indicated path to parallel directory.
+
+    Returns:
+        * **pres** (:py:class:`list`): Each element of list is an MCMC result dictionary.
+    '''
+    pres = read_in_parallel_json_results_files(savedir)
+    for ii, pr in enumerate(pres):
+        for key in pr.keys():
+            if isinstance(pres[ii][key], list):
+                pres[ii][key] = np.array(pres[ii][key])
+    # check whether chains included in json file
+    if 'chain' not in pr.keys():
+        out = read_in_parallel_savedir_files(
+                savedir, extension=extension, chainfile=chainfile,
+                sschainfile=sschainfile, s2chainfile=s2chainfile,
+                covchainfile=covchainfile)
+        if out[0]['chain'] == []:
+            warnings.warn('WARNING: No chains found in saved results.', UserWarning)
+    for ii, pr in enumerate(pres):
+        pr['chain'] = out[ii]['chain']
+        pr['sschain'] = out[ii]['sschain']
+        pr['s2chain'] = out[ii]['s2chain']
+        pr['covchain'] = out[ii]['covchain']
+    return pres
+
+
 def read_in_savedir_files(savedir, extension='h5', chainfile='chainfile', sschainfile='sschainfile',
                           s2chainfile='s2chainfile', covchainfile='covchainfile'):
     '''
@@ -98,7 +179,8 @@ def read_in_savedir_files(savedir, extension='h5', chainfile='chainfile', sschai
 
 
 def read_in_parallel_savedir_files(parallel_dir, extension='h5', chainfile='chainfile',
-                                   sschainfile='sschainfile', s2chainfile='s2chainfile', covchainfile='covchainfile'):
+                                   sschainfile='sschainfile', s2chainfile='s2chainfile',
+                                   covchainfile='covchainfile'):
     '''
     Read in log files from directory containing results from parallel MCMC simulation.
 
