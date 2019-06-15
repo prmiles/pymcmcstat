@@ -36,7 +36,7 @@ class SimulationOptions:
                                   alphatarget=0.234, etaparam=0.7, initqcovn=None,
                                   doram=None, rndseq=None, results_filename=None,
                                   save_to_json=False, save_to_txt=False,
-                                  json_restart_file=None):
+                                  json_restart_file=None, save_lightly=False):
         '''
         Define simulation options.
 
@@ -84,6 +84,8 @@ class SimulationOptions:
             * **save_to_json** (:py:class:`bool`): Save results structure to json file.  Default is False.
             * **json_restart_file** (:py:class:`str`): Extract parameter covariance and last sample\
             value from saved json file.
+            * **save_lightly** (:py:class:`bool`): Flag to indicate whether
+              results json file should include chains.
 
         .. note::
 
@@ -163,6 +165,8 @@ class SimulationOptions:
         self.results_filename = results_filename
         self.save_to_json = save_to_json
         self.json_restart_file = json_restart_file
+        self.save_lightly = check_lightly_save(save_lightly, save_to_json,
+                                               save_to_bin, save_to_txt)
         self.__options_set = True  # options have been defined
 
     def _check_dependent_simulation_options(self, model):
@@ -210,3 +214,26 @@ class SimulationOptions:
         for ptii in print_these:
             print('\t{} = {}'.format(ptii, getattr(self, ptii)))
         return print_these
+
+
+def check_lightly_save(save_lightly, save_to_json, save_to_bin, save_to_txt):
+    '''
+    Check settings for lightly save
+
+    If saving to json, chains will be removed if already being stored via
+    one of the logging methods, binary or text.  If logging methods not
+    being used, then chains will be included in json file.
+
+    Args:
+        * **save_lightly** (:py:class:`bool`): Flag to save results w/out arrays
+        * **save_to_json** (:py:class:`bool`): Flag to save to json
+        * **save_to_bin** (:py:class:`bool`): Flag to save to binary
+        * **save_to_txt** (:py:class:`bool`): Flag to save to text
+    '''
+    if save_to_json is True:
+        if save_to_bin is True or save_to_txt is True:
+            return True
+        else:
+            return False
+    else:
+        return save_lightly
