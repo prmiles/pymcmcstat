@@ -165,7 +165,8 @@ class SimulationOptions:
         self.results_filename = results_filename
         self.save_to_json = save_to_json
         self.json_restart_file = json_restart_file
-        self.save_lightly = save_lightly
+        self.save_lightly = check_lightly_save(save_lightly, save_to_json,
+                                               save_to_bin, save_to_txt)
         self.__options_set = True  # options have been defined
 
     def _check_dependent_simulation_options(self, model):
@@ -213,3 +214,26 @@ class SimulationOptions:
         for ptii in print_these:
             print('\t{} = {}'.format(ptii, getattr(self, ptii)))
         return print_these
+
+
+def check_lightly_save(save_lightly, save_to_json, save_to_bin, save_to_txt):
+    '''
+    Check settings for lightly save
+
+    If saving to json, you can specify whether or not to include the chains.
+    This is memory intensive, so it is recommended that user's take advantage
+    of the save_to_bin (binary) option when it comes to chains.  This routine
+    will save everything to json is save_to_bin and save_to_txt are both set
+    to False for the chains.
+
+    Args:
+        * **save_lightly** (:py:class:`bool`): Flag to save results w/out arrays
+        * **save_to_json** (:py:class:`bool`): Flag to save to json
+        * **save_to_bin** (:py:class:`bool`): Flag to save to binary
+        * **save_to_txt** (:py:class:`bool`): Flag to save to text
+    '''
+    if save_to_json is True:
+        if save_to_bin is False and save_to_txt is False:
+            return False
+        else:
+            return save_lightly
