@@ -16,6 +16,7 @@ import sys
 import os
 import copy
 import time
+import warnings
 
 
 class ParallelMCMC:
@@ -399,7 +400,7 @@ def load_parallel_simulation_results(
                 sschainfile=sschainfile, s2chainfile=s2chainfile,
                 covchainfile=covchainfile)
         if out[0]['chain'] == []:
-            print('WARNING: NO CHAINS FOUND IN SAVED RESULTS\n')
+            warnings.warn('WARNING: No chains found in saved results.', UserWarning)
     for ii, pr in enumerate(pres):
         pr['chain'] = out[ii]['chain']
         pr['sschain'] = out[ii]['sschain']
