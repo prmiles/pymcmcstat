@@ -118,7 +118,7 @@ class MCMC:
                 if self.simulation_options.save_lightly is True:
                     self.simulation_results.export_lightly(
                             results=self.simulation_results.results)
-                else:                       
+                else:
                     self.simulation_results.export_simulation_results_to_json_file(
                             results=self.simulation_results.results)
         self.mcmcplot = MCMCPlotting.Plot()
