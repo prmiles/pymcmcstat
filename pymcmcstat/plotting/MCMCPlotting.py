@@ -22,7 +22,8 @@ except ImportError as e:
 
 
 # --------------------------------------------
-def plot_density_panel(chains, names=None, hist_on=False, figsizeinches=None):
+def plot_density_panel(chains, names=None, hist_on=False, figsizeinches=None,
+                       return_kde=False):
     '''
     Plot marginal posterior densities
 
@@ -36,6 +37,7 @@ def plot_density_panel(chains, names=None, hist_on=False, figsizeinches=None):
     ns1, ns2, names, figsizeinches = setup_plot_features(
             nparam=nparam, names=names, figsizeinches=figsizeinches)
     f = plt.figure(dpi=100, figsize=(figsizeinches))  # initialize figure
+    kdehandle = []
     for ii in range(nparam):
         # define chain
         chain = chains[:, ii].reshape(nsimu, 1)  # check indexing
@@ -52,7 +54,11 @@ def plot_density_panel(chains, names=None, hist_on=False, figsizeinches=None):
         plt.xlabel(names[ii])
         plt.ylabel(str('$\\pi$({}$|M^{}$)'.format(names[ii], '{data}')))
         plt.tight_layout(rect=[0, 0.03, 1, 0.95], h_pad=1.0)  # adjust spacing
-    return f
+        kdehandle.append(kde)
+    if return_kde is True:
+        return f, kdehandle
+    else:
+        return f
 
 
 # --------------------------------------------
