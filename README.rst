@@ -1,7 +1,7 @@
 `pymcmcstat`
 ============
 
-|docs| |build| |coverage| |license| |zenodo| |pypi| |pyversion|
+|docs| |build| |coverage| |license| |zenodo| |joss| |pypi| |pyversion|
 
 The `pymcmcstat <https://github.com/prmiles/pymcmcstat/wiki>`__ package is a Python program for running Markov Chain Monte Carlo (MCMC) simulations.
 Included in this package is the ability to use different Metropolis based sampling techniques:
@@ -35,7 +35,7 @@ You can also clone the repository and run ``python  setup.py install``.
 Getting Started
 ===============
 
-- `Tutorial notebooks <https://nbviewer.jupyter.org/github/prmiles/notebooks/tree/master/pymcmcstat/index.ipynb>`_
+- `Tutorial notebooks <https://nbviewer.jupyter.org/github/prmiles/pymcmcstat/tree/master/tutorials/index.ipynb>`_
 - `Documentation <http://pymcmcstat.readthedocs.io/>`_
 - `Release history <https://github.com/prmiles/pymcmcstat/blob/master/CHANGELOG.rst>`_
 - `Contributing guidelines <https://github.com/prmiles/pymcmcstat/blob/master/CONTRIBUTING.rst>`_
@@ -53,7 +53,9 @@ See the `GitHub contributor page <https://github.com/prmiles/pymcmcstat/graphs/c
 Citing pymcmcstat
 =================
 
-Please see the `pymcmcstat homepage <https://github.com/prmiles/pymcmcstat/wiki>`__ or follow the DOI badge above to find the appropriate citation information.
+Miles, (2019). pymcmcstat: A Python Package for Bayesian Inference Using Delayed Rejection Adaptive Metropolis. Journal of Open Source Software, 4(38), 1417, https://doi.org/10.21105/joss.01417
+
+Also, please cite the appropriate `Zenodo archive <https://zenodo.org/badge/latestdoi/107596954>`_ for the version of `pymcmcstat` that you are using.
 
 Feedback
 ========
@@ -91,4 +93,6 @@ This work was sponsored in part by the NNSA Office of Defense Nuclear Nonprolife
 
 .. |cnec| image:: https://raw.githubusercontent.com/prmiles/pymcmcstat/master/doc/cnec-logo.png
     :target: https://cnec.ncsu.edu/
-    
+
+.. |joss| image:: http://joss.theoj.org/papers/10.21105/joss.01417/status.svg
+    :target: https://doi.org/10.21105/joss.01417

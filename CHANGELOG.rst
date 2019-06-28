@@ -1,7 +1,7 @@
 Changelog
 =========
 
-v1.8.0 ()
+v1.8.0 (June 28, 2019)
 ---------
 - Added acceptance rate display feature when calling chain statistics
 - User can specify `skip` or `maxpoints` in pairwise correlation and chain panel plots in order to thin chain.
@@ -10,6 +10,14 @@ v1.8.0 ()
 - Updated documentation for Bayesian components.
 - Added saving routines to accomodate post-processing.  A lighter version of the results dictionary is saved to json when log routines are used for chains.  This should address #55.
 - Option to return KDE objects when using `plot_density_panel`.  User can then evaluate pdf directly.  This should address #66.
+
+v1.7.1 (May 3, 2019)
+---------------------
+.. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.2660145.svg
+   :target: https://doi.org/10.5281/zenodo.2660145
+   
+- Fixed bug #41.
+- Updated how version attribute is defined in package and referenced in setup.py and documentation.
 
 v1.7.0 (April 5, 2019)
 ----------------------
