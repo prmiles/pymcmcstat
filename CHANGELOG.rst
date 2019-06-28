@@ -9,6 +9,7 @@ v1.8.0 ()
 - Resolved #51 by adding method to check if limits are incompatible.  User is provided with more descriptive error message.
 - Updated documentation for Bayesian components.
 - Added saving routines to accomodate post-processing.  A lighter version of the results dictionary is saved to json when log routines are used for chains.  This should address #55.
+- Option to return KDE objects when using `plot_density_panel`.  User can then evaluate pdf directly.  This should address #66.
 
 v1.7.0 (April 5, 2019)
 ----------------------
