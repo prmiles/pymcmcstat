@@ -18,7 +18,7 @@ from .ChainProcessing import generate_chain_list
 
 
 # display chain statistics
-def chainstats(chain=None, results=None, returnstats=False):
+def chainstats(chain=None, results=None, returnstats=False, display_details=False):
     '''
     Calculate chain statistics.
 
@@ -53,6 +53,11 @@ def chainstats(chain=None, results=None, returnstats=False):
         tau, m = integrated_autocorrelation_time(chain)
         # print statistics
         print_chain_statistics(names, meanii, stdii, mcerr, tau, p)
+        if display_details is True:
+            _display_stat_defs()
+        print(30*'=')
+        # print acceptance rate
+        print_chain_acceptance_info(chain, results=results)
         # assign stats to dictionary
         stats = dict(mean=list(meanii),
                      std=list(stdii),
@@ -88,7 +93,8 @@ def print_chain_statistics(names, meanii, stdii, mcerr, tau, p):
     '''
     npar = len(names)
     # print statistics
-    print('\n---------------------')
+    print('\n')
+    print(30*'-')
     print('{:10s}: {:>10s} {:>10s} {:>10s} {:>10s} {:>10s}'.format(
             'name',
             'mean',
@@ -112,7 +118,70 @@ def print_chain_statistics(names, meanii, stdii, mcerr, tau, p):
                     mcerr[ii],
                     tau[ii],
                     p[ii]))
-    print('---------------------')
+    print(30*'-')
+
+
+# ----------------------------------------------------
+def print_chain_acceptance_info(chain, results=None):
+    '''
+    Print chain acceptance rate(s)
+
+    If results structure is provided, it will try to print
+    acceptance rates with respect to delayed rejection as well.
+
+    Example display (if results dictionary provided):
+
+    ::
+
+        ------------------------------
+        Acceptance rate information
+        ---------------
+        Results dictionary:
+        Stage 1: 3.32%
+        Stage 2: 22.60%
+        Net    : 25.92% -> 1296/5000
+        ---------------
+        Chain provided:
+        Net    : 32.10% -> 963/3000
+        ---------------
+        Note, the net acceptance rate from the results dictionary
+        may be different if you only provided a subset of the chain,
+        e.g., removed the first part for burnin-in.
+        ------------------------------
+
+    Args:
+        * **chain** (:class:`~numpy.ndarray`): Sampling chain.
+        * **results** (:py:class:`dict`): Results from MCMC simulation. \
+        Default is `None`.
+    '''
+    print('Acceptance rate information')
+    flag = False
+    if results is not None:
+        if 'iacce' in results:
+            if 'nsimu' in results:
+                nsimu = results['nsimu']
+            else:
+                nsimu = chain.shape[0]
+            print(15*'-')
+            print('Results dictionary:')
+            for ii, stage in enumerate(results['iacce']):
+                print('Stage {:d}: {:4.2f}%'.format(ii + 1, stage/nsimu * 100))
+            print('Net    : {:4.2f}% -> {:d}/{:d}'.format(
+                    results['iacce'].sum()/nsimu * 100,
+                    results['iacce'].sum(), nsimu))
+            print(15*'-')
+            flag = True
+    print('Chain provided:')
+    unique_elem = np.unique(chain[:, 0]).size
+    print('Net    : {:4.2f}% -> {:d}/{:d}'.format(
+            unique_elem/chain.shape[0] * 100,
+            unique_elem, chain.shape[0]))
+    if flag is True:
+        print(15*'-')
+        print('Note, the net acceptance rate from the results dictionary\n'
+              + 'may be different if you only provided a subset of the chain,\n'
+              + 'e.g., removed the first part for burnin-in.')
+    print(30*'-')
 
 
 # ----------------------------------------------------
@@ -410,3 +479,13 @@ def get_parameter_names(nparam, results):
         names = results['names']
         names = extend_names_to_match_nparam(names, nparam)
     return names
+
+
+def _display_stat_defs():
+    print('Definition for items displayed:')
+    print('"mean": Average value of parameter chains.')
+    print('"std": Standard deviation of parameter chains.')
+    print('"MC_err": Normalized batch mean standard deviation.')
+    print('"tau": Integrated autocorrelation time.')
+    print('"geweke": Geweke\'s convergence diagnostic.')
+    print(30*'-')

@@ -55,6 +55,28 @@ class ResultsStructure:
         file = _create_path_without_extension(savedir, filename)
         self.save_json_object(results, file)
 
+    # --------------------------------------------------------
+    def export_lightly(self, results):
+        '''
+        Export minimal simulation results to a json file.
+
+        This will save the key terms in the results dict, excluding arrays.
+        Ideally, this is used in conjunction with one of the chain saving
+        methods.  The goal is to provide a results dict to simplify post-
+        processing and reduces storage overhead.
+
+        Args:
+            * **results** (:class:`~.ResultsStructure`): Dictionary of MCMC simulation results/settings.
+        '''
+        savedir = results['simulation_options']['savedir']
+        filename = self.determine_filename(options=results['simulation_options'])
+        _check_directory(savedir)  # make sure output directory exists
+        file = _create_path_without_extension(savedir, filename)
+        light_results = results.copy()
+        # remove arrays from light results
+        light_results = lighten_results(results=light_results)
+        self.save_json_object(light_results, file)
+
     @classmethod
     def determine_filename(cls, options):
         '''
@@ -313,3 +335,17 @@ class ResultsStructure:
             This feature is not currently implemented.
         '''
         self.results['rndseq'] = rndseq
+
+
+def lighten_results(results):
+    '''
+    Saves subset of features of the simulation options in a nested dictionary.
+
+    Args:
+        * **options** (:class:`.SimulationOptions`): MCMC simulation options.
+    '''
+    # define list of keywords to NOT add to results structure
+    do_not_save_these_keys = ['chain', 's2chain', 'sschain']
+    for keyii in do_not_save_these_keys:
+        results = removekey(results, keyii)
+    return results

@@ -15,10 +15,11 @@ import unittest
 
 # --------------------------
 class PlotDensityPanel(unittest.TestCase):
+
     def standard_check(self, hist_on = True):
         npar = 3
         chains = np.random.random_sample(size = (100,npar))
-        f = MP.plot_density_panel(chains = chains)
+        f = MP.plot_density_panel(chains=chains)
         for ii in range(npar):
             name = str('$p_{{{}}}$'.format(ii))
             self.assertEqual(f.axes[ii].get_xlabel(), name, msg = str('Should be {}'.format(name)))
@@ -32,6 +33,14 @@ class PlotDensityPanel(unittest.TestCase):
 
     def test_basic_plot_features_with_hist_on(self):
         self.standard_check(hist_on = True)
+
+    def test_return_kde_handles(self):
+        npar = 3
+        chains = np.random.random_sample(size=(100, npar))
+        f, kdehandle = MP.plot_density_panel(chains=chains, return_kde=True)
+        self.assertEqual(len(kdehandle), 3,
+                         msg='Expect 3 elements in list')
+
 
 # --------------------------
 class PlotChainPanel(unittest.TestCase):

@@ -89,18 +89,18 @@ class DisplayParametersSettings(unittest.TestCase):
     
     def test_parameter_display_set_1(self):
         MP = ModelParameters()
-        MP.add_model_parameter(name = 'm', theta0 = 2., minimum = -10, maximum = np.inf, sample = True)
-        MP.add_model_parameter(name = 'b', theta0 = -5., minimum = -10, maximum = 100, sample = False)
-        MP.add_model_parameter(name = 'b2', theta0 = -5.3e6, minimum = -1e7, maximum = 1e6, sample = True)
+        MP.add_model_parameter(name = 'm', theta0 = 2., minimum=-10, maximum=np.inf, sample = True)
+        MP.add_model_parameter(name = 'b', theta0 = -5., minimum=-10, maximum=100, sample = False)
+        MP.add_model_parameter(name = 'b2', theta0 = -5.3e6, minimum=-1e7, maximum=1e6, sample = True)
         MP._openparameterstructure(nbatch = 1)
         
         MP.display_parameter_settings(verbosity = 1, no_adapt = None)
         
     def test_parameter_display_set_2(self):
         MP = ModelParameters()
-        MP.add_model_parameter(name = 'm', theta0 = 2., minimum = -10, maximum = np.inf, sample = True)
-        MP.add_model_parameter(name = 'b', theta0 = -5., minimum = -10, maximum = 100, sample = False)
-        MP.add_model_parameter(name = 'b2', theta0 = -5.3e6, minimum = -1e7, maximum = 1e6, sample = True)
+        MP.add_model_parameter(name = 'm', theta0 = 2., minimum=-10, maximum=np.inf, sample = True)
+        MP.add_model_parameter(name = 'b', theta0 = -5., minimum=-10, maximum=100, sample = False)
+        MP.add_model_parameter(name = 'b2', theta0 = -5.3e6, minimum=-1e7, maximum=1e6, sample = True)
         MP._openparameterstructure(nbatch = 1)
         
         MP.display_parameter_settings(verbosity = None, no_adapt = None)
@@ -109,61 +109,74 @@ class DisplayParametersSettings(unittest.TestCase):
 class NoadaptindDisplaySetting(unittest.TestCase):
     
     def test_noadaptind_is_not_empty(self):
-        self.assertEqual(noadapt_display_setting(no_adapt = False), '', msg = 'Default is blank string')
-        self.assertEqual(noadapt_display_setting(no_adapt = True), ' (*)', msg = 'Default is blank string')
+        self.assertEqual(noadapt_display_setting(no_adapt = False), '', msg='Default is blank string')
+        self.assertEqual(noadapt_display_setting(no_adapt = True), ' (*)', msg='Default is blank string')
 
 # --------------------------
 class PriorDisplaySetting(unittest.TestCase):
     
     def test_x_is_inf(self):
-        self.assertEqual(prior_display_setting(x = np.inf), '', msg = 'Blank string if infinity.')
+        self.assertEqual(prior_display_setting(x = np.inf), '', msg='Blank string if infinity.')
     def test_x_is_not_inf(self):
-        self.assertEqual(prior_display_setting(x = 2.0), '^2', msg = 'Raised to the second power if not infinity.')
+        self.assertEqual(prior_display_setting(x = 2.0), '^2', msg='Raised to the second power if not infinity.')
 
 # --------------------------
 class CheckNoadaptind(unittest.TestCase):
     
     def test_noadaptind_is_none(self):
-        self.assertTrue(np.array_equal(check_noadaptind(no_adapt = None, npar = 3), np.zeros([3],dtype=bool)), msg = 'Returns boolean array of size 3.')
+        self.assertTrue(np.array_equal(check_noadaptind(no_adapt = None, npar = 3), np.zeros([3],dtype=bool)), msg='Returns boolean array of size 3.')
         
     def test_noadaptind_is_not_none(self):
-        self.assertEqual(check_noadaptind(no_adapt = [1], npar = 3), [1], msg = 'Returns input.')
+        self.assertEqual(check_noadaptind(no_adapt = [1], npar = 3), [1], msg='Returns input.')
         
 # --------------------------        
 class Verbosity(unittest.TestCase):
     
     def test_verbosity_is_none(self):
-        self.assertEqual(check_verbosity(verbosity = None), 0, msg = 'Returns 0.')
+        self.assertEqual(check_verbosity(verbosity = None), 0, msg='Returns 0.')
         
     def test_verbosity_is_not_none(self):
-        self.assertEqual(check_verbosity(verbosity = 1), 1, msg = 'Returns input.')
+        self.assertEqual(check_verbosity(verbosity = 1), 1, msg='Returns input.')
         
 # --------------------------        
-class ParameterLimits(unittest.TestCase):
+class CheckParameterInitialValues(unittest.TestCase):
     
     def test_initial_parameter_outside(self):
         MP = ModelParameters()
-        MP.add_model_parameter('aa', 0, minimum = -10., maximum = 10)
-        MP.add_model_parameter('bb', 11, minimum = -10., maximum = 10)
+        MP.add_model_parameter('aa', 0, minimum=-10., maximum=10)
+        MP.add_model_parameter('bb', 11, minimum=-10., maximum=10)
         MP._openparameterstructure(nbatch=1)
-        with self.assertRaises(SystemExit, msg = 'Initial value outside of bounds.'):
+        with self.assertRaises(SystemExit, msg='Initial value outside of bounds.'):
             MP._check_initial_values_wrt_parameter_limits()
             
     def test_initial_parameter_okay(self):
         MP = ModelParameters()
-        MP.add_model_parameter('aa', 0, minimum = -10., maximum = 10)
-        MP.add_model_parameter('bb', 9, minimum = -10., maximum = 10)
+        MP.add_model_parameter('aa', 0, minimum=-10., maximum=10)
+        MP.add_model_parameter('bb', 9, minimum=-10., maximum=10)
         MP._openparameterstructure(nbatch=1)
         self.assertTrue(MP._check_initial_values_wrt_parameter_limits())
+
+
+# --------------------------        
+class CheckParameterLimits(unittest.TestCase):
+    
+    def test_raises_error(self):
+        MP = ModelParameters()
+        MP.add_model_parameter('aa', 0, minimum=-10., maximum=10)
+        MP.add_model_parameter('bb', 5, minimum=100., maximum=10)
+        MP._openparameterstructure(nbatch=1)
+        with self.assertRaises(SystemExit, msg='Min > Max'):
+            MP._check_parameter_limits()
+
         
 # --------------------------        
 class GenerateDefaultName(unittest.TestCase):
     
     def test_default_name_generation(self):
-        self.assertEqual(generate_default_name(nparam = 0), '$p_{0}$', msg = '0 based naming convention.')
-        self.assertEqual(generate_default_name(nparam = 3), '$p_{3}$', msg = '0 based naming convention.')
-        self.assertEqual(generate_default_name(nparam = 2), '$p_{2}$', msg = '0 based naming convention.')
-        self.assertEqual(generate_default_name(nparam = 10), '$p_{10}$', msg = '0 based naming convention.')
+        self.assertEqual(generate_default_name(nparam = 0), '$p_{0}$', msg='0 based naming convention.')
+        self.assertEqual(generate_default_name(nparam = 3), '$p_{3}$', msg='0 based naming convention.')
+        self.assertEqual(generate_default_name(nparam = 2), '$p_{2}$', msg='0 based naming convention.')
+        self.assertEqual(generate_default_name(nparam = 10), '$p_{10}$', msg='0 based naming convention.')
 
 # --------------------------
 class FormatNumberToStr(unittest.TestCase):
@@ -176,15 +189,15 @@ class FormatNumberToStr(unittest.TestCase):
 class SetupPriorMu(unittest.TestCase):
     def test_setup_prior_mu(self):
         MP = ModelParameters()
-        self.assertEqual(MP.setup_prior_mu(mu = np.array([0.1]), value = np.array([0.3])), np.array([0.1]), msg = 'Expect = mu')
-        self.assertEqual(MP.setup_prior_mu(mu = np.nan, value = np.array([0.3])), np.array([0.3]), msg = 'Expect = value')
+        self.assertEqual(MP.setup_prior_mu(mu = np.array([0.1]), value = np.array([0.3])), np.array([0.1]), msg='Expect = mu')
+        self.assertEqual(MP.setup_prior_mu(mu = np.nan, value = np.array([0.3])), np.array([0.3]), msg='Expect = value')
         
 # --------------------------
 class SetupPriorSigma(unittest.TestCase):
     def test_setup_prior_sigma(self):
         MP = ModelParameters()
-        self.assertEqual(MP.setup_prior_sigma(sigma = np.array([0.1])), np.array([0.1]), msg = 'Expect = sigma')
-        self.assertEqual(MP.setup_prior_sigma(sigma = 0.), np.inf, msg = 'Expect = inf')
+        self.assertEqual(MP.setup_prior_sigma(sigma = np.array([0.1])), np.array([0.1]), msg='Expect = sigma')
+        self.assertEqual(MP.setup_prior_sigma(sigma = 0.), np.inf, msg='Expect = inf')
         
 # --------------------------
 class ScanForLocalVariables(unittest.TestCase):
@@ -228,10 +241,10 @@ class ScanForLocalVariables(unittest.TestCase):
 class SetupAdapting(unittest.TestCase):
     def test_setup_adapting(self):
         MP = ModelParameters()
-        self.assertTrue(MP.setup_adapting(adapt = True, sample = True), msg = 'Expect True')
-        self.assertFalse(MP.setup_adapting(adapt = False, sample = True), msg = 'Expect False')
-        self.assertFalse(MP.setup_adapting(adapt = True, sample = False), msg = 'Expect False')
-        self.assertFalse(MP.setup_adapting(adapt = False, sample = False), msg = 'Expect False')
+        self.assertTrue(MP.setup_adapting(adapt = True, sample = True), msg='Expect True')
+        self.assertFalse(MP.setup_adapting(adapt = False, sample = True), msg='Expect False')
+        self.assertFalse(MP.setup_adapting(adapt = True, sample = False), msg='Expect False')
+        self.assertFalse(MP.setup_adapting(adapt = False, sample = False), msg='Expect False')
         
 # --------------------------
 class SetupAdaptationIndices(unittest.TestCase):

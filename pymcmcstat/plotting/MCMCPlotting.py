@@ -8,10 +8,10 @@ Created on Wed Jan 31 12:54:16 2018
 
 # import required packages
 from __future__ import division
-import math
 import matplotlib.pyplot as plt
 from pylab import hist
 from .utilities import generate_names, setup_plot_features, make_x_grid
+from .utilities import setup_subsample
 import warnings
 
 try:
@@ -22,7 +22,8 @@ except ImportError as e:
 
 
 # --------------------------------------------
-def plot_density_panel(chains, names=None, hist_on=False, figsizeinches=None):
+def plot_density_panel(chains, names=None, hist_on=False, figsizeinches=None,
+                       return_kde=False):
     '''
     Plot marginal posterior densities
 
@@ -33,8 +34,10 @@ def plot_density_panel(chains, names=None, hist_on=False, figsizeinches=None):
         * **figsizeinches** (:py:class:`list`): Specify figure size in inches [Width, Height]
     '''
     nsimu, nparam = chains.shape  # number of rows, number of columns
-    ns1, ns2, names, figsizeinches = setup_plot_features(nparam=nparam, names=names, figsizeinches=figsizeinches)
+    ns1, ns2, names, figsizeinches = setup_plot_features(
+            nparam=nparam, names=names, figsizeinches=figsizeinches)
     f = plt.figure(dpi=100, figsize=(figsizeinches))  # initialize figure
+    kdehandle = []
     for ii in range(nparam):
         # define chain
         chain = chains[:, ii].reshape(nsimu, 1)  # check indexing
@@ -51,7 +54,11 @@ def plot_density_panel(chains, names=None, hist_on=False, figsizeinches=None):
         plt.xlabel(names[ii])
         plt.ylabel(str('$\\pi$({}$|M^{}$)'.format(names[ii], '{data}')))
         plt.tight_layout(rect=[0, 0.03, 1, 0.95], h_pad=1.0)  # adjust spacing
-    return f
+        kdehandle.append(kde)
+    if return_kde is True:
+        return f, kdehandle
+    else:
+        return f
 
 
 # --------------------------------------------
@@ -66,7 +73,8 @@ def plot_histogram_panel(chains, names=None, figsizeinches=None):
         * **figsizeinches** (:py:class:`list`): Specify figure size in inches [Width, Height]
     """
     nsimu, nparam = chains.shape  # number of rows, number of columns
-    ns1, ns2, names, figsizeinches = setup_plot_features(nparam=nparam, names=names, figsizeinches=figsizeinches)
+    ns1, ns2, names, figsizeinches = setup_plot_features(
+            nparam=nparam, names=names, figsizeinches=figsizeinches)
     f = plt.figure(dpi=100, figsize=(figsizeinches))  # initialize figure
     for ii in range(nparam):
         # define chain
@@ -82,28 +90,34 @@ def plot_histogram_panel(chains, names=None, figsizeinches=None):
 
 
 # --------------------------------------------
-def plot_chain_panel(chains, names=None, figsizeinches=None, maxpoints=500):
+def plot_chain_panel(chains, names=None, figsizeinches=None,
+                     skip=1, maxpoints=500):
     """
     Plot sampling chain for each parameter
 
     Args:
-        * **chains** (:class:`~numpy.ndarray`): Sampling chain for each parameter
-        * **names** (:py:class:`list`): List of strings - name of each parameter
-        * **figsizeinches** (:py:class:`list`): Specify figure size in inches [Width, Height]
-        * **maxpoints** (:py:class:`int`): Max number of display points - keeps scatter plot from becoming overcrowded
+        * **chains** (:class:`~numpy.ndarray`): Sampling chain for each
+          parameter
+        * **names** (:py:class:`list`): List of strings - name of each
+          parameter
+        * **figsizeinches** (:py:class:`list`): Specify figure size in inches
+          [Width, Height]
+        * **skip** (:py:class:`int`): Indicates step size to be used when
+          plotting elements from the chain
+        * **maxpoints** (:py:class:`int`): Max number of display points
+          - keeps scatter plot from becoming overcrowded
     """
     nsimu, nparam = chains.shape  # number of rows, number of columns
-    ns1, ns2, names, figsizeinches = setup_plot_features(nparam=nparam, names=names, figsizeinches=figsizeinches)
-    skip = 1
-    if nsimu > maxpoints:
-        skip = int(math.floor(nsimu/maxpoints))
+    ns1, ns2, names, figsizeinches = setup_plot_features(
+            nparam=nparam, names=names, figsizeinches=figsizeinches)
+    inds = setup_subsample(skip, maxpoints, nsimu)
     f = plt.figure(dpi=100, figsize=(figsizeinches))  # initialize figure
     for ii in range(nparam):
         # define chain
-        chain = chains[:, ii].reshape(nsimu, 1)  # check indexing
+        chain = chains[inds, ii]  # check indexing
         # plot chain on subplot
         plt.subplot(ns1, ns2, ii+1)
-        plt.plot(range(0, nsimu, skip), chain[range(0, nsimu, skip), 0], '.b')
+        plt.plot(inds, chain, '.b')
         # format figure
         plt.xlabel('Iteration')
         plt.ylabel(str('{}'.format(names[ii])))
@@ -114,30 +128,35 @@ def plot_chain_panel(chains, names=None, figsizeinches=None, maxpoints=500):
 
 
 # --------------------------------------------
-def plot_pairwise_correlation_panel(chains, names=None, figsizeinches=None, skip=1):
+def plot_pairwise_correlation_panel(chains, names=None, figsizeinches=None,
+                                    skip=1, maxpoints=500):
     """
     Plot pairwise correlation for each parameter
 
     Args:
-        * **chains** (:class:`~numpy.ndarray`): Sampling chain for each parameter
-        * **names** (:py:class:`list`): List of strings - name of each parameter
-        * **figsizeinches** (:py:class:`list`): Specify figure size in inches [Width, Height]
-        * **skip** (:py:class:`int`): Indicates step size to be used when plotting elements from the chain
+        * **chains** (:class:`~numpy.ndarray`): Sampling chain for each
+          parameter
+        * **names** (:py:class:`list`): List of strings - name of each
+          parameter
+        * **figsizeinches** (:py:class:`list`): Specify figure size in inches
+          [Width, Height]
+        * **skip** (:py:class:`int`): Indicates step size to be used when
+          plotting elements from the chain
+        * **maxpoints** (py:class:`int`): Maximum allowable number of points
+          in plot.
     """
     nsimu, nparam = chains.shape  # number of rows, number of columns
-    inds = range(0, nsimu, skip)
+    inds = setup_subsample(skip, maxpoints, nsimu)
     names = generate_names(nparam=nparam, names=names)
     if figsizeinches is None:
         figsizeinches = [7, 5]
     f = plt.figure(dpi=100, figsize=(figsizeinches))  # initialize figure
-    for jj in range(2, nparam+1):
+    for jj in range(2, nparam + 1):
         for ii in range(1, jj):
-            chain1 = chains[inds, ii-1]
-            chain1 = chain1.reshape(nsimu, 1)
-            chain2 = chains[inds, jj-1]
-            chain2 = chain2.reshape(nsimu, 1)
+            chain1 = chains[inds, ii - 1]
+            chain2 = chains[inds, jj - 1]
             # plot density on subplot
-            ax = plt.subplot(nparam-1, nparam-1, (jj-2)*(nparam-1)+ii)
+            ax = plt.subplot(nparam - 1, nparam - 1, (jj - 2)*(nparam - 1)+ii)
             plt.plot(chain1, chain2, '.b')
             # format figure
             if jj != nparam:  # rm xticks
@@ -145,12 +164,12 @@ def plot_pairwise_correlation_panel(chains, names=None, figsizeinches=None, skip
             if ii != 1:  # rm yticks
                 ax.set_yticklabels([])
             if ii == 1:  # add ylabels
-                plt.ylabel(str('{}'.format(names[jj-1])))
+                plt.ylabel(str('{}'.format(names[jj - 1])))
             if ii == jj - 1:
                 if nparam == 2:  # add xlabels
-                    plt.xlabel(str('{}'.format(names[ii-1])))
+                    plt.xlabel(str('{}'.format(names[ii - 1])))
                 else:  # add title
-                    plt.title(str('{}'.format(names[ii-1])))
+                    plt.title(str('{}'.format(names[ii - 1])))
     # adjust figure margins
     plt.tight_layout(rect=[0, 0.03, 1, 0.95], h_pad=1.0)  # adjust spacing
     return f

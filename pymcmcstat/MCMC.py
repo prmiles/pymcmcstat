@@ -113,8 +113,14 @@ class MCMC:
         # Generate Results
         self.__generate_simulation_results()
         if self.simulation_options.save_to_json is True:
-            if self.simulation_results.basic is True:  # check that results structure has been created
-                self.simulation_results.export_simulation_results_to_json_file(results=self.simulation_results.results)
+            # check that results structure has been created
+            if self.simulation_results.basic is True:
+                if self.simulation_options.save_lightly is True:
+                    self.simulation_results.export_lightly(
+                            results=self.simulation_results.results)
+                else:
+                    self.simulation_results.export_simulation_results_to_json_file(
+                            results=self.simulation_results.results)
         self.mcmcplot = MCMCPlotting.Plot()
         self.PI = PredictionIntervals()
         self.chainstats = ChainStatistics.chainstats
@@ -173,6 +179,8 @@ class MCMC:
         self.model_settings._check_dependent_model_settings(self.data, self.simulation_options)
         # open and parse the parameter structure
         self.parameters._openparameterstructure(self.model_settings.nbatch)
+        # check parameter limits
+        self.parameters._check_parameter_limits()
         # check initial parameter values are inside range
         self.parameters._check_initial_values_wrt_parameter_limits()
         # add check that prior standard deviation > 0

@@ -10,7 +10,8 @@ import numpy as np
 from ..structures.ParameterSet import ParameterSet
 from .utilities import sample_candidate_from_gaussian_proposal
 from .utilities import is_sample_outside_bounds, set_outside_bounds
-from .utilities import acceptance_test
+from .utilities import calculate_log_posterior_ratio
+from .utilities import log_posterior_ratio_acceptance_test
 
 
 class Metropolis:
@@ -74,10 +75,14 @@ class Metropolis:
             # calculate sum-of-squares
             ss2 = ss  # old ss
             ss1 = sos_object.evaluate_sos_function(newpar, custom=custom)
-            # evaluate likelihood
-            alpha = self.evaluate_likelihood_function(ss1, ss2, sigma2, newprior, oldprior)
+            # Calculate log-posterior ratio
+            alpha = calculate_log_posterior_ratio(
+                    loglikestar=-0.5*(ss1/sigma2).sum(),
+                    loglike=-0.5*(ss2/sigma2).sum(),
+                    logpriorstar=-0.5*newprior,
+                    logprior=-0.5*oldprior)
             # make acceptance decision
-            accept = acceptance_test(alpha)
+            accept = log_posterior_ratio_acceptance_test(alpha)
             # store parameter sets in objects
             newset = ParameterSet(theta=newpar, ss=ss1, prior=newprior, sigma2=sigma2, alpha=alpha)
         return accept, newset, outbound, npar_sample_from_normal
@@ -105,14 +110,46 @@ class Metropolis:
 
     # --------------------------------------------------------
     @classmethod
-    def evaluate_likelihood_function(cls, ss1, ss2, sigma2, newprior, oldprior):
+    def calculate_posterior_ratio(cls, ss1, ss2, sigma2, newprior, oldprior):
         '''
-        Evaluate likelihood function:
+        Calculate acceptance ratio
+
+        .. math::
+
+            \\alpha = \\min\\Big[1, \\frac{\\mathcal{L}(\\nu_{obs}|q^*, \
+            \\sigma_{k-1}^2)\\pi_0(q^*)}{\\mathcal{L}(\\nu_{obs}|q^{k-1}, \
+            \\sigma_{k-1}^2)\\pi_0(q^{k-1})}\\Big]
+
+        where the Gaussian likelihood function is
+
+        .. math::
+
+            \\mathcal{L}(\\nu_{obs}|q, \\sigma) = \
+            \\exp\\Big(-\\frac{SS_q}{2\\sigma}\\Big)
+
+        and Gaussian prior function is
+
+        .. math::
+
+            \\pi_0(q) = \\exp \
+            \\Big[-\\frac{1}{2}\\Big(\\frac{q - \
+            \\mu_0}{\\sigma_0}\\Big)^2\\Big].
+
+        For the Gaussian likelihood and prior, this yields the acceptance ratio
 
         .. math::
 
             \\alpha = \\exp\\Big[-0.5\\Big(\\sum\\Big(\\frac{ SS_{q^*} \
-            - SS_{q^{k-1}} }{ \\sigma_{k-1}^2 }\\Big) + p_1 - p_2\\Big)\\Big]
+            - SS_{q^{k-1}} }{ \\sigma_{k-1}^2 }\\Big) + p_1 - p_2\\Big)\\Big].
+
+        For more details regarding the prior function, please refer to the
+        :class:`~.PriorFunction` class.
+
+        .. note::
+            The default behavior of the package is to use Gaussian
+            likelihood and prior functions (as of v1.8.0).  Future releases
+            will expand the functionality to allow for alternative likelihood
+            and prior definitions.
 
         Args:
             * **ss1** (:class:`~numpy.ndarray`): SS error from proposed candidate, :math:`q^*`

@@ -38,9 +38,9 @@ def get_version():
 #with open('../../pymcmcstat/__init__.py','r') as f:
 #    version = f.read()
 release = get_version()
-#version = ''
-# The full version, including alpha/beta/rc tags
-#release = 'v1.4.0'
+# The short X.Y version
+tmp = release.split('.')
+version = str('{}.{}'.format(tmp[0], tmp[1]))
 print(release)
 
 # -- General configuration ---------------------------------------------------

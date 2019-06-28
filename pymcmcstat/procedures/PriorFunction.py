@@ -37,7 +37,9 @@ class PriorFunction:
 
         .. math::
 
-            \\pi_0(q) = \\frac{1}{\\sigma\\sqrt{2\\pi}}\\exp\\Big[\\Big(\\frac{\\theta - \\mu}{\\sigma^2}\\Big)^2\\Big]
+            \\pi_0(q) = \\frac{1}{\\sigma\\sqrt{2\\pi}}\\exp \
+            \\Big[-\\frac{1}{2}\\Big(\\frac{q - \
+            \\mu}{\\sigma}\\Big)^2\\Big]
 
         Args:
             * **theta** (:class:`~numpy.ndarray`): Current parameter values.
