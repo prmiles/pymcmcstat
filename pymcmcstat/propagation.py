@@ -89,16 +89,14 @@ def plot_intervals(intervals, time, ydata, limits=[50, 90, 95, 99],
     # Define labels
     cilabels = _setup_labels(cilimits, inttype='CI')
     pilabels = _setup_labels(pilimits, inttype='PI')
-    
     if fig is None:
         fig = plt.figure(figsize=figsize)
     ax = fig.gca()
-    
     time = time.reshape(time.size,)
     # add prediction intervals
     if addprediction is True:
         for ii, quantile in enumerate(piquantiles):
-            pi = _generate_quantiles(prediction, np.array(quantile))           
+            pi = _generate_quantiles(prediction, np.array(quantile))
             ax.fill_between(time, pi[0], pi[1], facecolor=picolor[ii],
                             label=pilabels[ii], **interval_display)
     # add credible intervals
@@ -153,12 +151,10 @@ def plot_3d_intervals(intervals, time, ydata, limits=[50, 90, 95, 99],
     # Define labels
     cilabels = _setup_labels(cilimits, inttype='CI')
     pilabels = _setup_labels(pilimits, inttype='PI')
-    
     if fig is None:
         fig = plt.figure(figsize=figsize)
         ax = Axes3D(fig)
     ax = fig.gca()
-    
     time1 = time[:, 0]
     time2 = time[:, 1]
     # add prediction intervals
@@ -171,12 +167,12 @@ def plot_3d_intervals(intervals, time, ydata, limits=[50, 90, 95, 99],
             y = np.concatenate((time2, time2[rev]))
             z = np.concatenate((pi[0], pi[1][rev]))
             verts = [list(zip(x, y, z))]
-            surf=Poly3DCollection(verts,
-                                  color=picolor[ii],
-                                  label=pilabels[ii])
+            surf = Poly3DCollection(verts,
+                                    color=picolor[ii],
+                                    label=pilabels[ii])
             # Add fix for legend compatibility
-            surf._facecolors2d=surf._facecolors3d
-            surf._edgecolors2d=surf._edgecolors3d
+            surf._facecolors2d = surf._facecolors3d
+            surf._edgecolors2d = surf._edgecolors3d
             ax.add_collection3d(surf)
     # add credible intervals
     if addcredible is True:
@@ -188,12 +184,12 @@ def plot_3d_intervals(intervals, time, ydata, limits=[50, 90, 95, 99],
             y = np.concatenate((time2, time2[rev]))
             z = np.concatenate((ci[0], ci[1][rev]))
             verts = [list(zip(x, y, z))]
-            surf=Poly3DCollection(verts,
-                                  color=cicolor[ii],
-                                  label=cilabels[ii])
+            surf = Poly3DCollection(verts,
+                                    color=cicolor[ii],
+                                    label=cilabels[ii])
             # Add fix for legend compatibility
-            surf._facecolors2d=surf._facecolors3d
-            surf._edgecolors2d=surf._edgecolors3d
+            surf._facecolors2d = surf._facecolors3d
+            surf._edgecolors2d = surf._edgecolors3d
             ax.add_collection3d(surf)
     # add model (median model response)
     if addmodel is True:
@@ -334,7 +330,6 @@ def setup_interval_colors(limits, cmap=None, inttype='CI'):
         norm = mplcolor.Normalize(vmin=0, vmax=100)
     else:
         norm = mplcolor.Normalize(vmin=min(limits), vmax=max(limits))
-        
     if cmap is None:
         if inttype.upper() == 'CI':
             cmap = cm.autumn
