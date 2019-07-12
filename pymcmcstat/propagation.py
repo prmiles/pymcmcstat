@@ -23,6 +23,7 @@ def calculate_intervals(chain, results, data, model, s2chain=None,
     parind = results['parind']
     q = results['theta']
     nsimu, npar = chain.shape
+    s2chain = check_s2chain(s2chain, nsimu)
     iisample, nsample = _define_sample_points(nsample, nsimu)
     if waitbar is True:
         __wbarstatus = progress_bar(iters=int(nsample))
@@ -356,3 +357,15 @@ def _setup_labels(limits, inttype='CI'):
     for limit in limits:
         labels.append(str('{}% {}'.format(limit, inttype)))
     return labels
+
+def check_s2chain(s2chain, nsimu):
+    if s2chain is None:
+        return None
+    else:
+        if isinstance(s2chain, float):
+            s2chain = np.ones((nsimu,))*s2chain
+
+        if s2chain.size == nsimu:
+            return s2chain
+        else:
+            sys.exit('Expect s2chain as float or array of size nsimu')
