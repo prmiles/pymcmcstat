@@ -140,8 +140,8 @@ def plot_3d_intervals(intervals, time, ydata, limits=[50, 90, 95, 99],
     if pilimits is None:
         pilimits = limits
     # convert limits to ranges
-    ciquantiles = _convert_limits(cilimits)
-    piquantiles = _convert_limits(pilimits)
+    ciquantiles = _convert_limits(cilimits, limits)
+    piquantiles = _convert_limits(pilimits, limits)
     # setup display settings
     interval_display, model_display, data_display = _setup_display_settings(
             interval_display, model_display, data_display)
@@ -203,6 +203,12 @@ def plot_3d_intervals(intervals, time, ydata, limits=[50, 90, 95, 99],
         handles, labels = ax.get_legend_handles_labels()
         ax.legend(handles, labels, loc=legloc)
     return fig, ax
+
+
+def _check_limits(limits, default_limits):
+    if limits is None:
+        limits = default_limits
+    return limits
 
 
 def _convert_limits(limits):
