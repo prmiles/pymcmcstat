@@ -446,7 +446,8 @@ def plot_intervals(intervals, time, ydata=None, limits=[50, 90, 95, 99],
 
 
 # --------------------------------------------
-def plot_3d_intervals(intervals, time, ydata, limits=[50, 90, 95, 99],
+def plot_3d_intervals(intervals, time, ydata=None, xdata=None,
+                      limits=[50, 90, 95, 99],
                       adddata=False, addlegend=True,
                       addmodel=True, figsize=None, model_display={},
                       data_display={}, interval_display={},
@@ -455,7 +456,70 @@ def plot_3d_intervals(intervals, time, ydata, limits=[50, 90, 95, 99],
                       ciset=None, piset=None,
                       return_settings=False):
     '''
-    Plot propagation intervals
+    Plot propagation intervals in 3-D
+
+    This routine takes the model distributions generated using the
+    :func:`~calculate_intervals` method and then plots specific
+    quantiles.  The user can plot just the intervals, or also include the
+    median model response and/or observations.  Specific settings for
+    credible intervals are controlled by defining the `ciset` dictionary.
+    Likewise, for prediction intervals, settings are defined using `piset`.
+
+    The setting options available for each interval are as follows:
+        - `limits`: This should be a list of numbers between 0 and 100, e.g.,
+          `limits=[50, 90]` will result in 50% and 90% intervals.
+        - `cmap`: The program is designed to "try" to choose colors that
+          are visually distinct.  The user can specify the colormap to choose
+          from.
+        - `colors`: The user can specify the color they would like for each
+          interval in a list, e.g., ['r', 'g', 'b'].  This list should have 
+          the same number of elements as `limits` or the code will revert
+          back to its default behavior.
+
+    Args:
+        * **intervals** (:py:class:`dict`): Interval dictionary generated
+          using :meth:`calculate_intervals` method.
+        * **time** (:class:`~numpy.ndarray`): Independent variable, i.e.,
+          x- and y-axes of plot.  Note, it must be a 2-D array with
+          shape=(N, 2), where N is the number of evaluation points.
+
+    Kwargs:
+        * **ydata** (:class:`~numpy.ndarray` or None): Observations, expect
+          1-D array if defined.
+        * **limits** (py:class:`list`): Quantile limits that correspond to
+          percentage size of desired intervals.  Note, this is the default
+          limits, but specific limits can be defined using the `ciset` and
+          `piset` dictionaries.
+        * **adddata** (py:class:`bool`): Flag to include data
+        * **addmodel** (py:class:`bool`): Flag to include median model
+          response
+        * **addlegend** (py:class:`bool`): Flag to include legend
+        * **addcredible** (py:class:`bool`): Flag to include credible
+          intervals
+        * **addprediction** (py:class:`bool`): Flag to include prediction
+          intervals
+        * **model_display** (:py:class:`dict`): Display settings for median
+          model response
+        * **data_display** (:py:class:`dict`): Display settings for data
+        * **interval_display** (:py:class:`dict`): General display settings
+          for intervals.
+        * **fig**: Handle of previously created figure object
+        * **figsize** (py:class:`tuple`): (width, height) in inches
+        * **legloc** (:py:class:`str`): Legend location - matplotlib help for
+          details.
+        * **ciset** (:py:class:`dict`): Settings for credible intervals
+        * **piset** (:py:class:`dict`): Settings for prediction intervals
+        * **return_settings** (:py:class:`bool`): Flag to return ciset and
+          piset along with fig and ax.
+
+    Returns:
+        * (:py:class:`tuple`) with elements
+            1) `fig`: Figure handle
+            2) `ax`: Axes handle
+            3)  `ciset`: All credible interval settings (only outputted if
+              `return_settings=True`)
+            4)  `piset`: All prediction interval settings (only outputted if
+              `return_settings=True`)
     '''
     # unpack dictionary
     credible = intervals['credible']
@@ -526,7 +590,11 @@ def plot_3d_intervals(intervals, time, ydata, limits=[50, 90, 95, 99],
         ax.plot(time1, time2, ci, **model_display)
     # add data to plot
     if adddata is True:
-        ax.plot(time1, time2, ydata.reshape(time1.shape), **data_display)
+        if xdata is None:
+            ax.plot(time1, time2, ydata.reshape(time1.shape), **data_display)
+        else:  # User provided xdata array for observation points
+            ax.plot(xdata[:, 0], xdata[:, 1],
+                    ydata.reshape(time1.shape), **data_display)
     # add legend
     if addlegend is True:
         handles, labels = ax.get_legend_handles_labels()
