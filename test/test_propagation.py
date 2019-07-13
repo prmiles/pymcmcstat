@@ -1,6 +1,8 @@
 import unittest
 from mock import patch
 import pymcmcstat.propagation as uqp
+from pymcmcstat.MCMC import DataStructure
+import general_functions as gf
 import numpy as np
 
 # --------------------------
@@ -187,8 +189,52 @@ class SetupIntervalColors(unittest.TestCase):
                          msg='Expect non-matching lists')
 
 
-#class CalculateIntervals(unittest.TestCase):
-#
-#    def test_intcreation(self):
-#        intervals = uqp.calculate_intervals(
-#                chain, results, data, model)
+def model(q, data):
+    m, b = q
+    return m*data.xdata[0] + b
+
+
+class CalculateIntervals(unittest.TestCase):
+
+    def test_credintcreation(self):
+        data = DataStructure()
+        data.add_data_set(x=np.linspace(0, 1), y=None)
+        results = gf.setup_pseudo_results()
+        chain = results['chain']
+        intervals = uqp.calculate_intervals(
+                chain, results, data, model, waitbar=True)
+        self.assertTrue('credible' in intervals.keys(),
+                        msg='Expect credible intervals')
+        self.assertTrue('prediction' in intervals.keys(),
+                        msg='Expect prediction intervals')
+        self.assertTrue(isinstance(intervals['credible'], np.ndarray),
+                        msg='Expect numpy array')
+        self.assertEqual(intervals['prediction'], None,
+                        msg='Expect None')
+
+    def test_predintcreation(self):
+        data = DataStructure()
+        data.add_data_set(x=np.linspace(0, 1), y=None)
+        results = gf.setup_pseudo_results()
+        chain = results['chain']
+        s2chain = results['s2chain']
+        intervals = uqp.calculate_intervals(
+                chain, results, data, model, s2chain=s2chain)
+        self.assertTrue('credible' in intervals.keys(),
+                        msg='Expect credible intervals')
+        self.assertTrue('prediction' in intervals.keys(),
+                        msg='Expect prediction intervals')
+        self.assertTrue(isinstance(intervals['credible'], np.ndarray),
+                        msg='Expect numpy array')
+        self.assertTrue(isinstance(intervals['prediction'], np.ndarray),
+                        msg='Expect numpy array')
+        intervals = uqp.calculate_intervals(
+                chain, results, data, model, s2chain=0.1)
+        self.assertTrue('credible' in intervals.keys(),
+                        msg='Expect credible intervals')
+        self.assertTrue('prediction' in intervals.keys(),
+                        msg='Expect prediction intervals')
+        self.assertTrue(isinstance(intervals['credible'], np.ndarray),
+                        msg='Expect numpy array')
+        self.assertTrue(isinstance(intervals['prediction'], np.ndarray),
+                        msg='Expect numpy array')
