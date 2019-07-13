@@ -1,6 +1,11 @@
 Changelog
 =========
 
+v1.9.0 ()
+---------
+- Added new module for uncertainty propagation.  Aims to provide more flexible API for user to plot different combinations of credible and prediction intervals.
+- Added a plotting routine so that you can plot a 2-D interval in 3-D space.
+
 v1.8.0 (June 28, 2019)
 ---------
 - Added acceptance rate display feature when calling chain statistics

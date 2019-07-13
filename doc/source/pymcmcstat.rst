@@ -16,6 +16,14 @@ pymcmcstat.ParallelMCMC module
     :members:
     :undoc-members:
     :show-inheritance:
+
+pymcmcstat.propagation module
+------------------------------
+
+.. automodule:: pymcmcstat.propagation
+    :members:
+    :undoc-members:
+    :show-inheritance:
     
 Subpackages
 -----------

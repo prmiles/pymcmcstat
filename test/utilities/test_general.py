@@ -5,7 +5,7 @@ Created on Tue Jun 26 06:17:24 2018
 
 @author: prmiles
 """
-from pymcmcstat.utilities.general import message, removekey
+from pymcmcstat.utilities.general import message, removekey, check_settings
 import unittest
 import io
 import sys
@@ -37,3 +37,38 @@ class RemoveKey(unittest.TestCase):
             self.assertEqual(d[ct], r[ct], msg = str('Expect element agreement: {}'.format(ct)))
             
         self.assertFalse('a2' in r, msg = 'Expect removal')
+
+
+# --------------------------
+class CheckSettings(unittest.TestCase):
+
+    def test_settings_with_user_none(self):
+        user_settings = None
+        default_settings = dict(a = False, linewidth = 3, marker = dict(markersize = 5, color = 'g'))
+        settings = check_settings(default_settings = default_settings, user_settings = user_settings)
+        self.assertEqual(settings, default_settings, msg = str('Expect dictionaries to match: {} neq {}'.format(settings, default_settings)))
+        
+    def test_settings_with_subdict(self):
+        user_settings = dict(a = True, fontsize = 12)
+        default_settings = dict(a = False, linewidth = 3, marker = dict(markersize = 5, color = 'g'))
+        settings = check_settings(default_settings = default_settings, user_settings = user_settings)
+        self.assertEqual(settings['a'], user_settings['a'], msg = 'Expect user setting to overwrite')
+        self.assertEqual(settings['marker'], default_settings['marker'], msg = 'Expect default to persist')
+        
+    def test_settings_with_subdict_user_ow(self):
+        user_settings = dict(a = True, fontsize = 12, marker = dict(color = 'b'))
+        default_settings = dict(a = False, linewidth = 3, marker = dict(markersize = 5, color = 'g'))
+        settings = check_settings(default_settings = default_settings, user_settings = user_settings)
+        self.assertEqual(settings['a'], user_settings['a'], msg = 'Expect user setting to overwrite')
+        self.assertEqual(settings['marker']['color'], user_settings['marker']['color'], msg = 'Expect user to overwrite')
+        self.assertEqual(settings['marker']['markersize'], default_settings['marker']['markersize'], msg = 'Expect default to persist')
+        
+    def test_settings_with_subdict_user_has_new_setting(self):
+        user_settings = dict(a = True, fontsize = 12, marker = dict(color = 'b'), linestyle = '--')
+        default_settings = dict(a = False, linewidth = 3, marker = dict(markersize = 5, color = 'g'))
+        settings = check_settings(default_settings = default_settings, user_settings = user_settings)
+        self.assertEqual(settings['a'], user_settings['a'], msg = 'Expect user setting to overwrite')
+        self.assertEqual(settings['marker']['color'], user_settings['marker']['color'], msg = 'Expect user to overwrite')
+        self.assertEqual(settings['marker']['markersize'], default_settings['marker']['markersize'], msg = 'Expect default to persist')
+        self.assertEqual(settings['linestyle'], user_settings['linestyle'], msg = 'Expect user setting to be added')
+
