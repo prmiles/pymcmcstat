@@ -126,7 +126,6 @@ def calculate_intervals(chain, results, data, model, s2chain=None,
             out.append(dict(credible=credible,
                             prediction=prediction))
         return out
-            
 
 
 # --------------------------------------------
@@ -460,6 +459,7 @@ def check_s2chain(s2chain, nsimu):
             if s2chain.size != nsimu:  # scalars provided for multiple QoI
                 s2chain = s2chain * np.ones((nsimu, s2chain.size))
         return s2chain
+
 
 # --------------------------------------------
 def observation_sample(s2, y, sstype):
