@@ -4,6 +4,7 @@ import pymcmcstat.propagation as uqp
 from pymcmcstat.MCMC import DataStructure
 import general_functions as gf
 import numpy as np
+import matplotlib.pyplot as plt
 
 # --------------------------
 class CheckLimits(unittest.TestCase):
@@ -194,6 +195,11 @@ def model(q, data):
     return m*data.xdata[0] + b
 
 
+def model3D(q, data):
+    m, b = q
+    return m*data.xdata[0][:, 0] + b*data.xdata[0][:, 1]
+
+
 class CalculateIntervals(unittest.TestCase):
 
     def test_credintcreation(self):
@@ -238,3 +244,126 @@ class CalculateIntervals(unittest.TestCase):
                         msg='Expect numpy array')
         self.assertTrue(isinstance(intervals['prediction'], np.ndarray),
                         msg='Expect numpy array')
+
+
+# --------------------------------------------
+class Plot2DIntervals(unittest.TestCase):
+    
+    def test_plot_intervals_basic(self):
+        data = DataStructure()
+        data.add_data_set(x=np.linspace(0, 1), y=None)
+        results = gf.setup_pseudo_results()
+        chain = results['chain']
+        s2chain = results['s2chain']
+        intervals = uqp.calculate_intervals(
+                chain, results, data, model, s2chain=s2chain)
+        fig, ax = uqp.plot_intervals(intervals, data.xdata[0], limits=[95])
+        self.assertEqual(ax.get_legend_handles_labels()[1],
+                         ['Model', '95% PI', '95% CI'],
+                         msg=str('Strings should match: {}'.format(
+                                 ax.get_legend_handles_labels()[1])))
+        plt.close()
+        fig, ax = uqp.plot_intervals(intervals, data.xdata[0], limits=[95],
+                                     adddata=True, ydata=data.xdata[0])
+        self.assertEqual(ax.get_legend_handles_labels()[1],
+                         ['Model', 'Data', '95% PI', '95% CI'],
+                         msg=str('Strings should match: {}'.format(
+                                 ax.get_legend_handles_labels()[1])))
+        plt.close()
+
+    def test_check_settings_plot_intervals_basic(self):
+        data = DataStructure()
+        data.add_data_set(x=np.linspace(0, 1), y=None)
+        results = gf.setup_pseudo_results()
+        chain = results['chain']
+        s2chain = results['s2chain']
+        intervals = uqp.calculate_intervals(
+                chain, results, data, model, s2chain=s2chain)
+        fig, ax, isets = uqp.plot_intervals(
+                intervals, data.xdata[0], limits=[95],
+                return_settings=True)
+        self.assertEqual(ax.get_legend_handles_labels()[1],
+                         ['Model', '95% PI', '95% CI'],
+                         msg=str('Strings should match: {}'.format(
+                                 ax.get_legend_handles_labels()[1])))
+        self.assertTrue(isinstance(isets, dict),
+                        msg='Expect dictionary')
+        self.assertEqual(isets['ciset']['limits'], [95])
+        self.assertEqual(isets['piset']['limits'], [95])
+        plt.close()
+        plt.close()
+        fig, ax, isets = uqp.plot_intervals(
+                intervals, data.xdata[0], limits=[95],
+                adddata=True, ydata=data.xdata[0],
+                return_settings=True)
+        self.assertEqual(ax.get_legend_handles_labels()[1],
+                         ['Model', 'Data', '95% PI', '95% CI'],
+                         msg=str('Strings should match: {}'.format(
+                                 ax.get_legend_handles_labels()[1])))
+        self.assertTrue(isinstance(isets, dict),
+                        msg='Expect dictionary')
+        self.assertEqual(isets['ciset']['limits'], [95])
+        self.assertEqual(isets['piset']['limits'], [95])
+        plt.close()
+
+
+# --------------------------------------------
+class Plot3DIntervals(unittest.TestCase):
+    
+    def test_plot_intervals_basic(self):
+        data = DataStructure()
+        data.add_data_set(x=np.random.random_sample((100, 2)), y=None)
+        results = gf.setup_pseudo_results()
+        chain = results['chain']
+        s2chain = results['s2chain']
+        intervals = uqp.calculate_intervals(
+                chain, results, data, model3D, s2chain=s2chain)
+        fig, ax = uqp.plot_3d_intervals(intervals, data.xdata[0], limits=[95])
+        self.assertEqual(ax.get_legend_handles_labels()[1],
+                         ['Model', '95% PI', '95% CI'],
+                         msg=str('Strings should match: {}'.format(
+                                 ax.get_legend_handles_labels()[1])))
+        plt.close()
+        fig, ax = uqp.plot_3d_intervals(intervals, data.xdata[0], limits=[95],
+                                     adddata=True, ydata=data.xdata[0][:, 0])
+        self.assertEqual(ax.get_legend_handles_labels()[1],
+                         ['Model', 'Data', '95% PI', '95% CI'],
+                         msg=str('Strings should match: {}'.format(
+                                 ax.get_legend_handles_labels()[1])))
+        plt.close()
+
+    def test_check_settings_plot_intervals_basic(self):
+        data = DataStructure()
+        data.add_data_set(x=np.random.random_sample((100, 2)), y=None)
+        results = gf.setup_pseudo_results()
+        chain = results['chain']
+        s2chain = results['s2chain']
+        intervals = uqp.calculate_intervals(
+                chain, results, data, model3D, s2chain=s2chain)
+        fig, ax, isets = uqp.plot_3d_intervals(
+                intervals, data.xdata[0], limits=[95],
+                return_settings=True)
+        self.assertEqual(ax.get_legend_handles_labels()[1],
+                         ['Model', '95% PI', '95% CI'],
+                         msg=str('Strings should match: {}'.format(
+                                 ax.get_legend_handles_labels()[1])))
+        self.assertTrue(isinstance(isets, dict),
+                        msg='Expect dictionary')
+        self.assertEqual(isets['ciset']['limits'], [95])
+        self.assertEqual(isets['piset']['limits'], [95])
+        plt.close()
+        plt.close()
+        fig, ax, isets = uqp.plot_3d_intervals(
+                intervals, data.xdata[0], limits=[95],
+                adddata=True, ydata=data.xdata[0][:, 0],
+                return_settings=True)
+        self.assertEqual(ax.get_legend_handles_labels()[1],
+                         ['Model', 'Data', '95% PI', '95% CI'],
+                         msg=str('Strings should match: {}'.format(
+                                 ax.get_legend_handles_labels()[1])))
+        self.assertTrue(isinstance(isets, dict),
+                        msg='Expect dictionary')
+        self.assertEqual(isets['ciset']['limits'], [95])
+        self.assertEqual(isets['piset']['limits'], [95])
+        plt.close()
+        
