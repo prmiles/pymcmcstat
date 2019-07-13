@@ -83,10 +83,10 @@ class Observation_Sample_Test(unittest.TestCase):
 class CheckS2Chain(unittest.TestCase):
 
     def test_checks2chain(self):
-        s2elem = np.array([[2.0, 10.]])
-        with self.assertRaises(SystemExit,
-                               msg='Expect s2chain as float or array of size nsimu'):
-            uqp.check_s2chain(s2elem, 5)
+        s2elem = np.array([2.0, 10.])
+        s2chain = uqp.check_s2chain(s2elem, 5)
+        self.assertEqual(s2chain.shape, (5, 2),
+                         msg='Expect (5, 2) array')
         s2elem = None
         s2chain = uqp.check_s2chain(s2elem, 5)
         self.assertEqual(s2chain, None, msg='Expect None return')
@@ -199,6 +199,13 @@ def model3D(q, data):
     m, b = q
     return m*data.xdata[0][:, 0] + b*data.xdata[0][:, 1]
 
+def modelmultiple(q, data):
+    m, b = q
+    x = data.xdata[0]
+    y1 = m*x + b
+    y2 = m*x**2 + b
+    return np.stack((y1.reshape(y1.size,), y2.reshape(y2.size,)), axis=1)
+
 
 class CalculateIntervals(unittest.TestCase):
 
@@ -244,6 +251,47 @@ class CalculateIntervals(unittest.TestCase):
                         msg='Expect numpy array')
         self.assertTrue(isinstance(intervals['prediction'], np.ndarray),
                         msg='Expect numpy array')
+
+    def test_predintcreation_multimodel(self):
+        data = DataStructure()
+        data.add_data_set(x=np.linspace(0, 1), y=None)
+        results = gf.setup_pseudo_results()
+        chain = results['chain']
+        s2chain = results['s2chain']
+        mintervals = uqp.calculate_intervals(
+                chain, results, data, modelmultiple, s2chain=s2chain)
+        for intervals in mintervals:
+            self.assertTrue('credible' in intervals.keys(),
+                            msg='Expect credible intervals')
+            self.assertTrue('prediction' in intervals.keys(),
+                            msg='Expect prediction intervals')
+            self.assertTrue(isinstance(intervals['credible'], np.ndarray),
+                            msg='Expect numpy array')
+            self.assertTrue(isinstance(intervals['prediction'], np.ndarray),
+                            msg='Expect numpy array')
+        mintervals = uqp.calculate_intervals(
+                chain, results, data, modelmultiple, s2chain=0.1)
+        for intervals in mintervals:
+            self.assertTrue('credible' in intervals.keys(),
+                            msg='Expect credible intervals')
+            self.assertTrue('prediction' in intervals.keys(),
+                            msg='Expect prediction intervals')
+            self.assertTrue(isinstance(intervals['credible'], np.ndarray),
+                            msg='Expect numpy array')
+            self.assertTrue(isinstance(intervals['prediction'], np.ndarray),
+                            msg='Expect numpy array')
+        mintervals = uqp.calculate_intervals(
+                chain, results, data, modelmultiple,
+                s2chain=np.hstack((s2chain, s2chain)))
+        for intervals in mintervals:
+            self.assertTrue('credible' in intervals.keys(),
+                            msg='Expect credible intervals')
+            self.assertTrue('prediction' in intervals.keys(),
+                            msg='Expect prediction intervals')
+            self.assertTrue(isinstance(intervals['credible'], np.ndarray),
+                            msg='Expect numpy array')
+            self.assertTrue(isinstance(intervals['prediction'], np.ndarray),
+                            msg='Expect numpy array')
 
 
 # --------------------------------------------
