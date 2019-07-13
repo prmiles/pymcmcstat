@@ -55,6 +55,7 @@ def calculate_intervals(chain, results, data, model, s2chain=None,
 
     ci = []
     pi = []
+    multiple = False
     for kk, isa in enumerate(iisample):
         # progress bar
         if waitbar is True:
@@ -63,24 +64,69 @@ def calculate_intervals(chain, results, data, model, s2chain=None,
         q[parind] = chain[kk, :]
         # evaluate model
         y = model(q, data)
-        # store model prediction in credible intervals
-        ci.append(y.reshape(y.size,))  # store model output
-        if s2chain is None:
-            continue
+        # check model output
+        if y.ndim == 2:
+            nrow, ncol = y.shape
+            if nrow != y.size and ncol != y.size:
+                multiple = True
+        if multiple is False:
+            # store model prediction in credible intervals
+            ci.append(y.reshape(y.size,))  # store model output
+            if s2chain is None:
+                continue
+            else:
+                # estimate prediction intervals
+                s2 = s2chain[kk]
+                obs = observation_sample(s2, y, sstype)
+                pi.append(obs.reshape(obs.size,))
         else:
-            # estimate prediction intervals
-            s2 = s2chain[kk]
-            obs = observation_sample(s2, y, sstype)
-            pi.append(obs.reshape(obs.size,))
+            # Model output contains multiple QoI
+            # Expect ncol = No. of QoI
+            if kk == 0:
+                cis = []
+                pis = []
+                for jj in range(ncol):
+                    cis.append([])
+                    pis.append([])
+            for jj in range(ncol):
+                # store model prediction in credible intervals
+                cis[jj].append(y[:, jj])  # store model output
+                if s2chain is None:
+                    continue
+                else:
+                    # estimate prediction intervals
+                    if s2chain.ndim == 2:
+                        if s2chain.shape[1] == ncol:
+                            s2 = s2chain[kk, jj]
+                        else:
+                            s2 = s2chain[kk]
+                    else:
+                        s2 = s2chain[kk]
+                    obs = observation_sample(s2, y[:, jj], sstype)
+                    pis[jj].append(obs.reshape(obs.size,))
 
-    # Setup output
-    credible = np.array(ci)
-    if s2chain is None:
-        prediction = None
+    if multiple is False:
+        # Setup output
+        credible = np.array(ci)
+        if s2chain is None:
+            prediction = None
+        else:
+            prediction = np.array(pi)
+        return dict(credible=credible,
+                    prediction=prediction)
     else:
-        prediction = np.array(pi)
-    return dict(credible=credible,
-                prediction=prediction)
+        # Setup output for multiple QoI
+        out = []
+        for jj in range(ncol):
+            credible = np.array(cis[jj])
+            if s2chain is None:
+                prediction = None
+            else:
+                prediction = np.array(pis[jj])
+            out.append(dict(credible=credible,
+                            prediction=prediction))
+        return out
+            
 
 
 # --------------------------------------------
@@ -401,21 +447,19 @@ def check_s2chain(s2chain, nsimu):
 
     Returns:
         * **s2chain** (:class:`~numpy.ndarray` or `None`)
-
-    Raises:
-        * System exit if it is an array that size is > nsimu.
     '''
     if s2chain is None:
         return None
     else:
         if isinstance(s2chain, float):
             s2chain = np.ones((nsimu,))*s2chain
-
-        if s2chain.size == nsimu:
-            return s2chain
+        if s2chain.ndim == 2:
+            if s2chain.shape[0] != nsimu:
+                s2chain = s2chain * np.ones((nsimu, s2chain.size))
         else:
-            sys.exit('Expect s2chain as float or array of size nsimu')
-
+            if s2chain.size != nsimu:  # scalars provided for multiple QoI
+                s2chain = s2chain * np.ones((nsimu, s2chain.size))
+        return s2chain
 
 # --------------------------------------------
 def observation_sample(s2, y, sstype):
