@@ -86,7 +86,7 @@ def calculate_intervals(chain, results, data, model, s2chain=None,
 def check_s2chain(s2chain, nsimu):
     '''
     Check size of s2chain
-    
+
     Args:
         * **s2chain** (:py:class:`float`, :class:`~numpy.ndarray`, or `None`):
             Observation error variance chain or value
@@ -225,7 +225,7 @@ def setup_display_settings(interval_display, model_display, data_display):
 def setup_interval_colors(iset, inttype='CI'):
     '''
     Setup colors for empirical intervals
-    
+
     This routine attempts to distribute the color of the UQ intervals
     based on a normalize color map.  Or, it will assign user-defined
     colors; however, this only happens if the correct number of colors
@@ -342,7 +342,7 @@ def plot_intervals(intervals, time, ydata=None, xdata=None,
           are visually distinct.  The user can specify the colormap to choose
           from.
         - `colors`: The user can specify the color they would like for each
-          interval in a list, e.g., ['r', 'g', 'b'].  This list should have 
+          interval in a list, e.g., ['r', 'g', 'b'].  This list should have
           the same number of elements as `limits` or the code will revert
           back to its default behavior.
 
@@ -398,9 +398,15 @@ def plot_intervals(intervals, time, ydata=None, xdata=None,
     prediction = intervals['prediction']
     # Check user-defined settings
     ciset = __setup_iset(ciset,
-                       default_iset=dict(limits=limits, cmap=None, colors=None))
+                         default_iset=dict(
+                                 limits=limits,
+                                 cmap=None,
+                                 colors=None))
     piset = __setup_iset(piset,
-                       default_iset=dict(limits=limits, cmap=None, colors=None))
+                         default_iset=dict(
+                                 limits=limits,
+                                 cmap=None,
+                                 colors=None))
     # Check limits
     ciset['limits'] = _check_limits(ciset['limits'], limits)
     piset['limits'] = _check_limits(piset['limits'], limits)
@@ -479,7 +485,7 @@ def plot_3d_intervals(intervals, time, ydata=None, xdata=None,
           are visually distinct.  The user can specify the colormap to choose
           from.
         - `colors`: The user can specify the color they would like for each
-          interval in a list, e.g., ['r', 'g', 'b'].  This list should have 
+          interval in a list, e.g., ['r', 'g', 'b'].  This list should have
           the same number of elements as `limits` or the code will revert
           back to its default behavior.
 
@@ -536,9 +542,15 @@ def plot_3d_intervals(intervals, time, ydata=None, xdata=None,
     prediction = intervals['prediction']
     # Check user-defined settings
     ciset = __setup_iset(ciset,
-                       default_iset=dict(limits=limits, cmap=None, colors=None))
+                         default_iset=dict(
+                                 limits=limits,
+                                 cmap=None,
+                                 colors=None))
     piset = __setup_iset(piset,
-                       default_iset=dict(limits=limits, cmap=None, colors=None))
+                         default_iset=dict(
+                                 limits=limits,
+                                 cmap=None,
+                                 colors=None))
     # Check limits
     ciset['limits'] = _check_limits(ciset['limits'], limits)
     piset['limits'] = _check_limits(piset['limits'], limits)
