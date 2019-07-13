@@ -18,234 +18,35 @@ from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 from scipy.interpolate import interp1d
 
 
-def calculate_intervals(chain, results, data, model, s2chain=None,
-                        nsample=500, waitbar=True, sstype=0):
-    parind = results['parind']
-    q = results['theta']
-    nsimu, npar = chain.shape
-    s2chain = check_s2chain(s2chain, nsimu)
-    iisample, nsample = _define_sample_points(nsample, nsimu)
-    if waitbar is True:
-        __wbarstatus = progress_bar(iters=int(nsample))
-
-    ci = []
-    pi = []
-    for kk, isa in enumerate(iisample):
-        # progress bar
-        if waitbar is True:
-            __wbarstatus.update(kk)
-        # extract chain set
-        q[parind] = chain[kk, :]
-        # evaluate model
-        y = model(q, data)
-        # store model prediction in credible intervals
-        ci.append(y.reshape(y.size,))  # store model output
-        if s2chain is None:
-            continue
-        else:
-            # estimate prediction intervals
-            s2 = s2chain[kk]
-            obs = _observation_sample(s2, y, sstype)
-            pi.append(obs.reshape(obs.size,))
-
-    # Setup output
-    credible = np.array(ci)
-    if s2chain is None:
-        prediction = None
-    else:
-        prediction = np.array(pi)
-    return dict(credible=credible,
-                prediction=prediction)
-
-
-# --------------------------------------------
-def plot_intervals(intervals, time, ydata, limits=[50, 90, 95, 99],
-                   cilimits=None, pilimits=None,
-                   adddata=False, addlegend=True,
-                   addmodel=True, figsize=None, model_display={},
-                   data_display={}, interval_display={},
-                   addcredible=True, addprediction=True,
-                   cimap=None, pimap=None, fig=None,
-                   legloc='upper left'):
+def check_s2chain(s2chain, nsimu):
     '''
-    Plot propagation intervals
-    '''
-    # unpack dictionary
-    credible = intervals['credible']
-    prediction = intervals['prediction']
-    # Check user-defined settings
-    if cilimits is None:
-        cilimits = limits
-    if pilimits is None:
-        pilimits = limits
-    # convert limits to ranges
-    ciquantiles = _convert_limits(cilimits)
-    piquantiles = _convert_limits(pilimits)
-    # setup display settings
-    interval_display, model_display, data_display = _setup_display_settings(
-            interval_display, model_display, data_display)
-    # Define colors
-    cicolor = setup_interval_colors(limits=cilimits, cmap=cimap, inttype='ci')
-    picolor = setup_interval_colors(limits=pilimits, cmap=cimap, inttype='pi')
-    # Define labels
-    cilabels = _setup_labels(cilimits, inttype='CI')
-    pilabels = _setup_labels(pilimits, inttype='PI')
-    if fig is None:
-        fig = plt.figure(figsize=figsize)
-    ax = fig.gca()
-    time = time.reshape(time.size,)
-    # add prediction intervals
-    if addprediction is True:
-        for ii, quantile in enumerate(piquantiles):
-            pi = _generate_quantiles(prediction, np.array(quantile))
-            ax.fill_between(time, pi[0], pi[1], facecolor=picolor[ii],
-                            label=pilabels[ii], **interval_display)
-    # add credible intervals
-    if addcredible is True:
-        for ii, quantile in enumerate(ciquantiles):
-            ci = _generate_quantiles(credible, np.array(quantile))
-            ax.fill_between(time, ci[0], ci[1], facecolor=cicolor[ii],
-                            label=cilabels[ii], **interval_display)
-    # add model (median model response)
-    if addmodel is True:
-        ci = _generate_quantiles(credible, np.array(0.5))
-        ax.plot(time, ci, **model_display)
-    # add data to plot
-    if adddata is True:
-        plt.plot(time, ydata, **data_display)
-    # add legend
-    if addlegend is True:
-        handles, labels = ax.get_legend_handles_labels()
-        ax.legend(handles, labels, loc=legloc)
-    return fig, ax
-
-
-# --------------------------------------------
-def plot_3d_intervals(intervals, time, ydata, limits=[50, 90, 95, 99],
-                      cilimits=None, pilimits=None,
-                      adddata=False, addlegend=True,
-                      addmodel=True, figsize=None, model_display={},
-                      data_display={}, interval_display={},
-                      addcredible=True, addprediction=True,
-                      cimap=None, pimap=None, fig=None,
-                      legloc='upper left'):
-    '''
-    Plot propagation intervals
-    '''
-    # unpack dictionary
-    credible = intervals['credible']
-    prediction = intervals['prediction']
-    # Check user-defined settings
-    if cilimits is None:
-        cilimits = limits
-    if pilimits is None:
-        pilimits = limits
-    # convert limits to ranges
-    ciquantiles = _convert_limits(cilimits, limits)
-    piquantiles = _convert_limits(pilimits, limits)
-    # setup display settings
-    interval_display, model_display, data_display = _setup_display_settings(
-            interval_display, model_display, data_display)
-    # Define colors
-    cicolor = setup_interval_colors(limits=cilimits, cmap=cimap, inttype='ci')
-    picolor = setup_interval_colors(limits=pilimits, cmap=cimap, inttype='pi')
-    # Define labels
-    cilabels = _setup_labels(cilimits, inttype='CI')
-    pilabels = _setup_labels(pilimits, inttype='PI')
-    if fig is None:
-        fig = plt.figure(figsize=figsize)
-        ax = Axes3D(fig)
-    ax = fig.gca()
-    time1 = time[:, 0]
-    time2 = time[:, 1]
-    # add prediction intervals
-    if addprediction is True:
-        for ii, quantile in enumerate(piquantiles):
-            pi = _generate_quantiles(prediction, np.array(quantile))
-            # Add a polygon instead of fill_between
-            rev = np.arange(time1.size - 1, -1, -1)
-            x = np.concatenate((time1, time1[rev]))
-            y = np.concatenate((time2, time2[rev]))
-            z = np.concatenate((pi[0], pi[1][rev]))
-            verts = [list(zip(x, y, z))]
-            surf = Poly3DCollection(verts,
-                                    color=picolor[ii],
-                                    label=pilabels[ii])
-            # Add fix for legend compatibility
-            surf._facecolors2d = surf._facecolors3d
-            surf._edgecolors2d = surf._edgecolors3d
-            ax.add_collection3d(surf)
-    # add credible intervals
-    if addcredible is True:
-        for ii, quantile in enumerate(ciquantiles):
-            ci = _generate_quantiles(credible, np.array(quantile))
-            # Add a polygon instead of fill_between
-            rev = np.arange(time1.size - 1, -1, -1)
-            x = np.concatenate((time1, time1[rev]))
-            y = np.concatenate((time2, time2[rev]))
-            z = np.concatenate((ci[0], ci[1][rev]))
-            verts = [list(zip(x, y, z))]
-            surf = Poly3DCollection(verts,
-                                    color=cicolor[ii],
-                                    label=cilabels[ii])
-            # Add fix for legend compatibility
-            surf._facecolors2d = surf._facecolors3d
-            surf._edgecolors2d = surf._edgecolors3d
-            ax.add_collection3d(surf)
-    # add model (median model response)
-    if addmodel is True:
-        ci = _generate_quantiles(credible, np.array(0.5))
-        ax.plot(time1, time2, ci, **model_display)
-    # add data to plot
-    if adddata is True:
-        ax.plot(time1, time2, ydata.reshape(time1.shape), **data_display)
-    # add legend
-    if addlegend is True:
-        handles, labels = ax.get_legend_handles_labels()
-        ax.legend(handles, labels, loc=legloc)
-    return fig, ax
-
-
-def _check_limits(limits, default_limits):
-    if limits is None:
-        limits = default_limits
-    return limits
-
-
-def _convert_limits(limits):
-    rng = []
-    for limit in limits:
-        limit = limit/100
-        rng.append([0.5 - limit/2, 0.5 + limit/2])
-    return rng
-
-
-# --------------------------------------------
-def _define_sample_points(nsample, nsimu):
-    '''
-    Define indices to sample from posteriors.
-
+    Check size of s2chain
+    
     Args:
-        * **nsample** (:py:class:`int`): Number of samples to draw from posterior.
-        * **nsimu** (:py:class:`int`): Number of MCMC simulations.
+        * **s2chain** (:py:class:`float`, :class:`~numpy.ndarray`, or `None`):
+            Observation error variance chain or value
+        * **nsimu** (:py:class:`int`): No. of elements in chain
 
     Returns:
-        * **iisample** (:class:`~numpy.ndarray`): Array of indices in posterior set.
-        * **nsample** (:py:class:`int`): Number of samples to draw from posterior.
+        * **s2chain** (:class:`~numpy.ndarray` or `None`)
+
+    Raises:
+        * System exit if it is an array that size is > nsimu.
     '''
-    # define sample points
-    if nsample >= nsimu:
-        iisample = range(nsimu)  # sample all points from chain
-        nsample = nsimu
+    if s2chain is None:
+        return None
     else:
-        # randomly sample from chain
-        iisample = np.ceil(np.random.rand(nsample)*nsimu) - 1
-        iisample = iisample.astype(int)
-    return iisample, nsample
+        if isinstance(s2chain, float):
+            s2chain = np.ones((nsimu,))*s2chain
+
+        if s2chain.size == nsimu:
+            return s2chain
+        else:
+            sys.exit('Expect s2chain as float or array of size nsimu')
 
 
 # --------------------------------------------
-def _observation_sample(s2, y, sstype):
+def observation_sample(s2, y, sstype):
     '''
     Calculate model response with observation errors.
 
@@ -269,7 +70,31 @@ def _observation_sample(s2, y, sstype):
 
 
 # --------------------------------------------
-def _generate_quantiles(x, p=np.array([0.25, 0.5, 0.75])):
+def define_sample_points(nsample, nsimu):
+    '''
+    Define indices to sample from posteriors.
+
+    Args:
+        * **nsample** (:py:class:`int`): Number of samples to draw from posterior.
+        * **nsimu** (:py:class:`int`): Number of MCMC simulations.
+
+    Returns:
+        * **iisample** (:class:`~numpy.ndarray`): Array of indices in posterior set.
+        * **nsample** (:py:class:`int`): Number of samples to draw from posterior.
+    '''
+    # define sample points
+    if nsample >= nsimu:
+        iisample = range(nsimu)  # sample all points from chain
+        nsample = nsimu
+    else:
+        # randomly sample from chain
+        iisample = np.ceil(np.random.rand(nsample)*nsimu) - 1
+        iisample = iisample.astype(int)
+    return iisample, nsample
+
+
+# --------------------------------------------
+def generate_quantiles(x, p=np.array([0.25, 0.5, 0.75])):
     '''
     Calculate empirical quantiles.
 
@@ -290,7 +115,7 @@ def _generate_quantiles(x, p=np.array([0.25, 0.5, 0.75])):
     return interpfun(itpoints)
 
 
-def _setup_display_settings(interval_display, model_display, data_display):
+def setup_display_settings(interval_display, model_display, data_display):
     '''
     Compare user defined display settings with defaults and merge.
 
@@ -332,19 +157,43 @@ def _setup_display_settings(interval_display, model_display, data_display):
     return interval_display, model_display, data_display
 
 
-def setup_interval_colors(limits, cmap=None, inttype='CI'):
-    if len(limits) == 1:
-        norm = mplcolor.Normalize(vmin=0, vmax=100)
-    else:
-        norm = mplcolor.Normalize(vmin=min(limits), vmax=max(limits))
-    if cmap is None:
-        if inttype.upper() == 'CI':
-            cmap = cm.autumn
-        else:
-            cmap = cm.winter
+def setup_interval_colors(iset, inttype='CI'):
+    '''
+    Setup colors for empirical intervals
+    
+    This routine attempts to distribute the color of the UQ intervals
+    based on a normalize color map.  Or, it will assign user-defined
+    colors; however, this only happens if the correct number of colors
+    are specified.
+
+    Args:
+        * **iset** (:py:class:`dict`):  This dictionary should contain the
+          following keys - `limits`, `cmap`, and `colors`.
+
+    Kwargs:
+        * **inttype** (:py:class:`str`): Type of uncertainty interval
+
+    Returns:
+        * **ic** (:py:class:`list`): List containing color for each interval
+    '''
+    limits, cmap, colors = iset['limits'], iset['cmap'], iset['colors']
+    norm = __setup_cmap_norm(limits)
+    cmap = __setup_default_cmap(cmap, inttype)
+    # assign colors using color map or using colors defined by user
     ic = []
-    for limits in limits:
-        ic.append(cmap(norm(limits)))
+    if colors is None:  # No user defined colors
+        for limits in limits:
+            ic.append(cmap(norm(limits)))
+    else:
+        if len(colors) == len(limits):  # correct number of colors defined
+            for color in colors:
+                ic.append(color)
+        else:  # User defined the wrong number of colors
+            print('Note, user-defined colors were ignored. Using color map. '
+                  + 'Expected a list of length {}, but received {}'.format(
+                          len(limits), len(colors)))
+            for limits in limits:
+                ic.append(cmap(norm(limits)))
     return ic
 
 
@@ -358,14 +207,228 @@ def _setup_labels(limits, inttype='CI'):
         labels.append(str('{}% {}'.format(limit, inttype)))
     return labels
 
-def check_s2chain(s2chain, nsimu):
-    if s2chain is None:
-        return None
-    else:
-        if isinstance(s2chain, float):
-            s2chain = np.ones((nsimu,))*s2chain
 
-        if s2chain.size == nsimu:
-            return s2chain
+def _check_limits(limits, default_limits):
+    if limits is None:
+        limits = default_limits
+    limits.sort(reverse=True)
+    return limits
+
+
+def _convert_limits(limits):
+    rng = []
+    for limit in limits:
+        limit = limit/100
+        rng.append([0.5 - limit/2, 0.5 + limit/2])
+    return rng
+
+
+def __setup_cmap_norm(limits):
+    if len(limits) == 1:
+        norm = mplcolor.Normalize(vmin=0, vmax=100)
+    else:
+        norm = mplcolor.Normalize(vmin=min(limits), vmax=max(limits))
+    return norm
+
+
+def __setup_default_cmap(cmap, inttype):
+    if cmap is None:
+        if inttype.upper() == 'CI':
+            cmap = cm.autumn
         else:
-            sys.exit('Expect s2chain as float or array of size nsimu')
+            cmap = cm.winter
+    return cmap
+
+
+# ******************************************************
+def calculate_intervals(chain, results, data, model, s2chain=None,
+                        nsample=500, waitbar=True, sstype=0):
+    parind = results['parind']
+    q = results['theta']
+    nsimu, npar = chain.shape
+    s2chain = check_s2chain(s2chain, nsimu)
+    iisample, nsample = define_sample_points(nsample, nsimu)
+    if waitbar is True:
+        __wbarstatus = progress_bar(iters=int(nsample))
+
+    ci = []
+    pi = []
+    for kk, isa in enumerate(iisample):
+        # progress bar
+        if waitbar is True:
+            __wbarstatus.update(kk)
+        # extract chain set
+        q[parind] = chain[kk, :]
+        # evaluate model
+        y = model(q, data)
+        # store model prediction in credible intervals
+        ci.append(y.reshape(y.size,))  # store model output
+        if s2chain is None:
+            continue
+        else:
+            # estimate prediction intervals
+            s2 = s2chain[kk]
+            obs = observation_sample(s2, y, sstype)
+            pi.append(obs.reshape(obs.size,))
+
+    # Setup output
+    credible = np.array(ci)
+    if s2chain is None:
+        prediction = None
+    else:
+        prediction = np.array(pi)
+    return dict(credible=credible,
+                prediction=prediction)
+
+
+# --------------------------------------------
+def plot_intervals(intervals, time, ydata, limits=[50, 90, 95, 99],
+                   adddata=False, addlegend=True,
+                   addmodel=True, figsize=None, model_display={},
+                   data_display={}, interval_display={},
+                   addcredible=True, addprediction=True,
+                   fig=None, legloc='upper left',
+                   ciset=dict(limits=None, cmap=None, colors=None),
+                   piset=dict(limits=None, cmap=None, colors=None),
+                   return_settings=False):
+    '''
+    Plot propagation intervals
+    '''
+    # unpack dictionary
+    credible = intervals['credible']
+    prediction = intervals['prediction']
+    # Check user-defined settings
+    if ciset['limits'] is None:
+        ciset['limits'] = limits
+    if piset['limits'] is None:
+        piset['limits'] = limits
+    # convert limits to ranges
+    ciset['quantiles'] = _convert_limits(ciset['limits'])
+    piset['quantiles'] = _convert_limits(piset['limits'])
+    # setup display settings
+    interval_display, model_display, data_display = setup_display_settings(
+            interval_display, model_display, data_display)
+    # Define colors
+    ciset['colors'] = setup_interval_colors(ciset, inttype='ci')
+    piset['colors'] = setup_interval_colors(piset, inttype='pi')
+    # Define labels
+    ciset['labels'] = _setup_labels(ciset['limits'], inttype='CI')
+    piset['labels'] = _setup_labels(piset['limits'], inttype='PI')
+    if fig is None:
+        fig = plt.figure(figsize=figsize)
+    ax = fig.gca()
+    time = time.reshape(time.size,)
+    # add prediction intervals
+    if addprediction is True:
+        for ii, quantile in enumerate(piset['quantiles']):
+            pi = generate_quantiles(prediction, np.array(quantile))
+            ax.fill_between(time, pi[0], pi[1], facecolor=piset['colors'][ii],
+                            label=piset['labels'][ii], **interval_display)
+    # add credible intervals
+    if addcredible is True:
+        for ii, quantile in enumerate(ciset['quantiles']):
+            ci = generate_quantiles(credible, np.array(quantile))
+            ax.fill_between(time, ci[0], ci[1], facecolor=ciset['colors'][ii],
+                            label=ciset['labels'][ii], **interval_display)
+    # add model (median model response)
+    if addmodel is True:
+        ci = generate_quantiles(credible, np.array(0.5))
+        ax.plot(time, ci, **model_display)
+    # add data to plot
+    if adddata is True:
+        plt.plot(time, ydata, **data_display)
+    # add legend
+    if addlegend is True:
+        handles, labels = ax.get_legend_handles_labels()
+        ax.legend(handles, labels, loc=legloc)
+    return fig, ax
+
+
+# --------------------------------------------
+def plot_3d_intervals(intervals, time, ydata, limits=[50, 90, 95, 99],
+                      adddata=False, addlegend=True,
+                      addmodel=True, figsize=None, model_display={},
+                      data_display={}, interval_display={},
+                      addcredible=True, addprediction=True,
+                      fig=None, legloc='upper left',
+                      ciset=dict(limits=None, cmap=None, colors=None),
+                      piset=dict(limits=None, cmap=None, colors=None),
+                      return_settings=False):
+    '''
+    Plot propagation intervals
+    '''
+    # unpack dictionary
+    credible = intervals['credible']
+    prediction = intervals['prediction']
+    # Check user-defined settings
+    if ciset['limits'] is None:
+        ciset['limits'] = limits
+    if piset['limits'] is None:
+        piset['limits'] = limits
+    # convert limits to ranges
+    ciset['quantiles'] = _convert_limits(ciset['limits'])
+    piset['quantiles'] = _convert_limits(piset['limits'])
+    # setup display settings
+    interval_display, model_display, data_display = setup_display_settings(
+            interval_display, model_display, data_display)
+    # Define colors
+    ciset['colors'] = setup_interval_colors(ciset, inttype='ci')
+    piset['colors'] = setup_interval_colors(piset, inttype='pi')
+    # Define labels
+    ciset['labels'] = _setup_labels(ciset['limits'], inttype='CI')
+    piset['labels'] = _setup_labels(piset['limits'], inttype='PI')
+    if fig is None:
+        fig = plt.figure(figsize=figsize)
+        ax = Axes3D(fig)
+    ax = fig.gca()
+    time1 = time[:, 0]
+    time2 = time[:, 1]
+    # add prediction intervals
+    if addprediction is True:
+        for ii, quantile in enumerate(piset['quantiles']):
+            pi = generate_quantiles(prediction, np.array(quantile))
+            # Add a polygon instead of fill_between
+            rev = np.arange(time1.size - 1, -1, -1)
+            x = np.concatenate((time1, time1[rev]))
+            y = np.concatenate((time2, time2[rev]))
+            z = np.concatenate((pi[0], pi[1][rev]))
+            verts = [list(zip(x, y, z))]
+            surf = Poly3DCollection(verts,
+                                    color=piset['colors'][ii],
+                                    label=piset['labels'][ii])
+            # Add fix for legend compatibility
+            surf._facecolors2d = surf._facecolors3d
+            surf._edgecolors2d = surf._edgecolors3d
+            ax.add_collection3d(surf)
+    # add credible intervals
+    if addcredible is True:
+        for ii, quantile in enumerate(ciset['quantiles']):
+            ci = generate_quantiles(credible, np.array(quantile))
+            # Add a polygon instead of fill_between
+            rev = np.arange(time1.size - 1, -1, -1)
+            x = np.concatenate((time1, time1[rev]))
+            y = np.concatenate((time2, time2[rev]))
+            z = np.concatenate((ci[0], ci[1][rev]))
+            verts = [list(zip(x, y, z))]
+            surf = Poly3DCollection(verts,
+                                    color=ciset['colors'][ii],
+                                    label=ciset['labels'][ii])
+            # Add fix for legend compatibility
+            surf._facecolors2d = surf._facecolors3d
+            surf._edgecolors2d = surf._edgecolors3d
+            ax.add_collection3d(surf)
+    # add model (median model response)
+    if addmodel is True:
+        ci = generate_quantiles(credible, np.array(0.5))
+        ax.plot(time1, time2, ci, **model_display)
+    # add data to plot
+    if adddata is True:
+        ax.plot(time1, time2, ydata.reshape(time1.shape), **data_display)
+    # add legend
+    if addlegend is True:
+        handles, labels = ax.get_legend_handles_labels()
+        ax.legend(handles, labels, loc=legloc)
+    if return_settings is True:
+        return fig, ax, dict(ciset=ciset, piset=piset)
+    else:
+        return fig, ax
