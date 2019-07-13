@@ -317,7 +317,8 @@ def __setup_default_cmap(cmap, inttype):
 
 # ******************************************************
 # --------------------------------------------
-def plot_intervals(intervals, time, ydata=None, limits=[50, 90, 95, 99],
+def plot_intervals(intervals, time, ydata=None, xdata=None,
+                   limits=[50, 90, 95, 99],
                    adddata=False, addmodel=True, addlegend=True,
                    addcredible=True, addprediction=True,
                    data_display={}, model_display={}, interval_display={},
@@ -354,6 +355,9 @@ def plot_intervals(intervals, time, ydata=None, limits=[50, 90, 95, 99],
     Kwargs:
         * **ydata** (:class:`~numpy.ndarray` or None): Observations, expect
           1-D array if defined.
+        * **xdata** (:class:`~numpy.ndarray` or None): Independent values
+          corresponding to observations.  This is required if the observations
+          do not align with your times of generating the model response.
         * **limits** (py:class:`list`): Quantile limits that correspond to
           percentage size of desired intervals.  Note, this is the default
           limits, but specific limits can be defined using the `ciset` and
@@ -434,7 +438,10 @@ def plot_intervals(intervals, time, ydata=None, limits=[50, 90, 95, 99],
         ax.plot(time, ci, **model_display)
     # add data to plot
     if adddata is True and ydata is not None:
-        plt.plot(time, ydata, **data_display)
+        if xdata is None:
+            ax.plot(time, ydata, **data_display)
+        else:
+            ax.plot(xdata, ydata, **data_display)
     # add legend
     if addlegend is True:
         handles, labels = ax.get_legend_handles_labels()
@@ -486,6 +493,9 @@ def plot_3d_intervals(intervals, time, ydata=None, xdata=None,
     Kwargs:
         * **ydata** (:class:`~numpy.ndarray` or None): Observations, expect
           1-D array if defined.
+        * **xdata** (:class:`~numpy.ndarray` or None): Independent values
+          corresponding to observations.  This is required if the observations
+          do not align with your times of generating the model response.
         * **limits** (py:class:`list`): Quantile limits that correspond to
           percentage size of desired intervals.  Note, this is the default
           limits, but specific limits can be defined using the `ciset` and
