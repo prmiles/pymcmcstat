@@ -358,17 +358,17 @@ def plot_intervals(intervals, time, ydata=None, xdata=None,
         * **xdata** (:class:`~numpy.ndarray` or None): Independent values
           corresponding to observations.  This is required if the observations
           do not align with your times of generating the model response.
-        * **limits** (py:class:`list`): Quantile limits that correspond to
+        * **limits** (:py:class:`list`): Quantile limits that correspond to
           percentage size of desired intervals.  Note, this is the default
           limits, but specific limits can be defined using the `ciset` and
           `piset` dictionaries.
-        * **adddata** (py:class:`bool`): Flag to include data
-        * **addmodel** (py:class:`bool`): Flag to include median model
+        * **adddata** (:py:class:`bool`): Flag to include data
+        * **addmodel** (:py:class:`bool`): Flag to include median model
           response
-        * **addlegend** (py:class:`bool`): Flag to include legend
-        * **addcredible** (py:class:`bool`): Flag to include credible
+        * **addlegend** (:py:class:`bool`): Flag to include legend
+        * **addcredible** (:py:class:`bool`): Flag to include credible
           intervals
-        * **addprediction** (py:class:`bool`): Flag to include prediction
+        * **addprediction** (:py:class:`bool`): Flag to include prediction
           intervals
         * **model_display** (:py:class:`dict`): Display settings for median
           model response
@@ -376,7 +376,7 @@ def plot_intervals(intervals, time, ydata=None, xdata=None,
         * **interval_display** (:py:class:`dict`): General display settings
           for intervals.
         * **fig**: Handle of previously created figure object
-        * **figsize** (py:class:`tuple`): (width, height) in inches
+        * **figsize** (:py:class:`tuple`): (width, height) in inches
         * **legloc** (:py:class:`str`): Legend location - matplotlib help for
           details.
         * **ciset** (:py:class:`dict`): Settings for credible intervals
@@ -386,12 +386,10 @@ def plot_intervals(intervals, time, ydata=None, xdata=None,
 
     Returns:
         * (:py:class:`tuple`) with elements
-            1) `fig`: Figure handle
-            2) `ax`: Axes handle
-            3)  `ciset`: All credible interval settings (only outputted if
-              `return_settings=True`)
-            4)  `piset`: All prediction interval settings (only outputted if
-              `return_settings=True`)
+            1) Figure handle
+            2) Axes handle
+            3) Dictionary with `ciset` and `piset` inside (only
+               outputted if `return_settings=True`)
     '''
     # unpack dictionary
     credible = intervals['credible']
@@ -502,17 +500,17 @@ def plot_3d_intervals(intervals, time, ydata=None, xdata=None,
         * **xdata** (:class:`~numpy.ndarray` or None): Independent values
           corresponding to observations.  This is required if the observations
           do not align with your times of generating the model response.
-        * **limits** (py:class:`list`): Quantile limits that correspond to
+        * **limits** (:py:class:`list`): Quantile limits that correspond to
           percentage size of desired intervals.  Note, this is the default
           limits, but specific limits can be defined using the `ciset` and
           `piset` dictionaries.
-        * **adddata** (py:class:`bool`): Flag to include data
-        * **addmodel** (py:class:`bool`): Flag to include median model
+        * **adddata** (:py:class:`bool`): Flag to include data
+        * **addmodel** (:py:class:`bool`): Flag to include median model
           response
-        * **addlegend** (py:class:`bool`): Flag to include legend
-        * **addcredible** (py:class:`bool`): Flag to include credible
+        * **addlegend** (:py:class:`bool`): Flag to include legend
+        * **addcredible** (:py:class:`bool`): Flag to include credible
           intervals
-        * **addprediction** (py:class:`bool`): Flag to include prediction
+        * **addprediction** (:py:class:`bool`): Flag to include prediction
           intervals
         * **model_display** (:py:class:`dict`): Display settings for median
           model response
@@ -520,7 +518,7 @@ def plot_3d_intervals(intervals, time, ydata=None, xdata=None,
         * **interval_display** (:py:class:`dict`): General display settings
           for intervals.
         * **fig**: Handle of previously created figure object
-        * **figsize** (py:class:`tuple`): (width, height) in inches
+        * **figsize** (:py:class:`tuple`): (width, height) in inches
         * **legloc** (:py:class:`str`): Legend location - matplotlib help for
           details.
         * **ciset** (:py:class:`dict`): Settings for credible intervals
@@ -530,12 +528,10 @@ def plot_3d_intervals(intervals, time, ydata=None, xdata=None,
 
     Returns:
         * (:py:class:`tuple`) with elements
-            1) `fig`: Figure handle
-            2) `ax`: Axes handle
-            3)  `ciset`: All credible interval settings (only outputted if
-              `return_settings=True`)
-            4)  `piset`: All prediction interval settings (only outputted if
-              `return_settings=True`)
+            1) Figure handle
+            2) Axes handle
+            3) Dictionary with `ciset` and `piset` inside (only
+               outputted if `return_settings=True`)
     '''
     # unpack dictionary
     credible = intervals['credible']
