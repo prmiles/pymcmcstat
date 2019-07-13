@@ -185,3 +185,10 @@ class SetupIntervalColors(unittest.TestCase):
                          msg='Expect 2 colors')
         self.assertNotEqual(ic, ['r', 'g'],
                          msg='Expect non-matching lists')
+
+
+#class CalculateIntervals(unittest.TestCase):
+#
+#    def test_intcreation(self):
+#        intervals = uqp.calculate_intervals(
+#                chain, results, data, model)
