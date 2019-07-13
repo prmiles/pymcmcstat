@@ -39,3 +39,37 @@ def removekey(d, key):
     r = dict(d)
     del r[key]
     return r
+
+
+def check_settings(default_settings, user_settings=None):
+    '''
+    Check user settings with default.
+
+    Recursively checks elements of user settings against the defaults and updates settings
+    as it goes.  If a user setting does not exist in the default, then the user setting
+    is added to the settings.  If the setting is defined in both the user and default
+    settings, then the user setting overrides the default.  Otherwise, the default
+    settings persist.
+
+    Args:
+        * **default_settings** (:py:class:`dict`): Default settings for particular method.
+        * **user_settings** (:py:class:`dict`): User defined settings.
+
+    Returns:
+        * (:py:class:`dict`): Updated settings.
+    '''
+    settings = default_settings.copy()  # initially define settings as default
+    options = list(default_settings.keys())  # get default settings
+    if user_settings is None:  # convert to empty dict
+        user_settings = {}
+    user_options = list(user_settings.keys())  # get user settings
+    for uo in user_options:  # iterate through settings
+        if uo in options:
+            # check if checking a dictionary
+            if isinstance(settings[uo], dict):
+                settings[uo] = check_settings(settings[uo], user_settings[uo])
+            else:
+                settings[uo] = user_settings[uo]
+        if uo not in options:
+            settings[uo] = user_settings[uo]
+    return settings
