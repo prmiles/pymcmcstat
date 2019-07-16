@@ -2,4 +2,3 @@ dependencies:
   - matplotlib
   - seaborn
   - numpy
-  - pymcmcstat
