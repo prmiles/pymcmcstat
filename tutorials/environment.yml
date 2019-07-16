@@ -1,8 +1,0 @@
-dependencies:
-  - pip
-  - pip:
-    - pandas
-    - matplotlib
-    - seaborn
-    - numpy
-    - mcmcplot
