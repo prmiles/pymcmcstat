@@ -1,5 +1,8 @@
 dependencies:
-  - matplotlib
-  - seaborn
-  - numpy
-  - mcmcplot
+  - pip
+  - pip:
+    - pandas
+    - matplotlib
+    - seaborn
+    - numpy
+    - mcmcplot
