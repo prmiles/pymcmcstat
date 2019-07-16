@@ -1,6 +1,7 @@
 sphinxcontrib-bibtex
 sphinx_rtd_theme
 matplotlib>=2.2.0
+seaborn>=0.9.0
 coveralls
 h5py>=2.7.0
 statsmodels>=0.9.0
