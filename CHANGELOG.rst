@@ -9,7 +9,10 @@ v1.9.0 ()
 - Added a plotting routine so that you can plot a 2-D interval in 3-D space.
 
 v1.8.0 (June 28, 2019)
----------
+----------------------
+.. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.3261287.svg
+   :target: https://doi.org/10.5281/zenodo.3261287
+
 - Added acceptance rate display feature when calling chain statistics
 - User can specify `skip` or `maxpoints` in pairwise correlation and chain panel plots in order to thin chain.
 - User can request item definitions when calling `chainstats`.
