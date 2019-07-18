@@ -33,7 +33,6 @@ from .structures.ResultsStructure import ResultsStructure
 
 from .samplers.SamplingMethods import SamplingMethods
 
-#from .plotting import MCMCPlotting
 from .plotting.PredictionIntervals import PredictionIntervals
 
 from .chain import ChainStatistics
