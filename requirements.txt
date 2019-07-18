@@ -1,6 +1,6 @@
 sphinxcontrib-bibtex
 sphinx_rtd_theme
-matplotlib>=2.2.0
+mcmcplot>=1.0.1
 coveralls
 h5py>=2.7.0
 statsmodels>=0.9.0
