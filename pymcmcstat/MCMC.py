@@ -16,6 +16,7 @@ import time
 import numpy as np
 import datetime
 import sys
+from mcmcplot import mcmcplot
 
 from .settings.DataStructure import DataStructure
 from .settings.ModelSettings import ModelSettings
@@ -32,7 +33,7 @@ from .structures.ResultsStructure import ResultsStructure
 
 from .samplers.SamplingMethods import SamplingMethods
 
-from .plotting import MCMCPlotting
+#from .plotting import MCMCPlotting
 from .plotting.PredictionIntervals import PredictionIntervals
 
 from .chain import ChainStatistics
@@ -121,7 +122,7 @@ class MCMC:
                 else:
                     self.simulation_results.export_simulation_results_to_json_file(
                             results=self.simulation_results.results)
-        self.mcmcplot = MCMCPlotting.Plot()
+        self.mcmcplot = mcmcplot
         self.PI = PredictionIntervals()
         self.chainstats = ChainStatistics.chainstats
         self._mcmc_status = True  # simulation has been performed
