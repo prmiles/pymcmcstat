@@ -134,7 +134,7 @@ def calculate_intervals(chain, results, data, model, s2chain=None,
 
 # --------------------------------------------
 def plot_intervals(intervals, time, ydata=None, xdata=None,
-                   limits=[50, 90, 95, 99],
+                   limits=[95],
                    adddata=None, addmodel=True, addlegend=True,
                    addcredible=True, addprediction=True,
                    data_display={}, model_display={}, interval_display={},
@@ -276,7 +276,7 @@ def plot_intervals(intervals, time, ydata=None, xdata=None,
 
 # --------------------------------------------
 def plot_3d_intervals(intervals, time, ydata=None, xdata=None,
-                      limits=[50, 90, 95, 99],
+                      limits=[95],
                       adddata=False, addlegend=True,
                       addmodel=True, figsize=None, model_display={},
                       data_display={}, interval_display={},
