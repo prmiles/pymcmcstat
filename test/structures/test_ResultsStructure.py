@@ -75,6 +75,25 @@ class AddBasic(unittest.TestCase):
         self.assertTrue(np.array_equal(RS.results['R'], covariance._R), msg = 'Cholesky matches')
         self.assertTrue(np.array_equal(RS.results['qcov'], np.dot(covariance._R.transpose(),covariance._R)), msg = 'Covariance matches')
 
+    def test_allnames(self):
+        model, options, parameters, data, covariance, rejected, chain, s2chain, sschain = gf.setup_mcmc_case_dr()
+        RS = ResultsStructure()
+        RS.add_basic(nsimu=options.nsimu,
+                     covariance=covariance,
+                     parameters=parameters,
+                     rejected=rejected,
+                     simutime=0.001,
+                     theta=chain[-1,:])
+        allnames = RS.results['allnames']
+        names = RS.results['names']
+        print(allnames)
+        print(names)
+        self.assertEqual(len(allnames), len(names) + 1,
+                         msg='Expect extra name in allnames')
+        self.assertEqual(allnames[-1], 'b2',
+                         msg='Expect final parameter is b2')
+        
+        
 # -------------------
 class AddDRAM(unittest.TestCase):
     def test_addbasic_false(self):
