@@ -135,7 +135,7 @@ def calculate_intervals(chain, results, data, model, s2chain=None,
 # --------------------------------------------
 def plot_intervals(intervals, time, ydata=None, xdata=None,
                    limits=[50, 90, 95, 99],
-                   adddata=False, addmodel=True, addlegend=True,
+                   adddata=None, addmodel=True, addlegend=True,
                    addcredible=True, addprediction=True,
                    data_display={}, model_display={}, interval_display={},
                    fig=None, figsize=None, legloc='upper left',
@@ -257,6 +257,8 @@ def plot_intervals(intervals, time, ydata=None, xdata=None,
         ci = generate_quantiles(credible, np.array(0.5))
         ax.plot(time, ci, **model_display)
     # add data to plot
+    if ydata is not None and adddata is None:
+        adddata = True
     if adddata is True and ydata is not None:
         if xdata is None:
             ax.plot(time, ydata, **data_display)
