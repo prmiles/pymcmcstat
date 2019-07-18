@@ -3,6 +3,8 @@ Changelog
 
 v1.9.0 ()
 ---------
+- Added feature to results structure to store all parameters names, regardless of whether or not they are included in sampling.
+- Added mcmcplot package to requirements.  All chain diagnostic plotting now defaults to this package.
 - Added new module for uncertainty propagation.  Aims to provide more flexible API for user to plot different combinations of credible and prediction intervals.
 - Added a plotting routine so that you can plot a 2-D interval in 3-D space.
 
