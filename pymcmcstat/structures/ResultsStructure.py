@@ -161,6 +161,7 @@ class ResultsStructure:
         self.results['qcov_scale'] = covariance._qcov_scale
         self.results['mean'] = covariance._meanchain
         self.results['names'] = [parameters._names[ii] for ii in parameters._parind]
+        self.results['allnames'] = [name for name in parameters._names]
         self.results['limits'] = [parameters._lower_limits[parameters._parind[:]],
                                   parameters._upper_limits[parameters._parind[:]]]
         self.results['nsimu'] = nsimu
