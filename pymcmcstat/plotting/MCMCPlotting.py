@@ -13,6 +13,8 @@ from pylab import hist
 from .utilities import generate_names, setup_plot_features, make_x_grid
 from .utilities import setup_subsample
 import warnings
+from deprecated import deprecated
+
 
 try:
     from statsmodels.nonparametric.kernel_density import KDEMultivariate
@@ -21,7 +23,13 @@ except ImportError as e:
                       - plot_density_panel will not work. {}".format(e)))
 
 
+def deprecation(message):
+    warnings.warn(message, DeprecationWarning)
+
+
 # --------------------------------------------
+@deprecated(version='1.9.0',
+            reason='New function: "from pymcmcstat.mcmcplot import plot_density_panel"')
 def plot_density_panel(chains, names=None, hist_on=False, figsizeinches=None,
                        return_kde=False):
     '''
@@ -33,6 +41,7 @@ def plot_density_panel(chains, names=None, hist_on=False, figsizeinches=None,
         * **hist_on** (:py:class:`bool`): Flag to include histogram on density plot
         * **figsizeinches** (:py:class:`list`): Specify figure size in inches [Width, Height]
     '''
+    deprecation('Recommend using pymcmcstat.mcmcplot.plot_density_panel')
     nsimu, nparam = chains.shape  # number of rows, number of columns
     ns1, ns2, names, figsizeinches = setup_plot_features(
             nparam=nparam, names=names, figsizeinches=figsizeinches)
@@ -62,6 +71,8 @@ def plot_density_panel(chains, names=None, hist_on=False, figsizeinches=None,
 
 
 # --------------------------------------------
+@deprecated(version='1.9.0',
+            reason='New function: "from pymcmcstat.mcmcplot import plot_histogram_panel"')
 def plot_histogram_panel(chains, names=None, figsizeinches=None):
     """
     Plot histogram from each parameter's sampling history
@@ -90,6 +101,8 @@ def plot_histogram_panel(chains, names=None, figsizeinches=None):
 
 
 # --------------------------------------------
+@deprecated(version='1.9.0',
+            reason='New function:"from pymcmcstat.mcmcplot import plot_chain_panel"')
 def plot_chain_panel(chains, names=None, figsizeinches=None,
                      skip=1, maxpoints=500):
     """
@@ -128,6 +141,8 @@ def plot_chain_panel(chains, names=None, figsizeinches=None,
 
 
 # --------------------------------------------
+@deprecated(version='1.9.0',
+            reason='New function: "from pymcmcstat.mcmcplot import plot_pairwise_correlation_panel"')
 def plot_pairwise_correlation_panel(chains, names=None, figsizeinches=None,
                                     skip=1, maxpoints=500):
     """
@@ -176,6 +191,8 @@ def plot_pairwise_correlation_panel(chains, names=None, figsizeinches=None,
 
 
 # --------------------------------------------
+@deprecated(version='1.9.0',
+            reason='New function: "from pymcmcstat.mcmcplot import plot_chain_metrics"')
 def plot_chain_metrics(chain, name=None, figsizeinches=None):
     '''
     Plot chain metrics for individual chain
