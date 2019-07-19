@@ -563,7 +563,7 @@ def setup_display_settings(interval_display, model_display, data_display):
     # Setup model display
     default_model_display = dict(
             linestyle='-',
-            color='r',
+            color='k',
             marker='',
             linewidth=2,
             markersize=5,
