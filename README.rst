@@ -35,7 +35,7 @@ You can also clone the repository and run ``python  setup.py install``.
 Getting Started
 ===============
 
-- `Tutorial notebooks <https://nbviewer.jupyter.org/github/prmiles/pymcmcstat/tree/master/tutorials/index.ipynb>`_
+- `Tutorial notebooks <https://github.com/prmiles/pymcmcstat_examples>`_
 - `Documentation <http://pymcmcstat.readthedocs.io/>`_
 - `Release history <https://github.com/prmiles/pymcmcstat/blob/master/CHANGELOG.rst>`_
 - `Contributing guidelines <https://github.com/prmiles/pymcmcstat/blob/master/CONTRIBUTING.rst>`_
