@@ -18,6 +18,6 @@ script:
   - coverage report --fail-under=80
 notifications:
   email: 
-    - prmiles@ncsu.edu
+    - prmiles.dev@gmail.com
 after_success:
   - coveralls
