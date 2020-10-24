@@ -1,8 +1,16 @@
 Changelog
 =========
 
-v1.9.0 ()
+v1.9.1 (October 24, 2020)
 ---------
+- Fixed #79 - Chainstats display now auto updates formatting for really large or small numbers.
+- Fixed #82 - Initial value check routine in Parallel MCMC now correctly removes extra columns.
+
+v1.9.0 (July 19, 2019)
+---------
+.. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.3342988.svg
+   :target: https://doi.org/10.5281/zenodo.3342988
+
 - Added feature to results structure to store all parameters names, regardless of whether or not they are included in sampling.
 - Added mcmcplot package to requirements.  MCMCPlotting module is noted as deprecated.
 - Added new module for uncertainty propagation.  Aims to provide more flexible API for user to plot different combinations of credible and prediction intervals.

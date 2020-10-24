@@ -11,7 +11,7 @@ functions tested include:
 @author: prmiles
 """
 from pymcmcstat.settings.ModelParameters import ModelParameters
-from pymcmcstat.settings.ModelParameters import format_number_to_str, generate_default_name, check_verbosity, replace_list_elements
+from pymcmcstat.settings.ModelParameters import generate_default_name, check_verbosity, replace_list_elements
 from pymcmcstat.settings.ModelParameters import noadapt_display_setting, check_noadaptind, prior_display_setting, less_than_or_equal_to_zero
 from pymcmcstat.settings.SimulationOptions import SimulationOptions
 import unittest
@@ -178,12 +178,6 @@ class GenerateDefaultName(unittest.TestCase):
         self.assertEqual(generate_default_name(nparam = 2), '$p_{2}$', msg='0 based naming convention.')
         self.assertEqual(generate_default_name(nparam = 10), '$p_{10}$', msg='0 based naming convention.')
 
-# --------------------------
-class FormatNumberToStr(unittest.TestCase):
-    def test_format_number_to_str(self):
-        self.assertEqual(str('{:9.2f}'.format(1.0)), format_number_to_str(1.0), msg = str('Exect: {:9.2f}'.format(1.0)))
-        self.assertEqual(str('{:9.2e}'.format(1.0e4)), format_number_to_str(1.0e4), msg = str('Exect: {:9.2f}'.format(1.0e4)))
-        self.assertEqual(str('{:9.2e}'.format(1.0e-2)), format_number_to_str(1.0e-2), msg = str('Exect: {:9.2f}'.format(1.0e-2)))
             
 # --------------------------
 class SetupPriorMu(unittest.TestCase):
