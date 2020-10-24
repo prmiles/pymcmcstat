@@ -1,7 +1,12 @@
 Changelog
 =========
 
-v1.9.0 ()
+v1.9.1 (October 25, 2020)
+---------
+- Fixed #
+- Fixed #
+
+v1.9.0 (July 19, 2019)
 ---------
 - Added feature to results structure to store all parameters names, regardless of whether or not they are included in sampling.
 - Added mcmcplot package to requirements.  MCMCPlotting module is noted as deprecated.
