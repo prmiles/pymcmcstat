@@ -3,6 +3,9 @@ Changelog
 
 v1.9.1 (October 24, 2020)
 ---------
+.. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.4127047.svg
+   :target: https://doi.org/10.5281/zenodo.4127047
+
 - Fixed #79 - Chainstats display now auto updates formatting for really large or small numbers.
 - Fixed #82 - Initial value check routine in Parallel MCMC now correctly removes extra columns.
 
