@@ -279,7 +279,7 @@ def check_shape_of_users_initial_values(initial_values, num_chain, npar):
         print('Shape of initial values inconsistent with requested number of parameters.\
               \n npar = {}, initial_values.shape -> {},{}.\
               Only using first {} columns of initial_values.'.format(npar, m, n, npar))
-        initial_values = np.delete(initial_values, [range(npar, n+1)], axis=1)
+        initial_values = np.delete(initial_values, [range(npar, initial_values.shape[1])], axis=1)
     return num_chain, initial_values
 
 
