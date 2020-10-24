@@ -6,6 +6,7 @@ Created on Tue Jun 26 06:17:24 2018
 @author: prmiles
 """
 from pymcmcstat.utilities.general import message, removekey, check_settings
+from pymcmcstat.utilities.general import format_number_to_str
 import unittest
 import io
 import sys
@@ -26,7 +27,16 @@ class MessageDisplay(unittest.TestCase):
         flag = message(verbosity = 0, level = 1, printthis = 'test')
         sys.stdout = sys.__stdout__                     # Reset redirect.
         self.assertFalse(flag, msg = 'Statement not printed because verbosity less than level')
+
         
+# --------------------------
+class FormatNumberToStr(unittest.TestCase):
+    def test_format_number_to_str(self):
+        self.assertEqual(str('{:9.2f}'.format(1.0)), format_number_to_str(1.0), msg = str('Exect: {:9.2f}'.format(1.0)))
+        self.assertEqual(str('{:9.2e}'.format(1.0e4)), format_number_to_str(1.0e4), msg = str('Exect: {:9.2f}'.format(1.0e4)))
+        self.assertEqual(str('{:9.2e}'.format(1.0e-2)), format_number_to_str(1.0e-2), msg = str('Exect: {:9.2f}'.format(1.0e-2)))
+
+
 # --------------------------
 class RemoveKey(unittest.TestCase):
     def test_removekey(self):
