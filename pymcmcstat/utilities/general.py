@@ -25,6 +25,23 @@ def message(verbosity, level, printthis):
     return printed
 
 
+# --------------------------
+def format_number_to_str(number):
+    '''
+    Format number for display
+
+    Args:
+        * **number** (:py:class:`float`): Number to be formatted
+
+    Returns:
+        * (:py:class:`str`): Formatted string display
+    '''
+    if abs(number) >= 1e4 or abs(number) <= 1e-2:
+        return str('{:9.2e}'.format(number))
+    else:
+        return str('{:9.2f}'.format(number))
+
+
 def removekey(d, key):
     '''
     Removed elements from dictionary and return the remainder.

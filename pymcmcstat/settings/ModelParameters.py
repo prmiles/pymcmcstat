@@ -9,7 +9,7 @@ Created on Wed Jan 17 09:13:03 2018
 import numpy as np
 import math
 import sys
-from ..utilities.general import message
+from ..utilities.general import message, format_number_to_str
 
 
 # --------------------------
@@ -433,23 +433,6 @@ def prior_display_setting(x):
     else:
         h2 = '^2'
     return h2
-
-
-# --------------------------
-def format_number_to_str(number):
-    '''
-    Format number for display
-
-    Args:
-        * **number** (:py:class:`float`): Number to be formatted
-
-    Returns:
-        * (:py:class:`str`): Formatted string display
-    '''
-    if abs(number) >= 1e4 or abs(number) <= 1e-2:
-        return str('{:9.2e}'.format(number))
-    else:
-        return str('{:9.2f}'.format(number))
 
 
 # --------------------------

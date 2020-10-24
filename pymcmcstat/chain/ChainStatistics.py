@@ -15,6 +15,7 @@ import scipy.stats
 from scipy.fftpack import fft
 from ..plotting.utilities import generate_default_names, extend_names_to_match_nparam
 from .ChainProcessing import generate_chain_list
+from ..utilities.general import format_number_to_str
 
 
 # display chain statistics
@@ -95,7 +96,7 @@ def print_chain_statistics(names, meanii, stdii, mcerr, tau, p):
     # print statistics
     print('\n')
     print(30*'-')
-    print('{:10s}: {:>10s} {:>10s} {:>10s} {:>10s} {:>10s}'.format(
+    print('{:>10s}: {:>9s} {:>9s} {:>9s} {:>9s} {:>9s}'.format(
             'name',
             'mean',
             'std',
@@ -103,21 +104,29 @@ def print_chain_statistics(names, meanii, stdii, mcerr, tau, p):
             'tau',
             'geweke'))
     for ii in range(npar):
-        if meanii[ii] > 1e4:
-            print('{:10s}: {:10.4g} {:10.4g} {:10.4f} {:10.4f} {:10.4f}'.format(names[ii],
-                  meanii[ii],
-                  stdii[ii],
-                  mcerr[ii],
-                  tau[ii],
-                  p[ii]))
-        else:
-            print('{:10s}: {:10.4f} {:10.4f} {:10.4f} {:10.4f} {:10.4f}'.format(
-                    names[ii],
-                    meanii[ii],
-                    stdii[ii],
-                    mcerr[ii],
-                    tau[ii],
-                    p[ii]))
+        namestr = str('{:>10s}'.format(names[ii]))
+        meanstr = format_number_to_str(meanii[ii])
+        stdstr = format_number_to_str(stdii[ii])
+        mcerrstr = format_number_to_str(mcerr[ii])
+        taustr = format_number_to_str(tau[ii])
+        pstr = format_number_to_str(p[ii])
+        print('{:s}: {:s} {:s} {:s} {:s} {:s}'.format(
+                namestr, meanstr, stdstr, mcerrstr, taustr, pstr))
+        # if meanii[ii] > 1e4:
+        #     print('{:10s}: {:10.4g} {:10.4g} {:10.4f} {:10.4f} {:10.4f}'.format(names[ii],
+        #           meanii[ii],
+        #           stdii[ii],
+        #           mcerr[ii],
+        #           tau[ii],
+        #           p[ii]))
+        # else:
+        #     print('{:10s}: {:10.4f} {:10.4f} {:10.4f} {:10.4f} {:10.4f}'.format(
+        #             names[ii],
+        #             meanii[ii],
+        #             stdii[ii],
+        #             mcerr[ii],
+        #             tau[ii],
+        #             p[ii]))
     print(30*'-')
 
 
