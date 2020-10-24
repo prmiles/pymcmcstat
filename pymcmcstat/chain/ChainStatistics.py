@@ -110,7 +110,6 @@ def print_chain_statistics(names, meanii, stdii, mcerr, tau, p):
         mcerrstr = format_number_to_str(mcerr[ii])
         taustr = format_number_to_str(tau[ii])
         pstr = format_number_to_str(p[ii])
-                                        
         print('{:s}: {:s} {:s} {:s} {:s} {:s}'.format(
                 namestr, meanstr, stdstr, mcerrstr, taustr, pstr))
         # if meanii[ii] > 1e4:
