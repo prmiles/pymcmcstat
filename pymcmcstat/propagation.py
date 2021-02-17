@@ -400,8 +400,12 @@ def plot_3d_intervals(intervals, time, ydata=None, xdata=None,
                                     color=piset['colors'][ii],
                                     label=piset['labels'][ii])
             # Add fix for legend compatibility
-            surf._facecolors2d = surf._facecolors3d
-            surf._edgecolors2d = surf._edgecolors3d
+            try:
+              surf._facecolors2d = surf._facecolors3d
+              surf._edgecolors2d = surf._edgecolors3d
+            Except AttributeError:
+              surf._facecolors2d = surf._facecolor3d
+              surf._edgecolors2d = surf._edgecolor3d
             ax.add_collection3d(surf)
     # add credible intervals
     if addcredible is True:
@@ -417,8 +421,12 @@ def plot_3d_intervals(intervals, time, ydata=None, xdata=None,
                                     color=ciset['colors'][ii],
                                     label=ciset['labels'][ii])
             # Add fix for legend compatibility
-            surf._facecolors2d = surf._facecolors3d
-            surf._edgecolors2d = surf._edgecolors3d
+            try:
+              surf._facecolors2d = surf._facecolors3d
+              surf._edgecolors2d = surf._edgecolors3d
+            Except AttributeError:
+              surf._facecolors2d = surf._facecolor3d
+              surf._edgecolors2d = surf._edgecolor3d
             ax.add_collection3d(surf)
     # add model (median model response)
     if addmodel is True:
