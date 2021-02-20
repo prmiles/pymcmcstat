@@ -1,5 +1,3 @@
-sphinxcontrib-bibtex
-sphinx_rtd_theme
 mcmcplot>=1.0.1
 coveralls
 h5py>=2.7.0
