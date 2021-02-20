@@ -1,2 +1,12 @@
+# Required
+version: 2
+
+# Build documentation in the doc/ directory with Sphinx
+sphinx:
+   configuration: doc/source/conf.py
+   
+# Set the version of Python and requirements required to build your docs
 python:
-  version: 3.6
+   version: 3.6
+   install:
+   - requirements: doc/requirements.txt
