@@ -209,6 +209,7 @@ texinfo_documents = [
 
 
 # -- Extension configuration -------------------------------------------------
+bibtex_bibfiles = ['refs.bib']
 
 # -- Options for todo extension ----------------------------------------------
 

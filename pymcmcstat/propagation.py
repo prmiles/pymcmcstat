@@ -44,10 +44,25 @@ def calculate_intervals(chain, results, data, model, s2chain=None,
         * **nsample** (:py:class:`int`): No. of samples drawn from posteriors.
         * **waitbar** (:py:class:`bool`): Flag to display progress bar.
         * **sstype** (:py:class:`int`): Sum-of-squares type.  Can be 0 (normal),
-          1 (sqrt), or 2 (log).
+          1 (sqrt), or 2 (log).  See additional discussion below.
 
     Returns:
         * :py:class:`dict` with two elements: 1) `credible` and 2) `prediction`
+
+    .. warning:: The variable **sstype** should be defined with caution as it
+          is specific to the form of the sum-of-squares likelihood function
+          used in the calibration.
+
+          Specifically, the code supports 3 types of sum-of-squares likelihood
+          functions:
+
+            - Gaussian (**sstype=0**): :math:`\\sum(y_{data}-y_{model})^2`
+            - Poisson (**sstype=1**): :math:`\\sum(\\sqrt{y_{data}}-\\sqrt{y_{model}})^2`
+            - Log-Normal (**sstype=2**): :math:`\\sum(\\log(y_{data}) - \\log(y_{model}))^2`
+
+    .. note:: The *sqrt* form of the sum-of-squares likelihood is the Gaussian
+        approximation of the Poisson distribution as it stabilizes the Poisson
+        variance.
     '''
     parind = results['parind']
     q = results['theta']
