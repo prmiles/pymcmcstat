@@ -15,8 +15,7 @@
 import os
 import sys
 import re
-sys.path.insert(0, os.path.abspath('../..'))
-#sys.path.insert(0, os.path.abspath('../../pymcmcstat'))
+sys.path.insert(0, os.path.abspath('..'))
 
 # -- Project information -----------------------------------------------------
 
@@ -26,7 +25,7 @@ author = 'Paul Miles'
 
 # The short X.Y version
 def get_version():
-    VERSIONFILE = os.path.join('..','..', 'pymcmcstat', '__init__.py')
+    VERSIONFILE = os.path.join('..', 'pymcmcstat', '__init__.py')
     with open(VERSIONFILE, 'rt') as f:
         lines = f.readlines()
     vgx = '^__version__ = \"\d+\.\d+\.\d.*\"'
