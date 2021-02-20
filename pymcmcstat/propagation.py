@@ -56,9 +56,9 @@ def calculate_intervals(chain, results, data, model, s2chain=None,
           Specifically, the code supports 3 types of sum-of-squares likelihood
           functions:
 
-            - Gaussian (**sstype=0**): :math:`\sum(y_{data}-y_{model})^2`
-            - Poisson (**sstype=1**): :math:`\sum(\sqrt{y_{data}}-\sqrt{y_{model}})^2`
-            - Log-Normal (**sstype=2**): :math:`\sum(\log(y_{data}) - \log(y_{model}))^2`
+            - Gaussian (**sstype=0**): :math:`\\sum(y_{data}-y_{model})^2`
+            - Poisson (**sstype=1**): :math:`\\sum(\\sqrt{y_{data}}-\\sqrt{y_{model}})^2`
+            - Log-Normal (**sstype=2**): :math:`\\sum(\\log(y_{data}) - \\log(y_{model}))^2`
 
     .. note:: The *sqrt* form of the sum-of-squares likelihood is the Gaussian
         approximation of the Poisson distribution as it stabilizes the Poisson
