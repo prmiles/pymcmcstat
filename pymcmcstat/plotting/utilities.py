@@ -7,7 +7,7 @@ Created on Mon May 14 06:24:12 2018
 """
 import numpy as np
 from scipy.interpolate import interp1d
-from scipy import pi, sin, cos
+from numpy import pi, sin, cos
 import sys
 import math
 
